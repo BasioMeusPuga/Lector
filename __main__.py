@@ -40,7 +40,7 @@ class MainUI(QtWidgets.QMainWindow, mainwindow.Ui_MainWindow):
         addButton = QtWidgets.QAction(QtGui.QIcon.fromTheme('add'), 'Add book', self)
         deleteButton = QtWidgets.QAction(QtGui.QIcon.fromTheme('remove'), 'Delete book', self)
         settingsButton = QtWidgets.QAction(QtGui.QIcon.fromTheme('settings'), 'Settings', self)
-        addButton.triggered.connect(self.create_tab)
+        addButton.triggered.connect(self.create_tab_class)
 
         self.LibraryToolBar.addAction(addButton)
         self.LibraryToolBar.addAction(deleteButton)
@@ -53,20 +53,10 @@ class MainUI(QtWidgets.QMainWindow, mainwindow.Ui_MainWindow):
         # Toolbar switching
         self.tabWidget.currentChanged.connect(self.toolbar_switch)
 
+    def create_tab_class(self):
+        a = Tabber(self, 'Title text')
+        print(dir(a))
 
-    def create_tab(self):
-        self.tab_3 = QtWidgets.QWidget()
-        self.tab_3.setObjectName("tab_3")
-        self.gridLayout_4 = QtWidgets.QGridLayout(self.tab_3)
-        self.gridLayout_4.setObjectName("gridLayout_4")
-        self.textEdit1 = QtWidgets.QTextEdit(self.tab_3)
-        self.textEdit1.setObjectName("textEdit1")
-        self.gridLayout_4.addWidget(self.textEdit1, 0, 0, 1, 1)
-        self.tabWidget.addTab(self.tab_3, "")
-        self.tabWidget.setTabText(self.tabWidget.indexOf(self.tab_3), 'self.book_title')
-        self.textEdit1.setText(', '.join(dir(self))) 
-
-    
     def toolbar_switch(self):
         if self.tabWidget.currentIndex() == 0:
             self.BookToolBar.hide()
@@ -75,7 +65,6 @@ class MainUI(QtWidgets.QMainWindow, mainwindow.Ui_MainWindow):
             self.BookToolBar.show()
             self.LibraryToolBar.hide()
 
-    
     def set_fullscreen(self):
         scr = QtGui.QGuiApplication.primaryScreen()
         agm = QtGui.QScreen.availableGeometry(scr)
@@ -89,7 +78,24 @@ class MainUI(QtWidgets.QMainWindow, mainwindow.Ui_MainWindow):
         self.textEdit.showNormal()
         self.showNormal()
 
+class Tabber:
+    def __init__(self, parent, book_title):
+        self.myparent = parent
+        self.book_title = book_title
+        self.create_tab()
 
+    def create_tab(self):
+        self.tab = QtWidgets.QWidget()
+        self.tab.setObjectName("tab")
+        self.gridLayout = QtWidgets.QGridLayout(self.tab)
+        self.gridLayout.setObjectName("gridLayout")
+        self.textEdit = QtWidgets.QTextEdit(self.tab)
+        self.textEdit.setObjectName("textEdit")
+        self.gridLayout.addWidget(self.textEdit, 0, 0, 1, 1)
+        self.myparent.tabWidget.addTab(self.tab, "")
+        self.myparent.tabWidget.setTabText(
+            self.myparent.tabWidget.indexOf(self.tab), self.book_title)
+        self.textEdit.setText(','.join(dir(self.myparent)))
 
 
 
