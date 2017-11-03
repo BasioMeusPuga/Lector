@@ -26,6 +26,9 @@ class MainUI(QtWidgets.QMainWindow, mainwindow.Ui_MainWindow):
         super(self.__class__, self).__init__()
         self.setupUi(self)
 
+        # Set up a dictionary to keep track of new tabs
+        self.tabs = {}
+
         # Toolbar setup
         self.BookToolBar.hide()
         fullscreenButton = QtWidgets.QAction(
@@ -37,13 +40,12 @@ class MainUI(QtWidgets.QMainWindow, mainwindow.Ui_MainWindow):
         addButton = QtWidgets.QAction(QtGui.QIcon.fromTheme('add'), 'Add book', self)
         deleteButton = QtWidgets.QAction(QtGui.QIcon.fromTheme('remove'), 'Delete book', self)
         settingsButton = QtWidgets.QAction(QtGui.QIcon.fromTheme('settings'), 'Settings', self)
+        addButton.triggered.connect(self.create_tab)
 
         self.LibraryToolBar.addAction(addButton)
         self.LibraryToolBar.addAction(deleteButton)
         self.LibraryToolBar.addSeparator()
         self.LibraryToolBar.addAction(settingsButton)
-
-        self.textEdit.setText('asdasds')
 
         self.exit_shortcut = QtWidgets.QShortcut(QtGui.QKeySequence('Escape'), self)
         self.exit_shortcut.activated.connect(self.set_normalsize)
@@ -51,6 +53,20 @@ class MainUI(QtWidgets.QMainWindow, mainwindow.Ui_MainWindow):
         # Toolbar switching
         self.tabWidget.currentChanged.connect(self.toolbar_switch)
 
+
+    def create_tab(self):
+        self.tab_3 = QtWidgets.QWidget()
+        self.tab_3.setObjectName("tab_3")
+        self.gridLayout_4 = QtWidgets.QGridLayout(self.tab_3)
+        self.gridLayout_4.setObjectName("gridLayout_4")
+        self.textEdit1 = QtWidgets.QTextEdit(self.tab_3)
+        self.textEdit1.setObjectName("textEdit1")
+        self.gridLayout_4.addWidget(self.textEdit1, 0, 0, 1, 1)
+        self.tabWidget.addTab(self.tab_3, "")
+        self.tabWidget.setTabText(self.tabWidget.indexOf(self.tab_3), 'self.book_title')
+        self.textEdit1.setText(', '.join(dir(self))) 
+
+    
     def toolbar_switch(self):
         if self.tabWidget.currentIndex() == 0:
             self.BookToolBar.hide()
@@ -59,9 +75,8 @@ class MainUI(QtWidgets.QMainWindow, mainwindow.Ui_MainWindow):
             self.BookToolBar.show()
             self.LibraryToolBar.hide()
 
-
+    
     def set_fullscreen(self):
-
         scr = QtGui.QGuiApplication.primaryScreen()
         agm = QtGui.QScreen.availableGeometry(scr)
         self.textEdit.setParent(self)
@@ -73,7 +88,9 @@ class MainUI(QtWidgets.QMainWindow, mainwindow.Ui_MainWindow):
         self.textEdit.setParent(self.tab_2)
         self.textEdit.showNormal()
         self.showNormal()
-        
+
+
+
 
 
 def wutface():
@@ -84,7 +101,6 @@ def main():
     app = QtWidgets.QApplication(sys.argv)
     form = MainUI()
     form.show()
-    form.textEdit.showFullScreen()
     app.exec_()
 
 

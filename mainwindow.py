@@ -29,14 +29,6 @@ class Ui_MainWindow(object):
         self.verticalLayout.setObjectName("verticalLayout")
         self.gridLayout_2.addLayout(self.verticalLayout, 0, 0, 1, 1)
         self.tabWidget.addTab(self.tab, "")
-        self.tab_2 = QtWidgets.QWidget()
-        self.tab_2.setObjectName("tab_2")
-        self.gridLayout_3 = QtWidgets.QGridLayout(self.tab_2)
-        self.gridLayout_3.setObjectName("gridLayout_3")
-        self.textEdit = QtWidgets.QTextEdit(self.tab_2)
-        self.textEdit.setObjectName("textEdit")
-        self.gridLayout_3.addWidget(self.textEdit, 0, 0, 1, 1)
-        self.tabWidget.addTab(self.tab_2, "")
         self.horizontalLayout.addWidget(self.tabWidget)
         self.gridLayout.addLayout(self.horizontalLayout, 0, 0, 1, 1)
         MainWindow.setCentralWidget(self.centralwidget)
@@ -60,7 +52,6 @@ class Ui_MainWindow(object):
         _translate = QtCore.QCoreApplication.translate
         MainWindow.setWindowTitle(_translate("MainWindow", "Lector"))
         self.tabWidget.setTabText(self.tabWidget.indexOf(self.tab), _translate("MainWindow", "Library"))
-        self.tabWidget.setTabText(self.tabWidget.indexOf(self.tab_2), _translate("MainWindow", "Read"))
         self.LibraryToolBar.setWindowTitle(_translate("MainWindow", "toolBar"))
         self.BookToolBar.setWindowTitle(_translate("MainWindow", "toolBar_2"))
 

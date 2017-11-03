@@ -35,16 +35,6 @@
           </item>
          </layout>
         </widget>
-        <widget class="QWidget" name="tab_2">
-         <attribute name="title">
-          <string>Read</string>
-         </attribute>
-         <layout class="QGridLayout" name="gridLayout_3">
-          <item row="0" column="0">
-           <widget class="QTextEdit" name="textEdit"/>
-          </item>
-         </layout>
-        </widget>
        </widget>
       </item>
      </layout>
