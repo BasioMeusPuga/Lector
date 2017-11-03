@@ -1,0 +1,2 @@
+# Lector
+qt ebook reader
