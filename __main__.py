@@ -32,34 +32,30 @@ class MainUI(QtWidgets.QMainWindow, mainwindow.Ui_MainWindow):
         self.current_textEdit = None
         self.current_textEdit_parent = None
 
-        # Toolbar setup
+        # Book Toolbar
         self.BookToolBar.hide()
         fullscreenButton = QtWidgets.QAction(
             QtGui.QIcon.fromTheme('view-fullscreen'), 'Fullscreen', self)
         self.BookToolBar.addAction(fullscreenButton)
         fullscreenButton.triggered.connect(self.set_fullscreen)
 
-        # LibraryToolBar buttons
+        # Library Toolbar
         addButton = QtWidgets.QAction(QtGui.QIcon.fromTheme('add'), 'Add book', self)
         deleteButton = QtWidgets.QAction(QtGui.QIcon.fromTheme('remove'), 'Delete book', self)
         settingsButton = QtWidgets.QAction(QtGui.QIcon.fromTheme('settings'), 'Settings', self)
-        addButton.triggered.connect(self.create_tab_class)
+        addButton.triggered.connect(self.open_file)
+        settingsButton.triggered.connect(self.create_tab_class)
 
         self.LibraryToolBar.addAction(addButton)
         self.LibraryToolBar.addAction(deleteButton)
         self.LibraryToolBar.addSeparator()
         self.LibraryToolBar.addAction(settingsButton)
 
-        self.exit_shortcut = QtWidgets.QShortcut(QtGui.QKeySequence('Escape'), self.textEdit)
-        self.exit_shortcut.activated.connect(self.testfsoff)
-
         # Toolbar switching
         self.tabWidget.currentChanged.connect(self.toolbar_switch)
 
         # Tab closing
         self.tabWidget.tabCloseRequested.connect(self.close_tab_class)
-
-        self.pushButton.clicked.connect(self.testfs)
 
     def create_tab_class(self):
         # TODO
@@ -69,6 +65,14 @@ class MainUI(QtWidgets.QMainWindow, mainwindow.Ui_MainWindow):
             'information about': 'This tab'}
         this_tab = Tabs(self, 'TitleText')
         this_tab.create_tab()
+
+    def open_file(self):
+        # TODO
+        # Maybe expand this to traverse directories recursively
+        home_dir = os.path.expanduser('~')
+        my_file = QtWidgets.QFileDialog.getOpenFileNames(
+            self, 'Open file', home_dir, "eBooks (*.epub *.mobi *.txt)")
+        print(my_file[0])
 
     def close_tab_class(self, tab_index):
         this_tab = Tabs(self, None)
@@ -92,11 +96,13 @@ class MainUI(QtWidgets.QMainWindow, mainwindow.Ui_MainWindow):
 
         self.current_textEdit.setWindowFlags(QtCore.Qt.Window)
         self.current_textEdit.setWindowState(QtCore.Qt.WindowFullScreen)
+        self.hide()
         self.current_textEdit.show()
 
     def set_normalsize(self):
         self.current_textEdit.setWindowState(QtCore.Qt.WindowNoState)
         self.current_textEdit.setWindowFlags(QtCore.Qt.Widget)
+        self.show()
         self.current_textEdit.show()
 
 
@@ -121,7 +127,7 @@ class Tabs:
     def close_tab(self, tab_index):
         tab_title = self.parent_window.tabWidget.tabText(tab_index).replace('&', '')
         print(self.parent_window.tabs[tab_title])
-        # self.parent_window.tabWidget.removeTab(tab_index)
+        self.parent_window.tabWidget.removeTab(tab_index)
 
 
 def main():
