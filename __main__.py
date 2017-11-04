@@ -85,45 +85,19 @@ class MainUI(QtWidgets.QMainWindow, mainwindow.Ui_MainWindow):
     def set_fullscreen(self):
         self.current_tab = self.tabWidget.currentIndex()
         self.current_textEdit = self.tabWidget.widget(self.current_tab)
-        self.current_textEdit_parent = self.current_textEdit.parent()
-        print(self.current_textEdit_parent)
 
-        scr = QtGui.QGuiApplication.primaryScreen()
-        agm = QtGui.QScreen.availableGeometry(scr)
+        self.exit_shortcut = QtWidgets.QShortcut(
+            QtGui.QKeySequence('Escape'), self.current_textEdit)
+        self.exit_shortcut.activated.connect(self.set_normalsize)
 
-        self.current_textEdit.setParent(self)
-        self.current_textEdit.setGeometry(agm)
-        self.current_textEdit.showFullScreen()
-        self.showFullScreen()
+        self.current_textEdit.setWindowFlags(QtCore.Qt.Window)
+        self.current_textEdit.setWindowState(QtCore.Qt.WindowFullScreen)
+        self.current_textEdit.show()
 
     def set_normalsize(self):
-        # TODO
-        # Figure out how to restore the textEdit to its original parent
-        # self.current_textEdit.setParent(self.current_textEdit_parent)
-        # self.current_textEdit_parent.show()
-        print(self.current_textEdit_parent)
-        self.current_textEdit.setParent(self.current_textEdit_parent)
-        self.current_textEdit.showNormal()
-        self.showNormal()
-
-
-    def testfs(self):
-        self.textEdit.setWindowFlags(QtCore.Qt.Window)
-        self.textEdit.setWindowState(QtCore.Qt.WindowFullScreen)
-        self.textEdit.show()
-    
-    def testfsoff(self):
-        self.textEdit.setWindowState(QtCore.Qt.WindowNoState)
-        self.textEdit.setWindowFlags(QtCore.Qt.Widget)
-        self.textEdit.show()
-
-
-    # def set_fullscreen_te(self):
-
-
-
-
-
+        self.current_textEdit.setWindowState(QtCore.Qt.WindowNoState)
+        self.current_textEdit.setWindowFlags(QtCore.Qt.Widget)
+        self.current_textEdit.show()
 
 
 class Tabs:
