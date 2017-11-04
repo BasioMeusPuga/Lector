@@ -55,6 +55,8 @@ class MainUI(QtWidgets.QMainWindow, mainwindow.Ui_MainWindow):
         self.tabWidget.currentChanged.connect(self.toolbar_switch)
 
         # Tab closing
+        self.tabWidget.setTabsClosable(True)
+        self.tabWidget.tabBar().setTabButton(0, QtWidgets.QTabBar.RightSide, None)
         self.tabWidget.tabCloseRequested.connect(self.close_tab_class)
 
     def create_tab_class(self):
@@ -119,9 +121,7 @@ class Tabs:
         self.textEdit = QtWidgets.QTextEdit(self.tab)
         self.textEdit.setObjectName("textEdit")
         self.gridLayout.addWidget(self.textEdit, 0, 0, 1, 1)
-        self.parent_window.tabWidget.addTab(self.tab, "")
-        self.parent_window.tabWidget.setTabText(
-            self.parent_window.tabWidget.indexOf(self.tab), self.book_title)
+        self.parent_window.tabWidget.addTab(self.tab, self.book_title)
         self.textEdit.setText(','.join(dir(self.parent_window)))
 
     def close_tab(self, tab_index):
