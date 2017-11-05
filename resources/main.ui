@@ -31,7 +31,24 @@
          </attribute>
          <layout class="QGridLayout" name="gridLayout_2">
           <item row="0" column="0">
-           <layout class="QVBoxLayout" name="verticalLayout"/>
+           <layout class="QVBoxLayout" name="verticalLayout">
+            <item>
+             <widget class="QListView" name="listView">
+              <property name="editTriggers">
+               <set>QAbstractItemView::NoEditTriggers</set>
+              </property>
+              <property name="resizeMode">
+               <enum>QListView::Adjust</enum>
+              </property>
+              <property name="viewMode">
+               <enum>QListView::IconMode</enum>
+              </property>
+              <property name="uniformItemSizes">
+               <bool>true</bool>
+              </property>
+             </widget>
+            </item>
+           </layout>
           </item>
          </layout>
         </widget>

@@ -5,12 +5,17 @@
     Override the keypress event of the textedit
     Goodreads API: Ratings, Read, Recommendations
     Get ISBN using python-isbnlib
+    All ebooks should be returned as HTML
     Theming
+    Search bar in toolbar
     Pagination
     sqlite3 for storing metadata
+    sqlite3 for caching files open @ time of exit
+    sqlite3 for cover images cache
+    Information dialog widget
+    Check file hashes upon restart
     Drop down for TOC
     Recursive file addition
-    Get cover images
     Set context menu for definitions and the like
 """
 
@@ -45,6 +50,7 @@ class MainUI(QtWidgets.QMainWindow, mainwindow.Ui_MainWindow):
         settingsButton = QtWidgets.QAction(QtGui.QIcon.fromTheme('settings'), 'Settings', self)
         addButton.triggered.connect(self.open_file)
         settingsButton.triggered.connect(self.create_tab_class)
+        deleteButton.triggered.connect(self.populatelist)
 
         self.LibraryToolBar.addAction(addButton)
         self.LibraryToolBar.addAction(deleteButton)
@@ -58,6 +64,8 @@ class MainUI(QtWidgets.QMainWindow, mainwindow.Ui_MainWindow):
         self.tabWidget.setTabsClosable(True)
         self.tabWidget.tabBar().setTabButton(0, QtWidgets.QTabBar.RightSide, None)
         self.tabWidget.tabCloseRequested.connect(self.close_tab_class)
+
+        self.listView.doubleClicked.connect(self.listclick)
 
     def create_tab_class(self):
         # TODO
@@ -106,6 +114,41 @@ class MainUI(QtWidgets.QMainWindow, mainwindow.Ui_MainWindow):
         self.current_textEdit.setWindowFlags(QtCore.Qt.Widget)
         self.show()
         self.current_textEdit.show()
+
+    def populatelist(self):
+        self.listView.setWindowTitle('huh')
+
+        # The QlistView widget needs to be populated with a model that
+        # inherits from QStandardItemModel
+        model = QtGui.QStandardItemModel()
+
+        # Get the list of images from here
+        # Temp dir this out after getting the images from the
+        # database
+        my_dir = os.path.join(
+            os.path.dirname(os.path.realpath(__file__)), 'thumbnails')
+        image_list = [os.path.join(my_dir, i) for i in os.listdir('./thumbnails')]
+
+        # Generate image pixmap and then pass it to the widget
+        # as a QIcon
+        # Additional data can be set using an incrementing
+        # QtCore.Qt.UserRole
+        # QtCore.Qt.DisplayRole is the same as item.setText()
+        # The model is a single row and has no columns
+        for i in image_list:
+            img_pixmap = QtGui.QPixmap(i)
+            item = QtGui.QStandardItem(i.split('/')[-1:][0])
+            item.setData('Additional data for ' + i.split('/')[-1:][0], QtCore.Qt.UserRole)
+            item.setIcon(QtGui.QIcon(img_pixmap))
+            model.appendRow(item)
+        s = QtCore.QSize(200, 200)  # Set icon sizing here
+        self.listView.setIconSize(s)
+        self.listView.setModel(model)
+
+    def listclick(self, myindex):
+        # print('selected item index found at %s with data: %s' % (myindex.row(), myindex.data()))
+        index = self.listView.model().index(myindex.row(), 0)
+        print(self.listView.model().data(index, QtCore.Qt.UserRole))
 
 
 class Tabs:
