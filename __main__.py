@@ -8,13 +8,13 @@
     All ebooks should be returned as HTML
     Theming
     Search bar in toolbar
+    Drop down for SortBy (library view) / TOC (book view)
     Pagination
     sqlite3 for storing metadata
     sqlite3 for caching files open @ time of exit
     sqlite3 for cover images cache
     Information dialog widget
     Check file hashes upon restart
-    Drop down for TOC
     Recursive file addition
     Set context menu for definitions and the like
 """
@@ -24,6 +24,7 @@ import sys
 
 from PyQt5 import QtWidgets, QtGui, QtCore
 import mainwindow
+import database
 
 
 class MainUI(QtWidgets.QMainWindow, mainwindow.Ui_MainWindow):
@@ -31,31 +32,15 @@ class MainUI(QtWidgets.QMainWindow, mainwindow.Ui_MainWindow):
         super(self.__class__, self).__init__()
         self.setupUi(self)
 
+        # Initialize application
+        Database(self)
+        Settings(self).read_settings()
+        Toolbars(self)
+
         # New tabs and their contents
         self.tabs = {}
         self.current_tab = None
         self.current_textEdit = None
-        self.current_textEdit_parent = None
-
-        # Book Toolbar
-        self.BookToolBar.hide()
-        fullscreenButton = QtWidgets.QAction(
-            QtGui.QIcon.fromTheme('view-fullscreen'), 'Fullscreen', self)
-        self.BookToolBar.addAction(fullscreenButton)
-        fullscreenButton.triggered.connect(self.set_fullscreen)
-
-        # Library Toolbar
-        addButton = QtWidgets.QAction(QtGui.QIcon.fromTheme('add'), 'Add book', self)
-        deleteButton = QtWidgets.QAction(QtGui.QIcon.fromTheme('remove'), 'Delete book', self)
-        settingsButton = QtWidgets.QAction(QtGui.QIcon.fromTheme('settings'), 'Settings', self)
-        addButton.triggered.connect(self.open_file)
-        settingsButton.triggered.connect(self.create_tab_class)
-        deleteButton.triggered.connect(self.populatelist)
-
-        self.LibraryToolBar.addAction(addButton)
-        self.LibraryToolBar.addAction(deleteButton)
-        self.LibraryToolBar.addSeparator()
-        self.LibraryToolBar.addAction(settingsButton)
 
         # Toolbar switching
         self.tabWidget.currentChanged.connect(self.toolbar_switch)
@@ -137,7 +122,8 @@ class MainUI(QtWidgets.QMainWindow, mainwindow.Ui_MainWindow):
         # The model is a single row and has no columns
         for i in image_list:
             img_pixmap = QtGui.QPixmap(i)
-            item = QtGui.QStandardItem(i.split('/')[-1:][0])
+            # item = QtGui.QStandardItem(i.split('/')[-1:][0][:-4])
+            item = QtGui.QStandardItem()
             item.setData('Additional data for ' + i.split('/')[-1:][0], QtCore.Qt.UserRole)
             item.setIcon(QtGui.QIcon(img_pixmap))
             model.appendRow(item)
@@ -149,6 +135,69 @@ class MainUI(QtWidgets.QMainWindow, mainwindow.Ui_MainWindow):
         # print('selected item index found at %s with data: %s' % (myindex.row(), myindex.data()))
         index = self.listView.model().index(myindex.row(), 0)
         print(self.listView.model().data(index, QtCore.Qt.UserRole))
+        self.listView.setSpacing(10)
+
+    def closeEvent(self, event):
+        Settings(self).save_settings()
+
+
+class Settings:
+    def __init__(self, parent):
+        self.parent_window = parent
+        self.settings = QtCore.QSettings('Lector', 'Lector')
+
+    def read_settings(self):
+        self.settings.beginGroup('mainWindow')
+        self.parent_window.resize(self.settings.value(
+            'windowSize',
+            QtCore.QSize(1299, 748)))
+        self.parent_window.move(self.settings.value(
+            'windowPosition',
+            QtCore.QPoint(286, 141)))
+        self.settings.endGroup()
+
+    def save_settings(self):
+        self.settings.beginGroup('mainWindow')
+        self.settings.setValue('windowSize', self.parent_window.size())
+        self.settings.setValue('windowPosition', self.parent_window.pos())
+        self.settings.endGroup()
+
+
+class Toolbars:
+    # TODO
+    # Inheritances so that this self.parent_window.
+    # bullshit can be removed
+    def __init__(self, parent):
+        self.parent_window = parent
+        self.parent_window.BookToolBar.hide()
+        self.create_toolbars()
+
+    def create_toolbars(self):
+         # Book Toolbar
+        fullscreenButton = QtWidgets.QAction(
+            QtGui.QIcon.fromTheme('view-fullscreen'), 'Fullscreen', self.parent_window)
+
+        self.parent_window.BookToolBar.addAction(fullscreenButton)
+        self.parent_window.BookToolBar.setIconSize(QtCore.QSize(22, 22))
+
+        fullscreenButton.triggered.connect(self.parent_window.set_fullscreen)
+
+        # Library Toolbar
+        addButton = QtWidgets.QAction(
+            QtGui.QIcon.fromTheme('add'), 'Add book', self.parent_window)
+        deleteButton = QtWidgets.QAction(
+            QtGui.QIcon.fromTheme('remove'), 'Delete book', self.parent_window)
+        settingsButton = QtWidgets.QAction(
+            QtGui.QIcon.fromTheme('settings'), 'Settings', self.parent_window)
+
+        addButton.triggered.connect(self.parent_window.open_file)
+        settingsButton.triggered.connect(self.parent_window.create_tab_class)
+        deleteButton.triggered.connect(self.parent_window.populatelist)
+
+        self.parent_window.LibraryToolBar.addAction(addButton)
+        self.parent_window.LibraryToolBar.addAction(deleteButton)
+        self.parent_window.LibraryToolBar.addSeparator()
+        self.parent_window.LibraryToolBar.addAction(settingsButton)
 
 
 class Tabs:
@@ -163,6 +212,7 @@ class Tabs:
         self.gridLayout.setObjectName("gridLayout")
         self.textEdit = QtWidgets.QTextEdit(self.tab)
         self.textEdit.setObjectName("textEdit")
+        self.textEdit.setFrameShape(QtWidgets.QFrame.NoFrame)
         self.gridLayout.addWidget(self.textEdit, 0, 0, 1, 1)
         self.parent_window.tabWidget.addTab(self.tab, self.book_title)
         self.textEdit.setText(','.join(dir(self.parent_window)))
@@ -173,8 +223,18 @@ class Tabs:
         self.parent_window.tabWidget.removeTab(tab_index)
 
 
+class Database:
+    def __init__(self, parent):
+        self.parent_window = parent
+        self.database_path = QtCore.QStandardPaths.writableLocation(
+            QtCore.QStandardPaths.AppDataLocation)
+        self.db = database.DatabaseFunctions(self.database_path)
+
+
 def main():
     app = QtWidgets.QApplication(sys.argv)
+    app.setApplicationName('Lector')  # This is needed for QStandardPaths
+                                      # and my own hubris
     form = MainUI()
     form.show()
     app.exec_()

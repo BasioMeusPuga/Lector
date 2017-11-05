@@ -34,16 +34,37 @@
            <layout class="QVBoxLayout" name="verticalLayout">
             <item>
              <widget class="QListView" name="listView">
+              <property name="frameShape">
+               <enum>QFrame::NoFrame</enum>
+              </property>
               <property name="editTriggers">
                <set>QAbstractItemView::NoEditTriggers</set>
               </property>
+              <property name="showDropIndicator" stdset="0">
+               <bool>false</bool>
+              </property>
+              <property name="selectionMode">
+               <enum>QAbstractItemView::ExtendedSelection</enum>
+              </property>
+              <property name="movement">
+               <enum>QListView::Static</enum>
+              </property>
               <property name="resizeMode">
                <enum>QListView::Adjust</enum>
+              </property>
+              <property name="layoutMode">
+               <enum>QListView::Batched</enum>
+              </property>
+              <property name="spacing">
+               <number>0</number>
               </property>
               <property name="viewMode">
                <enum>QListView::IconMode</enum>
               </property>
               <property name="uniformItemSizes">
+               <bool>true</bool>
+              </property>
+              <property name="wordWrap">
                <bool>true</bool>
               </property>
              </widget>
