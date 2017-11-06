@@ -17,7 +17,7 @@ class DatabaseFunctions:
     def create_database(self):
         self.database.execute(
             "CREATE TABLE books \
-            (id INTEGER PRIMARY KEY, Name TEXT, Path TEXT, ISBN TEXT, CoverImage BLOB)")
+            (id INTEGER PRIMARY KEY, Name TEXT, Path TEXT, ISBN TEXT, Tags TEXT, CoverImage BLOB)")
         self.database.execute(
             "CREATE TABLE cache \
             (id INTEGER PRIMARY KEY, Name TEXT, Path TEXT, CachedDict BLOB)")
@@ -25,6 +25,6 @@ class DatabaseFunctions:
         # database at time of closing
 
         self.database.commit()
-    
+
     def add_to_database(self, book_data, image_data):
         pass

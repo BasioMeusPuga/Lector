@@ -26,6 +26,7 @@ import sys
 from PyQt5 import QtWidgets, QtGui, QtCore
 import mainwindow
 import database
+import parser
 
 
 class MainUI(QtWidgets.QMainWindow, mainwindow.Ui_MainWindow):
@@ -65,10 +66,13 @@ class MainUI(QtWidgets.QMainWindow, mainwindow.Ui_MainWindow):
     def open_file(self):
         # TODO
         # Maybe expand this to traverse directories recursively
-        home_dir = os.path.expanduser('~')
         my_file = QtWidgets.QFileDialog.getOpenFileNames(
-            self, 'Open file', home_dir, "eBooks (*.epub *.mobi *.txt)")
-        print(my_file[0])
+            self, 'Open file', self.last_open_path, "eBooks (*.epub *.mobi *.txt)")
+        if my_file[0]:
+            self.last_open_path = os.path.dirname(my_file[0][0])
+            print(self.last_open_path)
+            books = parser.BookSorter(my_file[0])
+            books.add_to_database()
 
     def close_tab_class(self, tab_index):
         this_tab = Tabs(self, None)
@@ -157,10 +161,20 @@ class Settings:
             QtCore.QPoint(286, 141)))
         self.settings.endGroup()
 
+        self.settings.beginGroup('path')
+        self.parent_window.last_open_path = self.settings.value(
+            'path', os.path.expanduser('~'))
+        print(self.parent_window.last_open_path)
+        self.settings.endGroup()
+
     def save_settings(self):
         self.settings.beginGroup('mainWindow')
         self.settings.setValue('windowSize', self.parent_window.size())
         self.settings.setValue('windowPosition', self.parent_window.pos())
+        self.settings.endGroup()
+
+        self.settings.beginGroup('lastOpen')
+        self.settings.setValue('path', self.parent_window.last_open_path)
         self.settings.endGroup()
 
 
