@@ -2,16 +2,22 @@
 
 import os
 import re
-import collections
+import hashlib
+from multiprocessing.dummy import Pool
+
 import ebooklib.epub
 
 
 class ParseEPUB:
     def __init__(self, filename):
+        # TODO
+        # Maybe also include book description
         self.filename = filename
-        self.book_title = None
+        self.book = None
+
+    def read_epub(self):
         try:
-            self.book = ebooklib.epub.read_epub(filename)
+            self.book = ebooklib.epub.read_epub(self.filename)
         except (KeyError, AttributeError):
             print('Cannot parse ' + self.filename)
             return
@@ -20,6 +26,11 @@ class ParseEPUB:
         return self.book.title.strip()
 
     def get_cover_image(self):
+        # TODO
+        # Generate a cover image in case one isn't found
+        # This has to be done or the database module will
+        # error out
+
         # Get cover image
         # This seems hack-ish, but that's never stopped me before
         image_path = None
@@ -59,7 +70,6 @@ class ParseEPUB:
             return image_content
 
         except KeyError:
-            print('Cannot parse ' + self.filename)
             return
 
     def get_isbn(self):
@@ -83,13 +93,39 @@ class BookSorter:
         # Parsing for the reader proper
         # Caching upon closing
         self.file_list = file_list
+        self.all_books = {}
 
-    def add_to_database(self):
-        # Consider multithreading this
-        for i in self.file_list:
-            book_ref = ParseEPUB(i)
+    def read_book(self, filename):
+        # filename is expected as a string containg the
+        # full path of the ebook file
+
+        # TODO
+        # See if you want to include a hash of the book's name and author
+        with open(filename, 'rb') as current_book:
+            file_md5 = hashlib.md5(current_book.read()).hexdigest()
+
+        if file_md5 in self.all_books.items():
+            return
+
+        # TODO
+        # See if tags can be generated from book content
+        book_ref = ParseEPUB(filename)
+        book_ref.read_epub()
+        if book_ref.book:
             title = book_ref.get_title()
             cover_image = book_ref.get_cover_image()
             isbn = book_ref.get_isbn()
 
-            print(title, isbn)
+            self.all_books[file_md5] = {
+                'title': title,
+                'isbn': isbn,
+                'path': filename,
+                'cover_image': cover_image}
+
+    def initiate_threads(self):
+        _pool = Pool(5)
+        _pool.map(self.read_book, self.file_list)
+        _pool.close()
+        _pool.join()
+
+        return self.all_books

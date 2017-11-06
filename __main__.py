@@ -24,9 +24,10 @@ import os
 import sys
 
 from PyQt5 import QtWidgets, QtGui, QtCore
+
+import book_parser
 import mainwindow
 import database
-import parser
 
 
 class MainUI(QtWidgets.QMainWindow, mainwindow.Ui_MainWindow):
@@ -35,8 +36,9 @@ class MainUI(QtWidgets.QMainWindow, mainwindow.Ui_MainWindow):
         self.setupUi(self)
 
         # Initialize application
-        Database(self)
-        Settings(self).read_settings()
+        Settings(self).read_settings()  # This should populate all variables that need
+                                        # to be remembered across sessions
+        database.DatabaseInit(self.database_path)
         Toolbars(self)
 
         # New tabs and their contents
@@ -52,7 +54,14 @@ class MainUI(QtWidgets.QMainWindow, mainwindow.Ui_MainWindow):
         self.tabWidget.tabBar().setTabButton(0, QtWidgets.QTabBar.RightSide, None)
         self.tabWidget.tabCloseRequested.connect(self.close_tab_class)
 
+        # ListView
+        self.listView.setSpacing(10)
+        self.reload_listview()
         self.listView.doubleClicked.connect(self.listclick)
+
+        # Keyboard shortcuts
+        self.exit_all = QtWidgets.QShortcut(QtGui.QKeySequence('Ctrl+Q'), self)
+        self.exit_all.activated.connect(QtWidgets.qApp.exit)
 
     def create_tab_class(self):
         # TODO
@@ -70,9 +79,14 @@ class MainUI(QtWidgets.QMainWindow, mainwindow.Ui_MainWindow):
             self, 'Open file', self.last_open_path, "eBooks (*.epub *.mobi *.txt)")
         if my_file[0]:
             self.last_open_path = os.path.dirname(my_file[0][0])
-            print(self.last_open_path)
-            books = parser.BookSorter(my_file[0])
-            books.add_to_database()
+            books = book_parser.BookSorter(my_file[0])
+            parsed_books = books.initiate_threads()
+            database.DatabaseFunctions(self.database_path).add_to_database(parsed_books)
+            self.reload_listview()
+
+    def reload_listview(self):
+        lib_ref = Library(self)
+        lib_ref.load_listView()
 
     def close_tab_class(self, tab_index):
         this_tab = Tabs(self, None)
@@ -105,45 +119,69 @@ class MainUI(QtWidgets.QMainWindow, mainwindow.Ui_MainWindow):
         self.show()
         self.current_textEdit.show()
 
-    def populatelist(self):
-        self.listView.setWindowTitle('huh')
-
-        # The QlistView widget needs to be populated 
-        # with a model that inherits from QStandardItemModel
-        model = QtGui.QStandardItemModel()
-
-        # Get the list of images from here
-        # Temp dir this out after getting the images from the
-        # database
-        my_dir = os.path.join(
-            os.path.dirname(os.path.realpath(__file__)), 'thumbnails')
-        image_list = [os.path.join(my_dir, i) for i in os.listdir('./thumbnails')]
-
-        # Generate image pixmap and then pass it to the widget
-        # as a QIcon
-        # Additional data can be set using an incrementing
-        # QtCore.Qt.UserRole
-        # QtCore.Qt.DisplayRole is the same as item.setText()
-        # The model is a single row and has no columns
-        for i in image_list:
-            img_pixmap = QtGui.QPixmap(i)
-            # item = QtGui.QStandardItem(i.split('/')[-1:][0][:-4])
-            item = QtGui.QStandardItem()
-            item.setData('Additional data for ' + i.split('/')[-1:][0], QtCore.Qt.UserRole)
-            item.setIcon(QtGui.QIcon(img_pixmap))
-            model.appendRow(item)
-        s = QtCore.QSize(200, 200)  # Set icon sizing here
-        self.listView.setIconSize(s)
-        self.listView.setModel(model)
-
     def listclick(self, myindex):
         # print('selected item index found at %s with data: %s' % (myindex.row(), myindex.data()))
         index = self.listView.model().index(myindex.row(), 0)
         print(self.listView.model().data(index, QtCore.Qt.UserRole))
-        self.listView.setSpacing(10)
 
     def closeEvent(self, event):
         Settings(self).save_settings()
+
+
+class Library:
+    def __init__(self, parent):
+        self.parent_window = parent
+
+    def load_listView(self):
+        # TODO
+        # Make this take hints from the SortBy dropdown, the FilterBy lineEdit
+        # and the fetch_data method in the database module
+        # The rest of it is just refreshing the listview
+
+        # The QlistView widget needs to be populated
+        # with a model that inherits from QStandardItemModel
+        model = QtGui.QStandardItemModel()
+
+        books = database.DatabaseFunctions(
+            self.parent_window.database_path).fetch_data(
+                ('*',),
+                'books',
+                {'Title': ''},
+                'LIKE')
+
+        if not books:
+            print('Database returned nothing')
+            return
+
+        # The database query returns a tuple with the following indices
+        # Index 0 is the key ID is is ignored
+        for i in books:
+
+            book_title = i[1]
+            book_cover = i[6]
+            additional_data = {
+                'book_path': i[2],
+                'book_isbn': i[3],
+                'book_tags': i[4],
+                'book_hash': i[5]}
+
+            # Generate image pixmap and then pass it to the widget
+            # as a QIcon
+            # Additional data can be set using an incrementing
+            # QtCore.Qt.UserRole
+            # QtCore.Qt.DisplayRole is the same as item.setText()
+            # The model is a single row and has no columns
+
+            img_pixmap = QtGui.QPixmap()
+            img_pixmap.loadFromData(book_cover)
+            item = QtGui.QStandardItem(book_title)
+            item.setData(additional_data, QtCore.Qt.UserRole)
+            item.setIcon(QtGui.QIcon(img_pixmap))
+            model.appendRow(item)
+
+        s = QtCore.QSize(200, 200)  # Set icon sizing here
+        self.parent_window.listView.setIconSize(s)
+        self.parent_window.listView.setModel(model)
 
 
 class Settings:
@@ -161,10 +199,12 @@ class Settings:
             QtCore.QPoint(286, 141)))
         self.settings.endGroup()
 
-        self.settings.beginGroup('path')
+        self.settings.beginGroup('runtimeVariables')
         self.parent_window.last_open_path = self.settings.value(
-            'path', os.path.expanduser('~'))
-        print(self.parent_window.last_open_path)
+            'lastOpenPath', os.path.expanduser('~'))
+        self.parent_window.database_path = self.settings.value(
+            'databasePath',
+            QtCore.QStandardPaths.writableLocation(QtCore.QStandardPaths.AppDataLocation))
         self.settings.endGroup()
 
     def save_settings(self):
@@ -173,8 +213,9 @@ class Settings:
         self.settings.setValue('windowPosition', self.parent_window.pos())
         self.settings.endGroup()
 
-        self.settings.beginGroup('lastOpen')
-        self.settings.setValue('path', self.parent_window.last_open_path)
+        self.settings.beginGroup('runtimeVariables')
+        self.settings.setValue('lastOpenPath', self.parent_window.last_open_path)
+        self.settings.setValue('databasePath', self.parent_window.database_path)
         self.settings.endGroup()
 
 
@@ -207,7 +248,7 @@ class Toolbars:
 
         addButton.triggered.connect(self.parent_window.open_file)
         settingsButton.triggered.connect(self.parent_window.create_tab_class)
-        deleteButton.triggered.connect(self.parent_window.populatelist)
+        deleteButton.triggered.connect(self.parent_window.reload_listview)
 
         self.parent_window.LibraryToolBar.addAction(addButton)
         self.parent_window.LibraryToolBar.addAction(deleteButton)
@@ -236,15 +277,6 @@ class Tabs:
         tab_title = self.parent_window.tabWidget.tabText(tab_index).replace('&', '')
         print(self.parent_window.tabs[tab_title])
         self.parent_window.tabWidget.removeTab(tab_index)
-
-
-class Database:
-    # This is maybe, possibly, redundant
-    def __init__(self, parent):
-        self.parent_window = parent
-        self.database_path = QtCore.QStandardPaths.writableLocation(
-            QtCore.QStandardPaths.AppDataLocation)
-        self.db = database.DatabaseFunctions(self.database_path)
 
 
 def main():
