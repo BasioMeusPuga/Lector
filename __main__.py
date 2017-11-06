@@ -13,6 +13,7 @@
     sqlite3 for storing metadata
     sqlite3 for caching files open @ time of exit
     sqlite3 for cover images cache
+    Use format* icons for toolbar buttons
     Information dialog widget
     Check file hashes upon restart
     Recursive file addition
@@ -103,8 +104,8 @@ class MainUI(QtWidgets.QMainWindow, mainwindow.Ui_MainWindow):
     def populatelist(self):
         self.listView.setWindowTitle('huh')
 
-        # The QlistView widget needs to be populated with a model that
-        # inherits from QStandardItemModel
+        # The QlistView widget needs to be populated 
+        # with a model that inherits from QStandardItemModel
         model = QtGui.QStandardItemModel()
 
         # Get the list of images from here
@@ -224,6 +225,7 @@ class Tabs:
 
 
 class Database:
+    # This is maybe, possibly, redundant
     def __init__(self, parent):
         self.parent_window = parent
         self.database_path = QtCore.QStandardPaths.writableLocation(

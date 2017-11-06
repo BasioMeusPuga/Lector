@@ -18,4 +18,10 @@ class DatabaseFunctions:
         self.database.execute(
             "CREATE TABLE books \
             (id INTEGER PRIMARY KEY, Name TEXT, Path TEXT, ISBN TEXT, CoverImage BLOB)")
+        self.database.execute(
+            "CREATE TABLE cache \
+            (id INTEGER PRIMARY KEY, Name TEXT, Path TEXT, CachedDict BLOB)")
+        # It's assumed that any cached books will be pickled and put into the
+        # database at time of closing
+
         self.database.commit()
