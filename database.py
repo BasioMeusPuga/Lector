@@ -25,3 +25,6 @@ class DatabaseFunctions:
         # database at time of closing
 
         self.database.commit()
+    
+    def add_to_database(self, book_data, image_data):
+        pass
