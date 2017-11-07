@@ -27,12 +27,13 @@ import sys
 
 from PyQt5 import QtWidgets, QtGui, QtCore
 
-import book_parser
 import mainwindow
 import database
+import book_parser
 
 
 class MainUI(QtWidgets.QMainWindow, mainwindow.Ui_MainWindow):
+    #pylint: disable-msg=E1101
     def __init__(self):
         super(self.__class__, self).__init__()
         self.setupUi(self)
@@ -41,9 +42,10 @@ class MainUI(QtWidgets.QMainWindow, mainwindow.Ui_MainWindow):
         Settings(self).read_settings()  # This should populate all variables that need
                                         # to be remembered across sessions
         Toolbars(self)
-        # This is an ugly ugly hack
+        # This is an ugly hack?
         # I can't seem to access the Qcombobox the usual way
-        self.librarySortingBox = self.LibraryToolBar.children()[-1:][0]
+        self.librarySortingBox = self.LibraryToolBar.findChild(QtWidgets.QComboBox)
+        self.libraryFilterEdit = self.LibraryToolBar.findChild(QtWidgets.QLineEdit)
 
         database.DatabaseInit(self.database_path)
 
@@ -164,7 +166,7 @@ class Library:
 
     def load_listView(self):
         # TODO
-        # The rest of it is just refreshing the listview
+        # Use QItemdelegates to show book read progress
 
         # The QlistView widget needs to be populated
         # with a model that inherits from QStandardItemModel
@@ -297,14 +299,27 @@ class Toolbars:
         sortingBox.setToolTip('Sort by')
         sortingBox.activated.connect(self.parent_window.reload_listview)
 
+        # Filter
+        filterEdit = QtWidgets.QLineEdit()
+        filterEdit.setPlaceholderText('Filter by...')
+        sizePolicy = QtWidgets.QSizePolicy(
+            QtWidgets.QSizePolicy.MinimumExpanding, QtWidgets.QSizePolicy.Fixed)
+        filterEdit.setSizePolicy(sizePolicy)
+        filterEdit.setContentsMargins(200, 0, 200, 0)
+        filterEdit.setMinimumWidth(150)
+        filterEdit.returnPressed.connect(self.parent_window.reload_listview)
+
         # Spacer
         spacer = QtWidgets.QWidget()
         spacer.setSizePolicy(QtWidgets.QSizePolicy.Expanding, QtWidgets.QSizePolicy.Expanding)
 
+        # Add widgets to toolbar
         self.parent_window.LibraryToolBar.addAction(addButton)
         self.parent_window.LibraryToolBar.addAction(deleteButton)
         self.parent_window.LibraryToolBar.addSeparator()
         self.parent_window.LibraryToolBar.addAction(settingsButton)
+        self.parent_window.LibraryToolBar.addWidget(spacer)
+        self.parent_window.LibraryToolBar.addWidget(filterEdit)
         self.parent_window.LibraryToolBar.addWidget(spacer)
         self.parent_window.LibraryToolBar.addWidget(sortingBox)
 
