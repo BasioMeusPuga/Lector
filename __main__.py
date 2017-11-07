@@ -7,7 +7,7 @@
     ✓ Define every widget in code because you're going to need to create separate tabs
     ✓ Override the keypress event of the textedit
     ✓ Search bar in toolbar
-    
+
     Goodreads API: Ratings, Read, Recommendations
     Get ISBN using python-isbnlib
     All ebooks should be returned as HTML
@@ -74,7 +74,7 @@ class MainUI(QtWidgets.QMainWindow, mainwindow.Ui_MainWindow):
         # ListView
         self.listView.setSpacing(15)
         self.reload_listview()
-        self.listView.doubleClicked.connect(self.listclick)
+        self.listView.doubleClicked.connect(self.list_doubleclick)
 
         # Keyboard shortcuts
         self.exit_all = QtWidgets.QShortcut(QtGui.QKeySequence('Ctrl+Q'), self)
@@ -86,8 +86,7 @@ class MainUI(QtWidgets.QMainWindow, mainwindow.Ui_MainWindow):
         # a new one
         self.tabs['TitleText'] = {
             'information about': 'This tab'}
-        this_tab = Tabs(self, 'TitleText')
-        this_tab.create_tab()
+        
 
     def add_books(self):
         # TODO
@@ -166,9 +165,14 @@ class MainUI(QtWidgets.QMainWindow, mainwindow.Ui_MainWindow):
         self.show()
         self.current_textEdit.show()
 
-    def listclick(self, myindex):
+    def list_doubleclick(self, myindex):
+        # TODO
+        # Shift focus to a currently open tab in case that is needed
+        # Load the book. The Tabber class should handle this
         index = self.listView.model().index(myindex.row(), 0)
-        print(self.listView.model().data(index, QtCore.Qt.UserRole))
+        book_metadata = self.listView.model().data(index, QtCore.Qt.UserRole + 3)
+        tab_ref = Tabs(self, book_metadata)
+        tab_ref.create_tab()
 
     def closeEvent(self, event):
         Settings(self).save_settings()
@@ -209,10 +213,13 @@ class Library:
             book_year = i[3]
             book_cover = i[8]
             book_tags = i[6]
-            additional_data = {
+            all_metadata = {
                 'book_title': i[1],
+                'book_author': i[2],
+                'book_year': i[3],
                 'book_path': i[4],
                 'book_isbn': i[5],
+                'book_tags': i[6],
                 'book_hash': i[7]}
 
             tooltip_string = book_title + '\nAuthor: ' + book_author + '\nYear: ' + str(book_year)
@@ -233,13 +240,13 @@ class Library:
             # The model is a single row and has no columns
             img_pixmap = QtGui.QPixmap()
             img_pixmap.loadFromData(book_cover)
-            img_pixmap = img_pixmap.scaled(410, 600, QtCore.Qt.IgnoreAspectRatio)
+            img_pixmap = img_pixmap.scaled(450, 600, QtCore.Qt.IgnoreAspectRatio)
             item = QtGui.QStandardItem()
             item.setToolTip(tooltip_string)
             item.setData(book_title, QtCore.Qt.UserRole)
             item.setData(book_author, QtCore.Qt.UserRole + 1)
             item.setData(book_year, QtCore.Qt.UserRole + 2)
-            item.setData(additional_data, QtCore.Qt.UserRole + 3)
+            item.setData(all_metadata, QtCore.Qt.UserRole + 3)
             item.setData(search_workaround, QtCore.Qt.UserRole + 4)
             item.setIcon(QtGui.QIcon(img_pixmap))
             self.parent_window.viewModel.appendRow(item)
@@ -259,7 +266,7 @@ class Library:
             QtCore.Qt.UserRole + self.parent_window.librarySortingBox.currentIndex())
         proxy_model.sort(0)
 
-        s = QtCore.QSize(250, 250)  # Set icon sizing here
+        s = QtCore.QSize(160, 250)  # Set icon sizing here
         self.parent_window.listView.setIconSize(s)
         self.parent_window.listView.setModel(proxy_model)
 
@@ -364,11 +371,19 @@ class Toolbars:
 
 
 class Tabs:
-    def __init__(self, parent, book_title):
+    def __init__(self, parent, book_metadata):
         self.parent_window = parent
-        self.book_title = book_title
+        self.book_metadata = book_metadata
 
     def create_tab(self):
+        # TODO
+        # The display widget will probably have to be shifted to something else
+        # A horizontal slider to control flow
+        # Keyboard shortcuts
+
+        book_title = self.book_metadata['book_title']
+        book_path = self.book_metadata['book_path']
+
         self.tab = QtWidgets.QWidget()
         self.tab.setObjectName("newtab")
         self.gridLayout = QtWidgets.QGridLayout(self.tab)
@@ -377,12 +392,12 @@ class Tabs:
         self.textEdit.setObjectName("textEdit")
         self.textEdit.setFrameShape(QtWidgets.QFrame.NoFrame)
         self.gridLayout.addWidget(self.textEdit, 0, 0, 1, 1)
-        self.parent_window.tabWidget.addTab(self.tab, self.book_title)
-        self.textEdit.setText(','.join(dir(self.parent_window)))
+        self.parent_window.tabWidget.addTab(self.tab, book_title)
+        self.textEdit.setText(book_path)
 
     def close_tab(self, tab_index):
         tab_title = self.parent_window.tabWidget.tabText(tab_index).replace('&', '')
-        print(self.parent_window.tabs[tab_title])
+        # print(self.parent_window.tabs[tab_title])
         self.parent_window.tabWidget.removeTab(tab_index)
 
 
