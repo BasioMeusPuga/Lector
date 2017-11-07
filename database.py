@@ -121,3 +121,12 @@ class DatabaseFunctions:
         # except sqlite3.OperationalError:
         except KeyError:
             print('SQLite is in rebellion, Commander')
+
+    def delete_from_database(self, file_hashes):
+        # file_hashes is expected as a list that will be iterated upon
+        # This should enable multiple deletion
+
+        for i in file_hashes:
+            self.database.execute(
+                f"DELETE FROM books WHERE Hash = '{i}'")
+        self.database.commit()

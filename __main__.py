@@ -1,18 +1,20 @@
 #!/usr/bin/env python3
 
 """ TODO
-    Define every widget in code because you're going to need to create separate tabs
-    Override the keypress event of the textedit
+    ✓ sqlite3 for cover images cache
+    ✓ sqlite3 for storing metadata
+    ✓ Drop down for SortBy (library view)
+    ✓ Define every widget in code because you're going to need to create separate tabs
+    ✓ Override the keypress event of the textedit
+
     Goodreads API: Ratings, Read, Recommendations
     Get ISBN using python-isbnlib
     All ebooks should be returned as HTML
     Theming
     Search bar in toolbar
-    Drop down for SortBy (library view) / TOC (book view)
+    Drop down for TOC (book view)
     Pagination
-    sqlite3 for storing metadata
     sqlite3 for caching files open @ time of exit
-    sqlite3 for cover images cache
     Use format* icons for toolbar buttons
     Information dialog widget
     Check file hashes upon restart
@@ -39,8 +41,8 @@ class MainUI(QtWidgets.QMainWindow, mainwindow.Ui_MainWindow):
         Settings(self).read_settings()  # This should populate all variables that need
                                         # to be remembered across sessions
         Toolbars(self)
-        # I don't know why this is needed
-        # I can't access the Qcombobox any other way
+        # This is an ugly ugly hack
+        # I can't seem to access the Qcombobox the usual way
         self.librarySortingBox = self.LibraryToolBar.children()[-1:][0]
 
         database.DatabaseInit(self.database_path)
@@ -59,7 +61,7 @@ class MainUI(QtWidgets.QMainWindow, mainwindow.Ui_MainWindow):
         self.tabWidget.tabCloseRequested.connect(self.close_tab_class)
 
         # ListView
-        self.listView.setSpacing(10)
+        self.listView.setSpacing(15)
         self.reload_listview()
         self.listView.doubleClicked.connect(self.listclick)
 
@@ -87,6 +89,31 @@ class MainUI(QtWidgets.QMainWindow, mainwindow.Ui_MainWindow):
             parsed_books = books.initiate_threads()
             database.DatabaseFunctions(self.database_path).add_to_database(parsed_books)
             self.reload_listview()
+
+    def delete_books(self):
+        selected_books = self.listView.selectedIndexes()
+        if selected_books:
+            def ifcontinue(box_button):
+                if box_button.text() == '&Yes':
+                    selected_hashes = []
+                    for i in selected_books:
+                        book_row = i.row()
+                        book_data = i.data(QtCore.Qt.UserRole)
+                        selected_hashes.append(book_data['book_hash'])
+                        self.listView.model().removeRow(book_row)
+                    database.DatabaseFunctions(
+                        self.database_path).delete_from_database(selected_hashes)
+
+            selected_number = len(selected_books)
+            msg_box = QtWidgets.QMessageBox()
+            msg_box.setText(f'Delete {selected_number} book(s)?')
+            msg_box.setIcon(QtWidgets.QMessageBox.Question)
+            msg_box.setWindowTitle('Confirm deletion')
+            msg_box.setStandardButtons(
+                QtWidgets.QMessageBox.Yes | QtWidgets.QMessageBox.No)
+            msg_box.buttonClicked.connect(ifcontinue)
+            msg_box.show()
+            msg_box.exec_()
 
     def reload_listview(self):
         lib_ref = Library(self)
@@ -169,6 +196,7 @@ class Library:
             book_cover = i[8]
             book_tags = i[6]
             additional_data = {
+                'book_title': i[1],
                 'book_path': i[4],
                 'book_isbn': i[5],
                 'book_hash': i[7]}
@@ -259,7 +287,7 @@ class Toolbars:
 
         addButton.triggered.connect(self.parent_window.open_file)
         settingsButton.triggered.connect(self.parent_window.create_tab_class)
-        deleteButton.triggered.connect(self.parent_window.reload_listview)
+        deleteButton.triggered.connect(self.parent_window.delete_books)
 
         # Sorter
         sorting_choices = ['Title', 'Author', 'Year']
@@ -277,7 +305,6 @@ class Toolbars:
         self.parent_window.LibraryToolBar.addAction(deleteButton)
         self.parent_window.LibraryToolBar.addSeparator()
         self.parent_window.LibraryToolBar.addAction(settingsButton)
-        self.parent_window.LibraryToolBar.addSeparator()
         self.parent_window.LibraryToolBar.addWidget(spacer)
         self.parent_window.LibraryToolBar.addWidget(sortingBox)
 
