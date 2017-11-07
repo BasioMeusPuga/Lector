@@ -53,6 +53,11 @@ class MainUI(QtWidgets.QMainWindow, mainwindow.Ui_MainWindow):
         self.lib_ref = Library(self)
         self.viewModel = None
 
+        # Right align everything in the statusbar
+        self.statusMessage = QtWidgets.QLabel()
+        self.statusMessage.setObjectName('statusMessage')
+        self.statusBar.addPermanentWidget(self.statusMessage)
+
         # New tabs and their contents
         self.tabs = {}
         self.current_tab = None
@@ -87,15 +92,18 @@ class MainUI(QtWidgets.QMainWindow, mainwindow.Ui_MainWindow):
     def add_books(self):
         # TODO
         # Maybe expand this to traverse directories recursively
+        self.statusMessage.setText('Adding books...')
         my_file = QtWidgets.QFileDialog.getOpenFileNames(
             self, 'Open file', self.last_open_path, "eBooks (*.epub *.mobi *.txt)")
         if my_file[0]:
+            self.listView.setEnabled(False)
             self.last_open_path = os.path.dirname(my_file[0][0])
             books = book_parser.BookSorter(my_file[0])
             parsed_books = books.initiate_threads()
             database.DatabaseFunctions(self.database_path).add_to_database(parsed_books)
+            self.listView.setEnabled(True)
             self.viewModel = None
-            self.reload_listview()
+        self.reload_listview()
 
     def delete_books(self):
         selected_books = self.listView.selectedIndexes()
@@ -239,9 +247,11 @@ class Library:
         proxy_model = QtCore.QSortFilterProxyModel()
         proxy_model.setSourceModel(self.parent_window.viewModel)
         proxy_model.setFilterRole(QtCore.Qt.UserRole + 4)
-
         proxy_model.setFilterCaseSensitivity(QtCore.Qt.CaseInsensitive)
         proxy_model.setFilterWildcard(self.parent_window.libraryFilterEdit.text())
+
+        self.parent_window.statusMessage.setText(
+            str(proxy_model.rowCount()) + ' books')
 
         # Sorting according to roles and the drop down in the library
         proxy_model.setSortRole(
