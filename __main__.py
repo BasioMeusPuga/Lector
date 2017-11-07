@@ -233,6 +233,7 @@ class Library:
             # The model is a single row and has no columns
             img_pixmap = QtGui.QPixmap()
             img_pixmap.loadFromData(book_cover)
+            img_pixmap = img_pixmap.scaled(410, 600, QtCore.Qt.IgnoreAspectRatio)
             item = QtGui.QStandardItem()
             item.setToolTip(tooltip_string)
             item.setData(book_title, QtCore.Qt.UserRole)
@@ -258,7 +259,7 @@ class Library:
             QtCore.Qt.UserRole + self.parent_window.librarySortingBox.currentIndex())
         proxy_model.sort(0)
 
-        s = QtCore.QSize(200, 200)  # Set icon sizing here
+        s = QtCore.QSize(250, 250)  # Set icon sizing here
         self.parent_window.listView.setIconSize(s)
         self.parent_window.listView.setModel(proxy_model)
 
