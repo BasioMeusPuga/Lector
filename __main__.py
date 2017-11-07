@@ -49,6 +49,9 @@ class MainUI(QtWidgets.QMainWindow, mainwindow.Ui_MainWindow):
 
         database.DatabaseInit(self.database_path)
 
+        self.lib_ref = Library(self)
+        self.viewModel = None
+
         # New tabs and their contents
         self.tabs = {}
         self.current_tab = None
@@ -99,12 +102,12 @@ class MainUI(QtWidgets.QMainWindow, mainwindow.Ui_MainWindow):
                 if box_button.text() == '&Yes':
                     selected_hashes = []
                     for i in selected_books:
-                        book_row = i.row()
-                        book_data = i.data(QtCore.Qt.UserRole)
+                        book_data = i.data(QtCore.Qt.UserRole+2)
                         selected_hashes.append(book_data['book_hash'])
-                        self.listView.model().removeRow(book_row)
                     database.DatabaseFunctions(
                         self.database_path).delete_from_database(selected_hashes)
+                    self.viewModel = None
+                    self.reload_listview()
 
             selected_number = len(selected_books)
             msg_box = QtWidgets.QMessageBox()
@@ -118,8 +121,9 @@ class MainUI(QtWidgets.QMainWindow, mainwindow.Ui_MainWindow):
             msg_box.exec_()
 
     def reload_listview(self):
-        lib_ref = Library(self)
-        lib_ref.load_listView()
+        if not self.viewModel:
+            self.lib_ref.generate_model()
+        self.lib_ref.update_listView()
 
     def close_tab_class(self, tab_index):
         this_tab = Tabs(self, None)
@@ -164,14 +168,13 @@ class Library:
     def __init__(self, parent):
         self.parent_window = parent
 
-    def load_listView(self):
+    def generate_model(self):
         # TODO
         # Use QItemdelegates to show book read progress
-
         # The QlistView widget needs to be populated
         # with a model that inherits from QStandardItemModel
-        model = QtGui.QStandardItemModel()
 
+        self.parent_window.viewModel = QtGui.QStandardItemModel()
         books = database.DatabaseFunctions(
             self.parent_window.database_path).fetch_data(
                 ('*',),
@@ -185,11 +188,10 @@ class Library:
 
         # The sorting indices are related to the indices of what the library returns
         # by -1. Consider making this something more foolproof. Maybe.
-        sortingbox_index = self.parent_window.librarySortingBox.currentIndex()
-        books = sorted(books, key=lambda x: x[sortingbox_index + 1])
+        # sortingbox_index = self.parent_window.librarySortingBox.currentIndex()
+        # books = sorted(books, key=lambda x: x[sortingbox_index + 1])
 
         for i in books:
-
             # The database query returns a tuple with the following indices
             # Index 0 is the key ID is ignored
             book_title = i[1]
@@ -206,6 +208,13 @@ class Library:
             tooltip_string = book_title + '\nAuthor: ' + book_author + '\nYear: ' + str(book_year)
             if book_tags:
                 tooltip_string += ('\nTags: ' + book_tags)
+
+            # This remarkably ugly hack is because the QSortFilterProxyModel
+            # doesn't easily allow searching through multiple item roles
+            search_workaround = book_title + ' ' + book_author
+            if book_tags:
+                search_workaround += book_tags
+
             # Generate image pixmap and then pass it to the widget
             # as a QIcon
             # Additional data can be set using an incrementing
@@ -216,13 +225,31 @@ class Library:
             img_pixmap.loadFromData(book_cover)
             item = QtGui.QStandardItem()
             item.setToolTip(tooltip_string)
-            item.setData(additional_data, QtCore.Qt.UserRole)
+            item.setData(book_title, QtCore.Qt.UserRole)
+            item.setData(search_workaround, QtCore.Qt.UserRole+1)
+            item.setData(additional_data, QtCore.Qt.UserRole+2)
             item.setIcon(QtGui.QIcon(img_pixmap))
-            model.appendRow(item)
+            self.parent_window.viewModel.appendRow(item)
+
+            # mirror_item = QtGui.QStandardItem(book_title)
+            # self.parent_window.viewModel.invisibleRootItem().appendRow(mirror_item)
+
+    def update_listView(self):
+        proxy_model = QtCore.QSortFilterProxyModel()
+        proxy_model.setSourceModel(self.parent_window.viewModel)
+        proxy_model.setFilterRole(QtCore.Qt.UserRole+1)
+
+        proxy_model.setFilterCaseSensitivity(QtCore.Qt.CaseInsensitive)
+        proxy_model.setFilterWildcard(self.parent_window.libraryFilterEdit.text())
+
+        # Sorting according to roles and the drop down in the library
+        proxy_model.setSortRole(
+            QtCore.Qt.UserRole + self.parent_window.librarySortingBox.currentIndex())
+        proxy_model.sort(0)
 
         s = QtCore.QSize(200, 200)  # Set icon sizing here
         self.parent_window.listView.setIconSize(s)
-        self.parent_window.listView.setModel(model)
+        self.parent_window.listView.setModel(proxy_model)
 
 
 class Settings:
@@ -291,6 +318,16 @@ class Toolbars:
         settingsButton.triggered.connect(self.parent_window.create_tab_class)
         deleteButton.triggered.connect(self.parent_window.delete_books)
 
+        # Filter
+        filterEdit = QtWidgets.QLineEdit()
+        filterEdit.setPlaceholderText('Search for Title, Author, Tags...')
+        sizePolicy = QtWidgets.QSizePolicy(
+            QtWidgets.QSizePolicy.MinimumExpanding, QtWidgets.QSizePolicy.Fixed)
+        filterEdit.setSizePolicy(sizePolicy)
+        filterEdit.setContentsMargins(200, 0, 200, 0)
+        filterEdit.setMinimumWidth(150)
+        filterEdit.textChanged.connect(self.parent_window.reload_listview)
+
         # Sorter
         sorting_choices = ['Title', 'Author', 'Year']
         sortingBox = QtWidgets.QComboBox()
@@ -298,16 +335,6 @@ class Toolbars:
         sortingBox.setObjectName('sortingBox')
         sortingBox.setToolTip('Sort by')
         sortingBox.activated.connect(self.parent_window.reload_listview)
-
-        # Filter
-        filterEdit = QtWidgets.QLineEdit()
-        filterEdit.setPlaceholderText('Filter by...')
-        sizePolicy = QtWidgets.QSizePolicy(
-            QtWidgets.QSizePolicy.MinimumExpanding, QtWidgets.QSizePolicy.Fixed)
-        filterEdit.setSizePolicy(sizePolicy)
-        filterEdit.setContentsMargins(200, 0, 200, 0)
-        filterEdit.setMinimumWidth(150)
-        filterEdit.returnPressed.connect(self.parent_window.reload_listview)
 
         # Spacer
         spacer = QtWidgets.QWidget()
