@@ -38,8 +38,8 @@ class MainUI(QtWidgets.QMainWindow, mainwindow.Ui_MainWindow):
         # Initialize application
         Settings(self).read_settings()  # This should populate all variables that need
                                         # to be remembered across sessions
-        database.DatabaseInit(self.database_path)
         Toolbars(self)
+        database.DatabaseInit(self.database_path)
 
         # New tabs and their contents
         self.tabs = {}
@@ -84,9 +84,9 @@ class MainUI(QtWidgets.QMainWindow, mainwindow.Ui_MainWindow):
             database.DatabaseFunctions(self.database_path).add_to_database(parsed_books)
             self.reload_listview()
 
-    def reload_listview(self):
+    def reload_listview(self, sortingbox_index=0):
         lib_ref = Library(self)
-        lib_ref.load_listView()
+        lib_ref.load_listView(sortingbox_index)
 
     def close_tab_class(self, tab_index):
         this_tab = Tabs(self, None)
@@ -132,10 +132,8 @@ class Library:
     def __init__(self, parent):
         self.parent_window = parent
 
-    def load_listView(self):
+    def load_listView(self, sortingbox_index=0):
         # TODO
-        # Make this take hints from the SortBy dropdown, the FilterBy lineEdit
-        # and the fetch_data method in the database module
         # The rest of it is just refreshing the listview
 
         # The QlistView widget needs to be populated
@@ -154,27 +152,46 @@ class Library:
             return
 
         # The database query returns a tuple with the following indices
-        # Index 0 is the key ID is is ignored
+        # Index 0 is the key ID is ignored
+
+        # Sorting currently is on the basis of the book title
+        # Make this take hints from the SortBy dropdown, the FilterBy lineEdit
+        # and the fetch_data method in the database module
+
+        # if sortingbox_index == 0:  # Title
+        #     sorting_field = 1
+        # elif sortingbox_index == 1:  # Author
+        #     sorting_field = 2
+        # elif sortingbox_index == 2:  # Year
+        #     sorting_field = 3
+
+        books = sorted(books, key=lambda x: x[sortingbox_index + 1])
+
         for i in books:
 
             book_title = i[1]
-            book_cover = i[6]
+            book_author = i[2]
+            book_year = i[3]
+            book_cover = i[8]
+            book_tags = i[6]
             additional_data = {
-                'book_path': i[2],
-                'book_isbn': i[3],
-                'book_tags': i[4],
-                'book_hash': i[5]}
+                'book_path': i[4],
+                'book_isbn': i[5],
+                'book_hash': i[7]}
 
+            tooltip_string = book_title + '\nAuthor: ' + book_author + '\nYear: ' + str(book_year)
+            if book_tags:
+                tooltip_string += ('\nTags: ' + book_tags)
             # Generate image pixmap and then pass it to the widget
             # as a QIcon
             # Additional data can be set using an incrementing
             # QtCore.Qt.UserRole
             # QtCore.Qt.DisplayRole is the same as item.setText()
             # The model is a single row and has no columns
-
             img_pixmap = QtGui.QPixmap()
             img_pixmap.loadFromData(book_cover)
-            item = QtGui.QStandardItem(book_title)
+            item = QtGui.QStandardItem()
+            item.setToolTip(tooltip_string)
             item.setData(additional_data, QtCore.Qt.UserRole)
             item.setIcon(QtGui.QIcon(img_pixmap))
             model.appendRow(item)
@@ -250,10 +267,26 @@ class Toolbars:
         settingsButton.triggered.connect(self.parent_window.create_tab_class)
         deleteButton.triggered.connect(self.parent_window.reload_listview)
 
+        # Sorter
+        sorting_choices = ['Title', 'Author', 'Year']
+        sortingBox = QtWidgets.QComboBox()
+        sortingBox.addItems(sorting_choices)
+        sortingBox.setObjectName('sortingBox')
+        sortingBox.setToolTip('Sort by')
+        sortingBox.activated.connect(
+            self.parent_window.reload_listview, sortingBox.currentIndex())
+
+        # Spacer
+        spacer = QtWidgets.QWidget()
+        spacer.setSizePolicy(QtWidgets.QSizePolicy.Expanding, QtWidgets.QSizePolicy.Expanding)
+
         self.parent_window.LibraryToolBar.addAction(addButton)
         self.parent_window.LibraryToolBar.addAction(deleteButton)
         self.parent_window.LibraryToolBar.addSeparator()
         self.parent_window.LibraryToolBar.addAction(settingsButton)
+        self.parent_window.LibraryToolBar.addSeparator()
+        self.parent_window.LibraryToolBar.addWidget(spacer)
+        self.parent_window.LibraryToolBar.addWidget(sortingBox)
 
 
 class Tabs:

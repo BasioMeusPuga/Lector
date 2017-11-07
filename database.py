@@ -17,8 +17,8 @@ class DatabaseInit:
     def create_database(self):
         self.database.execute(
             "CREATE TABLE books \
-            (id INTEGER PRIMARY KEY, Title TEXT, Path TEXT, \
-            ISBN TEXT, Tags TEXT, Hash TEXT, CoverImage BLOB)")
+            (id INTEGER PRIMARY KEY, Title TEXT, Author TEXT, Year INTEGER, \
+            Path TEXT, ISBN TEXT, Tags TEXT, Hash TEXT, CoverImage BLOB)")
         self.database.execute(
             "CREATE TABLE cache \
             (id INTEGER PRIMARY KEY, Name TEXT, Path TEXT, CachedDict BLOB)")
@@ -42,12 +42,17 @@ class DatabaseFunctions:
 
         for i in book_data.items():
             book_hash = i[0]
-            book_title = i[1]['title'].replace("'", "")
+            book_title = i[1]['title']
+            book_author = i[1]['author']
+            book_year = i[1]['year']
+            if not book_year:
+                book_year = 9999
             book_path = i[1]['path']
             book_cover = i[1]['cover_image']
             book_isbn = i[1]['isbn']
 
             # Check if the file might not already be in the database
+            # A None return signifies that that addition is possible
             hash_from_database = self.fetch_data(
                 ('Title',),
                 'books',
@@ -56,7 +61,7 @@ class DatabaseFunctions:
                 True)
 
             sql_command_add = (
-                "INSERT INTO books (Title,Path,ISBN,Hash,CoverImage) VALUES(?, ?, ?, ?, ?)")
+                "INSERT INTO books (Title,Author,Year,Path,ISBN,Hash,CoverImage) VALUES(?, ?, ?, ?, ?, ?, ?)")
 
             # TODO
             # This is a placeholder. You will need to generate book covers
@@ -64,7 +69,8 @@ class DatabaseFunctions:
             if not hash_from_database and book_cover:
                 self.database.execute(
                     sql_command_add,
-                    [book_title, book_path, book_isbn, book_hash, sqlite3.Binary(book_cover)])
+                    [book_title, book_author, book_year,
+                     book_path, book_isbn, book_hash, sqlite3.Binary(book_cover)])
 
         self.database.commit()
 

@@ -25,6 +25,18 @@ class ParseEPUB:
     def get_title(self):
         return self.book.title.strip()
 
+    def get_author(self):
+        try:
+            return self.book.metadata['http://purl.org/dc/elements/1.1/']['creator'][0][0]
+        except KeyError:
+            return None
+
+    def get_year(self):
+        try:
+            return self.book.metadata['http://purl.org/dc/elements/1.1/']['date'][0][0][:4]
+        except KeyError:
+            return None
+
     def get_cover_image(self):
         # TODO
         # Generate a cover image in case one isn't found
@@ -113,11 +125,15 @@ class BookSorter:
         book_ref.read_epub()
         if book_ref.book:
             title = book_ref.get_title()
+            author = book_ref.get_author()
+            year = book_ref.get_year()
             cover_image = book_ref.get_cover_image()
             isbn = book_ref.get_isbn()
 
             self.all_books[file_md5] = {
                 'title': title,
+                'author': author,
+                'year': year,
                 'isbn': isbn,
                 'path': filename,
                 'cover_image': cover_image}
