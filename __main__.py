@@ -8,6 +8,9 @@
     ✓ Override the keypress event of the textedit
     ✓ Search bar in toolbar
 
+    mobi support
+    txt, doc support
+    pdf support?
     Goodreads API: Ratings, Read, Recommendations
     Get ISBN using python-isbnlib
     All ebooks should be returned as HTML
@@ -59,7 +62,6 @@ class MainUI(QtWidgets.QMainWindow, mainwindow.Ui_MainWindow):
         self.statusBar.addPermanentWidget(self.statusMessage)
 
         # New tabs and their contents
-        self.tabs = {}
         self.current_tab = None
         self.current_textEdit = None
 
@@ -79,14 +81,6 @@ class MainUI(QtWidgets.QMainWindow, mainwindow.Ui_MainWindow):
         # Keyboard shortcuts
         self.exit_all = QtWidgets.QShortcut(QtGui.QKeySequence('Ctrl+Q'), self)
         self.exit_all.activated.connect(QtWidgets.qApp.exit)
-
-    def create_tab_class(self):
-        # TODO
-        # Shift focus to tab if it's already open instead of creating
-        # a new one
-        self.tabs['TitleText'] = {
-            'information about': 'This tab'}
-        
 
     def add_books(self):
         # TODO
@@ -185,9 +179,9 @@ class Library:
     def generate_model(self):
         # TODO
         # Use QItemdelegates to show book read progress
+
         # The QlistView widget needs to be populated
         # with a model that inherits from QStandardItemModel
-
         self.parent_window.viewModel = QtGui.QStandardItemModel()
         books = database.DatabaseFunctions(
             self.parent_window.database_path).fetch_data(
@@ -199,11 +193,6 @@ class Library:
         if not books:
             print('Database returned nothing')
             return
-
-        # The sorting indices are related to the indices of what the library returns
-        # by -1. Consider making this something more foolproof. Maybe.
-        # sortingbox_index = self.parent_window.librarySortingBox.currentIndex()
-        # books = sorted(books, key=lambda x: x[sortingbox_index + 1])
 
         for i in books:
             # The database query returns a tuple with the following indices
@@ -240,9 +229,10 @@ class Library:
             # The model is a single row and has no columns
             img_pixmap = QtGui.QPixmap()
             img_pixmap.loadFromData(book_cover)
-            img_pixmap = img_pixmap.scaled(450, 600, QtCore.Qt.IgnoreAspectRatio)
+            img_pixmap = img_pixmap.scaled(420, 600, QtCore.Qt.IgnoreAspectRatio)
             item = QtGui.QStandardItem()
             item.setToolTip(tooltip_string)
+            # The following order is needed to keep sorting working
             item.setData(book_title, QtCore.Qt.UserRole)
             item.setData(book_author, QtCore.Qt.UserRole + 1)
             item.setData(book_year, QtCore.Qt.UserRole + 2)
@@ -316,6 +306,10 @@ class Toolbars:
         self.create_toolbars()
 
     def create_toolbars(self):
+        # Spacer
+        spacer = QtWidgets.QWidget()
+        spacer.setSizePolicy(QtWidgets.QSizePolicy.Expanding, QtWidgets.QSizePolicy.Expanding)
+
          # Book Toolbar
         fullscreenButton = QtWidgets.QAction(
             QtGui.QIcon.fromTheme('view-fullscreen'), 'Fullscreen', self.parent_window)
@@ -354,10 +348,6 @@ class Toolbars:
         sortingBox.setObjectName('sortingBox')
         sortingBox.setToolTip('Sort by')
         sortingBox.activated.connect(self.parent_window.reload_listview)
-
-        # Spacer
-        spacer = QtWidgets.QWidget()
-        spacer.setSizePolicy(QtWidgets.QSizePolicy.Expanding, QtWidgets.QSizePolicy.Expanding)
 
         # Add widgets to toolbar
         self.parent_window.LibraryToolBar.addAction(addButton)
