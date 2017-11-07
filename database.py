@@ -11,8 +11,6 @@ class DatabaseInit:
         if not os.path.exists(database_path):
             self.database = sqlite3.connect(database_path)
             self.create_database()
-        else:
-            self.database = sqlite3.connect(database_path)
 
     def create_database(self):
         self.database.execute(
@@ -26,7 +24,7 @@ class DatabaseInit:
         # database at time of closing
 
         self.database.commit()
-
+        self.database.close()
 
 class DatabaseFunctions:
     def __init__(self, location_prefix):

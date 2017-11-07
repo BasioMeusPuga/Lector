@@ -45,18 +45,24 @@ class MainUI(QtWidgets.QMainWindow, mainwindow.Ui_MainWindow):
         # Initialize application
         Settings(self).read_settings()  # This should populate all variables that need
                                         # to be remembered across sessions
-        Toolbars(self)
-        # This is an ugly hack?
-        # I can't seem to access the Qcombobox the usual way
-        self.librarySortingBox = self.LibraryToolBar.findChild(QtWidgets.QComboBox)
-        self.libraryFilterEdit = self.LibraryToolBar.findChild(QtWidgets.QLineEdit)
 
+        # Create toolbars
+        self.libraryToolBar = LibraryToolBar(self)
+        self.bookToolBar = BookToolBar(self)
+        self.addToolBar(self.libraryToolBar)
+        self.addToolBar(self.bookToolBar)
+
+        # Make the correct toolbar visible
+        self.toolbar_switch()
+        self.tabWidget.currentChanged.connect(self.toolbar_switch)
+
+        # Create the database in case it doesn't exist
         database.DatabaseInit(self.database_path)
 
         self.lib_ref = Library(self)
         self.viewModel = None
 
-        # Right align everything in the statusbar
+        # Create and right align the statusbar label widget
         self.statusMessage = QtWidgets.QLabel()
         self.statusMessage.setObjectName('statusMessage')
         self.statusBar.addPermanentWidget(self.statusMessage)
@@ -64,9 +70,6 @@ class MainUI(QtWidgets.QMainWindow, mainwindow.Ui_MainWindow):
         # New tabs and their contents
         self.current_tab = None
         self.current_textEdit = None
-
-        # Toolbar switching
-        self.tabWidget.currentChanged.connect(self.toolbar_switch)
 
         # Tab closing
         self.tabWidget.setTabsClosable(True)
@@ -134,11 +137,11 @@ class MainUI(QtWidgets.QMainWindow, mainwindow.Ui_MainWindow):
 
     def toolbar_switch(self):
         if self.tabWidget.currentIndex() == 0:
-            self.BookToolBar.hide()
-            self.LibraryToolBar.show()
+            self.bookToolBar.hide()
+            self.libraryToolBar.show()
         else:
-            self.BookToolBar.show()
-            self.LibraryToolBar.hide()
+            self.bookToolBar.show()
+            self.libraryToolBar.hide()
 
     def set_fullscreen(self):
         self.current_tab = self.tabWidget.currentIndex()
@@ -246,14 +249,14 @@ class Library:
         proxy_model.setSourceModel(self.parent_window.viewModel)
         proxy_model.setFilterRole(QtCore.Qt.UserRole + 4)
         proxy_model.setFilterCaseSensitivity(QtCore.Qt.CaseInsensitive)
-        proxy_model.setFilterWildcard(self.parent_window.libraryFilterEdit.text())
+        proxy_model.setFilterWildcard(self.parent_window.libraryToolBar.filterEdit.text())
 
         self.parent_window.statusMessage.setText(
             str(proxy_model.rowCount()) + ' books')
 
         # Sorting according to roles and the drop down in the library
         proxy_model.setSortRole(
-            QtCore.Qt.UserRole + self.parent_window.librarySortingBox.currentIndex())
+            QtCore.Qt.UserRole + self.parent_window.libraryToolBar.sortingBox.currentIndex())
         proxy_model.sort(0)
 
         s = QtCore.QSize(160, 250)  # Set icon sizing here
@@ -296,68 +299,71 @@ class Settings:
         self.settings.endGroup()
 
 
-class Toolbars:
-    # TODO
-    # Inheritances so that this self.parent_window.
-    # bullshit can be removed
-    def __init__(self, parent):
-        self.parent_window = parent
-        self.parent_window.BookToolBar.hide()
-        self.create_toolbars()
+class BookToolBar(QtWidgets.QToolBar):
+    def __init__(self, parent=None):
+        super(BookToolBar, self).__init__(parent)
+        self.parent = parent
 
-    def create_toolbars(self):
-        # Spacer
-        spacer = QtWidgets.QWidget()
-        spacer.setSizePolicy(QtWidgets.QSizePolicy.Expanding, QtWidgets.QSizePolicy.Expanding)
+        self.setMovable(False)
+        self.setIconSize(QtCore.QSize(22, 22))
+        self.setFloatable(False)
+        self.setObjectName("LibraryToolBar")
 
-         # Book Toolbar
         fullscreenButton = QtWidgets.QAction(
-            QtGui.QIcon.fromTheme('view-fullscreen'), 'Fullscreen', self.parent_window)
+            QtGui.QIcon.fromTheme('view-fullscreen'), 'Fullscreen', self)
+        self.addAction(fullscreenButton)
+        self.setIconSize(QtCore.QSize(22, 22))
 
-        self.parent_window.BookToolBar.addAction(fullscreenButton)
-        self.parent_window.BookToolBar.setIconSize(QtCore.QSize(22, 22))
+        fullscreenButton.triggered.connect(self.parent.set_fullscreen)
 
-        fullscreenButton.triggered.connect(self.parent_window.set_fullscreen)
 
-        # Library Toolbar
+class LibraryToolBar(QtWidgets.QToolBar):
+    def __init__(self, parent=None):
+        super(LibraryToolBar, self).__init__(parent)
+        self.parent = parent
+
+        self.setMovable(False)
+        self.setIconSize(QtCore.QSize(22, 22))
+        self.setFloatable(False)
+        self.setObjectName("LibraryToolBar")
+
+
         addButton = QtWidgets.QAction(
-            QtGui.QIcon.fromTheme('add'), 'Add book', self.parent_window)
+            QtGui.QIcon.fromTheme('add'), 'Add book', self)
         deleteButton = QtWidgets.QAction(
-            QtGui.QIcon.fromTheme('remove'), 'Delete book', self.parent_window)
+            QtGui.QIcon.fromTheme('remove'), 'Delete book', self)
         settingsButton = QtWidgets.QAction(
-            QtGui.QIcon.fromTheme('settings'), 'Settings', self.parent_window)
+            QtGui.QIcon.fromTheme('settings'), 'Settings', self)
 
-        addButton.triggered.connect(self.parent_window.add_books)
-        settingsButton.triggered.connect(self.parent_window.create_tab_class)
-        deleteButton.triggered.connect(self.parent_window.delete_books)
+        addButton.triggered.connect(self.parent.add_books)
+        deleteButton.triggered.connect(self.parent.delete_books)
 
         # Filter
-        filterEdit = QtWidgets.QLineEdit()
-        filterEdit.setPlaceholderText('Search for Title, Author, Tags...')
+        self.filterEdit = QtWidgets.QLineEdit()
+        self.filterEdit.setPlaceholderText('Search for Title, Author, Tags...')
         sizePolicy = QtWidgets.QSizePolicy(
             QtWidgets.QSizePolicy.MinimumExpanding, QtWidgets.QSizePolicy.Fixed)
-        filterEdit.setSizePolicy(sizePolicy)
-        filterEdit.setContentsMargins(200, 0, 200, 0)
-        filterEdit.setMinimumWidth(150)
-        filterEdit.textChanged.connect(self.parent_window.reload_listview)
+        self.filterEdit.setSizePolicy(sizePolicy)
+        self.filterEdit.setContentsMargins(200, 0, 200, 0)
+        self.filterEdit.setMinimumWidth(150)
+        self.filterEdit.setObjectName('filterEdit')
+        self.filterEdit.textChanged.connect(self.parent.reload_listview)
 
         # Sorter
         sorting_choices = ['Title', 'Author', 'Year']
-        sortingBox = QtWidgets.QComboBox()
-        sortingBox.addItems(sorting_choices)
-        sortingBox.setObjectName('sortingBox')
-        sortingBox.setToolTip('Sort by')
-        sortingBox.activated.connect(self.parent_window.reload_listview)
+        self.sortingBox = QtWidgets.QComboBox()
+        self.sortingBox.addItems(sorting_choices)
+        self.sortingBox.setObjectName('sortingBox')
+        self.sortingBox.setToolTip('Sort by')
+        self.sortingBox.activated.connect(self.parent.reload_listview)
 
         # Add widgets to toolbar
-        self.parent_window.LibraryToolBar.addAction(addButton)
-        self.parent_window.LibraryToolBar.addAction(deleteButton)
-        self.parent_window.LibraryToolBar.addSeparator()
-        self.parent_window.LibraryToolBar.addAction(settingsButton)
-        self.parent_window.LibraryToolBar.addWidget(spacer)
-        self.parent_window.LibraryToolBar.addWidget(filterEdit)
-        self.parent_window.LibraryToolBar.addWidget(spacer)
-        self.parent_window.LibraryToolBar.addWidget(sortingBox)
+        self.addAction(addButton)
+        self.addAction(deleteButton)
+        self.addSeparator()
+        self.addAction(settingsButton)
+        self.addWidget(self.filterEdit)
+        self.addWidget(self.sortingBox)
 
 
 class Tabs:
