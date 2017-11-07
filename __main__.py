@@ -39,6 +39,10 @@ class MainUI(QtWidgets.QMainWindow, mainwindow.Ui_MainWindow):
         Settings(self).read_settings()  # This should populate all variables that need
                                         # to be remembered across sessions
         Toolbars(self)
+        # I don't know why this is needed
+        # I can't access the Qcombobox any other way
+        self.librarySortingBox = self.LibraryToolBar.children()[-1:][0]
+
         database.DatabaseInit(self.database_path)
 
         # New tabs and their contents
@@ -84,9 +88,9 @@ class MainUI(QtWidgets.QMainWindow, mainwindow.Ui_MainWindow):
             database.DatabaseFunctions(self.database_path).add_to_database(parsed_books)
             self.reload_listview()
 
-    def reload_listview(self, sortingbox_index=0):
+    def reload_listview(self):
         lib_ref = Library(self)
-        lib_ref.load_listView(sortingbox_index)
+        lib_ref.load_listView()
 
     def close_tab_class(self, tab_index):
         this_tab = Tabs(self, None)
@@ -120,7 +124,6 @@ class MainUI(QtWidgets.QMainWindow, mainwindow.Ui_MainWindow):
         self.current_textEdit.show()
 
     def listclick(self, myindex):
-        # print('selected item index found at %s with data: %s' % (myindex.row(), myindex.data()))
         index = self.listView.model().index(myindex.row(), 0)
         print(self.listView.model().data(index, QtCore.Qt.UserRole))
 
@@ -132,7 +135,7 @@ class Library:
     def __init__(self, parent):
         self.parent_window = parent
 
-    def load_listView(self, sortingbox_index=0):
+    def load_listView(self):
         # TODO
         # The rest of it is just refreshing the listview
 
@@ -151,24 +154,15 @@ class Library:
             print('Database returned nothing')
             return
 
-        # The database query returns a tuple with the following indices
-        # Index 0 is the key ID is ignored
-
-        # Sorting currently is on the basis of the book title
-        # Make this take hints from the SortBy dropdown, the FilterBy lineEdit
-        # and the fetch_data method in the database module
-
-        # if sortingbox_index == 0:  # Title
-        #     sorting_field = 1
-        # elif sortingbox_index == 1:  # Author
-        #     sorting_field = 2
-        # elif sortingbox_index == 2:  # Year
-        #     sorting_field = 3
-
+        # The sorting indices are related to the indices of what the library returns
+        # by -1. Consider making this something more foolproof. Maybe.
+        sortingbox_index = self.parent_window.librarySortingBox.currentIndex()
         books = sorted(books, key=lambda x: x[sortingbox_index + 1])
 
         for i in books:
 
+            # The database query returns a tuple with the following indices
+            # Index 0 is the key ID is ignored
             book_title = i[1]
             book_author = i[2]
             book_year = i[3]
@@ -273,8 +267,7 @@ class Toolbars:
         sortingBox.addItems(sorting_choices)
         sortingBox.setObjectName('sortingBox')
         sortingBox.setToolTip('Sort by')
-        sortingBox.activated.connect(
-            self.parent_window.reload_listview, sortingBox.currentIndex())
+        sortingBox.activated.connect(self.parent_window.reload_listview)
 
         # Spacer
         spacer = QtWidgets.QWidget()
