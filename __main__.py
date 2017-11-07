@@ -6,7 +6,8 @@
     ✓ Drop down for SortBy (library view)
     ✓ Define every widget in code because you're going to need to create separate tabs
     ✓ Override the keypress event of the textedit
-
+    ✓ Search bar in toolbar
+    
     Goodreads API: Ratings, Read, Recommendations
     Get ISBN using python-isbnlib
     All ebooks should be returned as HTML
@@ -83,7 +84,7 @@ class MainUI(QtWidgets.QMainWindow, mainwindow.Ui_MainWindow):
         this_tab = Tabs(self, 'TitleText')
         this_tab.create_tab()
 
-    def open_file(self):
+    def add_books(self):
         # TODO
         # Maybe expand this to traverse directories recursively
         my_file = QtWidgets.QFileDialog.getOpenFileNames(
@@ -93,6 +94,7 @@ class MainUI(QtWidgets.QMainWindow, mainwindow.Ui_MainWindow):
             books = book_parser.BookSorter(my_file[0])
             parsed_books = books.initiate_threads()
             database.DatabaseFunctions(self.database_path).add_to_database(parsed_books)
+            self.viewModel = None
             self.reload_listview()
 
     def delete_books(self):
@@ -102,7 +104,7 @@ class MainUI(QtWidgets.QMainWindow, mainwindow.Ui_MainWindow):
                 if box_button.text() == '&Yes':
                     selected_hashes = []
                     for i in selected_books:
-                        book_data = i.data(QtCore.Qt.UserRole+2)
+                        book_data = i.data(QtCore.Qt.UserRole + 3)
                         selected_hashes.append(book_data['book_hash'])
                     database.DatabaseFunctions(
                         self.database_path).delete_from_database(selected_hashes)
@@ -226,18 +228,17 @@ class Library:
             item = QtGui.QStandardItem()
             item.setToolTip(tooltip_string)
             item.setData(book_title, QtCore.Qt.UserRole)
-            item.setData(search_workaround, QtCore.Qt.UserRole+1)
-            item.setData(additional_data, QtCore.Qt.UserRole+2)
+            item.setData(book_author, QtCore.Qt.UserRole + 1)
+            item.setData(book_year, QtCore.Qt.UserRole + 2)
+            item.setData(additional_data, QtCore.Qt.UserRole + 3)
+            item.setData(search_workaround, QtCore.Qt.UserRole + 4)
             item.setIcon(QtGui.QIcon(img_pixmap))
             self.parent_window.viewModel.appendRow(item)
-
-            # mirror_item = QtGui.QStandardItem(book_title)
-            # self.parent_window.viewModel.invisibleRootItem().appendRow(mirror_item)
 
     def update_listView(self):
         proxy_model = QtCore.QSortFilterProxyModel()
         proxy_model.setSourceModel(self.parent_window.viewModel)
-        proxy_model.setFilterRole(QtCore.Qt.UserRole+1)
+        proxy_model.setFilterRole(QtCore.Qt.UserRole + 4)
 
         proxy_model.setFilterCaseSensitivity(QtCore.Qt.CaseInsensitive)
         proxy_model.setFilterWildcard(self.parent_window.libraryFilterEdit.text())
@@ -314,7 +315,7 @@ class Toolbars:
         settingsButton = QtWidgets.QAction(
             QtGui.QIcon.fromTheme('settings'), 'Settings', self.parent_window)
 
-        addButton.triggered.connect(self.parent_window.open_file)
+        addButton.triggered.connect(self.parent_window.add_books)
         settingsButton.triggered.connect(self.parent_window.create_tab_class)
         deleteButton.triggered.connect(self.parent_window.delete_books)
 
