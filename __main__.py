@@ -48,8 +48,14 @@ class MainUI(QtWidgets.QMainWindow, mainwindow.Ui_MainWindow):
 
         # Create toolbars
         self.libraryToolBar = LibraryToolBar(self)
-        self.bookToolBar = BookToolBar(self)
+        self.libraryToolBar.addButton.triggered.connect(self.add_books)
+        self.libraryToolBar.deleteButton.triggered.connect(self.delete_books)
+        self.libraryToolBar.filterEdit.textChanged.connect(self.reload_listview)
+        self.libraryToolBar.sortingBox.activated.connect(self.reload_listview)
         self.addToolBar(self.libraryToolBar)
+
+        self.bookToolBar = BookToolBar(self)
+        self.bookToolBar.fullscreenButton.triggered.connect(self.set_fullscreen)
         self.addToolBar(self.bookToolBar)
 
         # Make the correct toolbar visible
@@ -302,41 +308,42 @@ class Settings:
 class BookToolBar(QtWidgets.QToolBar):
     def __init__(self, parent=None):
         super(BookToolBar, self).__init__(parent)
-        self.parent = parent
 
         self.setMovable(False)
         self.setIconSize(QtCore.QSize(22, 22))
         self.setFloatable(False)
         self.setObjectName("LibraryToolBar")
 
-        fullscreenButton = QtWidgets.QAction(
+        # Buttons
+        self.fullscreenButton = QtWidgets.QAction(
             QtGui.QIcon.fromTheme('view-fullscreen'), 'Fullscreen', self)
-        self.addAction(fullscreenButton)
-        self.setIconSize(QtCore.QSize(22, 22))
 
-        fullscreenButton.triggered.connect(self.parent.set_fullscreen)
+        # Add buttons
+        self.addAction(self.fullscreenButton)
 
 
 class LibraryToolBar(QtWidgets.QToolBar):
     def __init__(self, parent=None):
         super(LibraryToolBar, self).__init__(parent)
-        self.parent = parent
 
         self.setMovable(False)
         self.setIconSize(QtCore.QSize(22, 22))
         self.setFloatable(False)
         self.setObjectName("LibraryToolBar")
 
-
-        addButton = QtWidgets.QAction(
+        # Buttons
+        self.addButton = QtWidgets.QAction(
             QtGui.QIcon.fromTheme('add'), 'Add book', self)
-        deleteButton = QtWidgets.QAction(
+        self.deleteButton = QtWidgets.QAction(
             QtGui.QIcon.fromTheme('remove'), 'Delete book', self)
-        settingsButton = QtWidgets.QAction(
+        self.settingsButton = QtWidgets.QAction(
             QtGui.QIcon.fromTheme('settings'), 'Settings', self)
 
-        addButton.triggered.connect(self.parent.add_books)
-        deleteButton.triggered.connect(self.parent.delete_books)
+        # Add buttons
+        self.addAction(self.addButton)
+        self.addAction(self.deleteButton)
+        self.addSeparator()
+        self.addAction(self.settingsButton)
 
         # Filter
         self.filterEdit = QtWidgets.QLineEdit()
@@ -347,7 +354,6 @@ class LibraryToolBar(QtWidgets.QToolBar):
         self.filterEdit.setContentsMargins(200, 0, 200, 0)
         self.filterEdit.setMinimumWidth(150)
         self.filterEdit.setObjectName('filterEdit')
-        self.filterEdit.textChanged.connect(self.parent.reload_listview)
 
         # Sorter
         sorting_choices = ['Title', 'Author', 'Year']
@@ -355,13 +361,8 @@ class LibraryToolBar(QtWidgets.QToolBar):
         self.sortingBox.addItems(sorting_choices)
         self.sortingBox.setObjectName('sortingBox')
         self.sortingBox.setToolTip('Sort by')
-        self.sortingBox.activated.connect(self.parent.reload_listview)
 
-        # Add widgets to toolbar
-        self.addAction(addButton)
-        self.addAction(deleteButton)
-        self.addSeparator()
-        self.addAction(settingsButton)
+        # Add widgets
         self.addWidget(self.filterEdit)
         self.addWidget(self.sortingBox)
 
