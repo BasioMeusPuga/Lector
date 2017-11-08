@@ -80,7 +80,7 @@ class MainUI(QtWidgets.QMainWindow, mainwindow.Ui_MainWindow):
         # Tab closing
         self.tabWidget.setTabsClosable(True)
         self.tabWidget.tabBar().setTabButton(0, QtWidgets.QTabBar.RightSide, None)
-        self.tabWidget.tabCloseRequested.connect(self.close_tab_class)
+        self.tabWidget.tabCloseRequested.connect(self.close_tab)
 
         # ListView
         self.listView.setSpacing(15)
@@ -137,10 +137,6 @@ class MainUI(QtWidgets.QMainWindow, mainwindow.Ui_MainWindow):
             self.lib_ref.generate_model()
         self.lib_ref.update_listView()
 
-    def close_tab_class(self, tab_index):
-        this_tab = Tabs(self, None)
-        this_tab.close_tab(tab_index)
-
     def toolbar_switch(self):
         if self.tabWidget.currentIndex() == 0:
             self.bookToolBar.hide()
@@ -171,11 +167,15 @@ class MainUI(QtWidgets.QMainWindow, mainwindow.Ui_MainWindow):
     def list_doubleclick(self, myindex):
         # TODO
         # Shift focus to a currently open tab in case that is needed
-        # Load the book. The Tabber class should handle this
+        # Load the book.
         index = self.listView.model().index(myindex.row(), 0)
         book_metadata = self.listView.model().data(index, QtCore.Qt.UserRole + 3)
-        tab_ref = Tabs(self, book_metadata)
-        tab_ref.create_tab()
+        tab_ref = Tab(book_metadata, self.tabWidget)
+        print(tab_ref.book_metadata)  # Metadata upon tab creation
+
+    def close_tab(self, tab_index):
+        print(self.tabWidget.widget(tab_index).book_metadata)  # Metadata upon tab deletion
+        self.tabWidget.removeTab(tab_index)
 
     def closeEvent(self, event):
         Settings(self).save_settings()
@@ -367,35 +367,28 @@ class LibraryToolBar(QtWidgets.QToolBar):
         self.addWidget(self.sortingBox)
 
 
-class Tabs:
-    def __init__(self, parent, book_metadata):
-        self.parent_window = parent
-        self.book_metadata = book_metadata
-
-    def create_tab(self):
+class Tab(QtWidgets.QWidget):
+    def __init__(self, book_metadata, parent=None):
         # TODO
         # The display widget will probably have to be shifted to something else
         # A horizontal slider to control flow
         # Keyboard shortcuts
 
+        super(Tab, self).__init__(parent)
+        self.parent = parent
+        self.book_metadata = book_metadata
+
         book_title = self.book_metadata['book_title']
         book_path = self.book_metadata['book_path']
 
-        self.tab = QtWidgets.QWidget()
-        self.tab.setObjectName("newtab")
-        self.gridLayout = QtWidgets.QGridLayout(self.tab)
+        self.gridLayout = QtWidgets.QGridLayout(self)
         self.gridLayout.setObjectName("gridLayout")
-        self.textEdit = QtWidgets.QTextEdit(self.tab)
+        self.textEdit = QtWidgets.QTextEdit(self)
         self.textEdit.setObjectName("textEdit")
         self.textEdit.setFrameShape(QtWidgets.QFrame.NoFrame)
         self.gridLayout.addWidget(self.textEdit, 0, 0, 1, 1)
-        self.parent_window.tabWidget.addTab(self.tab, book_title)
+        self.parent.addTab(self, book_title)
         self.textEdit.setText(book_path)
-
-    def close_tab(self, tab_index):
-        tab_title = self.parent_window.tabWidget.tabText(tab_index).replace('&', '')
-        # print(self.parent_window.tabs[tab_title])
-        self.parent_window.tabWidget.removeTab(tab_index)
 
 
 def main():
