@@ -7,18 +7,18 @@
     ✓ Define every widget in code because you're going to need to create separate tabs
     ✓ Override the keypress event of the textedit
     ✓ Search bar in toolbar
+    ✓ Shift focus to the tab that has the book open
+    ✓ Search bar in toolbar
 
     mobi support
     txt, doc support
     pdf support?
     Goodreads API: Ratings, Read, Recommendations
     Get ISBN using python-isbnlib
-    All ebooks should be returned as HTML
+    All ebooks should first be added to the database and then returned as HTML
     Theming
-    Search bar in toolbar
     Drop down for TOC (book view)
     Pagination
-    sqlite3 for caching files open @ time of exit
     Use format* icons for toolbar buttons
     Information dialog widget
     Check file hashes upon restart
@@ -46,6 +46,18 @@ class MainUI(QtWidgets.QMainWindow, mainwindow.Ui_MainWindow):
         Settings(self).read_settings()  # This should populate all variables that need
                                         # to be remembered across sessions
 
+        # Create the database in case it doesn't exist
+        database.DatabaseInit(self.database_path)
+
+        # Create and right align the statusbar label widget
+        self.statusMessage = QtWidgets.QLabel()
+        self.statusMessage.setObjectName('statusMessage')
+        self.statusBar.addPermanentWidget(self.statusMessage)
+
+        # Init the QListView
+        self.viewModel = None
+        self.lib_ref = Library(self)
+
         # Create toolbars
         self.libraryToolBar = LibraryToolBar(self)
         self.libraryToolBar.addButton.triggered.connect(self.add_books)
@@ -59,19 +71,8 @@ class MainUI(QtWidgets.QMainWindow, mainwindow.Ui_MainWindow):
         self.addToolBar(self.bookToolBar)
 
         # Make the correct toolbar visible
-        self.toolbar_switch()
-        self.tabWidget.currentChanged.connect(self.toolbar_switch)
-
-        # Create the database in case it doesn't exist
-        database.DatabaseInit(self.database_path)
-
-        self.lib_ref = Library(self)
-        self.viewModel = None
-
-        # Create and right align the statusbar label widget
-        self.statusMessage = QtWidgets.QLabel()
-        self.statusMessage.setObjectName('statusMessage')
-        self.statusBar.addPermanentWidget(self.statusMessage)
+        self.tab_switch()
+        self.tabWidget.currentChanged.connect(self.tab_switch)
 
         # New tabs and their contents
         self.current_tab = None
@@ -89,7 +90,7 @@ class MainUI(QtWidgets.QMainWindow, mainwindow.Ui_MainWindow):
 
         # Keyboard shortcuts
         self.exit_all = QtWidgets.QShortcut(QtGui.QKeySequence('Ctrl+Q'), self)
-        self.exit_all.activated.connect(QtWidgets.qApp.exit)
+        self.exit_all.activated.connect(self.closeEvent)
 
     def add_books(self):
         # TODO
@@ -137,13 +138,22 @@ class MainUI(QtWidgets.QMainWindow, mainwindow.Ui_MainWindow):
             self.lib_ref.generate_model()
         self.lib_ref.update_listView()
 
-    def toolbar_switch(self):
+    def tab_switch(self):
         if self.tabWidget.currentIndex() == 0:
             self.bookToolBar.hide()
             self.libraryToolBar.show()
+            if self.lib_ref.proxy_model:
+                self.statusMessage.setText(
+                    str(self.lib_ref.proxy_model.rowCount()) + ' Books')
         else:
             self.bookToolBar.show()
             self.libraryToolBar.hide()
+            current_metadata = self.tabWidget.widget(
+                self.tabWidget.currentIndex()).book_metadata
+            current_title = current_metadata['book_title']
+            current_author = current_metadata['book_author']
+            self.statusMessage.setText(
+                current_author + ' - ' + current_title)
 
     def set_fullscreen(self):
         self.current_tab = self.tabWidget.currentIndex()
@@ -166,24 +176,34 @@ class MainUI(QtWidgets.QMainWindow, mainwindow.Ui_MainWindow):
 
     def list_doubleclick(self, myindex):
         # TODO
-        # Shift focus to a currently open tab in case that is needed
         # Load the book.
         index = self.listView.model().index(myindex.row(), 0)
         book_metadata = self.listView.model().data(index, QtCore.Qt.UserRole + 3)
+
+        # Shift focus to the tab that has the book open (if there is one)
+        for i in range(1, self.tabWidget.count()):
+            tab_book_metadata = self.tabWidget.widget(i).book_metadata
+            if tab_book_metadata['book_hash'] == book_metadata['book_hash']:
+                self.tabWidget.setCurrentIndex(i)
+                return
+
         tab_ref = Tab(book_metadata, self.tabWidget)
+        self.tabWidget.setCurrentWidget(tab_ref)
         print(tab_ref.book_metadata)  # Metadata upon tab creation
 
     def close_tab(self, tab_index):
         print(self.tabWidget.widget(tab_index).book_metadata)  # Metadata upon tab deletion
         self.tabWidget.removeTab(tab_index)
 
-    def closeEvent(self, event):
+    def closeEvent(self, event=None):
         Settings(self).save_settings()
+        QtWidgets.qApp.exit()
 
 
 class Library:
     def __init__(self, parent):
         self.parent_window = parent
+        self.proxy_model = None
 
     def generate_model(self):
         # TODO
@@ -250,24 +270,25 @@ class Library:
             item.setIcon(QtGui.QIcon(img_pixmap))
             self.parent_window.viewModel.appendRow(item)
 
+
     def update_listView(self):
-        proxy_model = QtCore.QSortFilterProxyModel()
-        proxy_model.setSourceModel(self.parent_window.viewModel)
-        proxy_model.setFilterRole(QtCore.Qt.UserRole + 4)
-        proxy_model.setFilterCaseSensitivity(QtCore.Qt.CaseInsensitive)
-        proxy_model.setFilterWildcard(self.parent_window.libraryToolBar.filterEdit.text())
+        self.proxy_model = QtCore.QSortFilterProxyModel()
+        self.proxy_model.setSourceModel(self.parent_window.viewModel)
+        self.proxy_model.setFilterRole(QtCore.Qt.UserRole + 4)
+        self.proxy_model.setFilterCaseSensitivity(QtCore.Qt.CaseInsensitive)
+        self.proxy_model.setFilterWildcard(self.parent_window.libraryToolBar.filterEdit.text())
 
         self.parent_window.statusMessage.setText(
-            str(proxy_model.rowCount()) + ' books')
+            str(self.proxy_model.rowCount()) + ' books')
 
         # Sorting according to roles and the drop down in the library
-        proxy_model.setSortRole(
+        self.proxy_model.setSortRole(
             QtCore.Qt.UserRole + self.parent_window.libraryToolBar.sortingBox.currentIndex())
-        proxy_model.sort(0)
+        self.proxy_model.sort(0)
 
         s = QtCore.QSize(160, 250)  # Set icon sizing here
         self.parent_window.listView.setIconSize(s)
-        self.parent_window.listView.setModel(proxy_model)
+        self.parent_window.listView.setModel(self.proxy_model)
 
 
 class Settings:
@@ -305,6 +326,7 @@ class Settings:
         self.settings.endGroup()
 
 
+        # Shift focus to the tab that has the book open (if there is one)
 class BookToolBar(QtWidgets.QToolBar):
     def __init__(self, parent=None):
         super(BookToolBar, self).__init__(parent)
@@ -317,14 +339,53 @@ class BookToolBar(QtWidgets.QToolBar):
         # Buttons
         self.fullscreenButton = QtWidgets.QAction(
             QtGui.QIcon.fromTheme('view-fullscreen'), 'Fullscreen', self)
+        self.fontButton = QtWidgets.QAction(
+            QtGui.QIcon.fromTheme('gtk-select-font'), 'Format view', self)
+        self.settingsButton = QtWidgets.QAction(
+            QtGui.QIcon.fromTheme('settings'), 'Settings', self)
 
         # Add buttons
+        self.addAction(self.fontButton)
+                # Shift focus to the tab that has the book open (if there is one)
         self.addAction(self.fullscreenButton)
+        self.addSeparator()
+        self.addAction(self.settingsButton)
+
+        # Widget arrangement
+        spacer = QtWidgets.QWidget()
+        spacer.setSizePolicy(QtWidgets.QSizePolicy.Expanding, QtWidgets.QSizePolicy.Expanding)
+
+        sizePolicy = QtWidgets.QSizePolicy(
+            QtWidgets.QSizePolicy.Expanding, QtWidgets.QSizePolicy.Fixed)
+
+        self.searchBar = QtWidgets.QLineEdit()
+        self.searchBar.setPlaceholderText('Search...')
+        self.searchBar.setSizePolicy(sizePolicy)
+        self.searchBar.setContentsMargins(10, 0, 0, 0)
+        self.searchBar.setMinimumWidth(150)
+        self.searchBar.setObjectName('searchBar')
+
+        # Sorter
+        sorting_choices = ['Chapter ' + str(i) for i in range(1, 11)]
+        self.tocBox = QtWidgets.QComboBox()
+        self.tocBox.addItems(sorting_choices)
+        self.tocBox.setObjectName('sortingBox')
+        self.tocBox.setSizePolicy(sizePolicy)
+        self.tocBox.setMinimumContentsLength(10)
+        self.tocBox.setToolTip('Table of Contents')
+
+        # Add widgets
+        self.addWidget(spacer)
+        self.addWidget(self.tocBox)
+        self.addWidget(self.searchBar)
 
 
 class LibraryToolBar(QtWidgets.QToolBar):
     def __init__(self, parent=None):
         super(LibraryToolBar, self).__init__(parent)
+
+        spacer = QtWidgets.QWidget()
+        spacer.setSizePolicy(QtWidgets.QSizePolicy.Expanding, QtWidgets.QSizePolicy.Expanding)
 
         self.setMovable(False)
         self.setIconSize(QtCore.QSize(22, 22))
@@ -346,12 +407,14 @@ class LibraryToolBar(QtWidgets.QToolBar):
         self.addAction(self.settingsButton)
 
         # Filter
-        self.filterEdit = QtWidgets.QLineEdit()
-        self.filterEdit.setPlaceholderText('Search for Title, Author, Tags...')
         sizePolicy = QtWidgets.QSizePolicy(
-            QtWidgets.QSizePolicy.MinimumExpanding, QtWidgets.QSizePolicy.Fixed)
+            QtWidgets.QSizePolicy.Expanding, QtWidgets.QSizePolicy.Fixed)
+
+        self.filterEdit = QtWidgets.QLineEdit()
+        self.filterEdit.setPlaceholderText(
+            'Search for Title, Author, Tags...')
         self.filterEdit.setSizePolicy(sizePolicy)
-        self.filterEdit.setContentsMargins(200, 0, 200, 0)
+        self.filterEdit.setContentsMargins(10, 0, 0, 0)
         self.filterEdit.setMinimumWidth(150)
         self.filterEdit.setObjectName('filterEdit')
 
@@ -360,11 +423,15 @@ class LibraryToolBar(QtWidgets.QToolBar):
         self.sortingBox = QtWidgets.QComboBox()
         self.sortingBox.addItems(sorting_choices)
         self.sortingBox.setObjectName('sortingBox')
+        self.sortingBox.setSizePolicy(sizePolicy)
+        # self.sortingBox.setContentsMargins(30, 0, 0, 0)
+        self.sortingBox.setMinimumContentsLength(10)
         self.sortingBox.setToolTip('Sort by')
 
         # Add widgets
-        self.addWidget(self.filterEdit)
+        self.addWidget(spacer)
         self.addWidget(self.sortingBox)
+        self.addWidget(self.filterEdit)
 
 
 class Tab(QtWidgets.QWidget):
@@ -376,7 +443,7 @@ class Tab(QtWidgets.QWidget):
 
         super(Tab, self).__init__(parent)
         self.parent = parent
-        self.book_metadata = book_metadata
+        self.book_metadata = book_metadata  # Save progress data into this dictionary
 
         book_title = self.book_metadata['book_title']
         book_path = self.book_metadata['book_path']
