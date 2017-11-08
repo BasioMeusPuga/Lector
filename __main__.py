@@ -9,6 +9,7 @@
     ✓ Search bar in toolbar
     ✓ Shift focus to the tab that has the book open
     ✓ Search bar in toolbar
+    ✓ Drop down for TOC (book view)
 
     mobi support
     txt, doc support
@@ -17,7 +18,6 @@
     Get ISBN using python-isbnlib
     All ebooks should first be added to the database and then returned as HTML
     Theming
-    Drop down for TOC (book view)
     Pagination
     Use format* icons for toolbar buttons
     Information dialog widget
@@ -85,6 +85,7 @@ class MainUI(QtWidgets.QMainWindow, mainwindow.Ui_MainWindow):
 
         # ListView
         self.listView.setSpacing(15)
+        self.listView.verticalScrollBar().setSingleStep(6)
         self.reload_listview()
         self.listView.doubleClicked.connect(self.list_doubleclick)
 
@@ -124,7 +125,7 @@ class MainUI(QtWidgets.QMainWindow, mainwindow.Ui_MainWindow):
 
             selected_number = len(selected_books)
             msg_box = QtWidgets.QMessageBox()
-            msg_box.setText(f'Delete {selected_number} book(s)?')
+            msg_box.setText('Delete %d book(s)?' % selected_number)
             msg_box.setIcon(QtWidgets.QMessageBox.Question)
             msg_box.setWindowTitle('Confirm deletion')
             msg_box.setStandardButtons(
@@ -143,6 +144,8 @@ class MainUI(QtWidgets.QMainWindow, mainwindow.Ui_MainWindow):
             self.bookToolBar.hide()
             self.libraryToolBar.show()
             if self.lib_ref.proxy_model:
+                # Making the proxy model available doesn't affect
+                # memory utilization at all. Bleh.
                 self.statusMessage.setText(
                     str(self.lib_ref.proxy_model.rowCount()) + ' Books')
         else:
@@ -326,7 +329,6 @@ class Settings:
         self.settings.endGroup()
 
 
-        # Shift focus to the tab that has the book open (if there is one)
 class BookToolBar(QtWidgets.QToolBar):
     def __init__(self, parent=None):
         super(BookToolBar, self).__init__(parent)
@@ -346,7 +348,6 @@ class BookToolBar(QtWidgets.QToolBar):
 
         # Add buttons
         self.addAction(self.fontButton)
-                # Shift focus to the tab that has the book open (if there is one)
         self.addAction(self.fullscreenButton)
         self.addSeparator()
         self.addAction(self.settingsButton)
