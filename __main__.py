@@ -36,7 +36,7 @@ import mainwindow
 import database
 import book_parser
 
-from widgets import *
+from widgets import LibraryToolBar, BookToolBar, Tab
 
 
 class MainUI(QtWidgets.QMainWindow, mainwindow.Ui_MainWindow):
@@ -86,14 +86,41 @@ class MainUI(QtWidgets.QMainWindow, mainwindow.Ui_MainWindow):
         self.tabWidget.tabCloseRequested.connect(self.close_tab)
 
         # ListView
-        self.listView.setSpacing(15)
+        # self.listView.setSpacing(0)
+        self.listView.setGridSize(QtCore.QSize(175, 250))
         self.listView.verticalScrollBar().setSingleStep(7)
-        self.reload_listview()
         self.listView.doubleClicked.connect(self.list_doubleclick)
+        self.reload_listview()
+        self.resizeEvent()
 
         # Keyboard shortcuts
         self.exit_all = QtWidgets.QShortcut(QtGui.QKeySequence('Ctrl+Q'), self)
         self.exit_all.activated.connect(self.closeEvent)
+
+    def resizeEvent(self, event=None):
+        # The hackiness of this hack is just...
+        default_size = 175  # This is size of the QIcon (160 by default) +
+                            # minimum margin is needed between thumbnails
+
+        # for n icons, the n + 1th icon will appear at > n +1.11875
+        # First, calculate the number of images per row
+        i = self.listView.viewport().width() / default_size
+        rem = i - int(i)
+        if rem >= .11875 and rem <= .9999:
+            num_images = int(i)
+        else:
+            num_images = int(i) - 1
+
+        # The rest is illustrated using informative variable names
+        space_occupied = num_images * default_size
+        space_left = (
+            self.listView.viewport().width() - space_occupied - 19)  # 19 is the scrollbar width
+        try:
+            layout_extra_space_per_image = space_left // num_images
+            self.listView.setGridSize(
+                QtCore.QSize(default_size + layout_extra_space_per_image, 240))
+        except ZeroDivisionError:  # Initial resize is ignored
+            return
 
     def add_books(self):
         # TODO
@@ -203,46 +230,6 @@ class MainUI(QtWidgets.QMainWindow, mainwindow.Ui_MainWindow):
     def closeEvent(self, event=None):
         Settings(self).save_settings()
         QtWidgets.qApp.exit()
-
-    def resizeEventNotConnected(self, event=None):
-        # Extraordinarily hackish
-        # Even by my standards
-        # This works-ish
-        # But the implementation sucks hard
-        # Ignore this for now
-        listview_width = self.listView.size().width()
-        default_margins = 20
-        x_default_size = 160
-        y_x_suggested_ratio = 1.5625
-        # y_new_size = x_new_size * y_x_suggested_ratio
-
-        space_per_thumb = x_default_size + default_margins
-        space_occupied = listview_width / space_per_thumb
-        # At n thumbs per row, space occupied is ~ 1.2n * space_per_thumb
-        # If listView width is more than this, a new thumb gets added to the row
-        # If it's less, a thumb gets taken away i.e.
-        # @ n thumbnails / row, space required >(n + .2) and <(n + 1.2)
-        # I want smaller thumbnails that get bigger
-        # Therefore, 3 thumbnails will be made to fit in a space of >2.2 and <3.2
-        # 6 in a space of >5.2 and <6.2
-        # Since I'm not touching the margins, this will mean adjusting the
-        # x_default_size and multiplying that by the y_x_suggested ratio for
-        # the image height
-        rem = space_occupied - int(space_occupied)
-        if rem > .24:
-            thumbs_per_row = int(space_occupied)
-            reqd_thumbs = thumbs_per_row + 1
-        if rem < .15:
-            reqd_thumbs = int(space_occupied)
-        else:
-            reqd_thumbs = int(space_occupied)
-
-        new_space_per_thumb = listview_width / reqd_thumbs
-        x_new_size = new_space_per_thumb - default_margins - 20
-        y_new_size = x_new_size * y_x_suggested_ratio
-
-        s = QtCore.QSize(x_new_size, y_new_size)
-        self.listView.setIconSize(s)
 
 
 class Library:
