@@ -12,6 +12,8 @@
     ✓ Drop down for TOC (book view)
     ✓ Image reflow
 
+    Implement book view settings with a QDockWidget
+    Option to ignore a and the for sorting purposes
     mobi support
     txt, doc support
     pdf support?
@@ -38,7 +40,7 @@ import database
 import book_parser
 
 from widgets import LibraryToolBar, BookToolBar, Tab
-from main_subclasses import Settings, Library
+from subclasses import Settings, Library
 
 
 class MainUI(QtWidgets.QMainWindow, mainwindow.Ui_MainWindow):

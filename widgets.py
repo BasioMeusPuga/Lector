@@ -130,3 +130,10 @@ class Tab(QtWidgets.QWidget):
         self.gridLayout.addWidget(self.textEdit, 0, 0, 1, 1)
         self.parent.addTab(self, book_title)
         self.textEdit.setText(book_path)
+
+
+class BookSettingsDock(QtWidgets.QDockWidget):
+    def __init__(self, parent=None):
+        super(BookSettingsDock, self).__init__(parent)
+
+        print(dir(self))
