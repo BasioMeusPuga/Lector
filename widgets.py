@@ -6,6 +6,15 @@ class BookToolBar(QtWidgets.QToolBar):
     def __init__(self, parent=None):
         super(BookToolBar, self).__init__(parent)
 
+        # Spacer
+        spacer = QtWidgets.QWidget()
+        spacer.setSizePolicy(
+            QtWidgets.QSizePolicy.Expanding, QtWidgets.QSizePolicy.Expanding)
+
+        # Size policy
+        sizePolicy = QtWidgets.QSizePolicy(
+            QtWidgets.QSizePolicy.Expanding, QtWidgets.QSizePolicy.Fixed)
+
         self.setMovable(False)
         self.setIconSize(QtCore.QSize(22, 22))
         self.setFloatable(False)
@@ -50,26 +59,35 @@ class BookToolBar(QtWidgets.QToolBar):
             QtGui.QIcon.fromTheme('format-line-spacing-double'),
             'Decrease line spacing', self)
 
+        self.fontBox = QtWidgets.QFontComboBox()
+        self.colorBoxFG = QtWidgets.QPushButton()
+        self.colorBoxBG = QtWidgets.QPushButton()
+
+        self.fontBoxAction = self.addWidget(self.fontBox)
         self.addAction(self.fontSizeUp)
         self.addAction(self.fontSizeDown)
+        self.fontSeparator1 = self.addSeparator()
+        self.fgColorAction = self.addWidget(self.colorBoxFG)
+        self.bgColorAction = self.addWidget(self.colorBoxBG)
+        self.fontSeparator2 = self.addSeparator()
         self.addAction(self.lineSpacingUp)
         self.addAction(self.lineSpacingDown)
+        self.fontSeparator3 = self.addSeparator()
         self.addAction(self.marginsUp)
         self.addAction(self.marginsDown)
 
+        self.fontBoxAction.setVisible(False)
         self.fontSizeUp.setVisible(False)
         self.fontSizeDown.setVisible(False)
-        self.marginsUp.setVisible(False)
-        self.marginsDown.setVisible(False)
+        self.fgColorAction.setVisible(False)
+        self.bgColorAction.setVisible(False)
         self.lineSpacingUp.setVisible(False)
         self.lineSpacingDown.setVisible(False)
-
-        # Widget arrangement
-        spacer = QtWidgets.QWidget()
-        spacer.setSizePolicy(QtWidgets.QSizePolicy.Expanding, QtWidgets.QSizePolicy.Expanding)
-
-        sizePolicy = QtWidgets.QSizePolicy(
-            QtWidgets.QSizePolicy.Expanding, QtWidgets.QSizePolicy.Fixed)
+        self.marginsUp.setVisible(False)
+        self.marginsDown.setVisible(False)
+        self.fontSeparator1.setVisible(False)
+        self.fontSeparator2.setVisible(False)
+        self.fontSeparator3.setVisible(False)
 
         self.searchBar = QtWidgets.QLineEdit()
         self.searchBar.setPlaceholderText('Search...')
@@ -87,8 +105,11 @@ class BookToolBar(QtWidgets.QToolBar):
         self.tocBox.setMinimumContentsLength(10)
         self.tocBox.setToolTip('Table of Contents')
 
-        # Add widgets
-        self.addWidget(spacer)
+        # All of these will be put after the spacer
+        # This means that the buttons in the left side of
+        # the toolbar have to split up and added here
+        self.boxSpacer = self.addWidget(spacer)
+
         self.tocBoxAction = self.addWidget(self.tocBox)
         self.searchBarAction = self.addWidget(self.searchBar)
 
@@ -102,12 +123,18 @@ class BookToolBar(QtWidgets.QToolBar):
         self.fullscreenButton.setVisible(False)
         self.settingsButton.setVisible(False)
 
+        self.fontBoxAction.setVisible(True)
         self.fontSizeUp.setVisible(True)
         self.fontSizeDown.setVisible(True)
-        self.marginsUp.setVisible(True)
-        self.marginsDown.setVisible(True)
+        self.fgColorAction.setVisible(True)
+        self.bgColorAction.setVisible(True)
         self.lineSpacingUp.setVisible(True)
         self.lineSpacingDown.setVisible(True)
+        self.marginsUp.setVisible(True)
+        self.marginsDown.setVisible(True)
+        self.fontSeparator1.setVisible(True)
+        self.fontSeparator2.setVisible(True)
+        self.fontSeparator3.setVisible(True)
 
         self.tocBoxAction.setVisible(False)
         self.searchBarAction.setVisible(False)
@@ -116,12 +143,18 @@ class BookToolBar(QtWidgets.QToolBar):
         self.fullscreenButton.setVisible(True)
         self.settingsButton.setVisible(True)
 
+        self.fontBoxAction.setVisible(False)
         self.fontSizeUp.setVisible(False)
         self.fontSizeDown.setVisible(False)
-        self.marginsUp.setVisible(False)
-        self.marginsDown.setVisible(False)
+        self.fgColorAction.setVisible(False)
+        self.bgColorAction.setVisible(False)
         self.lineSpacingUp.setVisible(False)
         self.lineSpacingDown.setVisible(False)
+        self.marginsUp.setVisible(False)
+        self.marginsDown.setVisible(False)
+        self.fontSeparator1.setVisible(False)
+        self.fontSeparator2.setVisible(False)
+        self.fontSeparator3.setVisible(False)
 
         self.tocBoxAction.setVisible(True)
         self.searchBarAction.setVisible(True)
