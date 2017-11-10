@@ -1,9 +1,15 @@
 #!/usr/bin/env python3
+# Every parser is supposed to have the following methods, even if they return None:
+# read_book()
+# get_title()
+# get_author()
+# get_year()
+# get_cover_image()
+# get_isbn
+# TODO More for get contents, get TOC
 
 import os
 import re
-import hashlib
-from multiprocessing.dummy import Pool
 
 import ebooklib.epub
 
@@ -15,7 +21,7 @@ class ParseEPUB:
         self.filename = filename
         self.book = None
 
-    def read_epub(self):
+    def read_book(self):
         try:
             self.book = ebooklib.epub.read_epub(self.filename)
         except (KeyError, AttributeError):
@@ -94,54 +100,3 @@ class ParseEPUB:
                     return isbn
         except KeyError:
             return
-
-
-class BookSorter:
-    def __init__(self, file_list):
-        # Have the GUI pass a list of files straight to here
-        # Then, on the basis of what is needed, pass the
-        # filenames to the requisite functions
-        # This includes getting file info for the database
-        # Parsing for the reader proper
-        # Caching upon closing
-        self.file_list = file_list
-        self.all_books = {}
-
-    def read_book(self, filename):
-        # filename is expected as a string containg the
-        # full path of the ebook file
-
-        # TODO
-        # See if you want to include a hash of the book's name and author
-        with open(filename, 'rb') as current_book:
-            file_md5 = hashlib.md5(current_book.read()).hexdigest()
-
-        if file_md5 in self.all_books.items():
-            return
-
-        # TODO
-        # See if tags can be generated from book content
-        book_ref = ParseEPUB(filename)
-        book_ref.read_epub()
-        if book_ref.book:
-            title = book_ref.get_title()
-            author = book_ref.get_author()
-            year = book_ref.get_year()
-            cover_image = book_ref.get_cover_image()
-            isbn = book_ref.get_isbn()
-
-            self.all_books[file_md5] = {
-                'title': title,
-                'author': author,
-                'year': year,
-                'isbn': isbn,
-                'path': filename,
-                'cover_image': cover_image}
-
-    def initiate_threads(self):
-        _pool = Pool(5)
-        _pool.map(self.read_book, self.file_list)
-        _pool.close()
-        _pool.join()
-
-        return self.all_books

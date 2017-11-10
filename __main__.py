@@ -11,22 +11,23 @@
     ✓ Search bar in toolbar
     ✓ Drop down for TOC (book view)
     ✓ Image reflow
+    ✓ Implement book view settings with a(nother) toolbar
+    ✓ Use format* icons for toolbar buttons
+    ✓ Image delegates
 
-    Implement book view settings with a(nother) toolbar
     Options:
         Ignore a and the for sorting purposes
         Check files (hashes) upon restart
         Recursive file addition
         Show what on startup
-    mobi support
-    txt, doc support
+    mobi, azw support
+    txt, doc, djvu support
     pdf support?
     Goodreads API: Ratings, Read, Recommendations
     Get ISBN using python-isbnlib
     All ebooks should first be added to the database and then returned as HTML
     Theming
     Pagination
-    Use format* icons for toolbar buttons
     Information dialog widget
     Library context menu: Cache, Read, Edit database, delete
     Set context menu for definitions and the like
@@ -39,7 +40,7 @@ from PyQt5 import QtWidgets, QtGui, QtCore
 
 import mainwindow
 import database
-import book_parser
+import sorter
 
 from widgets import LibraryToolBar, BookToolBar, Tab, LibraryDelegate
 from subclasses import Settings, Library
@@ -144,7 +145,7 @@ class MainUI(QtWidgets.QMainWindow, mainwindow.Ui_MainWindow):
         if my_file[0]:
             self.listView.setEnabled(False)
             self.last_open_path = os.path.dirname(my_file[0][0])
-            books = book_parser.BookSorter(my_file[0])
+            books = sorter.BookSorter(my_file[0])
             parsed_books = books.initiate_threads()
             database.DatabaseFunctions(self.database_path).add_to_database(parsed_books)
             self.listView.setEnabled(True)
