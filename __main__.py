@@ -104,6 +104,12 @@ class MainUI(QtWidgets.QMainWindow, mainwindow.Ui_MainWindow):
         self.exit_all.activated.connect(self.closeEvent)
 
     def resizeEvent(self, event=None):
+        if event:
+            # This implies a vertical resize event only
+            # We ain't about that lifestyle
+            if event.oldSize().width() == event.size().width():
+                return
+
         # The hackiness of this hack is just...
         default_size = 175  # This is size of the QIcon (160 by default) +
                             # minimum margin is needed between thumbnails
