@@ -41,7 +41,7 @@ import mainwindow
 import database
 import book_parser
 
-from widgets import LibraryToolBar, BookToolBar, Tab
+from widgets import LibraryToolBar, BookToolBar, Tab, LibraryDelegate
 from subclasses import Settings, Library
 
 
@@ -96,6 +96,7 @@ class MainUI(QtWidgets.QMainWindow, mainwindow.Ui_MainWindow):
         self.listView.setGridSize(QtCore.QSize(175, 240))
         self.listView.verticalScrollBar().setSingleStep(7)
         self.listView.doubleClicked.connect(self.list_doubleclick)
+        self.listView.setItemDelegate(LibraryDelegate())
         self.reload_listview()
 
         # Keyboard shortcuts

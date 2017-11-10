@@ -36,6 +36,13 @@ class Library:
             book_year = i[3]
             book_cover = i[8]
             book_tags = i[6]
+            book_path = i[4]
+            book_progress = None  # TODO
+                                  # Leave at None for an untouched book
+                                  # 'completed' for a completed book
+                                  # whatever else is here can be used
+                                  # to remember position
+
             all_metadata = {
                 'book_title': i[1],
                 'book_author': i[2],
@@ -55,6 +62,21 @@ class Library:
             if book_tags:
                 search_workaround += book_tags
 
+            # Generate book state for passing onto the QStyledItemDelegate
+            def generate_book_state(book_path, book_progress):
+                if not os.path.exists(book_path):
+                    return 'deleted'
+
+                if book_progress:
+                    if book_progress == 'completed':
+                        return 'completed'
+                    else:
+                        return 'inprogress'
+                else:
+                    return None
+
+            book_state = generate_book_state(book_path, book_progress)
+
             # Generate image pixmap and then pass it to the widget
             # as a QIcon
             # Additional data can be set using an incrementing
@@ -72,6 +94,7 @@ class Library:
             item.setData(book_year, QtCore.Qt.UserRole + 2)
             item.setData(all_metadata, QtCore.Qt.UserRole + 3)
             item.setData(search_workaround, QtCore.Qt.UserRole + 4)
+            item.setData(book_state, QtCore.Qt.UserRole + 5)
             item.setIcon(QtGui.QIcon(img_pixmap))
             self.parent_window.viewModel.appendRow(item)
 

@@ -24,7 +24,7 @@ class BookToolBar(QtWidgets.QToolBar):
         self.fullscreenButton = QtWidgets.QAction(
             QtGui.QIcon.fromTheme('view-fullscreen'), 'Fullscreen', self)
         self.fontButton = QtWidgets.QAction(
-            QtGui.QIcon.fromTheme('gtk-select-font'), 'Format view', self)
+            QtGui.QIcon.fromTheme('gtk-select-font'), 'Font settings', self)
         self.settingsButton = QtWidgets.QAction(
             QtGui.QIcon.fromTheme('settings'), 'Settings', self)
 
@@ -165,7 +165,8 @@ class LibraryToolBar(QtWidgets.QToolBar):
         super(LibraryToolBar, self).__init__(parent)
 
         spacer = QtWidgets.QWidget()
-        spacer.setSizePolicy(QtWidgets.QSizePolicy.Expanding, QtWidgets.QSizePolicy.Expanding)
+        spacer.setSizePolicy(
+            QtWidgets.QSizePolicy.Expanding, QtWidgets.QSizePolicy.Expanding)
 
         self.setMovable(False)
         self.setIconSize(QtCore.QSize(22, 22))
@@ -238,8 +239,24 @@ class Tab(QtWidgets.QWidget):
         self.textEdit.setText(book_path)
 
 
-class BookSettingsDock(QtWidgets.QDockWidget):
+class LibraryDelegate(QtWidgets.QStyledItemDelegate):
     def __init__(self, parent=None):
-        super(BookSettingsDock, self).__init__(parent)
+        super(LibraryDelegate, self).__init__(parent)
 
-        print(dir(self))
+    def paint(self, painter, option, index):
+        QtWidgets.QStyledItemDelegate.paint(self, painter, option, index)
+        option = option.__class__(option)
+        book_state = index.data(QtCore.Qt.UserRole + 5)
+        if book_state:
+            if book_state == 'deleted':
+                read_icon = QtGui.QIcon.fromTheme('vcs-conflicting').pixmap(36)
+            if book_state == 'completed':
+                read_icon = QtGui.QIcon.fromTheme('vcs-normal').pixmap(36)
+            if book_state == 'inprogress':
+                read_icon = QtGui.QIcon.fromTheme('vcs-locally-modified').pixmap(36)
+        else:
+            return
+
+        x_draw = option.rect.bottomRight().x() - 30
+        y_draw = option.rect.bottomRight().y() - 35
+        painter.drawPixmap(x_draw, y_draw, read_icon)
