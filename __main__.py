@@ -12,8 +12,12 @@
     ✓ Drop down for TOC (book view)
     ✓ Image reflow
 
-    Implement book view settings with a QDockWidget
-    Option to ignore a and the for sorting purposes
+    Implement book view settings with a(nother) toolbar
+    Options:
+        Ignore a and the for sorting purposes
+        Check files (hashes) upon restart
+        Recursive file addition
+        Show what on startup
     mobi support
     txt, doc support
     pdf support?
@@ -24,8 +28,6 @@
     Pagination
     Use format* icons for toolbar buttons
     Information dialog widget
-    Check file hashes upon restart
-    Recursive file addition
     Library context menu: Cache, Read, Edit database, delete
     Set context menu for definitions and the like
 """

@@ -21,9 +21,48 @@ class BookToolBar(QtWidgets.QToolBar):
 
         # Add buttons
         self.addAction(self.fontButton)
-        self.addAction(self.fullscreenButton)
+        self.fontButton.setCheckable(True)
+        self.fontButton.triggered.connect(self.toggle_font_settings)
         self.addSeparator()
+        self.addAction(self.fullscreenButton)
         self.addAction(self.settingsButton)
+
+        # Font modification buttons
+        # All hidden by default
+        self.fontSizeUp = QtWidgets.QAction(
+            QtGui.QIcon.fromTheme('format-font-size-more'),
+            'Increase font size', self)
+        self.fontSizeDown = QtWidgets.QAction(
+            QtGui.QIcon.fromTheme('format-font-size-less'),
+            'Decrease font size', self)
+
+        self.marginsUp = QtWidgets.QAction(
+            QtGui.QIcon.fromTheme('format-justify-fill'),
+            'Increase margins', self)
+        self.marginsDown = QtWidgets.QAction(
+            QtGui.QIcon.fromTheme('format-indent-less'),
+            'Decrease margins', self)
+
+        self.lineSpacingUp = QtWidgets.QAction(
+            QtGui.QIcon.fromTheme('format-line-spacing-triple'),
+            'Increase line spacing', self)
+        self.lineSpacingDown = QtWidgets.QAction(
+            QtGui.QIcon.fromTheme('format-line-spacing-double'),
+            'Decrease line spacing', self)
+
+        self.addAction(self.fontSizeUp)
+        self.addAction(self.fontSizeDown)
+        self.addAction(self.lineSpacingUp)
+        self.addAction(self.lineSpacingDown)
+        self.addAction(self.marginsUp)
+        self.addAction(self.marginsDown)
+
+        self.fontSizeUp.setVisible(False)
+        self.fontSizeDown.setVisible(False)
+        self.marginsUp.setVisible(False)
+        self.marginsDown.setVisible(False)
+        self.lineSpacingUp.setVisible(False)
+        self.lineSpacingDown.setVisible(False)
 
         # Widget arrangement
         spacer = QtWidgets.QWidget()
@@ -50,8 +89,42 @@ class BookToolBar(QtWidgets.QToolBar):
 
         # Add widgets
         self.addWidget(spacer)
-        self.addWidget(self.tocBox)
-        self.addWidget(self.searchBar)
+        self.tocBoxAction = self.addWidget(self.tocBox)
+        self.searchBarAction = self.addWidget(self.searchBar)
+
+    def toggle_font_settings(self):
+        if self.fontButton.isChecked():
+            self.font_settings_on()
+        else:
+            self.font_settings_off()
+
+    def font_settings_on(self):
+        self.fullscreenButton.setVisible(False)
+        self.settingsButton.setVisible(False)
+
+        self.fontSizeUp.setVisible(True)
+        self.fontSizeDown.setVisible(True)
+        self.marginsUp.setVisible(True)
+        self.marginsDown.setVisible(True)
+        self.lineSpacingUp.setVisible(True)
+        self.lineSpacingDown.setVisible(True)
+
+        self.tocBoxAction.setVisible(False)
+        self.searchBarAction.setVisible(False)
+
+    def font_settings_off(self):
+        self.fullscreenButton.setVisible(True)
+        self.settingsButton.setVisible(True)
+
+        self.fontSizeUp.setVisible(False)
+        self.fontSizeDown.setVisible(False)
+        self.marginsUp.setVisible(False)
+        self.marginsDown.setVisible(False)
+        self.lineSpacingUp.setVisible(False)
+        self.lineSpacingDown.setVisible(False)
+
+        self.tocBoxAction.setVisible(True)
+        self.searchBarAction.setVisible(True)
 
 
 class LibraryToolBar(QtWidgets.QToolBar):
