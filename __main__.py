@@ -145,7 +145,7 @@ class MainUI(QtWidgets.QMainWindow, mainwindow.Ui_MainWindow):
         if my_file[0]:
             self.listView.setEnabled(False)
             self.last_open_path = os.path.dirname(my_file[0][0])
-            books = sorter.BookSorter(my_file[0])
+            books = sorter.BookSorter(my_file[0], self.database_path)
             parsed_books = books.initiate_threads()
             database.DatabaseFunctions(self.database_path).add_to_database(parsed_books)
             self.listView.setEnabled(True)

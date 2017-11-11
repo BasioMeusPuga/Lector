@@ -6,11 +6,11 @@
 import hashlib
 from multiprocessing.dummy import Pool
 
+import database
 from parsers.epub import ParseEPUB
 
-
 class BookSorter:
-    def __init__(self, file_list):
+    def __init__(self, file_list, database_path):
         # Have the GUI pass a list of files straight to here
         # Then, on the basis of what is needed, pass the
         # filenames to the requisite functions
@@ -19,17 +19,33 @@ class BookSorter:
         # Caching upon closing
         self.file_list = file_list
         self.all_books = {}
+        self.database_path = database_path
+        self.hashes = []
+        self.database_hashes()
+
+    def database_hashes(self):
+        all_hashes = database.DatabaseFunctions(
+            self.database_path).fetch_data(
+                ('Hash',),
+                'books',
+                {'Hash': ''},
+                'LIKE')
+
+        if all_hashes:
+            self.hashes = [i[0] for i in all_hashes]
 
     def read_book(self, filename):
         # filename is expected as a string containg the
         # full path of the ebook file
 
-        # TODO
-        # See if you want to include a hash of the book's name and author
         with open(filename, 'rb') as current_book:
             file_md5 = hashlib.md5(current_book.read()).hexdigest()
 
-        if file_md5 in self.all_books.items():
+        # Do not allow addition in case the file is dupicated in the directory
+        # OR is already in the database
+        # TODO
+        # See if you want to include a hash of the book's name and author
+        if file_md5 in self.all_books.items() or file_md5 in self.hashes:
             return
 
         # TODO

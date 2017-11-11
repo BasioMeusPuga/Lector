@@ -49,22 +49,13 @@ class DatabaseFunctions:
             book_cover = i[1]['cover_image']
             book_isbn = i[1]['isbn']
 
-            # Check if the file might not already be in the database
-            # A None return signifies that that addition is possible
-            hash_from_database = self.fetch_data(
-                ('Title',),
-                'books',
-                {'Hash': book_hash},
-                'EQUALS',
-                True)
-
             sql_command_add = (
                 "INSERT INTO books (Title,Author,Year,Path,ISBN,Hash,CoverImage) VALUES(?, ?, ?, ?, ?, ?, ?)")
 
             # TODO
             # This is a placeholder. You will need to generate book covers
             # in case none are found
-            if not hash_from_database and book_cover:
+            if book_cover:
                 self.database.execute(
                     sql_command_add,
                     [book_title, book_author, book_year,
