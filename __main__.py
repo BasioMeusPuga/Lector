@@ -128,7 +128,10 @@ class MainUI(QtWidgets.QMainWindow, mainwindow.Ui_MainWindow):
         # The rest is illustrated using informative variable names
         space_occupied = num_images * default_size
         space_left = (
-            self.listView.viewport().width() - space_occupied - 19)  # 19 is the scrollbar width
+            self.listView.viewport().width() - space_occupied - 19)  # 12 is the scrollbar width
+                                                                     # Larger numbers keep reduce
+                                                                     # flickering but also increase
+                                                                     # the distance from the scrollbar
         try:
             layout_extra_space_per_image = space_left // num_images
             self.listView.setGridSize(

@@ -2,7 +2,7 @@
 
 # Form implementation generated from reading ui file 'resources/main.ui'
 #
-# Created by: PyQt5 UI code generator 5.9
+# Created by: PyQt5 UI code generator 5.9.1
 #
 # WARNING! All changes made in this file will be lost!
 
@@ -33,8 +33,9 @@ class Ui_MainWindow(object):
         self.listView.setProperty("showDropIndicator", False)
         self.listView.setSelectionMode(QtWidgets.QAbstractItemView.ExtendedSelection)
         self.listView.setMovement(QtWidgets.QListView.Static)
-        self.listView.setResizeMode(QtWidgets.QListView.Adjust)
-        self.listView.setLayoutMode(QtWidgets.QListView.Batched)
+        self.listView.setProperty("isWrapping", True)
+        self.listView.setResizeMode(QtWidgets.QListView.Fixed)
+        self.listView.setLayoutMode(QtWidgets.QListView.SinglePass)
         self.listView.setViewMode(QtWidgets.QListView.IconMode)
         self.listView.setUniformItemSizes(True)
         self.listView.setWordWrap(True)

@@ -49,11 +49,14 @@
               <property name="movement">
                <enum>QListView::Static</enum>
               </property>
+              <property name="isWrapping" stdset="0">
+               <bool>true</bool>
+              </property>
               <property name="resizeMode">
-               <enum>QListView::Adjust</enum>
+               <enum>QListView::Fixed</enum>
               </property>
               <property name="layoutMode">
-               <enum>QListView::Batched</enum>
+               <enum>QListView::SinglePass</enum>
               </property>
               <property name="spacing">
                <number>0</number>
