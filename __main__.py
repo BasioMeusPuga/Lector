@@ -1,37 +1,50 @@
 #!/usr/bin/env python3
 
 """ TODO
-    ✓ sqlite3 for cover images cache
-    ✓ sqlite3 for storing metadata
-    ✓ Drop down for SortBy (library view)
-    ✓ Define every widget in code because you're going to need to create separate tabs
-    ✓ Override the keypress event of the textedit
-    ✓ Search bar in toolbar
-    ✓ Shift focus to the tab that has the book open
-    ✓ Search bar in toolbar
-    ✓ Drop down for TOC (book view)
-    ✓ Image reflow
-    ✓ Implement book view settings with a(nother) toolbar
-    ✓ Use format* icons for toolbar buttons
-    ✓ Image delegates
-
     Options:
-        Ignore a and the for sorting purposes
         Check files (hashes) upon restart
         Recursive file addition
         Show what on startup
-    Maybe include icons for emblems
-    mobi, azw support
-    txt, doc, djvu support
-    pdf support?
-    Goodreads API: Ratings, Read, Recommendations
-    Get ISBN using python-isbnlib
-    All ebooks should first be added to the database and then returned as HTML
-    Theming
-    Pagination
-    Information dialog widget
-    Library context menu: Cache, Read, Edit database, delete
-    Set context menu for definitions and the like
+    Library:
+        ✓ sqlite3 for cover images cache
+        ✓ sqlite3 for storing metadata
+        ✓ Drop down for SortBy
+        ✓ Image delegates
+        ✓ Image reflow
+        ✓ Search bar in toolbar
+        ✓ Shift focus to the tab that has the book open
+        Ignore a / the / numbers for sorting purposes
+        Maybe create emblem per filetype
+        Put the path in the scope of the search
+            maybe as a type: switch
+        Mass tagging
+        Information dialog widget
+        Context menu: Cache, Read, Edit database, delete, Mark read/unread
+        Create separate thread for parser - Show progress in main window
+    Reading:
+        ✓ Drop down for TOC
+        ✓ Override the keypress event of the textedit
+        ✓ Use format* icons for toolbar buttons
+        ✓ Implement book view settings with a(nother) toolbar
+        Consider substituting the textedit for another widget
+        All ebooks should first be added to the database and then returned as HTML
+        Pagination
+        Theming
+        Set context menu for definitions and the like
+        Keep fontsize and margins consistent - Let page increase in length
+    Filetypes:
+        epub support
+        mobi, azw support
+        txt, doc, djvu support
+        pdf support?
+        cbz, cbr support
+            Keep font settings enabled but only for background color
+    Internet:
+        Goodreads API: Ratings, Read, Recommendations
+        Get ISBN using python-isbnlib
+    Other:
+        ✓ Define every widget in code
+        Maybe include icons for emblems
 """
 
 import os
@@ -127,11 +140,11 @@ class MainUI(QtWidgets.QMainWindow, mainwindow.Ui_MainWindow):
 
         # The rest is illustrated using informative variable names
         space_occupied = num_images * default_size
+        # 12 is the scrollbar width
+        # Larger numbers keep reduce flickering but also increase
+        # the distance from the scrollbar
         space_left = (
-            self.listView.viewport().width() - space_occupied - 19)  # 12 is the scrollbar width
-                                                                     # Larger numbers keep reduce
-                                                                     # flickering but also increase
-                                                                     # the distance from the scrollbar
+            self.listView.viewport().width() - space_occupied - 19)
         try:
             layout_extra_space_per_image = space_left // num_images
             self.listView.setGridSize(
@@ -182,13 +195,13 @@ class MainUI(QtWidgets.QMainWindow, mainwindow.Ui_MainWindow):
             msg_box.exec_()
 
     def only_update_listview(self):
-        self.lib_ref.update_proxyModel()
+        self.lib_ref.update_proxymodel()
 
     def reload_listview(self):
         if not self.viewModel:
             self.lib_ref.generate_model()
-        self.lib_ref.create_proxyModel()
-        self.lib_ref.update_proxyModel()
+        self.lib_ref.create_proxymodel()
+        self.lib_ref.update_proxymodel()
 
     def tab_switch(self):
         if self.tabWidget.currentIndex() == 0:

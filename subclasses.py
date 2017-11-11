@@ -98,14 +98,14 @@ class Library:
             item.setIcon(QtGui.QIcon(img_pixmap))
             self.parent_window.viewModel.appendRow(item)
 
-    def create_proxyModel(self):
+    def create_proxymodel(self):
         self.proxy_model = QtCore.QSortFilterProxyModel()
         self.proxy_model.setSourceModel(self.parent_window.viewModel)
         s = QtCore.QSize(160, 250)  # Set icon sizing here
         self.parent_window.listView.setIconSize(s)
         self.parent_window.listView.setModel(self.proxy_model)
 
-    def update_proxyModel(self):
+    def update_proxymodel(self):
         self.proxy_model.setFilterRole(QtCore.Qt.UserRole + 4)
         self.proxy_model.setFilterCaseSensitivity(QtCore.Qt.CaseInsensitive)
         self.proxy_model.setFilterWildcard(self.parent_window.libraryToolBar.filterEdit.text())
