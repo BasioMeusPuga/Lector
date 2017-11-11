@@ -20,6 +20,7 @@
         Check files (hashes) upon restart
         Recursive file addition
         Show what on startup
+    Maybe include icons for emblems
     mobi, azw support
     txt, doc, djvu support
     pdf support?
@@ -71,8 +72,8 @@ class MainUI(QtWidgets.QMainWindow, mainwindow.Ui_MainWindow):
         self.libraryToolBar = LibraryToolBar(self)
         self.libraryToolBar.addButton.triggered.connect(self.add_books)
         self.libraryToolBar.deleteButton.triggered.connect(self.delete_books)
-        self.libraryToolBar.filterEdit.textChanged.connect(self.reload_listview)
-        self.libraryToolBar.sortingBox.activated.connect(self.reload_listview)
+        self.libraryToolBar.filterEdit.textChanged.connect(self.only_update_listview)
+        self.libraryToolBar.sortingBox.activated.connect(self.only_update_listview)
         self.addToolBar(self.libraryToolBar)
 
         self.bookToolBar = BookToolBar(self)
@@ -177,10 +178,14 @@ class MainUI(QtWidgets.QMainWindow, mainwindow.Ui_MainWindow):
             msg_box.show()
             msg_box.exec_()
 
+    def only_update_listview(self):
+        self.lib_ref.update_proxyModel()
+
     def reload_listview(self):
         if not self.viewModel:
             self.lib_ref.generate_model()
-        self.lib_ref.update_listView()
+        self.lib_ref.create_proxyModel()
+        self.lib_ref.update_proxyModel()
 
     def tab_switch(self):
         if self.tabWidget.currentIndex() == 0:
