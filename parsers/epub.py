@@ -10,6 +10,7 @@
 
 import os
 import re
+import collections
 
 import ebooklib.epub
 
@@ -24,7 +25,7 @@ class ParseEPUB:
     def read_book(self):
         try:
             self.book = ebooklib.epub.read_epub(self.filename)
-        except (KeyError, AttributeError):
+        except (KeyError, AttributeError, FileNotFoundError):
             print('Cannot parse ' + self.filename)
             return
 
@@ -100,3 +101,40 @@ class ParseEPUB:
                     return isbn
         except KeyError:
             return
+
+    def get_contents(self):
+        contents = collections.OrderedDict()
+
+        def flatten_chapter(toc_element):
+            output_list = []
+            for i in toc_element:
+                if isinstance(i, (tuple, list)):
+                    output_list.extend(flatten_chapter(i))
+                else:
+                    output_list.append(i)
+            return output_list
+
+        for i in self.book.toc:
+            if isinstance(i, (tuple, list)):
+                title = i[0].title
+                contents[title] = 'Composite Chapter'
+                # composite_chapter = flatten_chapter(i)
+                # composite_chapter_content = []
+                # for j in composite_chapter:
+                #     href = j.href
+                #     composite_chapter_content.append(
+                #         self.book.get_item_with_href(href).get_content())
+
+                # contents[title] = composite_chapter_content
+            else:
+                title = i.title
+                href = i.href
+                try:
+                    content = self.book.get_item_with_href(href).get_content()
+                    if content:
+                        contents[title] = content.decode()
+                    else:
+                        raise AttributeError
+                except AttributeError:
+                    contents[title] = ''
+        return contents

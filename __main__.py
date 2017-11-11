@@ -5,6 +5,7 @@
         Check files (hashes) upon restart
         Recursive file addition
         Show what on startup
+        If cache large files
     Library:
         ✓ sqlite3 for cover images cache
         ✓ sqlite3 for storing metadata
@@ -13,8 +14,9 @@
         ✓ Image reflow
         ✓ Search bar in toolbar
         ✓ Shift focus to the tab that has the book open
+        ? Create emblem per filetype
+        Look into how you might group icons
         Ignore a / the / numbers for sorting purposes
-        Maybe create emblem per filetype
         Put the path in the scope of the search
             maybe as a type: switch
         Mass tagging
@@ -26,17 +28,18 @@
         ✓ Override the keypress event of the textedit
         ✓ Use format* icons for toolbar buttons
         ✓ Implement book view settings with a(nother) toolbar
-        Consider substituting the textedit for another widget
+        ? Substitute textedit for another widget
         All ebooks should first be added to the database and then returned as HTML
         Pagination
         Theming
         Set context menu for definitions and the like
         Keep fontsize and margins consistent - Let page increase in length
     Filetypes:
+        ? Plugin system for parsers
+        ? pdf support
         epub support
         mobi, azw support
         txt, doc, djvu support
-        pdf support?
         cbz, cbr support
             Keep font settings enabled but only for background color
     Internet:
@@ -44,7 +47,7 @@
         Get ISBN using python-isbnlib
     Other:
         ✓ Define every widget in code
-        Maybe include icons for emblems
+        ? Include icons for emblems
 """
 
 import os
@@ -91,6 +94,7 @@ class MainUI(QtWidgets.QMainWindow, mainwindow.Ui_MainWindow):
 
         self.bookToolBar = BookToolBar(self)
         self.bookToolBar.fullscreenButton.triggered.connect(self.set_fullscreen)
+        self.bookToolBar.tocBox.activated.connect(self.set_toc_position)
         self.addToolBar(self.bookToolBar)
 
         # Make the correct toolbar visible
@@ -99,10 +103,12 @@ class MainUI(QtWidgets.QMainWindow, mainwindow.Ui_MainWindow):
 
         # New tabs and their contents
         self.current_tab = None
-        self.current_textEdit = None
+        self.current_contentView = None
 
         # Tab closing
         self.tabWidget.setTabsClosable(True)
+        # TODO
+        # It's possible to add a widget to the Library tab here
         self.tabWidget.tabBar().setTabButton(0, QtWidgets.QTabBar.RightSide, None)
         self.tabWidget.tabCloseRequested.connect(self.close_tab)
 
@@ -162,7 +168,7 @@ class MainUI(QtWidgets.QMainWindow, mainwindow.Ui_MainWindow):
         if my_file[0]:
             self.listView.setEnabled(False)
             self.last_open_path = os.path.dirname(my_file[0][0])
-            books = sorter.BookSorter(my_file[0], self.database_path)
+            books = sorter.BookSorter(my_file[0], 'addition', self.database_path)
             parsed_books = books.initiate_threads()
             database.DatabaseFunctions(self.database_path).add_to_database(parsed_books)
             self.listView.setEnabled(True)
@@ -176,11 +182,14 @@ class MainUI(QtWidgets.QMainWindow, mainwindow.Ui_MainWindow):
                 if box_button.text() == '&Yes':
                     selected_hashes = []
                     for i in selected_books:
-                        book_data = i.data(QtCore.Qt.UserRole + 3)
-                        selected_hashes.append(book_data['book_hash'])
+                        data = i.data(QtCore.Qt.UserRole + 3)
+                        selected_hashes.append(data['hash'])
                     database.DatabaseFunctions(
                         self.database_path).delete_from_database(selected_hashes)
-                    self.viewModel = None
+                    self.viewModel = None  # TODO
+                                           # Delete the item from the model instead
+                                           # of reconstructing it
+                                           # The same goes for addition
                     self.reload_listview()
 
             selected_number = len(selected_books)
@@ -205,8 +214,10 @@ class MainUI(QtWidgets.QMainWindow, mainwindow.Ui_MainWindow):
 
     def tab_switch(self):
         if self.tabWidget.currentIndex() == 0:
+
             self.bookToolBar.hide()
             self.libraryToolBar.show()
+
             if self.lib_ref.proxy_model:
                 # Making the proxy model available doesn't affect
                 # memory utilization at all. Bleh.
@@ -215,51 +226,76 @@ class MainUI(QtWidgets.QMainWindow, mainwindow.Ui_MainWindow):
         else:
             self.bookToolBar.show()
             self.libraryToolBar.hide()
+
             current_metadata = self.tabWidget.widget(
-                self.tabWidget.currentIndex()).book_metadata
-            current_title = current_metadata['book_title']
-            current_author = current_metadata['book_author']
+                self.tabWidget.currentIndex()).metadata
+
+            current_title = current_metadata['title']
+            current_author = current_metadata['author']
+            current_position = current_metadata['position']
+            current_toc = current_metadata['content'].keys()
+
+            self.bookToolBar.tocBox.blockSignals(True)
+            self.bookToolBar.tocBox.clear()
+            self.bookToolBar.tocBox.addItems(current_toc)
+            if current_position:
+                self.bookToolBar.tocBox.setCurrentIndex(current_position)
+            self.bookToolBar.tocBox.blockSignals(False)
+
             self.statusMessage.setText(
                 current_author + ' - ' + current_title)
 
+    def set_toc_position(self, event=None):
+        self.tabWidget.widget(
+            self.tabWidget.currentIndex()).metadata[
+                'position'] = event
+
+        chapter_name = self.bookToolBar.tocBox.currentText()
+
+        current_tab = self.tabWidget.widget(self.tabWidget.currentIndex())
+        required_content = current_tab.metadata['content'][chapter_name]
+        current_tab.contentView.setHtml(required_content)
+
     def set_fullscreen(self):
         self.current_tab = self.tabWidget.currentIndex()
-        self.current_textEdit = self.tabWidget.widget(self.current_tab)
+        self.current_contentView = self.tabWidget.widget(self.current_tab)
 
         self.exit_shortcut = QtWidgets.QShortcut(
-            QtGui.QKeySequence('Escape'), self.current_textEdit)
+            QtGui.QKeySequence('Escape'), self.current_contentView)
         self.exit_shortcut.activated.connect(self.set_normalsize)
 
-        self.current_textEdit.setWindowFlags(QtCore.Qt.Window)
-        self.current_textEdit.setWindowState(QtCore.Qt.WindowFullScreen)
+        self.current_contentView.setWindowFlags(QtCore.Qt.Window)
+        self.current_contentView.setWindowState(QtCore.Qt.WindowFullScreen)
         self.hide()
-        self.current_textEdit.show()
+        self.current_contentView.show()
 
     def set_normalsize(self):
-        self.current_textEdit.setWindowState(QtCore.Qt.WindowNoState)
-        self.current_textEdit.setWindowFlags(QtCore.Qt.Widget)
+        self.current_contentView.setWindowState(QtCore.Qt.WindowNoState)
+        self.current_contentView.setWindowFlags(QtCore.Qt.Widget)
         self.show()
-        self.current_textEdit.show()
+        self.current_contentView.show()
 
     def list_doubleclick(self, myindex):
-        # TODO
-        # Load the book.
         index = self.listView.model().index(myindex.row(), 0)
-        book_metadata = self.listView.model().data(index, QtCore.Qt.UserRole + 3)
+        metadata = self.listView.model().data(index, QtCore.Qt.UserRole + 3)
 
         # Shift focus to the tab that has the book open (if there is one)
         for i in range(1, self.tabWidget.count()):
-            tab_book_metadata = self.tabWidget.widget(i).book_metadata
-            if tab_book_metadata['book_hash'] == book_metadata['book_hash']:
+            tab_metadata = self.tabWidget.widget(i).metadata
+            if tab_metadata['hash'] == metadata['hash']:
                 self.tabWidget.setCurrentIndex(i)
                 return
 
-        tab_ref = Tab(book_metadata, self.tabWidget)
+        path = metadata['path']
+        contents = sorter.BookSorter(
+            [path], 'reading', self.database_path).initiate_threads()
+
+        tab_ref = Tab(contents, self.tabWidget)
         self.tabWidget.setCurrentWidget(tab_ref)
-        print(tab_ref.book_metadata)  # Metadata upon tab creation
+        # print(tab_ref.book_metadata)  # Metadata upon tab creation
 
     def close_tab(self, tab_index):
-        print(self.tabWidget.widget(tab_index).book_metadata)  # Metadata upon tab deletion
+        # print(self.tabWidget.widget(tab_index).metadata)  # Metadata upon tab deletion
         self.tabWidget.removeTab(tab_index)
 
     def closeEvent(self, event=None):

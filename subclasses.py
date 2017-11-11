@@ -31,51 +31,52 @@ class Library:
         for i in books:
             # The database query returns a tuple with the following indices
             # Index 0 is the key ID is ignored
-            book_title = i[1]
-            book_author = i[2]
-            book_year = i[3]
-            book_cover = i[8]
-            book_tags = i[6]
-            book_path = i[4]
-            book_progress = None  # TODO
-                                  # Leave at None for an untouched book
-                                  # 'completed' for a completed book
-                                  # whatever else is here can be used
-                                  # to remember position
+            title = i[1]
+            author = i[2]
+            year = i[3]
+            path = i[4]
+            tags = i[6]
+            cover = i[9]
+            progress = None  # TODO
+                             # Leave at None for an untouched book
+                             # 'completed' for a completed book
+                             # whatever else is here can be used
+                             # to remember position
+                             # Maybe get from the position param
 
             all_metadata = {
-                'book_title': i[1],
-                'book_author': i[2],
-                'book_year': i[3],
-                'book_path': i[4],
-                'book_isbn': i[5],
-                'book_tags': i[6],
-                'book_hash': i[7]}
+                'title': i[1],
+                'author': i[2],
+                'year': i[3],
+                'path': i[4],
+                'position': i[5],
+                'isbn': i[6],
+                'tags': i[7],
+                'hash': i[8]}
 
-            tooltip_string = book_title + '\nAuthor: ' + book_author + '\nYear: ' + str(book_year)
-            if book_tags:
-                tooltip_string += ('\nTags: ' + book_tags)
+            tooltip_string = title + '\nAuthor: ' + author + '\nYear: ' + str(year)
+            if tags:
+                tooltip_string += ('\nTags: ' + tags)
 
             # This remarkably ugly hack is because the QSortFilterProxyModel
             # doesn't easily allow searching through multiple item roles
-            search_workaround = book_title + ' ' + book_author
-            if book_tags:
-                search_workaround += book_tags
+            search_workaround = title + ' ' + author
+            if tags:
+                search_workaround += tags
 
             # Generate book state for passing onto the QStyledItemDelegate
-            def generate_book_state(book_path, book_progress):
-                if not os.path.exists(book_path):
+            def generate_book_state(path, progress):
+                if not os.path.exists(path):
                     return 'deleted'
 
-                if book_progress:
-                    if book_progress == 'completed':
+                if progress:
+                    if progress == 'completed':
                         return 'completed'
                     else:
                         return 'inprogress'
                 else:
                     return None
-
-            book_state = generate_book_state(book_path, book_progress)
+            state = generate_book_state(path, progress)
 
             # Generate image pixmap and then pass it to the widget
             # as a QIcon
@@ -84,17 +85,17 @@ class Library:
             # QtCore.Qt.DisplayRole is the same as item.setText()
             # The model is a single row and has no columns
             img_pixmap = QtGui.QPixmap()
-            img_pixmap.loadFromData(book_cover)
+            img_pixmap.loadFromData(cover)
             img_pixmap = img_pixmap.scaled(420, 600, QtCore.Qt.IgnoreAspectRatio)
             item = QtGui.QStandardItem()
             item.setToolTip(tooltip_string)
             # The following order is needed to keep sorting working
-            item.setData(book_title, QtCore.Qt.UserRole)
-            item.setData(book_author, QtCore.Qt.UserRole + 1)
-            item.setData(book_year, QtCore.Qt.UserRole + 2)
+            item.setData(title, QtCore.Qt.UserRole)
+            item.setData(author, QtCore.Qt.UserRole + 1)
+            item.setData(year, QtCore.Qt.UserRole + 2)
             item.setData(all_metadata, QtCore.Qt.UserRole + 3)
             item.setData(search_workaround, QtCore.Qt.UserRole + 4)
-            item.setData(book_state, QtCore.Qt.UserRole + 5)
+            item.setData(state, QtCore.Qt.UserRole + 5)
             item.setIcon(QtGui.QIcon(img_pixmap))
             self.parent_window.viewModel.appendRow(item)
 
@@ -108,7 +109,8 @@ class Library:
     def update_proxymodel(self):
         self.proxy_model.setFilterRole(QtCore.Qt.UserRole + 4)
         self.proxy_model.setFilterCaseSensitivity(QtCore.Qt.CaseInsensitive)
-        self.proxy_model.setFilterWildcard(self.parent_window.libraryToolBar.filterEdit.text())
+        self.proxy_model.setFilterWildcard(
+            self.parent_window.libraryToolBar.filterEdit.text())
 
         self.parent_window.statusMessage.setText(
             str(self.proxy_model.rowCount()) + ' books')

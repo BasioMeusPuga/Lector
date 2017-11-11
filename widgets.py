@@ -97,9 +97,7 @@ class BookToolBar(QtWidgets.QToolBar):
         self.searchBar.setObjectName('searchBar')
 
         # Sorter
-        sorting_choices = ['Chapter ' + str(i) for i in range(1, 11)]
         self.tocBox = QtWidgets.QComboBox()
-        self.tocBox.addItems(sorting_choices)
         self.tocBox.setObjectName('sortingBox')
         self.tocBox.setSizePolicy(sizePolicy)
         self.tocBox.setMinimumContentsLength(10)
@@ -216,27 +214,31 @@ class LibraryToolBar(QtWidgets.QToolBar):
 
 
 class Tab(QtWidgets.QWidget):
-    def __init__(self, book_metadata, parent=None):
+    def __init__(self, metadata, parent=None):
         # TODO
-        # The display widget will probably have to be shifted to something else
         # A horizontal slider to control flow
         # Keyboard shortcuts
 
+        # The content display widget is currently a QTextBrowser
         super(Tab, self).__init__(parent)
         self.parent = parent
-        self.book_metadata = book_metadata  # Save progress data into this dictionary
+        self.metadata = metadata  # Save progress data into this dictionary
+        self.setStyleSheet("background-color: black")
 
-        book_title = self.book_metadata['book_title']
-        book_path = self.book_metadata['book_path']
+        title = self.metadata['title']
+        path = self.metadata['path']
 
         self.gridLayout = QtWidgets.QGridLayout(self)
         self.gridLayout.setObjectName("gridLayout")
-        self.textEdit = QtWidgets.QTextEdit(self)
-        self.textEdit.setObjectName("textEdit")
-        self.textEdit.setFrameShape(QtWidgets.QFrame.NoFrame)
-        self.gridLayout.addWidget(self.textEdit, 0, 0, 1, 1)
-        self.parent.addTab(self, book_title)
-        self.textEdit.setText(book_path)
+        self.contentView = QtWidgets.QTextBrowser(self)
+        self.contentView.setFrameShape(QtWidgets.QFrame.NoFrame)
+        self.contentView.setObjectName("contentView")
+        self.contentView.verticalScrollBar().setSingleStep(7)
+        self.contentView.setHorizontalScrollBarPolicy(QtCore.Qt.ScrollBarAlwaysOff)
+        self.gridLayout.addWidget(self.contentView, 0, 0, 1, 1)
+        self.parent.addTab(self, title)
+        self.contentView.setStyleSheet(
+            "QTextEdit {font-size:20px; padding-left:100; padding-right:100; background-color:black}")
 
 
 class LibraryDelegate(QtWidgets.QStyledItemDelegate):
@@ -246,13 +248,13 @@ class LibraryDelegate(QtWidgets.QStyledItemDelegate):
     def paint(self, painter, option, index):
         QtWidgets.QStyledItemDelegate.paint(self, painter, option, index)
         option = option.__class__(option)
-        book_state = index.data(QtCore.Qt.UserRole + 5)
-        if book_state:
-            if book_state == 'deleted':
+        state = index.data(QtCore.Qt.UserRole + 5)
+        if state:
+            if state == 'deleted':
                 read_icon = QtGui.QIcon.fromTheme('vcs-conflicting').pixmap(36)
-            if book_state == 'completed':
+            if state == 'completed':
                 read_icon = QtGui.QIcon.fromTheme('vcs-normal').pixmap(36)
-            if book_state == 'inprogress':
+            if state == 'inprogress':
                 read_icon = QtGui.QIcon.fromTheme('vcs-locally-modified').pixmap(36)
         else:
             return
