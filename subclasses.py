@@ -110,7 +110,7 @@ class Library:
         self.proxy_model.setFilterRole(QtCore.Qt.UserRole + 4)
         self.proxy_model.setFilterCaseSensitivity(QtCore.Qt.CaseInsensitive)
         self.proxy_model.setFilterWildcard(
-            self.parent_window.libraryToolBar.filterEdit.text())
+            self.parent_window.libraryToolBar.searchBar.text())
 
         self.parent_window.statusMessage.setText(
             str(self.proxy_model.rowCount()) + ' books')

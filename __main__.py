@@ -85,16 +85,28 @@ class MainUI(QtWidgets.QMainWindow, mainwindow.Ui_MainWindow):
         self.viewModel = None
         self.lib_ref = Library(self)
 
-        # Create toolbars
+        # Library toolbar
         self.libraryToolBar = LibraryToolBar(self)
         self.libraryToolBar.addButton.triggered.connect(self.add_books)
         self.libraryToolBar.deleteButton.triggered.connect(self.delete_books)
-        self.libraryToolBar.filterEdit.textChanged.connect(self.only_update_listview)
+        self.libraryToolBar.searchBar.textChanged.connect(self.only_update_listview)
         self.libraryToolBar.sortingBox.activated.connect(self.only_update_listview)
         self.addToolBar(self.libraryToolBar)
 
+        # Book toolbar
         self.bookToolBar = BookToolBar(self)
         self.bookToolBar.fullscreenButton.triggered.connect(self.set_fullscreen)
+
+        self.bookToolBar.fontBox.activated.connect(self.modify_font)
+        self.bookToolBar.fontSizeUp.triggered.connect(self.modify_font)
+        self.bookToolBar.fontSizeDown.triggered.connect(self.modify_font)
+        self.bookToolBar.lineSpacingUp.triggered.connect(self.modify_font)
+        self.bookToolBar.lineSpacingDown.triggered.connect(self.modify_font)
+        self.bookToolBar.paddingUp.triggered.connect(self.modify_font)
+        self.bookToolBar.paddingDown.triggered.connect(self.modify_font)
+
+        self.bookToolBar.colorBoxFG.clicked.connect(self.get_color)
+        self.bookToolBar.colorBoxBG.clicked.connect(self.get_color)
         self.bookToolBar.tocBox.activated.connect(self.set_toc_position)
         self.addToolBar(self.bookToolBar)
 
@@ -124,6 +136,17 @@ class MainUI(QtWidgets.QMainWindow, mainwindow.Ui_MainWindow):
         # Keyboard shortcuts
         self.exit_all = QtWidgets.QShortcut(QtGui.QKeySequence('Ctrl+Q'), self)
         self.exit_all.activated.connect(self.closeEvent)
+
+        # Display profiles
+        # TODO
+        # Get display profiles from settings
+        # Current using a default
+        self.current_profile = {
+            'foreground': 'grey',
+            'background': 'black',
+            'padding': 100,
+            'font_size': 22,
+            'line_spacing': 1.5}
 
     def resizeEvent(self, event=None):
         if event:
@@ -163,6 +186,9 @@ class MainUI(QtWidgets.QMainWindow, mainwindow.Ui_MainWindow):
         # TODO
         # Maybe expand this to traverse directories recursively
         self.statusMessage.setText('Adding books...')
+
+        # TODO
+        # Generate list of available parsers
         my_file = QtWidgets.QFileDialog.getOpenFileNames(
             self, 'Open file', self.last_open_path,
             "eBooks (*.epub *.mobi *.aws *.txt *.pdf *.fb2 *.djvu *.cbz)")
@@ -258,8 +284,9 @@ class MainUI(QtWidgets.QMainWindow, mainwindow.Ui_MainWindow):
         current_tab.contentView.setHtml(required_content)
 
     def set_fullscreen(self):
-        self.current_tab = self.tabWidget.currentIndex()
-        self.current_contentView = self.tabWidget.widget(self.current_tab)
+        current_tab = self.tabWidget.currentIndex()
+        current_tab_widget = self.tabWidget.widget(current_tab)
+        self.current_contentView = current_tab_widget.findChildren(QtWidgets.QTextBrowser)[0]
 
         self.exit_shortcut = QtWidgets.QShortcut(
             QtGui.QKeySequence('Escape'), self.current_contentView)
@@ -293,13 +320,75 @@ class MainUI(QtWidgets.QMainWindow, mainwindow.Ui_MainWindow):
 
         tab_ref = Tab(contents, self.tabWidget)
         self.tabWidget.setCurrentWidget(tab_ref)
-        # print(tab_ref.book_metadata)  # Metadata upon tab creation
+        self.format_contentView()
 
     def close_tab(self, tab_index):
         temp_dir = self.tabWidget.widget(tab_index).metadata['temp_dir']
         if temp_dir:
             shutil.rmtree(temp_dir)
         self.tabWidget.removeTab(tab_index)
+
+    def get_color(self):
+        signal_sender = self.sender().objectName()
+
+        colorDialog = QtWidgets.QColorDialog()
+        new_color = colorDialog.getColor()
+        if not new_color:
+            return
+
+        color_name = new_color.name()
+
+        if signal_sender == 'fgColor':
+            self.bookToolBar.colorBoxFG.setStyleSheet(
+                'background-color: %s' % color_name)
+            self.current_profile['foreground'] = color_name
+
+        elif signal_sender == 'bgColor':
+            self.bookToolBar.colorBoxBG.setStyleSheet(
+                'background-color: %s' % color_name)
+            self.current_profile['background'] = color_name
+        self.format_contentView()
+
+    def modify_font(self):
+        signal_sender = self.sender().objectName()
+
+        if signal_sender == 'fontBox':
+            pass
+
+        if signal_sender == 'fontSizeUp':
+            self.current_profile['font_size'] += 1
+        if signal_sender == 'fontSizeDown':
+            if self.current_profile['font_size'] > 5:
+                self.current_profile['font_size'] -= 1
+        if signal_sender == 'lineSpacingUp':
+            self.current_profile['line_spacing'] += .5
+        if signal_sender == 'lineSpacingDown':
+            self.current_profile['line_spacing'] -= .5
+
+        if signal_sender == 'paddingUp':
+            self.current_profile['padding'] += 5
+        if signal_sender == 'paddingDown':
+            self.current_profile['padding'] -= 5
+
+        self.format_contentView()
+
+    def format_contentView(self):
+        # TODO
+        # Implement line spacing
+        # Implement font changing
+
+        foreground = self.current_profile['foreground']
+        background = self.current_profile['background']
+        padding = self.current_profile['padding']
+        font_size = self.current_profile['font_size']
+
+        current_tab = self.tabWidget.currentIndex()
+        current_tab_widget = self.tabWidget.widget(current_tab)
+        current_contentView = current_tab_widget.findChildren(QtWidgets.QTextBrowser)[0]
+
+        current_contentView.setStyleSheet(
+            "QTextEdit {{font-size: {0}px; padding-left: {1}; padding-right: {1}; color: {2}; background-color: {3}}}".format(
+                font_size, padding, foreground, background))
 
     def closeEvent(self, event=None):
         # All tabs must be iterated upon here
