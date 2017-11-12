@@ -12,8 +12,10 @@ class BookToolBar(QtWidgets.QToolBar):
             QtWidgets.QSizePolicy.Expanding, QtWidgets.QSizePolicy.Expanding)
 
         # Size policy
+        # TODO
+        # Prevent resizing
         sizePolicy = QtWidgets.QSizePolicy(
-            QtWidgets.QSizePolicy.Expanding, QtWidgets.QSizePolicy.Fixed)
+            QtWidgets.QSizePolicy.Minimum, QtWidgets.QSizePolicy.Fixed)
 
         self.setMovable(False)
         self.setIconSize(QtCore.QSize(22, 22))
@@ -218,6 +220,8 @@ class Tab(QtWidgets.QWidget):
         # TODO
         # A horizontal slider to control flow
         # Keyboard shortcuts
+        # Take hint from a position function argument to open the book
+        # at a specific page
 
         # The content display widget is currently a QTextBrowser
         super(Tab, self).__init__(parent)

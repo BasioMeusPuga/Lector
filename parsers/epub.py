@@ -5,8 +5,8 @@
 # get_author()
 # get_year()
 # get_cover_image()
-# get_isbn
-# TODO More for get contents, get TOC
+# get_isbn()
+# get_contents() - Should return a tuple with 0: TOC 1: Deletable temp_directory
 
 import os
 import re
@@ -89,7 +89,7 @@ class ParseEPUB:
             return image_content
 
         except KeyError:
-            return
+            return None
 
     def get_isbn(self):
         try:
@@ -100,7 +100,7 @@ class ParseEPUB:
                     isbn = i[0]
                     return isbn
         except KeyError:
-            return
+            return None
 
     def get_contents(self):
         contents = collections.OrderedDict()
@@ -137,4 +137,6 @@ class ParseEPUB:
                         raise AttributeError
                 except AttributeError:
                     contents[title] = ''
-        return contents
+
+        # The 1th index is a directory that has to be cleaned up if needed
+        return contents, None

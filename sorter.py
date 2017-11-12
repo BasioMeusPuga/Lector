@@ -1,7 +1,6 @@
 #!/usr/bin/env python3
 
 # TODO
-# Methods that return None must be quantified within the parsing module
 # See if tags can be generated from book content
 # See if you want to include a hash of the book's name and author
 
@@ -10,7 +9,17 @@ import hashlib
 from multiprocessing.dummy import Pool
 
 import database
+
+# Every parser is supposed to have the following methods, even if they return None:
+# read_book()
+# get_title()
+# get_author()
+# get_year()
+# get_cover_image()
+# get_isbn()
+# get_contents() - Should return a tuple with 0: TOC 1: Deletable temp_directory
 from parsers.epub import ParseEPUB
+from parsers.cbz import ParseCBZ
 
 
 class BookSorter:
@@ -65,27 +74,36 @@ class BookSorter:
                 and (file_md5 in self.all_books.items() or file_md5 in self.hashes)):
             return
 
-        # Select sorter by file extension
+        # SORTING TAKES PLACE HERE
         try:
             file_extension = os.path.splitext(filename)[1][1:]
             if file_extension == 'epub':
                 book_ref = ParseEPUB(filename)
+            if file_extension == 'cbz':
+                book_ref = ParseCBZ(filename)
         except IndexError:
             return
 
         # Everything following this is standard
-        # Some of the None returns will have to have
-        # values associated with them, though
+        # None values are accounted for here
         book_ref.read_book()
         if book_ref.book:
-            title = book_ref.get_title()
+            title = book_ref.get_title().title()
             author = book_ref.get_author()
+            if not author:
+                author = 'Unknown'
             year = book_ref.get_year()
+            if not year:
+                year = 9999
             isbn = book_ref.get_isbn()
 
             # Different modes require different values
             if self.mode == 'addition':
                 cover_image = book_ref.get_cover_image()
+                # TODO
+                if not cover_image:
+                    pass
+
                 self.all_books[file_md5] = {
                     'title': title,
                     'author': author,
@@ -95,7 +113,13 @@ class BookSorter:
                     'cover_image': cover_image}
 
             if self.mode == 'reading':
-                content = book_ref.get_contents()
+                all_content = book_ref.get_contents()
+                content = all_content[0]
+                temp_dir = all_content[1]
+
+                if not content.keys():
+                    content['Invalid'] = 'Possible Parse Error'
+
                 position = self.database_position(file_md5)
                 self.all_books = {
                     'title': title,
@@ -105,7 +129,8 @@ class BookSorter:
                     'hash': file_md5,
                     'path': filename,
                     'position': position,
-                    'content': content}
+                    'content': content,
+                    'temp_dir': temp_dir}
 
 
     def initiate_threads(self):

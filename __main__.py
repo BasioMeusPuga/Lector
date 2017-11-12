@@ -52,6 +52,7 @@
 
 import os
 import sys
+import shutil
 
 from PyQt5 import QtWidgets, QtGui, QtCore
 
@@ -164,7 +165,7 @@ class MainUI(QtWidgets.QMainWindow, mainwindow.Ui_MainWindow):
         self.statusMessage.setText('Adding books...')
         my_file = QtWidgets.QFileDialog.getOpenFileNames(
             self, 'Open file', self.last_open_path,
-            "eBooks (*.epub *.mobi *.aws *.txt *.pdf *.fb2 *.djvu)")
+            "eBooks (*.epub *.mobi *.aws *.txt *.pdf *.fb2 *.djvu *.cbz)")
         if my_file[0]:
             self.listView.setEnabled(False)
             self.last_open_path = os.path.dirname(my_file[0][0])
@@ -295,10 +296,18 @@ class MainUI(QtWidgets.QMainWindow, mainwindow.Ui_MainWindow):
         # print(tab_ref.book_metadata)  # Metadata upon tab creation
 
     def close_tab(self, tab_index):
-        # print(self.tabWidget.widget(tab_index).metadata)  # Metadata upon tab deletion
+        temp_dir = self.tabWidget.widget(tab_index).metadata['temp_dir']
+        if temp_dir:
+            shutil.rmtree(temp_dir)
         self.tabWidget.removeTab(tab_index)
 
     def closeEvent(self, event=None):
+        # All tabs must be iterated upon here
+        for i in range(1, self.tabWidget.count()):
+            tab_metadata = self.tabWidget.widget(i).metadata
+            if tab_metadata['temp_dir']:
+                shutil.rmtree(tab_metadata['temp_dir'])
+
         Settings(self).save_settings()
         QtWidgets.qApp.exit()
 

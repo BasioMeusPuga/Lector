@@ -45,8 +45,6 @@ class DatabaseFunctions:
             title = i[1]['title']
             author = i[1]['author']
             year = i[1]['year']
-            if not year:
-                year = 9999
             path = i[1]['path']
             cover = i[1]['cover_image']
             isbn = i[1]['isbn']
