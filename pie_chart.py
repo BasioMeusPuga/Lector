@@ -1,13 +1,15 @@
 # Modified from: http://drumcoder.co.uk/blog/2010/nov/16/python-code-generate-svg-pie-chart/
 
+import os
 import math
 
 class GeneratePie():
-    def __init__(self, progress_percent):
+    def __init__(self, progress_percent, temp_dir=None):
         self.progress_percent = int(progress_percent)
+        self.temp_dir = temp_dir
 
     def generate(self):
-        lSlices = (100 - self.progress_percent, self.progress_percent)  # percentages to show in pie
+        lSlices = (self.progress_percent, 100 - self.progress_percent)  # percentages to show in pie
 
         lOffsetX = 150
         lOffsetY = 150
@@ -57,7 +59,7 @@ class GeneratePie():
 
             lPath = "%s %s %s" % (lLineOne, lArc, lLineTwo)
             lGradient = GRADIENTS[lIndex]
-            lSvgPath += "<path d='%s' style='stroke:#2c2c2c; fill:url(#%s);'/>" % (
+            lSvgPath += "<path d='%s' style='stroke:#c579be; fill:url(#%s);'/>" % (
                 lPath, lGradient)
             lIndex += 1
 
@@ -66,20 +68,27 @@ class GeneratePie():
             xmlns:xlink="http://www.w3.org/1999/xlink">
         <defs>
             <radialGradient id="myRadialGradientGreen" r="65%%" cx="0" cy="0" spreadMethod="pad">
-            <stop offset="0%%"   stop-color="#2c2c2c" stop-opacity="1"/>
-            <stop offset="100%%" stop-color="#2c2c2c" stop-opacity="1" />
+            <stop offset="0%%"   stop-color="#c579be" stop-opacity="1"/>
+            <stop offset="100%%" stop-color="#c579be" stop-opacity="1" />
             </radialGradient>
         </defs>
         <defs>
             <radialGradient id="myRadialGradientOrange" r="65%%" cx="0" cy="0" spreadMethod="pad">
-            <stop offset="0%%"   stop-color="#4caf50" stop-opacity="1"/>
-            <stop offset="100%%" stop-color="#4caf50" stop-opacity="1" />
+            <stop offset="0%%"   stop-color="#6c4268" stop-opacity="1"/>
+            <stop offset="100%%" stop-color="#6c4268" stop-opacity="1" />
             </radialGradient>
         </defs>
 
         %s
-        <!--  <circle cx="%d" cy="%d" r="100" style="stroke:#4caf50; fill:none;"/> -->
+        <!--  <circle cx="%d" cy="%d" r="100" style="stroke:#6c4268; fill:none;"/> -->
         </svg>
         """ % (lSvgPath, lOffsetX, lOffsetY)
 
-        return lSvg
+
+        if self.temp_dir:
+            svg_path = os.path.join(self.temp_dir, 'lector_progress.svg')
+            lFile = open(svg_path, 'w')
+            lFile.write(lSvg)
+            lFile.close()
+        else:
+            return lSvg

@@ -1,7 +1,8 @@
 #!/usr/bin/env python3
 
-import sqlite3
 import os
+import pickle
+import sqlite3
 
 
 class DatabaseInit:
@@ -17,7 +18,7 @@ class DatabaseInit:
         self.database.execute(
             "CREATE TABLE books \
             (id INTEGER PRIMARY KEY, Title TEXT, Author TEXT, Year INTEGER, \
-            Path TEXT, Position TEXT, ISBN TEXT, Tags TEXT, Hash TEXT, CoverImage BLOB)")
+            Path TEXT, Position BLOB, ISBN TEXT, Tags TEXT, Hash TEXT, CoverImage BLOB)")
         self.database.execute(
             "CREATE TABLE cache \
             (id INTEGER PRIMARY KEY, Name TEXT, Path TEXT, CachedDict BLOB)")
@@ -62,6 +63,7 @@ class DatabaseFunctions:
                      path, isbn, book_hash, sqlite3.Binary(cover)])
 
         self.database.commit()
+        self.close_database()
 
     def fetch_data(self, columns, table, selection_criteria, equivalence, fetch_one=False):
         # columns is a tuple that will be passed as a comma separated list
@@ -111,6 +113,16 @@ class DatabaseFunctions:
         except KeyError:
             print('SQLite is in rebellion, Commander')
 
+        self.close_database()
+
+    def modify_position(self, file_hash, position):
+        pickled_position = pickle.dumps(position)
+
+        sql_command = "UPDATE books SET Position = ? WHERE Hash = ?"
+        self.database.execute(sql_command, [sqlite3.Binary(pickled_position), file_hash])
+        self.database.commit()
+        self.close_database()
+
     def delete_from_database(self, file_hashes):
         # file_hashes is expected as a list that will be iterated upon
         # This should enable multiple deletion
@@ -119,3 +131,8 @@ class DatabaseFunctions:
             self.database.execute(
                 f"DELETE FROM books WHERE Hash = '{i}'")
         self.database.commit()
+        self.close_database()
+
+    def close_database(self):
+        self.database.execute("VACUUM")
+        self.database.close()

@@ -87,6 +87,9 @@ class MainUI(QtWidgets.QMainWindow, mainwindow.Ui_MainWindow):
         self.viewModel = None
         self.lib_ref = Library(self)
 
+        # Application wide temporary directory
+        self.temp_dir = QtCore.QTemporaryDir()
+
         # Library toolbar
         self.libraryToolBar = LibraryToolBar(self)
         self.libraryToolBar.addButton.triggered.connect(self.add_books)
@@ -128,15 +131,14 @@ class MainUI(QtWidgets.QMainWindow, mainwindow.Ui_MainWindow):
         # TODO
         # It's possible to add a widget to the Library tab here
         self.tabWidget.tabBar().setTabButton(0, QtWidgets.QTabBar.RightSide, None)
-        self.tabWidget.tabCloseRequested.connect(self.close_tab)
+        self.tabWidget.tabCloseRequested.connect(self.tab_close)
 
         # ListView
-        # self.listView.setSpacing(0)
         self.listView.setGridSize(QtCore.QSize(175, 240))
         self.listView.setMouseTracking(True)
         self.listView.verticalScrollBar().setSingleStep(7)
         self.listView.doubleClicked.connect(self.list_doubleclick)
-        self.listView.setItemDelegate(LibraryDelegate())
+        self.listView.setItemDelegate(LibraryDelegate(self.temp_dir.path()))
         self.reload_listview()
 
         # Keyboard shortcuts
@@ -262,7 +264,7 @@ class MainUI(QtWidgets.QMainWindow, mainwindow.Ui_MainWindow):
             self.bookToolBar.tocBox.clear()
             self.bookToolBar.tocBox.addItems(current_toc)
             if current_position:
-                self.bookToolBar.tocBox.setCurrentIndex(current_position)
+                self.bookToolBar.tocBox.setCurrentIndex(current_position['current_chapter'] - 1)
             self.bookToolBar.tocBox.blockSignals(False)
 
             self.format_contentView()
@@ -270,17 +272,45 @@ class MainUI(QtWidgets.QMainWindow, mainwindow.Ui_MainWindow):
             self.statusMessage.setText(
                 current_author + ' - ' + current_title)
 
+    def tab_close(self, tab_index):
+        self.database_update_position(tab_index)
+        temp_dir = self.tabWidget.widget(tab_index).metadata['temp_dir']
+        if temp_dir:
+            shutil.rmtree(temp_dir)
+        self.tabWidget.removeTab(tab_index)
+
     def set_toc_position(self, event=None):
-        self.tabWidget.widget(
-            self.tabWidget.currentIndex()).metadata[
-                'position'] = event
-
         chapter_name = self.bookToolBar.tocBox.currentText()
-
         current_tab = self.tabWidget.widget(self.tabWidget.currentIndex())
         required_content = current_tab.metadata['content'][chapter_name]
+
+        # We're also updating the underlying model to have real-time
+        # updates on the read status
+        # Find index of the model item that corresponds to the tab
+        start_index = self.viewModel.index(0, 0)
+        matching_item = self.viewModel.match(
+            start_index,
+            QtCore.Qt.UserRole + 6,
+            current_tab.metadata['hash'],
+            1, QtCore.Qt.MatchExactly)
+        if matching_item:
+            model_row = matching_item[0].row()
+            model_index = self.viewModel.index(model_row, 0)
+
+        current_tab.metadata[
+            'position']['current_chapter'] = self.bookToolBar.tocBox.currentIndex() + 1
+        self.viewModel.setData(
+            model_index, current_tab.metadata['position'], QtCore.Qt.UserRole + 7)
+
         current_tab.contentView.verticalScrollBar().setValue(0)
         current_tab.contentView.setHtml(required_content)
+
+    def database_update_position(self, tab_index):
+        tab_metadata = self.tabWidget.widget(tab_index).metadata
+        file_hash = tab_metadata['hash']
+        position = tab_metadata['position']
+        database.DatabaseFunctions(
+            self.database_path).modify_position(file_hash, position)
 
     def set_fullscreen(self):
         current_tab = self.tabWidget.currentIndex()
@@ -294,9 +324,9 @@ class MainUI(QtWidgets.QMainWindow, mainwindow.Ui_MainWindow):
 
     def list_doubleclick(self, myindex):
         index = self.listView.model().index(myindex.row(), 0)
-        state = self.listView.model().data(index, QtCore.Qt.UserRole + 5)
+        file_exists = self.listView.model().data(index, QtCore.Qt.UserRole + 5)
 
-        if state == 'deleted':
+        if not file_exists:
             return
 
         metadata = self.listView.model().data(index, QtCore.Qt.UserRole + 3)
@@ -315,12 +345,6 @@ class MainUI(QtWidgets.QMainWindow, mainwindow.Ui_MainWindow):
         tab_ref = Tab(contents, self.tabWidget)
         self.tabWidget.setCurrentWidget(tab_ref)
         self.format_contentView()
-
-    def close_tab(self, tab_index):
-        temp_dir = self.tabWidget.widget(tab_index).metadata['temp_dir']
-        if temp_dir:
-            shutil.rmtree(temp_dir)
-        self.tabWidget.removeTab(tab_index)
 
     def get_color(self):
         signal_sender = self.sender().objectName()
@@ -427,10 +451,12 @@ class MainUI(QtWidgets.QMainWindow, mainwindow.Ui_MainWindow):
     def closeEvent(self, event=None):
         # All tabs must be iterated upon here
         for i in range(1, self.tabWidget.count()):
+            self.database_update_position(i)
             tab_metadata = self.tabWidget.widget(i).metadata
             if tab_metadata['temp_dir']:
                 shutil.rmtree(tab_metadata['temp_dir'])
 
+        self.temp_dir.remove()
         Settings(self).save_settings()
         QtWidgets.qApp.exit()
 

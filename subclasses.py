@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 
 import os
+import pickle
 import database
 from PyQt5 import QtWidgets, QtGui, QtCore
 
@@ -11,12 +12,11 @@ class Library:
         self.proxy_model = None
 
     def generate_model(self):
-        # TODO
-        # Use QItemdelegates to show book read progress
-
         # The QlistView widget needs to be populated
         # with a model that inherits from QStandardItemModel
-        self.parent_window.viewModel = QtGui.QStandardItemModel()
+        # self.parent_window.viewModel = QtGui.QStandardItemModel()
+        self.parent_window.viewModel = MyAbsModel()
+
         books = database.DatabaseFunctions(
             self.parent_window.database_path).fetch_data(
                 ('*',),
@@ -37,21 +37,19 @@ class Library:
             path = i[4]
             tags = i[6]
             cover = i[9]
-            progress = None  # TODO
-                             # Leave at None for an untouched book
-                             # 'completed' for a completed book
-                             # whatever else is here can be used
-                             # to remember position
-                             # Maybe get from the position param
+
+            position = i[5]
+            if position:
+                position = pickle.loads(position)
 
             all_metadata = {
-                'title': i[1],
-                'author': i[2],
-                'year': i[3],
-                'path': i[4],
-                'position': i[5],
+                'title': title,
+                'author': author,
+                'year': year,
+                'path': path,
+                'position': position,
                 'isbn': i[6],
-                'tags': i[7],
+                'tags': tags,
                 'hash': i[8]}
 
             tooltip_string = title + '\nAuthor: ' + author + '\nYear: ' + str(year)
@@ -64,19 +62,7 @@ class Library:
             if tags:
                 search_workaround += tags
 
-            # Generate book state for passing onto the QStyledItemDelegate
-            def generate_book_state(path, progress):
-                if not os.path.exists(path):
-                    return 'deleted'
-
-                if progress:
-                    if progress == 'completed':
-                        return 'completed'
-                    else:
-                        return 'inprogress'
-                else:
-                    return None
-            state = generate_book_state(path, progress)
+            file_exists = os.path.exists(path)
 
             # Generate image pixmap and then pass it to the widget
             # as a QIcon
@@ -95,7 +81,9 @@ class Library:
             item.setData(year, QtCore.Qt.UserRole + 2)
             item.setData(all_metadata, QtCore.Qt.UserRole + 3)
             item.setData(search_workaround, QtCore.Qt.UserRole + 4)
-            item.setData(state, QtCore.Qt.UserRole + 5)
+            item.setData(file_exists, QtCore.Qt.UserRole + 5)
+            item.setData(i[8], QtCore.Qt.UserRole + 6)  # File hash
+            item.setData(position, QtCore.Qt.UserRole + 7)
             item.setIcon(QtGui.QIcon(img_pixmap))
             self.parent_window.viewModel.appendRow(item)
 
@@ -198,3 +186,9 @@ class Settings:
             current_profile3])
         self.settings.setValue('currentProfileIndex', current_profile_index)
         self.settings.endGroup()
+
+
+class MyAbsModel(QtGui.QStandardItemModel, QtCore.QAbstractItemModel):
+    def __init__(self, parent=None):
+        # We're using this to be able to access the match() method
+        super(MyAbsModel, self).__init__(parent)

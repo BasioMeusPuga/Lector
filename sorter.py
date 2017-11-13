@@ -5,6 +5,7 @@
 # See if you want to include a hash of the book's name and author
 
 import os
+import pickle
 import hashlib
 from multiprocessing.dummy import Pool
 
@@ -18,6 +19,7 @@ import database
 # get_cover_image()
 # get_isbn()
 # get_contents() - Should return a tuple with 0: TOC 1: Deletable temp_directory
+
 from parsers.epub import ParseEPUB
 from parsers.cbz import ParseCBZ
 
@@ -57,7 +59,12 @@ class BookSorter:
                 {'Hash': file_hash},
                 'EQUALS',
                 True)
-        return position
+
+        if position:
+            position_dict = pickle.loads(position)
+            return position_dict
+        else:
+            return None
 
     def read_book(self, filename):
         # filename is expected as a string containg the

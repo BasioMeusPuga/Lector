@@ -1,6 +1,10 @@
 #!usr/bin/env python3
 
+import os
 from PyQt5 import QtWidgets, QtGui, QtCore
+
+import pie_chart
+
 
 class BookToolBar(QtWidgets.QToolBar):
     def __init__(self, parent=None):
@@ -280,10 +284,15 @@ class Tab(QtWidgets.QWidget):
 
         # TODO
         # Chapter position and vertical scrollbar position
-        if not position:
-            first_chapter_name = list(self.metadata['content'])[0]
-            first_chapter_content = self.metadata['content'][first_chapter_name]
-            self.contentView.setHtml(first_chapter_content)
+        if position:
+            current_chapter = position['current_chapter']
+        else:
+            self.generate_position()
+            current_chapter = 1
+
+        chapter_name = list(self.metadata['content'])[current_chapter - 1]
+        chapter_content = self.metadata['content'][chapter_name]
+        self.contentView.setHtml(chapter_content)
 
         self.gridLayout.addWidget(self.contentView, 0, 0, 1, 1)
         self.parent.addTab(self, title)
@@ -293,6 +302,17 @@ class Tab(QtWidgets.QWidget):
         self.exit_fs.setContext(QtCore.Qt.ApplicationShortcut)
         self.exit_fs.activated.connect(self.exit_fullscreen)
 
+    def generate_position(self):
+        total_chapters = len(self.metadata['content'].keys())
+        # TODO
+        # Calculate lines
+        self.metadata['position'] = {
+            'current_chapter': 1,
+            'current_line': 0,
+            'total_chapters': total_chapters,
+            'read_lines': 0,
+            'total_lines': 0}
+
     def exit_fullscreen(self):
         self.contentView.setWindowFlags(QtCore.Qt.Widget)
         self.contentView.setWindowState(QtCore.Qt.WindowNoState)
@@ -301,32 +321,48 @@ class Tab(QtWidgets.QWidget):
 
 
 class LibraryDelegate(QtWidgets.QStyledItemDelegate):
-    def __init__(self, parent=None):
+    def __init__(self, temp_dir, parent=None):
         super(LibraryDelegate, self).__init__(parent)
+        self.temp_dir = temp_dir
 
     def paint(self, painter, option, index):
+        QtWidgets.QStyledItemDelegate.paint(self, painter, option, index)
         # This is a hint for the future
         # Color icon slightly red
         # if option.state & QtWidgets.QStyle.State_Selected:
             # painter.fillRect(option.rect, QtGui.QColor().fromRgb(255, 0, 0, 20))
+        # Also, painter.setOpacity(n)
 
         option = option.__class__(option)
-        state = index.data(QtCore.Qt.UserRole + 5)
-        if state:
-            if state == 'deleted':
-                painter.setOpacity(.5)
+        file_exists = index.data(QtCore.Qt.UserRole + 5)
+        position = index.data(QtCore.Qt.UserRole + 7)
+
+        # TODO
+        # Calculate progress on the basis of lines
+
+        if position:
+            current_chapter = position['current_chapter']
+            total_chapters = position['total_chapters']
+            progress_percent = int(current_chapter * 100 / total_chapters)
+
+            if not file_exists:
                 read_icon = QtGui.QIcon.fromTheme('vcs-conflicting').pixmap(36)
-                painter.setOpacity(.5)
                 QtWidgets.QStyledItemDelegate.paint(self, painter, option, index)
-                painter.setOpacity(1)
-            if state == 'completed':
+            elif current_chapter == total_chapters:
+                QtWidgets.QStyledItemDelegate.paint(self, painter, option, index)
                 read_icon = QtGui.QIcon.fromTheme('vcs-normal').pixmap(36)
-            if state == 'inprogress':
-                read_icon = QtGui.QIcon.fromTheme('vcs-locally-modified').pixmap(36)
+            elif current_chapter == 1:
+                QtWidgets.QStyledItemDelegate.paint(self, painter, option, index)
+            else:
+                QtWidgets.QStyledItemDelegate.paint(self, painter, option, index)
+                pie_chart.GeneratePie(progress_percent, self.temp_dir).generate()
+                svg_path = os.path.join(self.temp_dir, 'lector_progress.svg')
+                read_icon = QtGui.QIcon(svg_path).pixmap(34)
 
             x_draw = option.rect.bottomRight().x() - 30
             y_draw = option.rect.bottomRight().y() - 35
-            painter.drawPixmap(x_draw, y_draw, read_icon)
+            if current_chapter != 1:
+                painter.drawPixmap(x_draw, y_draw, read_icon)
 
         else:
             QtWidgets.QStyledItemDelegate.paint(self, painter, option, index)
