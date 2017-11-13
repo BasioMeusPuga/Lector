@@ -29,11 +29,11 @@
         ✓ Use format* icons for toolbar buttons
         ✓ Implement book view settings with a(nother) toolbar
         ✓ Substitute textedit for another widget
-        Theming
+        ✓ Theming
+        ✓ Keep fontsize and margins consistent - Let page increase in length
         All ebooks should first be added to the database and then returned as HTML
         Pagination
         Set context menu for definitions and the like
-        Keep fontsize and margins consistent - Let page increase in length
     Filetypes:
         ? Plugin system for parsers
         ? pdf support
@@ -66,7 +66,7 @@ from subclasses import Settings, Library
 
 class MainUI(QtWidgets.QMainWindow, mainwindow.Ui_MainWindow):
     def __init__(self):
-        super(self.__class__, self).__init__()
+        super(MainUI, self).__init__()
         self.setupUi(self)
 
         # Initialize application
@@ -97,16 +97,17 @@ class MainUI(QtWidgets.QMainWindow, mainwindow.Ui_MainWindow):
         self.bookToolBar = BookToolBar(self)
         self.bookToolBar.fullscreenButton.triggered.connect(self.set_fullscreen)
 
+        for count, i in enumerate(self.display_profiles):
+            self.bookToolBar.profileBox.setItemData(count, i, QtCore.Qt.UserRole)
+        self.bookToolBar.profileBox.currentIndexChanged.connect(self.format_contentView)
+        self.bookToolBar.profileBox.setCurrentIndex(self.current_profile_index)
+
         self.bookToolBar.fontBox.currentFontChanged.connect(self.modify_font)
         self.bookToolBar.fontSizeBox.currentTextChanged.connect(self.modify_font)
         self.bookToolBar.lineSpacingUp.triggered.connect(self.modify_font)
         self.bookToolBar.lineSpacingDown.triggered.connect(self.modify_font)
         self.bookToolBar.paddingUp.triggered.connect(self.modify_font)
         self.bookToolBar.paddingDown.triggered.connect(self.modify_font)
-        for count, i in enumerate(self.display_profiles):
-            self.bookToolBar.profileBox.setItemData(count, i, QtCore.Qt.UserRole)
-        self.bookToolBar.profileBox.currentIndexChanged.connect(self.format_contentView)
-        self.bookToolBar.profileBox.setCurrentIndex(self.current_profile_index)
 
         self.bookToolBar.colorBoxFG.clicked.connect(self.get_color)
         self.bookToolBar.colorBoxBG.clicked.connect(self.get_color)

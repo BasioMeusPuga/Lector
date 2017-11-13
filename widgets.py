@@ -68,9 +68,9 @@ class BookToolBar(QtWidgets.QToolBar):
 
         self.colorBoxFG = FixedPushButton(self)
         self.colorBoxFG.setObjectName('fgColor')
-        self.colorBoxFG.setToolTip('Set foreground color')
+        self.colorBoxFG.setToolTip('Text color')
         self.colorBoxBG = FixedPushButton(self)
-        self.colorBoxBG.setToolTip('Set background color')
+        self.colorBoxBG.setToolTip('Background color')
         self.colorBoxBG.setObjectName('bgColor')
 
         profiles = ['Profile 1', 'Profile 2', 'Profile 3']
@@ -266,10 +266,6 @@ class Tab(QtWidgets.QWidget):
         super(Tab, self).__init__(parent)
         self.parent = parent
         self.metadata = metadata  # Save progress data into this dictionary
-        # self.setStyleSheet("background-color: black")
-
-        title = self.metadata['title']
-        path = self.metadata['path']
 
         self.gridLayout = QtWidgets.QGridLayout(self)
         self.gridLayout.setObjectName("gridLayout")
@@ -277,11 +273,18 @@ class Tab(QtWidgets.QWidget):
         self.contentView.setFrameShape(QtWidgets.QFrame.NoFrame)
         self.contentView.setObjectName("contentView")
         self.contentView.verticalScrollBar().setSingleStep(7)
-        self.contentView.setHorizontalScrollBarPolicy(QtCore.Qt.ScrollBarAlwaysOff)
+
+        title = self.metadata['title']
+        position = self.metadata['position']
+        if not position:
+            first_chapter_name = list(self.metadata['content'])[0]
+            first_chapter_content = self.metadata['content'][first_chapter_name]
+            self.contentView.setHtml(first_chapter_content)
+
+        self.contentView.setHorizontalScrollBarPolicy(
+            QtCore.Qt.ScrollBarAlwaysOff)
         self.gridLayout.addWidget(self.contentView, 0, 0, 1, 1)
         self.parent.addTab(self, title)
-        # self.contentView.setStyleSheet(
-        #     "QTextEdit {font-size:20px; padding-left:100; padding-right:100; background-color:black}")
 
 
 class LibraryDelegate(QtWidgets.QStyledItemDelegate):
