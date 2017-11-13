@@ -28,10 +28,10 @@
         ✓ Override the keypress event of the textedit
         ✓ Use format* icons for toolbar buttons
         ✓ Implement book view settings with a(nother) toolbar
-        ? Substitute textedit for another widget
+        ✓ Substitute textedit for another widget
+        Theming
         All ebooks should first be added to the database and then returned as HTML
         Pagination
-        Theming
         Set context menu for definitions and the like
         Keep fontsize and margins consistent - Let page increase in length
     Filetypes:
@@ -97,13 +97,19 @@ class MainUI(QtWidgets.QMainWindow, mainwindow.Ui_MainWindow):
         self.bookToolBar = BookToolBar(self)
         self.bookToolBar.fullscreenButton.triggered.connect(self.set_fullscreen)
 
-        self.bookToolBar.fontBox.activated.connect(self.modify_font)
+        self.bookToolBar.fontBox.currentFontChanged.connect(self.modify_font)
         self.bookToolBar.fontSizeUp.triggered.connect(self.modify_font)
         self.bookToolBar.fontSizeDown.triggered.connect(self.modify_font)
         self.bookToolBar.lineSpacingUp.triggered.connect(self.modify_font)
         self.bookToolBar.lineSpacingDown.triggered.connect(self.modify_font)
         self.bookToolBar.paddingUp.triggered.connect(self.modify_font)
         self.bookToolBar.paddingDown.triggered.connect(self.modify_font)
+        for count, i in enumerate(self.display_profiles):
+            self.bookToolBar.profileBox.setItemData(count, i, QtCore.Qt.UserRole)
+        self.bookToolBar.profileBox.currentIndexChanged.connect(self.change_display_profile)
+        self.current_profile = self.bookToolBar.profileBox.itemData(
+            self.current_profile_index, QtCore.Qt.UserRole)
+        self.bookToolBar.profileBox.setCurrentIndex(self.current_profile_index)
 
         self.bookToolBar.colorBoxFG.clicked.connect(self.get_color)
         self.bookToolBar.colorBoxBG.clicked.connect(self.get_color)
@@ -114,8 +120,7 @@ class MainUI(QtWidgets.QMainWindow, mainwindow.Ui_MainWindow):
         self.tab_switch()
         self.tabWidget.currentChanged.connect(self.tab_switch)
 
-        # New tabs and their contents
-        self.current_tab = None
+        # For fullscreening purposes
         self.current_contentView = None
 
         # Tab closing
@@ -141,12 +146,14 @@ class MainUI(QtWidgets.QMainWindow, mainwindow.Ui_MainWindow):
         # TODO
         # Get display profiles from settings
         # Current using a default
-        self.current_profile = {
-            'foreground': 'grey',
-            'background': 'black',
-            'padding': 100,
-            'font_size': 22,
-            'line_spacing': 1.5}
+        # self.bookToolBar.profileBox.setItemData(1, 'asdadasd', QtCore.Qt.UserRole)
+        # self.current_profile = {
+        #     'font': 'Noto Sans',
+        #     'foreground': 'grey',
+        #     'background': 'black',
+        #     'padding': 100,
+        #     'font_size': 22,
+        #     'line_spacing': 1.5}
 
     def resizeEvent(self, event=None):
         if event:
@@ -269,6 +276,8 @@ class MainUI(QtWidgets.QMainWindow, mainwindow.Ui_MainWindow):
                 self.bookToolBar.tocBox.setCurrentIndex(current_position)
             self.bookToolBar.tocBox.blockSignals(False)
 
+            self.format_contentView()
+
             self.statusMessage.setText(
                 current_author + ' - ' + current_title)
 
@@ -353,7 +362,7 @@ class MainUI(QtWidgets.QMainWindow, mainwindow.Ui_MainWindow):
         signal_sender = self.sender().objectName()
 
         if signal_sender == 'fontBox':
-            pass
+            self.current_profile['font'] = self.bookToolBar.fontBox.currentFont().family()
 
         if signal_sender == 'fontSizeUp':
             self.current_profile['font_size'] += 1
@@ -376,7 +385,14 @@ class MainUI(QtWidgets.QMainWindow, mainwindow.Ui_MainWindow):
         # TODO
         # Implement line spacing
         # Implement font changing
+        # See what happens if a font isn't installed
 
+        # print(self.bookToolBar.profileBox.itemData(1, QtCore.Qt.UserRole))
+        # print(self.current_profile)
+        # current_profile = self.bookToolBar.profileBox.itemData()
+
+
+        font = self.current_profile['font']
         foreground = self.current_profile['foreground']
         background = self.current_profile['background']
         padding = self.current_profile['padding']
@@ -387,8 +403,20 @@ class MainUI(QtWidgets.QMainWindow, mainwindow.Ui_MainWindow):
         current_contentView = current_tab_widget.findChildren(QtWidgets.QTextBrowser)[0]
 
         current_contentView.setStyleSheet(
-            "QTextEdit {{font-size: {0}px; padding-left: {1}; padding-right: {1}; color: {2}; background-color: {3}}}".format(
-                font_size, padding, foreground, background))
+            "QTextEdit {{font-family: {0}; font-size: {1}px; padding-left: {2}; padding-right: {2}; color: {3}; background-color: {4}}}".format(
+                font, font_size, padding, foreground, background))
+
+    def change_display_profile(self):
+        profile_index = self.bookToolBar.profileBox.currentIndex()
+        
+        self.bookToolBar.profileBox.setItemData()
+        
+        
+        
+        self.current_profile = self.bookToolBar.profileBox.itemData(
+            profile_index, QtCore.Qt.UserRole)
+        self.format_contentView()
+
 
     def closeEvent(self, event=None):
         # All tabs must be iterated upon here

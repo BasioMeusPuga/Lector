@@ -58,5 +58,5 @@ class ParseCBZ:
             # TODO
             # Image resizing, formatting
             # Cleanup after exit
-            contents[page_name] = "<img src='%s'/>" % image_path
+            contents[page_name] = "<img src='%s' align='middle'/>" % image_path
         return contents, tmp_dir

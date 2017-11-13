@@ -65,6 +65,7 @@ class BookToolBar(QtWidgets.QToolBar):
         self.lineSpacingDown.setObjectName('lineSpacingDown')
 
         self.fontBox = QtWidgets.QFontComboBox()
+        self.fontBox.setFontFilters(QtWidgets.QFontComboBox.ScalableFonts)
         self.fontBox.setObjectName('fontBox')
 
         self.colorBoxFG = FixedPushButton(self)
@@ -77,6 +78,7 @@ class BookToolBar(QtWidgets.QToolBar):
         # TODO
         # Get color profiles from settings
         # Generate default profiles
+        # Maybe a default button
         profiles = ['Profile 1', 'Profile 2', 'Profile 3']
         self.profileBox = QtWidgets.QComboBox(self)
         self.profileBox.addItems(profiles)
@@ -288,8 +290,8 @@ class Tab(QtWidgets.QWidget):
         self.contentView.setHorizontalScrollBarPolicy(QtCore.Qt.ScrollBarAlwaysOff)
         self.gridLayout.addWidget(self.contentView, 0, 0, 1, 1)
         self.parent.addTab(self, title)
-        self.contentView.setStyleSheet(
-            "QTextEdit {font-size:20px; padding-left:100; padding-right:100; background-color:black}")
+        # self.contentView.setStyleSheet(
+        #     "QTextEdit {font-size:20px; padding-left:100; padding-right:100; background-color:black}")
 
 
 class LibraryDelegate(QtWidgets.QStyledItemDelegate):
