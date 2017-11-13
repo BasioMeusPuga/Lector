@@ -35,16 +35,14 @@ class BookToolBar(QtWidgets.QToolBar):
         self.addAction(self.fullscreenButton)
         self.addAction(self.settingsButton)
 
-        # Font modification buttons
-        # All hidden by default
-        self.fontSizeUp = QtWidgets.QAction(
-            QtGui.QIcon.fromTheme('format-font-size-more'),
-            'Increase font size', self)
-        self.fontSizeUp.setObjectName('fontSizeUp')
-        self.fontSizeDown = QtWidgets.QAction(
-            QtGui.QIcon.fromTheme('format-font-size-less'),
-            'Decrease font size', self)
-        self.fontSizeDown.setObjectName('fontSizeDown')
+        # Font modification
+        font_sizes = [str(i) for i in range(8, 48, 2)]
+        font_sizes.extend(['56', '64', '72'])
+        self.fontSizeBox = QtWidgets.QComboBox(self)
+        self.fontSizeBox.setObjectName('fontSizeBox')
+        self.fontSizeBox.setToolTip('Font size')
+        self.fontSizeBox.addItems(font_sizes)
+        self.fontSizeBox.setEditable(True)
 
         self.paddingUp = QtWidgets.QAction(
             QtGui.QIcon.fromTheme('format-justify-fill'),
@@ -75,10 +73,6 @@ class BookToolBar(QtWidgets.QToolBar):
         self.colorBoxBG.setToolTip('Set background color')
         self.colorBoxBG.setObjectName('bgColor')
 
-        # TODO
-        # Get color profiles from settings
-        # Generate default profiles
-        # Maybe a default button
         profiles = ['Profile 1', 'Profile 2', 'Profile 3']
         self.profileBox = QtWidgets.QComboBox(self)
         self.profileBox.addItems(profiles)
@@ -86,8 +80,7 @@ class BookToolBar(QtWidgets.QToolBar):
         self.profileAction = self.addWidget(self.profileBox)
         self.fontSeparator1 = self.addSeparator()
         self.fontBoxAction = self.addWidget(self.fontBox)
-        self.addAction(self.fontSizeUp)
-        self.addAction(self.fontSizeDown)
+        self.fontSizeBoxAction = self.addWidget(self.fontSizeBox)
         self.fontSeparator2 = self.addSeparator()
         self.fgColorAction = self.addWidget(self.colorBoxFG)
         self.bgColorAction = self.addWidget(self.colorBoxBG)
@@ -99,8 +92,7 @@ class BookToolBar(QtWidgets.QToolBar):
         self.addAction(self.paddingDown)
 
         self.fontBoxAction.setVisible(False)
-        self.fontSizeUp.setVisible(False)
-        self.fontSizeDown.setVisible(False)
+        self.fontSizeBoxAction.setVisible(False)
         self.fgColorAction.setVisible(False)
         self.bgColorAction.setVisible(False)
         self.lineSpacingUp.setVisible(False)
@@ -144,8 +136,7 @@ class BookToolBar(QtWidgets.QToolBar):
         self.settingsButton.setVisible(False)
 
         self.fontBoxAction.setVisible(True)
-        self.fontSizeUp.setVisible(True)
-        self.fontSizeDown.setVisible(True)
+        self.fontSizeBoxAction.setVisible(True)
         self.fgColorAction.setVisible(True)
         self.bgColorAction.setVisible(True)
         self.lineSpacingUp.setVisible(True)
@@ -167,8 +158,7 @@ class BookToolBar(QtWidgets.QToolBar):
         self.settingsButton.setVisible(True)
 
         self.fontBoxAction.setVisible(False)
-        self.fontSizeUp.setVisible(False)
-        self.fontSizeDown.setVisible(False)
+        self.fontSizeBoxAction.setVisible(False)
         self.fgColorAction.setVisible(False)
         self.bgColorAction.setVisible(False)
         self.lineSpacingUp.setVisible(False)

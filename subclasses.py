@@ -171,9 +171,8 @@ class Settings:
                 self.default_profile1,
                 self.default_profile2,
                 self.default_profile3])
-        self.parent_window.current_profile_index = self.settings.value(
-            'currentProfileIndex', 0)
-
+        self.parent_window.current_profile_index = int(self.settings.value(
+            'currentProfileIndex', 0))
         self.settings.endGroup()
 
     def save_settings(self):
@@ -185,4 +184,17 @@ class Settings:
         self.settings.beginGroup('runtimeVariables')
         self.settings.setValue('lastOpenPath', self.parent_window.last_open_path)
         self.settings.setValue('databasePath', self.parent_window.database_path)
+
+        current_profile1 = self.parent_window.bookToolBar.profileBox.itemData(
+            0, QtCore.Qt.UserRole)
+        current_profile2 = self.parent_window.bookToolBar.profileBox.itemData(
+            1, QtCore.Qt.UserRole)
+        current_profile3 = self.parent_window.bookToolBar.profileBox.itemData(
+            2, QtCore.Qt.UserRole)
+        current_profile_index = self.parent_window.bookToolBar.profileBox.currentIndex()
+        self.settings.setValue('displayProfiles', [
+            current_profile1,
+            current_profile2,
+            current_profile3])
+        self.settings.setValue('currentProfileIndex', current_profile_index)
         self.settings.endGroup()

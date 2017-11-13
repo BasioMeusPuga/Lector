@@ -98,17 +98,14 @@ class MainUI(QtWidgets.QMainWindow, mainwindow.Ui_MainWindow):
         self.bookToolBar.fullscreenButton.triggered.connect(self.set_fullscreen)
 
         self.bookToolBar.fontBox.currentFontChanged.connect(self.modify_font)
-        self.bookToolBar.fontSizeUp.triggered.connect(self.modify_font)
-        self.bookToolBar.fontSizeDown.triggered.connect(self.modify_font)
+        self.bookToolBar.fontSizeBox.currentTextChanged.connect(self.modify_font)
         self.bookToolBar.lineSpacingUp.triggered.connect(self.modify_font)
         self.bookToolBar.lineSpacingDown.triggered.connect(self.modify_font)
         self.bookToolBar.paddingUp.triggered.connect(self.modify_font)
         self.bookToolBar.paddingDown.triggered.connect(self.modify_font)
         for count, i in enumerate(self.display_profiles):
             self.bookToolBar.profileBox.setItemData(count, i, QtCore.Qt.UserRole)
-        self.bookToolBar.profileBox.currentIndexChanged.connect(self.change_display_profile)
-        self.current_profile = self.bookToolBar.profileBox.itemData(
-            self.current_profile_index, QtCore.Qt.UserRole)
+        self.bookToolBar.profileBox.currentIndexChanged.connect(self.format_contentView)
         self.bookToolBar.profileBox.setCurrentIndex(self.current_profile_index)
 
         self.bookToolBar.colorBoxFG.clicked.connect(self.get_color)
@@ -142,18 +139,6 @@ class MainUI(QtWidgets.QMainWindow, mainwindow.Ui_MainWindow):
         self.exit_all = QtWidgets.QShortcut(QtGui.QKeySequence('Ctrl+Q'), self)
         self.exit_all.activated.connect(self.closeEvent)
 
-        # Display profiles
-        # TODO
-        # Get display profiles from settings
-        # Current using a default
-        # self.bookToolBar.profileBox.setItemData(1, 'asdadasd', QtCore.Qt.UserRole)
-        # self.current_profile = {
-        #     'font': 'Noto Sans',
-        #     'foreground': 'grey',
-        #     'background': 'black',
-        #     'padding': 100,
-        #     'font_size': 22,
-        #     'line_spacing': 1.5}
 
     def resizeEvent(self, event=None):
         if event:
@@ -339,6 +324,9 @@ class MainUI(QtWidgets.QMainWindow, mainwindow.Ui_MainWindow):
 
     def get_color(self):
         signal_sender = self.sender().objectName()
+        profile_index = self.bookToolBar.profileBox.currentIndex()
+        current_profile = self.bookToolBar.profileBox.itemData(
+            profile_index, QtCore.Qt.UserRole)
 
         colorDialog = QtWidgets.QColorDialog()
         new_color = colorDialog.getColor()
@@ -350,54 +338,81 @@ class MainUI(QtWidgets.QMainWindow, mainwindow.Ui_MainWindow):
         if signal_sender == 'fgColor':
             self.bookToolBar.colorBoxFG.setStyleSheet(
                 'background-color: %s' % color_name)
-            self.current_profile['foreground'] = color_name
+            current_profile['foreground'] = color_name
 
         elif signal_sender == 'bgColor':
             self.bookToolBar.colorBoxBG.setStyleSheet(
                 'background-color: %s' % color_name)
-            self.current_profile['background'] = color_name
+            current_profile['background'] = color_name
+
+        self.bookToolBar.profileBox.setItemData(
+            profile_index, current_profile, QtCore.Qt.UserRole)
         self.format_contentView()
 
     def modify_font(self):
         signal_sender = self.sender().objectName()
+        profile_index = self.bookToolBar.profileBox.currentIndex()
+        current_profile = self.bookToolBar.profileBox.itemData(
+            profile_index, QtCore.Qt.UserRole)
 
         if signal_sender == 'fontBox':
-            self.current_profile['font'] = self.bookToolBar.fontBox.currentFont().family()
+            current_profile['font'] = self.bookToolBar.fontBox.currentFont().family()
 
-        if signal_sender == 'fontSizeUp':
-            self.current_profile['font_size'] += 1
-        if signal_sender == 'fontSizeDown':
-            if self.current_profile['font_size'] > 5:
-                self.current_profile['font_size'] -= 1
+        if signal_sender == 'fontSizeBox':
+            old_size = current_profile['font_size']
+            new_size = self.bookToolBar.fontSizeBox.currentText()
+            if new_size.isdigit():
+                current_profile['font_size'] = int(new_size)
+            else:
+                current_profile['font_size'] = old_size
+
         if signal_sender == 'lineSpacingUp':
-            self.current_profile['line_spacing'] += .5
+            current_profile['line_spacing'] += .5
         if signal_sender == 'lineSpacingDown':
-            self.current_profile['line_spacing'] -= .5
+            current_profile['line_spacing'] -= .5
 
         if signal_sender == 'paddingUp':
-            self.current_profile['padding'] += 5
+            current_profile['padding'] += 5
         if signal_sender == 'paddingDown':
-            self.current_profile['padding'] -= 5
+            current_profile['padding'] -= 5
 
+        self.bookToolBar.profileBox.setItemData(
+            profile_index, current_profile, QtCore.Qt.UserRole)
         self.format_contentView()
 
     def format_contentView(self):
         # TODO
         # Implement line spacing
-        # Implement font changing
         # See what happens if a font isn't installed
 
-        # print(self.bookToolBar.profileBox.itemData(1, QtCore.Qt.UserRole))
-        # print(self.current_profile)
-        # current_profile = self.bookToolBar.profileBox.itemData()
+        profile_index = self.bookToolBar.profileBox.currentIndex()
+        current_profile = self.bookToolBar.profileBox.itemData(
+            profile_index, QtCore.Qt.UserRole)
 
+        font = current_profile['font']
+        foreground = current_profile['foreground']
+        background = current_profile['background']
+        padding = current_profile['padding']
+        font_size = current_profile['font_size']
 
-        font = self.current_profile['font']
-        foreground = self.current_profile['foreground']
-        background = self.current_profile['background']
-        padding = self.current_profile['padding']
-        font_size = self.current_profile['font_size']
+        # Change toolbar widgets to match new settings
+        self.bookToolBar.fontBox.blockSignals(True)
+        self.bookToolBar.fontSizeBox.blockSignals(True)
+        self.bookToolBar.fontBox.setCurrentText(font)
+        self.bookToolBar.fontSizeBox.setCurrentText(str(font_size))
+        self.bookToolBar.fontBox.blockSignals(False)
+        self.bookToolBar.fontSizeBox.blockSignals(False)
 
+        self.bookToolBar.colorBoxFG.setStyleSheet(
+            'background-color: %s' % foreground)
+        self.bookToolBar.colorBoxBG.setStyleSheet(
+            'background-color: %s' % background)
+
+        # Do not run when only the library tab is open
+        if self.tabWidget.count() == 1:
+            return
+
+        # Change contentView to match new settings
         current_tab = self.tabWidget.currentIndex()
         current_tab_widget = self.tabWidget.widget(current_tab)
         current_contentView = current_tab_widget.findChildren(QtWidgets.QTextBrowser)[0]
@@ -405,18 +420,6 @@ class MainUI(QtWidgets.QMainWindow, mainwindow.Ui_MainWindow):
         current_contentView.setStyleSheet(
             "QTextEdit {{font-family: {0}; font-size: {1}px; padding-left: {2}; padding-right: {2}; color: {3}; background-color: {4}}}".format(
                 font, font_size, padding, foreground, background))
-
-    def change_display_profile(self):
-        profile_index = self.bookToolBar.profileBox.currentIndex()
-        
-        self.bookToolBar.profileBox.setItemData()
-        
-        
-        
-        self.current_profile = self.bookToolBar.profileBox.itemData(
-            profile_index, QtCore.Qt.UserRole)
-        self.format_contentView()
-
 
     def closeEvent(self, event=None):
         # All tabs must be iterated upon here
