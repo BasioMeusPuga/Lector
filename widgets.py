@@ -258,7 +258,6 @@ class Tab(QtWidgets.QWidget):
     def __init__(self, metadata, parent=None):
         # TODO
         # A horizontal slider to control flow
-        # Keyboard shortcuts
         # Take hint from a position function argument to open the book
         # at a specific page
 
@@ -273,18 +272,32 @@ class Tab(QtWidgets.QWidget):
         self.contentView.setFrameShape(QtWidgets.QFrame.NoFrame)
         self.contentView.setObjectName("contentView")
         self.contentView.verticalScrollBar().setSingleStep(7)
+        self.contentView.setHorizontalScrollBarPolicy(
+            QtCore.Qt.ScrollBarAlwaysOff)
 
         title = self.metadata['title']
         position = self.metadata['position']
+        
+        # TODO
+        # Chapter position and vertical scrollbar position
         if not position:
             first_chapter_name = list(self.metadata['content'])[0]
             first_chapter_content = self.metadata['content'][first_chapter_name]
             self.contentView.setHtml(first_chapter_content)
 
-        self.contentView.setHorizontalScrollBarPolicy(
-            QtCore.Qt.ScrollBarAlwaysOff)
         self.gridLayout.addWidget(self.contentView, 0, 0, 1, 1)
         self.parent.addTab(self, title)
+
+        self.exit_fs = QtWidgets.QShortcut(
+            QtGui.QKeySequence('Escape'), self.contentView)
+        self.exit_fs.setContext(QtCore.Qt.ApplicationShortcut)
+        self.exit_fs.activated.connect(self.exit_fullscreen)
+
+    def exit_fullscreen(self):
+        self.contentView.setWindowFlags(QtCore.Qt.Widget)
+        self.contentView.setWindowState(QtCore.Qt.WindowNoState)
+        self.contentView.show()
+        self.window().show()
 
 
 class LibraryDelegate(QtWidgets.QStyledItemDelegate):

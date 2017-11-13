@@ -31,6 +31,7 @@
         ✓ Substitute textedit for another widget
         ✓ Theming
         ✓ Keep fontsize and margins consistent - Let page increase in length
+        ✓ Fullscreening
         All ebooks should first be added to the database and then returned as HTML
         Pagination
         Set context menu for definitions and the like
@@ -283,20 +284,10 @@ class MainUI(QtWidgets.QMainWindow, mainwindow.Ui_MainWindow):
         current_tab_widget = self.tabWidget.widget(current_tab)
         self.current_contentView = current_tab_widget.findChildren(QtWidgets.QTextBrowser)[0]
 
-        self.exit_shortcut = QtWidgets.QShortcut(
-            QtGui.QKeySequence('Escape'), self.current_contentView)
-        self.exit_shortcut.activated.connect(self.set_normalsize)
-
         self.current_contentView.setWindowFlags(QtCore.Qt.Window)
         self.current_contentView.setWindowState(QtCore.Qt.WindowFullScreen)
+        self.current_contentView.show()
         self.hide()
-        self.current_contentView.show()
-
-    def set_normalsize(self):
-        self.current_contentView.setWindowState(QtCore.Qt.WindowNoState)
-        self.current_contentView.setWindowFlags(QtCore.Qt.Widget)
-        self.show()
-        self.current_contentView.show()
 
     def list_doubleclick(self, myindex):
         index = self.listView.model().index(myindex.row(), 0)
@@ -418,9 +409,12 @@ class MainUI(QtWidgets.QMainWindow, mainwindow.Ui_MainWindow):
         current_tab_widget = self.tabWidget.widget(current_tab)
         current_contentView = current_tab_widget.findChildren(QtWidgets.QTextBrowser)[0]
 
+        # This allows for the scrollbar to always be at the edge of the screen
+        current_contentView.setViewportMargins(padding, 0, padding, 0)
+
         current_contentView.setStyleSheet(
-            "QTextEdit {{font-family: {0}; font-size: {1}px; padding-left: {2}; padding-right: {2}; color: {3}; background-color: {4}}}".format(
-                font, font_size, padding, foreground, background))
+            "QTextEdit {{font-family: {0}; font-size: {1}px; color: {2}; background-color: {3}}}".format(
+                font, font_size, foreground, background))
 
     def closeEvent(self, event=None):
         # All tabs must be iterated upon here
