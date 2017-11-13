@@ -277,7 +277,7 @@ class Tab(QtWidgets.QWidget):
 
         title = self.metadata['title']
         position = self.metadata['position']
-        
+
         # TODO
         # Chapter position and vertical scrollbar position
         if not position:
@@ -305,19 +305,28 @@ class LibraryDelegate(QtWidgets.QStyledItemDelegate):
         super(LibraryDelegate, self).__init__(parent)
 
     def paint(self, painter, option, index):
-        QtWidgets.QStyledItemDelegate.paint(self, painter, option, index)
+        # This is a hint for the future
+        # Color icon slightly red
+        # if option.state & QtWidgets.QStyle.State_Selected:
+            # painter.fillRect(option.rect, QtGui.QColor().fromRgb(255, 0, 0, 20))
+
         option = option.__class__(option)
         state = index.data(QtCore.Qt.UserRole + 5)
         if state:
             if state == 'deleted':
+                painter.setOpacity(.5)
                 read_icon = QtGui.QIcon.fromTheme('vcs-conflicting').pixmap(36)
+                painter.setOpacity(.5)
+                QtWidgets.QStyledItemDelegate.paint(self, painter, option, index)
+                painter.setOpacity(1)
             if state == 'completed':
                 read_icon = QtGui.QIcon.fromTheme('vcs-normal').pixmap(36)
             if state == 'inprogress':
                 read_icon = QtGui.QIcon.fromTheme('vcs-locally-modified').pixmap(36)
-        else:
-            return
 
-        x_draw = option.rect.bottomRight().x() - 30
-        y_draw = option.rect.bottomRight().y() - 35
-        painter.drawPixmap(x_draw, y_draw, read_icon)
+            x_draw = option.rect.bottomRight().x() - 30
+            y_draw = option.rect.bottomRight().y() - 35
+            painter.drawPixmap(x_draw, y_draw, read_icon)
+
+        else:
+            QtWidgets.QStyledItemDelegate.paint(self, painter, option, index)

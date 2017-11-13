@@ -32,6 +32,7 @@
         ✓ Theming
         ✓ Keep fontsize and margins consistent - Let page increase in length
         ✓ Fullscreening
+        Record progress
         All ebooks should first be added to the database and then returned as HTML
         Pagination
         Set context menu for definitions and the like
@@ -132,6 +133,7 @@ class MainUI(QtWidgets.QMainWindow, mainwindow.Ui_MainWindow):
         # ListView
         # self.listView.setSpacing(0)
         self.listView.setGridSize(QtCore.QSize(175, 240))
+        self.listView.setMouseTracking(True)
         self.listView.verticalScrollBar().setSingleStep(7)
         self.listView.doubleClicked.connect(self.list_doubleclick)
         self.listView.setItemDelegate(LibraryDelegate())
@@ -277,6 +279,7 @@ class MainUI(QtWidgets.QMainWindow, mainwindow.Ui_MainWindow):
 
         current_tab = self.tabWidget.widget(self.tabWidget.currentIndex())
         required_content = current_tab.metadata['content'][chapter_name]
+        current_tab.contentView.verticalScrollBar().setValue(0)
         current_tab.contentView.setHtml(required_content)
 
     def set_fullscreen(self):
@@ -291,6 +294,11 @@ class MainUI(QtWidgets.QMainWindow, mainwindow.Ui_MainWindow):
 
     def list_doubleclick(self, myindex):
         index = self.listView.model().index(myindex.row(), 0)
+        state = self.listView.model().data(index, QtCore.Qt.UserRole + 5)
+
+        if state == 'deleted':
+            return
+
         metadata = self.listView.model().data(index, QtCore.Qt.UserRole + 3)
 
         # Shift focus to the tab that has the book open (if there is one)
