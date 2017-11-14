@@ -10,17 +10,20 @@
 
 import os
 import re
+import zipfile
 import collections
 
 import ebooklib.epub
 
 
 class ParseEPUB:
-    def __init__(self, filename):
+    def __init__(self, filename, temp_dir, file_md5):
         # TODO
         # Maybe also include book description
         self.filename = filename
         self.book = None
+        self.temp_dir = temp_dir
+        self.file_md5 = file_md5
 
     def read_book(self):
         try:
@@ -103,6 +106,11 @@ class ParseEPUB:
             return None
 
     def get_contents(self):
+        # Extract all contents to a temporary directory
+        # for relative path lookup voodoo
+        extract_path = os.path.join(self.temp_dir, self.file_md5)
+        zipfile.ZipFile(self.filename).extractall(extract_path)
+
         contents = collections.OrderedDict()
 
         def flatten_chapter(toc_element):
@@ -141,7 +149,7 @@ class ParseEPUB:
         # Special settings that have to be returned with the file
         # Referenced in sorter.py
         file_settings = {
-            'temp_dir': None,
+            'temp_dir': extract_path,
             'images_only': False}
 
         return contents, file_settings

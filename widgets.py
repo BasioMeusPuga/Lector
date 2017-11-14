@@ -284,6 +284,7 @@ class Tab(QtWidgets.QWidget):
 
         title = self.metadata['title']
         position = self.metadata['position']
+        relative_path_root = self.metadata['temp_dir']
 
         # TODO
         # Chapter position and vertical scrollbar position
@@ -295,6 +296,7 @@ class Tab(QtWidgets.QWidget):
 
         chapter_name = list(self.metadata['content'])[current_chapter - 1]
         chapter_content = self.metadata['content'][chapter_name]
+        self.contentView.setSearchPaths([relative_path_root])
         self.contentView.setHtml(chapter_content)
 
         self.gridLayout.addWidget(self.contentView, 0, 0, 1, 1)
@@ -378,20 +380,20 @@ class MyAbsModel(QtGui.QStandardItemModel, QtCore.QAbstractItemModel):
 
 
 class BackGroundTabUpdate(QtCore.QThread):
-    def __init__(self, database_path, tab_metadata, parent=None):
+    def __init__(self, database_path, all_metadata, parent=None):
         super(BackGroundTabUpdate, self).__init__(parent)
         self.database_path = database_path
-        self.tab_metadata = tab_metadata
+        self.all_metadata = all_metadata
 
     def run(self):
-        file_hash = self.tab_metadata['hash']
-        position = self.tab_metadata['position']
-        database.DatabaseFunctions(
-            self.database_path).modify_position(file_hash, position)
+        hash_position_pairs = []
+        for i in self.all_metadata:
+            file_hash = i['hash']
+            position = i['position']
+            hash_position_pairs.append([file_hash, position])
 
-        temp_dir = self.tab_metadata['temp_dir']
-        if temp_dir:
-            shutil.rmtree(temp_dir)
+        database.DatabaseFunctions(
+            self.database_path).modify_position(hash_position_pairs)
 
 
 class BackGroundBookAddition(QtCore.QThread):

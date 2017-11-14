@@ -25,7 +25,7 @@ from parsers.cbz import ParseCBZ
 
 
 class BookSorter:
-    def __init__(self, file_list, mode, database_path):
+    def __init__(self, file_list, mode, database_path, temp_dir=None):
         # Have the GUI pass a list of files straight to here
         # Then, on the basis of what is needed, pass the
         # filenames to the requisite functions
@@ -35,10 +35,11 @@ class BookSorter:
         self.file_list = file_list
         self.statistics = [0, (len(file_list))]
         self.all_books = {}
-        self.database_path = database_path
         self.hashes = []
         self.mode = mode
-        if database_path:
+        self.database_path = database_path
+        self.temp_dir = temp_dir
+        if database_path and self.mode == 'reading':
             self.database_hashes()
 
     def database_hashes(self):
@@ -87,13 +88,13 @@ class BookSorter:
                 and (file_md5 in self.all_books.items() or file_md5 in self.hashes)):
             return
 
-        # SORTING TAKES PLACE HERE
+        # ___________SORTING TAKES PLACE HERE___________
         try:
             file_extension = os.path.splitext(filename)[1][1:]
             if file_extension == 'epub':
-                book_ref = ParseEPUB(filename)
+                book_ref = ParseEPUB(filename, self.temp_dir, file_md5)
             if file_extension == 'cbz':
-                book_ref = ParseCBZ(filename)
+                book_ref = ParseCBZ(filename, self.temp_dir, file_md5)
         except IndexError:
             return
 

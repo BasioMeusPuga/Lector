@@ -115,11 +115,16 @@ class DatabaseFunctions:
 
         self.close_database()
 
-    def modify_position(self, file_hash, position):
-        pickled_position = pickle.dumps(position)
+    def modify_position(self, hash_position_pairs):
+        for i in hash_position_pairs:
+            file_hash = i[0]
+            position = i[1]
 
-        sql_command = "UPDATE books SET Position = ? WHERE Hash = ?"
-        self.database.execute(sql_command, [sqlite3.Binary(pickled_position), file_hash])
+            pickled_position = pickle.dumps(position)
+
+            sql_command = "UPDATE books SET Position = ? WHERE Hash = ?"
+            self.database.execute(sql_command, [sqlite3.Binary(pickled_position), file_hash])
+
         self.database.commit()
         self.close_database()
 

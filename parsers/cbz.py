@@ -3,16 +3,17 @@
 import os
 import time
 import zipfile
-import tempfile
 import collections
 
 
 class ParseCBZ:
-    def __init__(self, filename):
+    def __init__(self, filename, temp_dir, file_md5):
         # TODO
         # Maybe also include book description
         self.filename = filename
         self.book = None
+        self.temp_dir = temp_dir
+        self.file_md5 = file_md5
 
     def read_book(self):
         try:
@@ -43,17 +44,17 @@ class ParseCBZ:
         return None
 
     def get_contents(self):
+        extract_path = os.path.join(self.temp_dir, self.file_md5)
         contents = collections.OrderedDict()
         # This is a brute force approach
         # Maybe try reading from the file as everything
         # matures a little bit more
-        temp_dir = tempfile.mkdtemp()
 
         contents = collections.OrderedDict()
         for count, i in enumerate(self.book.infolist()):
-            self.book.extract(i, path=temp_dir)
+            self.book.extract(i, path=extract_path)
             page_name = 'Page ' + str(count + 1)
-            image_path = os.path.join(temp_dir, i.filename)
+            image_path = os.path.join(extract_path, i.filename)
             # This does image returns.
 
             # TODO
@@ -64,7 +65,7 @@ class ParseCBZ:
             contents[page_name] = "<img src='%s' align='middle'/>" % image_path
 
         file_settings = {
-            'temp_dir': temp_dir,
+            'temp_dir': self.temp_dir,
             'images_only': True}
 
         return contents, file_settings

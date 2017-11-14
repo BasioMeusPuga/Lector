@@ -53,7 +53,6 @@
         ? Include icons for emblems
 """
 
-import os
 import sys
 
 from PyQt5 import QtWidgets, QtGui, QtCore
@@ -266,7 +265,7 @@ class MainUI(QtWidgets.QMainWindow, mainwindow.Ui_MainWindow):
         tab_metadata = self.tabWidget.widget(tab_index).metadata
 
         self.thread = BackGroundTabUpdate(
-            self.database_path, tab_metadata)
+            self.database_path, [tab_metadata])
         self.thread.start()
 
         self.tabWidget.removeTab(tab_index)
@@ -331,7 +330,7 @@ class MainUI(QtWidgets.QMainWindow, mainwindow.Ui_MainWindow):
 
         path = metadata['path']
         contents = sorter.BookSorter(
-            [path], 'reading', self.database_path).initiate_threads()
+            [path], 'reading', self.database_path, self.temp_dir.path()).initiate_threads()
 
         tab_ref = Tab(contents, self.tabWidget)
         self.tabWidget.setCurrentWidget(tab_ref)
@@ -440,17 +439,24 @@ class MainUI(QtWidgets.QMainWindow, mainwindow.Ui_MainWindow):
                 font, font_size, foreground, background))
 
     def closeEvent(self, event=None):
-
         # All tabs must be iterated upon here
-        for i in range(1, self.tabWidget.count()):
-            tab_metadata = self.tabWidget.widget(i).metadata
-            self.thread = BackGroundTabUpdate(
-                self.database_path, tab_metadata)
-            self.thread.start()
-            self.thread.finished.connect(QtWidgets.qApp.exit)
+        self.temp_dir.remove()
+        self.hide()
 
-        Settings(self).save_settings()
-        QtWidgets.qApp.exit()
+        if self.tabWidget.count() > 1:
+            all_metadata = []
+
+            for i in range(1, self.tabWidget.count()):
+                tab_metadata = self.tabWidget.widget(i).metadata
+                all_metadata.append(tab_metadata)
+
+            self.thread = BackGroundTabUpdate(self.database_path, all_metadata)
+            self.thread.finished.connect(QtWidgets.qApp.exit)
+            self.thread.start()
+
+        else:
+            Settings(self).save_settings()
+            QtWidgets.qApp.exit()
 
 
 def main():
