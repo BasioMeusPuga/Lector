@@ -366,3 +366,9 @@ class LibraryDelegate(QtWidgets.QStyledItemDelegate):
 
         else:
             QtWidgets.QStyledItemDelegate.paint(self, painter, option, index)
+
+
+class MyAbsModel(QtGui.QStandardItemModel, QtCore.QAbstractItemModel):
+    def __init__(self, parent=None):
+        # We're using this to be able to access the match() method
+        super(MyAbsModel, self).__init__(parent)

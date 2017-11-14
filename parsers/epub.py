@@ -138,5 +138,10 @@ class ParseEPUB:
                 except AttributeError:
                     contents[title] = ''
 
-        # The 1th index is a directory that has to be cleaned up if needed
-        return contents, None
+        # Special settings that have to be returned with the file
+        # Referenced in sorter.py
+        file_settings = {
+            'temp_dir': None,
+            'images_only': False}
+
+        return contents, file_settings

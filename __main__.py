@@ -14,6 +14,7 @@
         ✓ Image reflow
         ✓ Search bar in toolbar
         ✓ Shift focus to the tab that has the book open
+        Tie file deletion and tab closing to model updates
         ? Create emblem per filetype
         Look into how you might group icons
         Ignore a / the / numbers for sorting purposes
@@ -63,7 +64,8 @@ import database
 import sorter
 
 from widgets import LibraryToolBar, BookToolBar, Tab, LibraryDelegate
-from subclasses import Settings, Library
+from library import Library
+from settings import Settings
 
 
 class MainUI(QtWidgets.QMainWindow, mainwindow.Ui_MainWindow):
@@ -242,7 +244,7 @@ class MainUI(QtWidgets.QMainWindow, mainwindow.Ui_MainWindow):
 
             self.bookToolBar.hide()
             self.libraryToolBar.show()
-
+        
             if self.lib_ref.proxy_model:
                 # Making the proxy model available doesn't affect
                 # memory utilization at all. Bleh.
@@ -287,6 +289,11 @@ class MainUI(QtWidgets.QMainWindow, mainwindow.Ui_MainWindow):
         # We're also updating the underlying model to have real-time
         # updates on the read status
         # Find index of the model item that corresponds to the tab
+        
+        # Set a baseline model index in case the item gets deleted
+        # E.g It's open in a tab and deleted from the library
+        model_index = None
+
         start_index = self.viewModel.index(0, 0)
         matching_item = self.viewModel.match(
             start_index,
@@ -298,9 +305,11 @@ class MainUI(QtWidgets.QMainWindow, mainwindow.Ui_MainWindow):
             model_index = self.viewModel.index(model_row, 0)
 
         current_tab.metadata[
-            'position']['current_chapter'] = self.bookToolBar.tocBox.currentIndex() + 1
-        self.viewModel.setData(
-            model_index, current_tab.metadata['position'], QtCore.Qt.UserRole + 7)
+            'position']['current_chapter'] = event + 1
+
+        if model_index:
+            self.viewModel.setData(
+                model_index, current_tab.metadata['position'], QtCore.Qt.UserRole + 7)
 
         current_tab.contentView.verticalScrollBar().setValue(0)
         current_tab.contentView.setHtml(required_content)

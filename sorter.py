@@ -121,8 +121,17 @@ class BookSorter:
 
             if self.mode == 'reading':
                 all_content = book_ref.get_contents()
+
+                # get_contents() returns a tuple. Index 1 is a collection of
+                # special settings that depend on the kind of data being parsed.
+                # Currently, this includes:
+                # Temporary Directory       temp_dir        STR     Deleted upon exit
+                # Only images included      images_only     BOOL    Specify only paths to images
+                #                                                   File will not be cached on exit
+
                 content = all_content[0]
-                temp_dir = all_content[1]
+                temp_dir = all_content[1]['temp_dir']
+                images_only = all_content[1]['images_only']
 
                 if not content.keys():
                     content['Invalid'] = 'Possible Parse Error'
@@ -137,7 +146,8 @@ class BookSorter:
                     'path': filename,
                     'position': position,
                     'content': content,
-                    'temp_dir': temp_dir}
+                    'temp_dir': temp_dir,
+                    'images_only': images_only}
 
 
     def initiate_threads(self):

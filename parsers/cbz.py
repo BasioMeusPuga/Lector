@@ -47,16 +47,24 @@ class ParseCBZ:
         # This is a brute force approach
         # Maybe try reading from the file as everything
         # matures a little bit more
-        tmp_dir = tempfile.mkdtemp()
+        temp_dir = tempfile.mkdtemp()
 
         contents = collections.OrderedDict()
         for count, i in enumerate(self.book.infolist()):
-            self.book.extract(i, path=tmp_dir)
+            self.book.extract(i, path=temp_dir)
             page_name = 'Page ' + str(count + 1)
-            image_path = os.path.join(tmp_dir, i.filename)
+            image_path = os.path.join(temp_dir, i.filename)
             # This does image returns.
+
             # TODO
             # Image resizing, formatting
-            # Cleanup after exit
+            # Include this as a collection of absolute paths only
+            # Post processing can be carried out by the program
+
             contents[page_name] = "<img src='%s' align='middle'/>" % image_path
-        return contents, tmp_dir
+
+        file_settings = {
+            'temp_dir': temp_dir,
+            'images_only': True}
+
+        return contents, file_settings
