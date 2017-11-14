@@ -1,9 +1,11 @@
 #!usr/bin/env python3
 
 import os
+import shutil
 from PyQt5 import QtWidgets, QtGui, QtCore
 
 import pie_chart
+import database
 
 
 class BookToolBar(QtWidgets.QToolBar):
@@ -372,3 +374,20 @@ class MyAbsModel(QtGui.QStandardItemModel, QtCore.QAbstractItemModel):
     def __init__(self, parent=None):
         # We're using this to be able to access the match() method
         super(MyAbsModel, self).__init__(parent)
+
+
+class BackGroundTabUpdate(QtCore.QThread):
+    def __init__(self, database_path, tab_metadata, parent=None):
+        super(BackGroundTabUpdate, self).__init__(parent)
+        self.database_path = database_path
+        self.tab_metadata = tab_metadata
+
+    def run(self):
+        file_hash = self.tab_metadata['hash']
+        position = self.tab_metadata['position']
+        database.DatabaseFunctions(
+            self.database_path).modify_position(file_hash, position)
+
+        temp_dir = self.tab_metadata['temp_dir']
+        if temp_dir:
+            shutil.rmtree(temp_dir)

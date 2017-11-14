@@ -63,7 +63,7 @@ import mainwindow
 import database
 import sorter
 
-from widgets import LibraryToolBar, BookToolBar, Tab, LibraryDelegate
+from widgets import LibraryToolBar, BookToolBar, Tab, LibraryDelegate, BackGroundTabUpdate
 from library import Library
 from settings import Settings
 
@@ -124,6 +124,9 @@ class MainUI(QtWidgets.QMainWindow, mainwindow.Ui_MainWindow):
         # Make the correct toolbar visible
         self.tab_switch()
         self.tabWidget.currentChanged.connect(self.tab_switch)
+
+        # Background Thread
+        self.thread = None
 
         # For fullscreening purposes
         self.current_contentView = None
@@ -244,7 +247,7 @@ class MainUI(QtWidgets.QMainWindow, mainwindow.Ui_MainWindow):
 
             self.bookToolBar.hide()
             self.libraryToolBar.show()
-        
+
             if self.lib_ref.proxy_model:
                 # Making the proxy model available doesn't affect
                 # memory utilization at all. Bleh.
@@ -275,10 +278,12 @@ class MainUI(QtWidgets.QMainWindow, mainwindow.Ui_MainWindow):
                 current_author + ' - ' + current_title)
 
     def tab_close(self, tab_index):
-        self.database_update_position(tab_index)
-        temp_dir = self.tabWidget.widget(tab_index).metadata['temp_dir']
-        if temp_dir:
-            shutil.rmtree(temp_dir)
+        tab_metadata = self.tabWidget.widget(tab_index).metadata
+
+        self.thread = BackGroundTabUpdate(
+            self.database_path, tab_metadata)
+        self.thread.start()
+
         self.tabWidget.removeTab(tab_index)
 
     def set_toc_position(self, event=None):
@@ -313,13 +318,6 @@ class MainUI(QtWidgets.QMainWindow, mainwindow.Ui_MainWindow):
 
         current_tab.contentView.verticalScrollBar().setValue(0)
         current_tab.contentView.setHtml(required_content)
-
-    def database_update_position(self, tab_index):
-        tab_metadata = self.tabWidget.widget(tab_index).metadata
-        file_hash = tab_metadata['hash']
-        position = tab_metadata['position']
-        database.DatabaseFunctions(
-            self.database_path).modify_position(file_hash, position)
 
     def set_fullscreen(self):
         current_tab = self.tabWidget.currentIndex()
@@ -458,14 +456,15 @@ class MainUI(QtWidgets.QMainWindow, mainwindow.Ui_MainWindow):
                 font, font_size, foreground, background))
 
     def closeEvent(self, event=None):
+
         # All tabs must be iterated upon here
         for i in range(1, self.tabWidget.count()):
-            self.database_update_position(i)
             tab_metadata = self.tabWidget.widget(i).metadata
-            if tab_metadata['temp_dir']:
-                shutil.rmtree(tab_metadata['temp_dir'])
+            self.thread = BackGroundTabUpdate(
+                self.database_path, tab_metadata)
+            self.thread.start()
+            self.thread.finished.connect(QtWidgets.qApp.exit)
 
-        self.temp_dir.remove()
         Settings(self).save_settings()
         QtWidgets.qApp.exit()
 
