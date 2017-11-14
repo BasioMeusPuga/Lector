@@ -6,6 +6,7 @@ from PyQt5 import QtWidgets, QtGui, QtCore
 
 import pie_chart
 import database
+import sorter
 
 
 class BookToolBar(QtWidgets.QToolBar):
@@ -391,3 +392,17 @@ class BackGroundTabUpdate(QtCore.QThread):
         temp_dir = self.tab_metadata['temp_dir']
         if temp_dir:
             shutil.rmtree(temp_dir)
+
+
+class BackGroundBookAddition(QtCore.QThread):
+    def __init__(self, parent_window, file_list, database_path, parent=None):
+        super(BackGroundBookAddition, self).__init__(parent)
+        self.parent_window = parent_window
+        self.file_list = file_list
+        self.database_path = database_path
+
+    def run(self):
+        books = sorter.BookSorter(self.file_list, 'addition', self.database_path)
+        parsed_books = books.initiate_threads()
+        database.DatabaseFunctions(self.database_path).add_to_database(parsed_books)
+        self.parent_window.lib_ref.generate_model('addition', parsed_books)

@@ -13,25 +13,54 @@ class Library:
         self.parent_window = parent
         self.proxy_model = None
 
-    def generate_model(self):
+    def generate_model(self, mode, parsed_books=None):
         # The QlistView widget needs to be populated
         # with a model that inherits from QStandardItemModel
         # self.parent_window.viewModel = QtGui.QStandardItemModel()
-        self.parent_window.viewModel = MyAbsModel()
 
-        books = database.DatabaseFunctions(
-            self.parent_window.database_path).fetch_data(
-                ('*',),
-                'books',
-                {'Title': ''},
-                'LIKE')
+        if mode == 'build':
+            self.parent_window.viewModel = MyAbsModel()
 
-        if not books:
-            print('Database returned nothing')
+            books = database.DatabaseFunctions(
+                self.parent_window.database_path).fetch_data(
+                    ('*',),
+                    'books',
+                    {'Title': ''},
+                    'LIKE')
+
+            if not books:
+                print('Database returned nothing')
+                return
+
+
+        elif mode == 'addition':
+            # Assumes parent_window.viewModel already exists and may be extended
+            # Because any additional books have already been added to the
+            # database using background threads
+
+            books = []
+            for i in parsed_books:
+                parsed_title = parsed_books[i]['title']
+                parsed_author = parsed_books[i]['author']
+                parsed_year = parsed_books[i]['year']
+                parsed_path = parsed_books[i]['path']
+                parsed_position = None
+                parsed_isbn = parsed_books[i]['isbn']
+                parsed_tags = None
+                parsed_hash = i
+                parsed_cover = parsed_books[i]['cover_image']
+
+                books.append([
+                    None, parsed_title, parsed_author, parsed_year, parsed_path,
+                    parsed_position, parsed_isbn, parsed_tags, parsed_hash, parsed_cover])
+
+        else:
             return
 
+
         for i in books:
-            # The database query returns a tuple with the following indices
+            # The database query returns (or the extension data is)
+            # an iterable with the following indices:
             # Index 0 is the key ID is ignored
             title = i[1]
             author = i[2]
@@ -53,6 +82,9 @@ class Library:
                 'isbn': i[6],
                 'tags': tags,
                 'hash': i[8]}
+
+            # import pprint
+            # pprint.pprint(all_metadata)
 
             tooltip_string = title + '\nAuthor: ' + author + '\nYear: ' + str(year)
             if tags:
@@ -89,12 +121,15 @@ class Library:
             item.setIcon(QtGui.QIcon(img_pixmap))
             self.parent_window.viewModel.appendRow(item)
 
+        self.create_proxymodel()
+
     def create_proxymodel(self):
         self.proxy_model = QtCore.QSortFilterProxyModel()
         self.proxy_model.setSourceModel(self.parent_window.viewModel)
         s = QtCore.QSize(160, 250)  # Set icon sizing here
         self.parent_window.listView.setIconSize(s)
         self.parent_window.listView.setModel(self.proxy_model)
+        self.update_proxymodel()
 
     def update_proxymodel(self):
         self.proxy_model.setFilterRole(QtCore.Qt.UserRole + 4)

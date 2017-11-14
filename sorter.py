@@ -33,6 +33,7 @@ class BookSorter:
         # Parsing for the reader proper
         # Caching upon closing
         self.file_list = file_list
+        self.statistics = [0, (len(file_list))]
         self.all_books = {}
         self.database_path = database_path
         self.hashes = []
@@ -73,6 +74,11 @@ class BookSorter:
         with open(filename, 'rb') as current_book:
             file_md5 = hashlib.md5(current_book.read()).hexdigest()
 
+        # TODO
+        # Make use of this
+        # self.statistics[0] += 1
+        # print(self.statistics)
+
         # IF the file is NOT being loaded into the reader,
         # Do not allow addition in case the file is dupicated in the directory
         # OR is already in the database
@@ -109,7 +115,8 @@ class BookSorter:
                 cover_image = book_ref.get_cover_image()
                 # TODO
                 if not cover_image:
-                    pass
+                    with open('resources/NotFound.png', 'rb') as stand_in:
+                        cover_image = stand_in.read()
 
                 self.all_books[file_md5] = {
                     'title': title,

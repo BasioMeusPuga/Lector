@@ -55,7 +55,6 @@
 
 import os
 import sys
-import shutil
 
 from PyQt5 import QtWidgets, QtGui, QtCore
 
@@ -63,7 +62,8 @@ import mainwindow
 import database
 import sorter
 
-from widgets import LibraryToolBar, BookToolBar, Tab, LibraryDelegate, BackGroundTabUpdate
+from widgets import LibraryToolBar, BookToolBar, Tab
+from widgets import LibraryDelegate, BackGroundTabUpdate, BackGroundBookAddition
 from library import Library
 from settings import Settings
 
@@ -79,6 +79,9 @@ class MainUI(QtWidgets.QMainWindow, mainwindow.Ui_MainWindow):
 
         # Create the database in case it doesn't exist
         database.DatabaseInit(self.database_path)
+
+        # Background Thread
+        self.thread = None
 
         # Create and right align the statusbar label widget
         self.statusMessage = QtWidgets.QLabel()
@@ -96,8 +99,8 @@ class MainUI(QtWidgets.QMainWindow, mainwindow.Ui_MainWindow):
         self.libraryToolBar = LibraryToolBar(self)
         self.libraryToolBar.addButton.triggered.connect(self.add_books)
         self.libraryToolBar.deleteButton.triggered.connect(self.delete_books)
-        self.libraryToolBar.searchBar.textChanged.connect(self.only_update_listview)
-        self.libraryToolBar.sortingBox.activated.connect(self.only_update_listview)
+        self.libraryToolBar.searchBar.textChanged.connect(self.lib_ref.update_proxymodel)
+        self.libraryToolBar.sortingBox.activated.connect(self.lib_ref.update_proxymodel)
         self.addToolBar(self.libraryToolBar)
 
         # Book toolbar
@@ -124,9 +127,6 @@ class MainUI(QtWidgets.QMainWindow, mainwindow.Ui_MainWindow):
         # Make the correct toolbar visible
         self.tab_switch()
         self.tabWidget.currentChanged.connect(self.tab_switch)
-
-        # Background Thread
-        self.thread = None
 
         # For fullscreening purposes
         self.current_contentView = None
@@ -188,22 +188,16 @@ class MainUI(QtWidgets.QMainWindow, mainwindow.Ui_MainWindow):
     def add_books(self):
         # TODO
         # Maybe expand this to traverse directories recursively
-        self.statusMessage.setText('Adding books...')
-
-        # TODO
         # Generate list of available parsers
+
         my_file = QtWidgets.QFileDialog.getOpenFileNames(
             self, 'Open file', self.last_open_path,
             "eBooks (*.epub *.mobi *.aws *.txt *.pdf *.fb2 *.djvu *.cbz)")
+
         if my_file[0]:
-            self.listView.setEnabled(False)
-            self.last_open_path = os.path.dirname(my_file[0][0])
-            books = sorter.BookSorter(my_file[0], 'addition', self.database_path)
-            parsed_books = books.initiate_threads()
-            database.DatabaseFunctions(self.database_path).add_to_database(parsed_books)
-            self.listView.setEnabled(True)
-            self.viewModel = None
-        self.reload_listview()
+            self.thread = BackGroundBookAddition(self, my_file[0], self.database_path)
+            self.thread.finished.connect(self.lib_ref.create_proxymodel)
+            self.thread.start()
 
     def delete_books(self):
         selected_books = self.listView.selectedIndexes()
@@ -233,14 +227,9 @@ class MainUI(QtWidgets.QMainWindow, mainwindow.Ui_MainWindow):
             msg_box.show()
             msg_box.exec_()
 
-    def only_update_listview(self):
-        self.lib_ref.update_proxymodel()
-
     def reload_listview(self):
         if not self.viewModel:
-            self.lib_ref.generate_model()
-        self.lib_ref.create_proxymodel()
-        self.lib_ref.update_proxymodel()
+            self.lib_ref.generate_model('build')
 
     def tab_switch(self):
         if self.tabWidget.currentIndex() == 0:
