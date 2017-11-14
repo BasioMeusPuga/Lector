@@ -120,7 +120,7 @@ class MainUI(QtWidgets.QMainWindow, mainwindow.Ui_MainWindow):
 
         self.bookToolBar.colorBoxFG.clicked.connect(self.get_color)
         self.bookToolBar.colorBoxBG.clicked.connect(self.get_color)
-        self.bookToolBar.tocBox.activated.connect(self.set_toc_position)
+        self.bookToolBar.tocBox.currentIndexChanged.connect(self.set_toc_position)
         self.addToolBar(self.bookToolBar)
 
         # Make the correct toolbar visible
@@ -148,6 +148,7 @@ class MainUI(QtWidgets.QMainWindow, mainwindow.Ui_MainWindow):
 
         # Keyboard shortcuts
         self.exit_all = QtWidgets.QShortcut(QtGui.QKeySequence('Ctrl+Q'), self)
+        self.exit_all.setContext(QtCore.Qt.ApplicationShortcut)
         self.exit_all.activated.connect(self.closeEvent)
 
 
@@ -301,6 +302,7 @@ class MainUI(QtWidgets.QMainWindow, mainwindow.Ui_MainWindow):
 
         current_tab.contentView.verticalScrollBar().setValue(0)
         current_tab.contentView.setHtml(required_content)
+        current_tab.contentView.setAlignment(QtCore.Qt.AlignCenter)
 
     def set_fullscreen(self):
         current_tab = self.tabWidget.currentIndex()

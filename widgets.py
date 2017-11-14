@@ -275,16 +275,21 @@ class Tab(QtWidgets.QWidget):
 
         self.gridLayout = QtWidgets.QGridLayout(self)
         self.gridLayout.setObjectName("gridLayout")
-        self.contentView = QtWidgets.QTextBrowser(self)
+        self.contentView = PliantQTextBrowser(self.window())
         self.contentView.setFrameShape(QtWidgets.QFrame.NoFrame)
         self.contentView.setObjectName("contentView")
         self.contentView.verticalScrollBar().setSingleStep(7)
         self.contentView.setHorizontalScrollBarPolicy(
             QtCore.Qt.ScrollBarAlwaysOff)
 
+        self.scroll_past_end_tries = 0
+
         title = self.metadata['title']
         position = self.metadata['position']
         relative_path_root = self.metadata['temp_dir']
+        relative_paths = []
+        for i in os.walk(relative_path_root):
+            relative_paths.append(os.path.join(relative_path_root, i[0]))
 
         # TODO
         # Chapter position and vertical scrollbar position
@@ -296,16 +301,15 @@ class Tab(QtWidgets.QWidget):
 
         chapter_name = list(self.metadata['content'])[current_chapter - 1]
         chapter_content = self.metadata['content'][chapter_name]
-        self.contentView.setSearchPaths([relative_path_root])
+        self.contentView.setSearchPaths(relative_paths)
+        self.contentView.setOpenLinks(False)  # Change this when HTML navigation works
         self.contentView.setHtml(chapter_content)
+        self.contentView.setAlignment(QtCore.Qt.AlignCenter)
 
+        self.generate_keyboard_shortcuts()
+        
         self.gridLayout.addWidget(self.contentView, 0, 0, 1, 1)
         self.parent.addTab(self, title)
-
-        self.exit_fs = QtWidgets.QShortcut(
-            QtGui.QKeySequence('Escape'), self.contentView)
-        self.exit_fs.setContext(QtCore.Qt.ApplicationShortcut)
-        self.exit_fs.activated.connect(self.exit_fullscreen)
 
     def generate_position(self):
         total_chapters = len(self.metadata['content'].keys())
@@ -318,11 +322,88 @@ class Tab(QtWidgets.QWidget):
             'read_lines': 0,
             'total_lines': 0}
 
+    def generate_keyboard_shortcuts(self):
+        self.next_chapter = QtWidgets.QShortcut(
+            QtGui.QKeySequence('Right'), self.contentView)
+        self.next_chapter.setObjectName('nextChapter')
+        self.next_chapter.activated.connect(self.sneaky_change)
+
+        self.prev_chapter = QtWidgets.QShortcut(
+            QtGui.QKeySequence('Left'), self.contentView)
+        self.prev_chapter.setObjectName('prevChapter')
+        self.prev_chapter.activated.connect(self.sneaky_change)
+
+        self.go_fs = QtWidgets.QShortcut(
+            QtGui.QKeySequence('F11'), self.contentView)
+        self.go_fs.activated.connect(self.window().set_fullscreen)
+
+        self.exit_fs = QtWidgets.QShortcut(
+            QtGui.QKeySequence('Escape'), self.contentView)
+        self.exit_fs.setContext(QtCore.Qt.ApplicationShortcut)
+        self.exit_fs.activated.connect(self.exit_fullscreen)
+
+        # self.exit_all = QtWidgets.QShortcut(
+        #     QtGui.QKeySequence('Ctrl+Q'), self.contentView)
+        # self.exit_all.activated.connect(self.sneaky_exit)
+
     def exit_fullscreen(self):
         self.contentView.setWindowFlags(QtCore.Qt.Widget)
         self.contentView.setWindowState(QtCore.Qt.WindowNoState)
         self.contentView.show()
         self.window().show()
+
+    def sneaky_change(self):
+        direction = -1
+        if self.sender().objectName() == 'nextChapter':
+            direction = 1
+
+        self.contentView.change_chapter(direction)
+
+    def sneaky_exit(self):
+        self.contentView.hide()
+        self.window().closeEvent()
+
+
+class PliantQTextBrowser(QtWidgets.QTextBrowser):
+    def __init__(self, main_window, parent=None):
+        super(PliantQTextBrowser, self).__init__(parent)
+        self.main_window = main_window
+
+    def wheelEvent(self, event):
+        QtWidgets.QTextBrowser.wheelEvent(self, event)
+
+        # Since this is a delta on a mouse move event, it cannot ever be 0
+        vertical_pdelta = event.pixelDelta().y()
+        if vertical_pdelta > 0:
+            moving_up = True
+        elif vertical_pdelta < 0:
+            moving_up = False
+
+        if abs(vertical_pdelta) > 150:  # Adjust sensitivity here
+            # Implies that no scrollbar movement is possible
+            if self.verticalScrollBar().value() == self.verticalScrollBar().maximum() == 0:
+                if moving_up:
+                    self.change_chapter(-1)
+                else:
+                    self.change_chapter(1)
+
+            # Implies that the scrollbar is at the bottom
+            elif self.verticalScrollBar().value() == self.verticalScrollBar().maximum():
+                if not moving_up:
+                    self.change_chapter(1)
+
+            # Implies scrollbar is at the top
+            elif self.verticalScrollBar().value() == 0:
+                if moving_up:
+                    self.change_chapter(-1)
+
+    def change_chapter(self, direction):
+        current_toc_index = self.main_window.bookToolBar.tocBox.currentIndex()
+        max_toc_index = self.main_window.bookToolBar.tocBox.count() - 1
+
+        if (current_toc_index < max_toc_index and direction == 1) or (
+                current_toc_index > 0 and direction == -1):
+            self.main_window.bookToolBar.tocBox.setCurrentIndex(current_toc_index + direction)
 
 
 class LibraryDelegate(QtWidgets.QStyledItemDelegate):
