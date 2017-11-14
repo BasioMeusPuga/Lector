@@ -59,7 +59,7 @@ class GeneratePie():
 
             lPath = "%s %s %s" % (lLineOne, lArc, lLineTwo)
             lGradient = GRADIENTS[lIndex]
-            lSvgPath += "<path d='%s' style='stroke:#c579be; fill:url(#%s);'/>" % (
+            lSvgPath += "<path d='%s' style='stroke:#097b8c; fill:url(#%s);'/>" % (
                 lPath, lGradient)
             lIndex += 1
 
@@ -68,19 +68,19 @@ class GeneratePie():
             xmlns:xlink="http://www.w3.org/1999/xlink">
         <defs>
             <radialGradient id="myRadialGradientGreen" r="65%%" cx="0" cy="0" spreadMethod="pad">
-            <stop offset="0%%"   stop-color="#c579be" stop-opacity="1"/>
-            <stop offset="100%%" stop-color="#c579be" stop-opacity="1" />
+            <stop offset="0%%"   stop-color="#11e0ff" stop-opacity="1"/>
+            <stop offset="100%%" stop-color="#11e0ff" stop-opacity="1" />
             </radialGradient>
         </defs>
         <defs>
             <radialGradient id="myRadialGradientOrange" r="65%%" cx="0" cy="0" spreadMethod="pad">
-            <stop offset="0%%"   stop-color="#6c4268" stop-opacity="1"/>
-            <stop offset="100%%" stop-color="#6c4268" stop-opacity="1" />
+            <stop offset="0%%"   stop-color="#097b8c" stop-opacity="1"/>
+            <stop offset="100%%" stop-color="#097b8c" stop-opacity="1" />
             </radialGradient>
         </defs>
 
         %s
-        <!--  <circle cx="%d" cy="%d" r="100" style="stroke:#6c4268; fill:none;"/> -->
+        <!--  <circle cx="%d" cy="%d" r="100" style="stroke:#097b8c; fill:none;"/> -->
         </svg>
         """ % (lSvgPath, lOffsetX, lOffsetY)
 

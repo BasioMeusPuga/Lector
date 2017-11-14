@@ -58,38 +58,38 @@ class ParseEPUB:
             cover_item = self.book.get_item_with_id(cover)
             if cover_item:
                 return cover_item.get_content()
-
-            # In case no cover_item is returned,
-            # we look for a cover in the guide
-            for j in self.book.guide:
-                try:
-                    if (j['title'].lower in ['cover', 'cover-image', 'coverimage'] or
-                            j['type'] == 'coverimagestandard'):
-                        image_path = j['href']
-                    break
-                except KeyError:
-                    pass
-
-            # And if all else fails, we find
-            # the first image referenced in the book
-            # Fuck everything
-            if not image_path:
-                for j in self.book.items:
-                    if j.media_type == 'application/xhtml+xml':
-                        _regex = re.search(r"src=\"(.*)\"\/", j.content.decode('utf-8'))
-                        if _regex:
-                            image_path = _regex[1]
-                        break
-
-            for k in self.book.get_items_of_type(ebooklib.ITEM_IMAGE):
-                if os.path.basename(k.file_name) == os.path.basename(image_path):
-                    image_content = k.get_content()
-                    break
-
-            return image_content
-
         except KeyError:
-            return None
+            pass
+
+        # In case no cover_item is returned, we look for a cover in the guide
+        for i in self.book.guide:
+            try:
+                if (i['title'].lower in ['cover', 'cover-image', 'coverimage'] or
+                        i['type'] == 'coverimagestandard'):
+                    image_path = i['href']
+                break
+            except KeyError:
+                pass
+
+        # If that fails, we find the first image referenced in the book
+        if not image_path:
+            for i in self.book.items:
+                if i.media_type == 'application/xhtml+xml':
+                    _regex = re.search(r"src=\"(.*)\"\/", i.content.decode('utf-8'))
+                    if _regex:
+                        image_path = _regex[1]
+                    break
+
+        if image_path:
+            for i in self.book.get_items_of_type(ebooklib.ITEM_IMAGE):
+                if os.path.basename(i.file_name) == os.path.basename(image_path):
+                    return i.get_content()
+
+        # And if that too fails, we get the first image referenced in the file
+        for i in self.book.items:
+            if i.media_type == 'image/jpeg' or i.media_type == 'image/png':
+                return i.get_content()
+
 
     def get_isbn(self):
         try:

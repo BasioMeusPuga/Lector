@@ -127,9 +127,15 @@ class DatabaseFunctions:
         # file_hashes is expected as a list that will be iterated upon
         # This should enable multiple deletion
 
-        for i in file_hashes:
-            self.database.execute(
-                f"DELETE FROM books WHERE Hash = '{i}'")
+        first = file_hashes[0]
+        sql_command = f"DELETE FROM books WHERE Hash = '{first}'"
+
+        if len(file_hashes) > 1:
+            for i in file_hashes[1:]:
+                sql_command += f" OR Hash = '{i}'"
+
+        self.database.execute(sql_command)
+
         self.database.commit()
         self.close_database()
 

@@ -121,8 +121,6 @@ class Library:
             item.setIcon(QtGui.QIcon(img_pixmap))
             self.parent_window.viewModel.appendRow(item)
 
-        self.create_proxymodel()
-
     def create_proxymodel(self):
         self.proxy_model = QtCore.QSortFilterProxyModel()
         self.proxy_model.setSourceModel(self.parent_window.viewModel)

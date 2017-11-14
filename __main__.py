@@ -144,7 +144,8 @@ class MainUI(QtWidgets.QMainWindow, mainwindow.Ui_MainWindow):
         self.listView.verticalScrollBar().setSingleStep(7)
         self.listView.doubleClicked.connect(self.list_doubleclick)
         self.listView.setItemDelegate(LibraryDelegate(self.temp_dir.path()))
-        self.reload_listview()
+        self.lib_ref.generate_model('build')
+        self.lib_ref.create_proxymodel()
 
         # Keyboard shortcuts
         self.exit_all = QtWidgets.QShortcut(QtGui.QKeySequence('Ctrl+Q'), self)
@@ -208,13 +209,12 @@ class MainUI(QtWidgets.QMainWindow, mainwindow.Ui_MainWindow):
                     for i in selected_books:
                         data = i.data(QtCore.Qt.UserRole + 3)
                         selected_hashes.append(data['hash'])
+
                     database.DatabaseFunctions(
                         self.database_path).delete_from_database(selected_hashes)
-                    self.viewModel = None  # TODO
-                                           # Delete the item from the model instead
-                                           # of reconstructing it
-                                           # The same goes for addition
-                    self.reload_listview()
+
+                    self.lib_ref.generate_model('build')
+                    self.lib_ref.create_proxymodel()
 
             selected_number = len(selected_books)
             msg_box = QtWidgets.QMessageBox()
@@ -226,10 +226,6 @@ class MainUI(QtWidgets.QMainWindow, mainwindow.Ui_MainWindow):
             msg_box.buttonClicked.connect(ifcontinue)
             msg_box.show()
             msg_box.exec_()
-
-    def reload_listview(self):
-        if not self.viewModel:
-            self.lib_ref.generate_model('build')
 
     def tab_switch(self):
         if self.tabWidget.currentIndex() == 0:
@@ -282,13 +278,12 @@ class MainUI(QtWidgets.QMainWindow, mainwindow.Ui_MainWindow):
 
         # We're also updating the underlying model to have real-time
         # updates on the read status
-        # Find index of the model item that corresponds to the tab
-        
+
         # Set a baseline model index in case the item gets deleted
         # E.g It's open in a tab and deleted from the library
         model_index = None
-
         start_index = self.viewModel.index(0, 0)
+        # Find index of the model item that corresponds to the tab
         matching_item = self.viewModel.match(
             start_index,
             QtCore.Qt.UserRole + 6,

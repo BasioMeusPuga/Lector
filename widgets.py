@@ -360,7 +360,7 @@ class LibraryDelegate(QtWidgets.QStyledItemDelegate):
                 QtWidgets.QStyledItemDelegate.paint(self, painter, option, index)
                 pie_chart.GeneratePie(progress_percent, self.temp_dir).generate()
                 svg_path = os.path.join(self.temp_dir, 'lector_progress.svg')
-                read_icon = QtGui.QIcon(svg_path).pixmap(34)
+                read_icon = QtGui.QIcon(svg_path).pixmap(32)
 
             x_draw = option.rect.bottomRight().x() - 30
             y_draw = option.rect.bottomRight().y() - 35
