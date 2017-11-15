@@ -9,7 +9,7 @@ class Settings:
         self.parent_window = parent
         self.settings = QtCore.QSettings('Lector', 'Lector')
 
-        self.default_profile1 = {
+        default_profile1 = {
             'font': 'Noto Sans',
             'foreground': '#000000',
             'background': '#d8d8d8',
@@ -17,7 +17,7 @@ class Settings:
             'font_size': 20,
             'line_spacing': 1.5}
 
-        self.default_profile2 = {
+        default_profile2 = {
             'font': 'Roboto',
             'foreground': '#c2c2c2',
             'background': '#161616',
@@ -25,13 +25,16 @@ class Settings:
             'font_size': 20,
             'line_spacing': 1.5}
 
-        self.default_profile3 = {
+        default_profile3 = {
             'font': 'Roboto',
             'foreground': '#657b83',
             'background': '#002b36',
             'padding': 140,
             'font_size': 20,
             'line_spacing': 1.5}
+
+        self.default_profiles = [
+            default_profile1, default_profile2, default_profile3]
 
     def read_settings(self):
         self.settings.beginGroup('mainWindow')
@@ -50,10 +53,7 @@ class Settings:
             'databasePath',
             QtCore.QStandardPaths.writableLocation(QtCore.QStandardPaths.AppDataLocation))
         self.parent_window.display_profiles = self.settings.value(
-            'displayProfiles', [
-                self.default_profile1,
-                self.default_profile2,
-                self.default_profile3])
+            'displayProfiles', self.default_profiles)
         self.parent_window.current_profile_index = int(self.settings.value(
             'currentProfileIndex', 0))
         self.settings.endGroup()

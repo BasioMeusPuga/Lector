@@ -121,6 +121,7 @@ class MainUI(QtWidgets.QMainWindow, mainwindow.Ui_MainWindow):
         self.bookToolBar.lineSpacingDown.triggered.connect(self.modify_font)
         self.bookToolBar.paddingUp.triggered.connect(self.modify_font)
         self.bookToolBar.paddingDown.triggered.connect(self.modify_font)
+        self.bookToolBar.resetProfile.triggered.connect(self.reset_profile)
 
         self.bookToolBar.colorBoxFG.clicked.connect(self.get_color)
         self.bookToolBar.colorBoxBG.clicked.connect(self.get_color)
@@ -313,9 +314,9 @@ class MainUI(QtWidgets.QMainWindow, mainwindow.Ui_MainWindow):
             self.viewModel.setData(
                 model_index, current_tab.metadata['position'], QtCore.Qt.UserRole + 7)
 
-        current_tab.contentView.verticalScrollBar().setValue(0)
+        # current_tab.contentView.verticalScrollBar().setValue(0)
+        current_tab.contentView.clear()
         current_tab.contentView.setHtml(required_content)
-        current_tab.contentView.setAlignment(QtCore.Qt.AlignCenter)
 
     def set_fullscreen(self):
         current_tab = self.tabWidget.currentIndex()
@@ -356,7 +357,9 @@ class MainUI(QtWidgets.QMainWindow, mainwindow.Ui_MainWindow):
 
         for i in contents:
             file_data = contents[i]
-            Tab(file_data, self.tabWidget)
+            Tab(file_data, self.tabWidget)  # New tabs are created here
+                                            # Initial position adjustment
+                                            # is carried out by the tab itself
             if file_data['path'] == self.last_open_tab:
                 found_a_focusable_tab = True
                 self.tabWidget.setCurrentIndex(self.tabWidget.count() - 1)
@@ -465,6 +468,13 @@ class MainUI(QtWidgets.QMainWindow, mainwindow.Ui_MainWindow):
         current_contentView.setStyleSheet(
             "QTextEdit {{font-family: {0}; font-size: {1}px; color: {2}; background-color: {3}}}".format(
                 font, font_size, foreground, background))
+
+    def reset_profile(self):
+        current_profile_index = self.bookToolBar.profileBox.currentIndex()
+        current_profile_default = Settings(self).default_profiles[current_profile_index]
+        self.bookToolBar.profileBox.setItemData(
+            current_profile_index, current_profile_default, QtCore.Qt.UserRole)
+        self.format_contentView()
 
     def closeEvent(self, event=None):
         # All tabs must be iterated upon here
