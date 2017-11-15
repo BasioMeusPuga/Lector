@@ -48,11 +48,6 @@ class ParseEPUB:
             return None
 
     def get_cover_image(self):
-        # TODO
-        # Generate a cover image in case one isn't found
-        # This has to be done or the database module will
-        # error out
-
         # Get cover image
         # This seems hack-ish, but that's never stopped me before
         image_path = None

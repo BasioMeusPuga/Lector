@@ -8,8 +8,6 @@ import collections
 
 class ParseCBZ:
     def __init__(self, filename, temp_dir, file_md5):
-        # TODO
-        # Maybe also include book description
         self.filename = filename
         self.book = None
         self.temp_dir = temp_dir

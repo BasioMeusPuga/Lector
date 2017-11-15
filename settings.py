@@ -87,9 +87,6 @@ class Settings:
         self.settings.setValue('currentProfileIndex', current_profile_index)
         self.settings.endGroup()
 
-        # TODO
-        # Last open order
-        # Last open highlighted
         current_tab_index = self.parent_window.tabWidget.currentIndex()
         if current_tab_index == 0:
             last_open_tab = 'library'

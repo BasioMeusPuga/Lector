@@ -14,7 +14,7 @@
         ✓ Image reflow
         ✓ Search bar in toolbar
         ✓ Shift focus to the tab that has the book open
-        Tie file deletion and tab closing to model updates
+        ✓ Tie file deletion and tab closing to model updates
         ? Create emblem per filetype
         Look into how you might group icons
         Ignore a / the / numbers for sorting purposes
@@ -33,8 +33,8 @@
         ✓ Theming
         ✓ Keep fontsize and margins consistent - Let page increase in length
         ✓ Fullscreening
+        ✓ Remember open tabs
         Record progress
-        All ebooks should first be added to the database and then returned as HTML
         Pagination
         Set context menu for definitions and the like
     Filetypes:
@@ -50,7 +50,7 @@
         Get ISBN using python-isbnlib
     Other:
         ✓ Define every widget in code
-        ? Include icons for emblems
+        ✓ Include icons for emblems
 """
 
 import sys

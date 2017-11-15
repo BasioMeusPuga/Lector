@@ -19,12 +19,6 @@ class DatabaseInit:
             "CREATE TABLE books \
             (id INTEGER PRIMARY KEY, Title TEXT, Author TEXT, Year INTEGER, \
             Path TEXT, Position BLOB, ISBN TEXT, Tags TEXT, Hash TEXT, CoverImage BLOB)")
-        self.database.execute(
-            "CREATE TABLE cache \
-            (id INTEGER PRIMARY KEY, Name TEXT, Path TEXT, CachedDict BLOB)")
-        # It's assumed that any cached books will be pickled and put into the
-        # database at time of closing
-
         self.database.commit()
         self.database.close()
 
@@ -53,14 +47,14 @@ class DatabaseFunctions:
             sql_command_add = (
                 "INSERT INTO books (Title,Author,Year,Path,ISBN,Hash,CoverImage) VALUES(?, ?, ?, ?, ?, ?, ?)")
 
-            # TODO
-            # This is a placeholder. You will need to generate book covers
-            # in case none are found
+            cover_insert = None
             if cover:
-                self.database.execute(
-                    sql_command_add,
-                    [title, author, year,
-                     path, isbn, book_hash, sqlite3.Binary(cover)])
+                cover_insert = sqlite3.Binary(cover)
+
+            self.database.execute(
+                sql_command_add,
+                [title, author, year,
+                 path, isbn, book_hash, cover_insert])
 
         self.database.commit()
         self.close_database()
