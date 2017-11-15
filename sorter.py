@@ -114,11 +114,6 @@ class BookSorter:
             # Different modes require different values
             if self.mode == 'addition':
                 cover_image = book_ref.get_cover_image()
-                # TODO
-                if not cover_image:
-                    with open('resources/NotFound.png', 'rb') as stand_in:
-                        cover_image = stand_in.read()
-
                 self.all_books[file_md5] = {
                     'title': title,
                     'author': author,

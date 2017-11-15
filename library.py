@@ -105,7 +105,10 @@ class Library:
             # QtCore.Qt.DisplayRole is the same as item.setText()
             # The model is a single row and has no columns
             img_pixmap = QtGui.QPixmap()
-            img_pixmap.loadFromData(cover)
+            if cover:
+                img_pixmap.loadFromData(cover)
+            else:
+                img_pixmap.load(':/images/NotFound.png')
             img_pixmap = img_pixmap.scaled(420, 600, QtCore.Qt.IgnoreAspectRatio)
             item = QtGui.QStandardItem()
             item.setToolTip(tooltip_string)

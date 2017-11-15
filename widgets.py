@@ -1,12 +1,12 @@
 #!usr/bin/env python3
 
 import os
-import shutil
 from PyQt5 import QtWidgets, QtGui, QtCore
 
-import pie_chart
-import database
 import sorter
+import database
+import pie_chart
+import resources
 
 
 class BookToolBar(QtWidgets.QToolBar):
@@ -307,7 +307,7 @@ class Tab(QtWidgets.QWidget):
         self.contentView.setAlignment(QtCore.Qt.AlignCenter)
 
         self.generate_keyboard_shortcuts()
-        
+
         self.gridLayout.addWidget(self.contentView, 0, 0, 1, 1)
         self.parent.addTab(self, title)
 
@@ -416,7 +416,6 @@ class LibraryDelegate(QtWidgets.QStyledItemDelegate):
         # Color icon slightly red
         # if option.state & QtWidgets.QStyle.State_Selected:
             # painter.fillRect(option.rect, QtGui.QColor().fromRgb(255, 0, 0, 20))
-        # Also, painter.setOpacity(n)
 
         option = option.__class__(option)
         file_exists = index.data(QtCore.Qt.UserRole + 5)
@@ -426,7 +425,7 @@ class LibraryDelegate(QtWidgets.QStyledItemDelegate):
         # Calculate progress on the basis of lines
 
         if not file_exists:
-            read_icon = QtGui.QIcon.fromTheme('vcs-conflicting').pixmap(36)
+            read_icon = QtGui.QIcon(':/images/error.svg').pixmap(36)
             painter.setOpacity(.7)
             QtWidgets.QStyledItemDelegate.paint(self, painter, option, index)
             painter.setOpacity(1)
@@ -443,7 +442,7 @@ class LibraryDelegate(QtWidgets.QStyledItemDelegate):
 
             if current_chapter == total_chapters:
                 QtWidgets.QStyledItemDelegate.paint(self, painter, option, index)
-                read_icon = QtGui.QIcon.fromTheme('vcs-normal').pixmap(36)
+                read_icon = QtGui.QIcon(':/images/checkmark.svg').pixmap(36)
             elif current_chapter == 1:
                 QtWidgets.QStyledItemDelegate.paint(self, painter, option, index)
             else:

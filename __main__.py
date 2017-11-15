@@ -148,9 +148,13 @@ class MainUI(QtWidgets.QMainWindow, mainwindow.Ui_MainWindow):
         self.lib_ref.create_proxymodel()
 
         # Keyboard shortcuts
-        self.exit_all = QtWidgets.QShortcut(QtGui.QKeySequence('Ctrl+Q'), self)
-        self.exit_all.setContext(QtCore.Qt.ApplicationShortcut)
-        self.exit_all.activated.connect(self.closeEvent)
+        self.ks_close_tab = QtWidgets.QShortcut(QtGui.QKeySequence('Ctrl+W'), self)
+        self.ks_close_tab.setContext(QtCore.Qt.ApplicationShortcut)
+        self.ks_close_tab.activated.connect(self.tab_close)
+
+        self.ks_exit_all = QtWidgets.QShortcut(QtGui.QKeySequence('Ctrl+Q'), self)
+        self.ks_exit_all.setContext(QtCore.Qt.ApplicationShortcut)
+        self.ks_exit_all.activated.connect(self.closeEvent)
 
         # Open last... open books.
         self.open_files(self.last_open_books)
@@ -266,7 +270,12 @@ class MainUI(QtWidgets.QMainWindow, mainwindow.Ui_MainWindow):
             self.statusMessage.setText(
                 current_author + ' - ' + current_title)
 
-    def tab_close(self, tab_index):
+    def tab_close(self, tab_index=None):
+        if not tab_index:
+            tab_index = self.tabWidget.currentIndex()
+            if tab_index == 0:
+                return
+
         tab_metadata = self.tabWidget.widget(tab_index).metadata
 
         self.thread = BackGroundTabUpdate(
@@ -353,7 +362,7 @@ class MainUI(QtWidgets.QMainWindow, mainwindow.Ui_MainWindow):
                 self.tabWidget.setCurrentIndex(self.tabWidget.count() - 1)
 
         if not found_a_focusable_tab:
-            self.tabWidget.setCurrentIndex(0)
+            self.tabWidget.setCurrentIndex(self.tabWidget.count() - 1)
 
     def get_color(self):
         signal_sender = self.sender().objectName()
