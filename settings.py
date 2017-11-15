@@ -58,6 +58,11 @@ class Settings:
             'currentProfileIndex', 0))
         self.settings.endGroup()
 
+        self.settings.beginGroup('lastOpen')
+        self.parent_window.last_open_books = self.settings.value('lastOpenFiles', [])
+        self.parent_window.last_open_tab = self.settings.value('lastOpenTab', 'library')
+        self.settings.endGroup()
+
     def save_settings(self):
         self.settings.beginGroup('mainWindow')
         self.settings.setValue('windowSize', self.parent_window.size())
@@ -80,4 +85,18 @@ class Settings:
             current_profile2,
             current_profile3])
         self.settings.setValue('currentProfileIndex', current_profile_index)
+        self.settings.endGroup()
+
+        # TODO
+        # Last open order
+        # Last open highlighted
+        current_tab_index = self.parent_window.tabWidget.currentIndex()
+        if current_tab_index == 0:
+            last_open_tab = 'library'
+        else:
+            last_open_tab = self.parent_window.tabWidget.widget(current_tab_index).metadata['path']
+
+        self.settings.beginGroup('lastOpen')
+        self.settings.setValue('lastOpenFiles', self.parent_window.last_open_books)
+        self.settings.setValue('lastOpenTab', last_open_tab)
         self.settings.endGroup()

@@ -72,6 +72,14 @@ class MainUI(QtWidgets.QMainWindow, mainwindow.Ui_MainWindow):
         super(MainUI, self).__init__()
         self.setupUi(self)
 
+        # Empty variables that will be infested soon
+        self.last_open_books = None
+        self.last_open_tab = None
+        self.last_open_path = None
+        self.thread = None  # Background Thread
+        self.viewModel = None
+        self.current_contentView = None  # For fullscreening purposes
+
         # Initialize application
         Settings(self).read_settings()  # This should populate all variables that need
                                         # to be remembered across sessions
@@ -79,16 +87,12 @@ class MainUI(QtWidgets.QMainWindow, mainwindow.Ui_MainWindow):
         # Create the database in case it doesn't exist
         database.DatabaseInit(self.database_path)
 
-        # Background Thread
-        self.thread = None
-
         # Create and right align the statusbar label widget
         self.statusMessage = QtWidgets.QLabel()
         self.statusMessage.setObjectName('statusMessage')
         self.statusBar.addPermanentWidget(self.statusMessage)
 
         # Init the QListView
-        self.viewModel = None
         self.lib_ref = Library(self)
 
         # Application wide temporary directory
@@ -127,9 +131,6 @@ class MainUI(QtWidgets.QMainWindow, mainwindow.Ui_MainWindow):
         self.tab_switch()
         self.tabWidget.currentChanged.connect(self.tab_switch)
 
-        # For fullscreening purposes
-        self.current_contentView = None
-
         # Tab closing
         self.tabWidget.setTabsClosable(True)
         # TODO
@@ -151,6 +152,9 @@ class MainUI(QtWidgets.QMainWindow, mainwindow.Ui_MainWindow):
         self.exit_all.setContext(QtCore.Qt.ApplicationShortcut)
         self.exit_all.activated.connect(self.closeEvent)
 
+        # Open last... open books.
+        self.open_files(self.last_open_books)
+        self.last_open_books = None
 
     def resizeEvent(self, event=None):
         if event:
@@ -316,11 +320,6 @@ class MainUI(QtWidgets.QMainWindow, mainwindow.Ui_MainWindow):
 
     def list_doubleclick(self, myindex):
         index = self.listView.model().index(myindex.row(), 0)
-        file_exists = self.listView.model().data(index, QtCore.Qt.UserRole + 5)
-
-        if not file_exists:
-            return
-
         metadata = self.listView.model().data(index, QtCore.Qt.UserRole + 3)
 
         # Shift focus to the tab that has the book open (if there is one)
@@ -331,12 +330,30 @@ class MainUI(QtWidgets.QMainWindow, mainwindow.Ui_MainWindow):
                 return
 
         path = metadata['path']
-        contents = sorter.BookSorter(
-            [path], 'reading', self.database_path, self.temp_dir.path()).initiate_threads()
+        self.open_files([path])
 
-        tab_ref = Tab(contents, self.tabWidget)
-        self.tabWidget.setCurrentWidget(tab_ref)
-        self.format_contentView()
+    def open_files(self, file_paths):
+        # file_paths is expected to be a list
+        # This allows for threading file opening
+        # Which should speed up multiple file opening
+        # especially @ application start
+        if not file_paths:
+            return
+
+        contents = sorter.BookSorter(
+            file_paths, 'reading', self.database_path, self.temp_dir.path()).initiate_threads()
+
+        found_a_focusable_tab = False
+
+        for i in contents:
+            file_data = contents[i]
+            Tab(file_data, self.tabWidget)
+            if file_data['path'] == self.last_open_tab:
+                found_a_focusable_tab = True
+                self.tabWidget.setCurrentIndex(self.tabWidget.count() - 1)
+
+        if not found_a_focusable_tab:
+            self.tabWidget.setCurrentIndex(0)
 
     def get_color(self):
         signal_sender = self.sender().objectName()
@@ -445,13 +462,16 @@ class MainUI(QtWidgets.QMainWindow, mainwindow.Ui_MainWindow):
         self.temp_dir.remove()
         self.hide()
 
+        self.last_open_books = []
         if self.tabWidget.count() > 1:
-            all_metadata = []
 
+            all_metadata = []
             for i in range(1, self.tabWidget.count()):
                 tab_metadata = self.tabWidget.widget(i).metadata
+                self.last_open_books.append(tab_metadata['path'])
                 all_metadata.append(tab_metadata)
 
+            Settings(self).save_settings()
             self.thread = BackGroundTabUpdate(self.database_path, all_metadata)
             self.thread.finished.connect(QtWidgets.qApp.exit)
             self.thread.start()

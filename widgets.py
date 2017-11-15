@@ -412,7 +412,6 @@ class LibraryDelegate(QtWidgets.QStyledItemDelegate):
         self.temp_dir = temp_dir
 
     def paint(self, painter, option, index):
-        QtWidgets.QStyledItemDelegate.paint(self, painter, option, index)
         # This is a hint for the future
         # Color icon slightly red
         # if option.state & QtWidgets.QStyle.State_Selected:
@@ -426,15 +425,23 @@ class LibraryDelegate(QtWidgets.QStyledItemDelegate):
         # TODO
         # Calculate progress on the basis of lines
 
+        if not file_exists:
+            read_icon = QtGui.QIcon.fromTheme('vcs-conflicting').pixmap(36)
+            painter.setOpacity(.7)
+            QtWidgets.QStyledItemDelegate.paint(self, painter, option, index)
+            painter.setOpacity(1)
+            x_draw = option.rect.bottomRight().x() - 30
+            y_draw = option.rect.bottomRight().y() - 35
+            painter.drawPixmap(x_draw, y_draw, read_icon)
+            return
+
+        QtWidgets.QStyledItemDelegate.paint(self, painter, option, index)
         if position:
             current_chapter = position['current_chapter']
             total_chapters = position['total_chapters']
             progress_percent = int(current_chapter * 100 / total_chapters)
 
-            if not file_exists:
-                read_icon = QtGui.QIcon.fromTheme('vcs-conflicting').pixmap(36)
-                QtWidgets.QStyledItemDelegate.paint(self, painter, option, index)
-            elif current_chapter == total_chapters:
+            if current_chapter == total_chapters:
                 QtWidgets.QStyledItemDelegate.paint(self, painter, option, index)
                 read_icon = QtGui.QIcon.fromTheme('vcs-normal').pixmap(36)
             elif current_chapter == 1:
@@ -449,9 +456,6 @@ class LibraryDelegate(QtWidgets.QStyledItemDelegate):
             y_draw = option.rect.bottomRight().y() - 35
             if current_chapter != 1:
                 painter.drawPixmap(x_draw, y_draw, read_icon)
-
-        else:
-            QtWidgets.QStyledItemDelegate.paint(self, painter, option, index)
 
 
 class MyAbsModel(QtGui.QStandardItemModel, QtCore.QAbstractItemModel):

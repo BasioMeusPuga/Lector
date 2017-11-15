@@ -32,7 +32,7 @@ class BookSorter:
         # This includes getting file info for the database
         # Parsing for the reader proper
         # Caching upon closing
-        self.file_list = file_list
+        self.file_list = [i for i in file_list if os.path.exists(i)]
         self.statistics = [0, (len(file_list))]
         self.all_books = {}
         self.hashes = []
@@ -145,7 +145,7 @@ class BookSorter:
                     content['Invalid'] = 'Possible Parse Error'
 
                 position = self.database_position(file_md5)
-                self.all_books = {
+                self.all_books[file_md5] = {
                     'title': title,
                     'author': author,
                     'year': year,
