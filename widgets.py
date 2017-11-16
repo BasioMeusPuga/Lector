@@ -5,8 +5,7 @@ from PyQt5 import QtWidgets, QtGui, QtCore
 
 import sorter
 import database
-import pie_chart
-import resources
+from resources import resources, pie_chart
 
 
 class BookToolBar(QtWidgets.QToolBar):
@@ -54,11 +53,11 @@ class BookToolBar(QtWidgets.QToolBar):
         self.fontSizeBox.setEditable(True)
 
         self.paddingUp = QtWidgets.QAction(
-            QtGui.QIcon.fromTheme('format-justify-fill'),
+            QtGui.QIcon.fromTheme('format-indent-less'),
             'Increase padding', self)
         self.paddingUp.setObjectName('paddingUp')
         self.paddingDown = QtWidgets.QAction(
-            QtGui.QIcon.fromTheme('format-indent-less'),
+            QtGui.QIcon.fromTheme('format-justify-fill'),
             'Decrease padding', self)
         self.paddingDown.setObjectName('paddingDown')
 

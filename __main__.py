@@ -59,10 +59,10 @@ import sys
 
 from PyQt5 import QtWidgets, QtGui, QtCore
 
-import mainwindow
-import database
 import sorter
+import database
 
+from resources import mainwindow
 from widgets import LibraryToolBar, BookToolBar, Tab
 from widgets import LibraryDelegate, BackGroundTabUpdate, BackGroundBookAddition
 from library import Library
