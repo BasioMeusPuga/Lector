@@ -92,16 +92,14 @@ class BookSorter:
             return
 
         # ___________SORTING TAKES PLACE HERE___________
-        try:
-            file_extension = os.path.splitext(filename)[1][1:]
-            if file_extension == 'epub':
-                book_ref = ParseEPUB(filename, self.temp_dir, file_md5)
-            if file_extension == 'cbz':
-                book_ref = ParseCBZ(filename, self.temp_dir, file_md5)
-            if file_extension == 'cbr':
-                book_ref = ParseCBR(filename, self.temp_dir, file_md5)
-        except IndexError:
-            return
+        sorter = {
+            'epub': ParseEPUB,
+            'cbz': ParseCBZ,
+            'cbr': ParseCBR
+        }
+
+        file_extension = os.path.splitext(filename)[1][1:]
+        book_ref = sorter[file_extension](filename, self.temp_dir, file_md5)
 
         # Everything following this is standard
         # None values are accounted for here
