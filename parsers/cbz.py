@@ -93,7 +93,7 @@ class ParseCBZ:
             page_name = 'Page ' + str(count)
             image_path = os.path.join(extract_path, image_dir, i)
 
-            # contents[page_name] = image_path
-            contents[page_name] = "<img src='%s' align='middle'/>" % image_path
+            contents[page_name] = image_path
+            # contents[page_name] = "<img src='%s' align='middle'/>" % image_path
 
         return contents, file_settings

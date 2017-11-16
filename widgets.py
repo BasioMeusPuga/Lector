@@ -274,28 +274,14 @@ class Tab(QtWidgets.QWidget):
         # Take hint from a position function argument to open the book
         # at a specific page
 
-        # The content display widget is currently a QTextBrowser
         super(Tab, self).__init__(parent)
         self.parent = parent
         self.metadata = metadata  # Save progress data into this dictionary
 
         self.gridLayout = QtWidgets.QGridLayout(self)
         self.gridLayout.setObjectName("gridLayout")
-        self.contentView = PliantQTextBrowser(self.window())
-        self.contentView.setFrameShape(QtWidgets.QFrame.NoFrame)
-        self.contentView.setObjectName("contentView")
-        self.contentView.verticalScrollBar().setSingleStep(7)
-        self.contentView.setHorizontalScrollBarPolicy(
-            QtCore.Qt.ScrollBarAlwaysOff)
 
-        self.scroll_past_end_tries = 0
-
-        title = self.metadata['title']
         position = self.metadata['position']
-        relative_path_root = self.metadata['temp_dir']
-        relative_paths = []
-        for i in os.walk(relative_path_root):
-            relative_paths.append(os.path.join(relative_path_root, i[0]))
 
         # TODO
         # Chapter position and vertical scrollbar position
@@ -307,13 +293,42 @@ class Tab(QtWidgets.QWidget):
 
         chapter_name = list(self.metadata['content'])[current_chapter - 1]
         chapter_content = self.metadata['content'][chapter_name]
-        self.contentView.setSearchPaths(relative_paths)
-        self.contentView.setOpenLinks(False)  # Change this when HTML navigation works
-        self.contentView.setHtml(chapter_content)
+
+        # The content display widget is, by default a QTextBrowser
+        # In case the incoming data is only images
+        # such as in the case of comic book files,
+        # we want a QGraphicsView widget doing all the heavy lifting
+        # instead of a QTextBrowser
+        self.are_we_doing_images_only = self.metadata['images_only']
+
+        if self.are_we_doing_images_only:  # Boolean
+            self.contentView = PliantQGraphicsView(self.window())
+            self.contentView.loadImage(chapter_content)
+            self.setStyleSheet("background-color: black;")
+        else:
+            self.contentView = PliantQTextBrowser(self.window())
+
+            relative_path_root = self.metadata['temp_dir']
+            relative_paths = []
+            for i in os.walk(relative_path_root):
+                relative_paths.append(os.path.join(relative_path_root, i[0]))
+            self.contentView.setSearchPaths(relative_paths)
+
+            self.contentView.setOpenLinks(False)  # Change this when HTML navigation works
+            self.contentView.setHtml(chapter_content)
+
+        # The following are common to both the text browser and
+        # the graphics view
+        self.contentView.setFrameShape(QtWidgets.QFrame.NoFrame)
+        self.contentView.setObjectName("contentView")
+        self.contentView.verticalScrollBar().setSingleStep(7)
+        self.contentView.setHorizontalScrollBarPolicy(
+            QtCore.Qt.ScrollBarAlwaysOff)
 
         self.generate_keyboard_shortcuts()
 
         self.gridLayout.addWidget(self.contentView, 0, 0, 1, 1)
+        title = self.metadata['title']
         self.parent.addTab(self, title)
 
     def generate_position(self):
@@ -352,21 +367,84 @@ class Tab(QtWidgets.QWidget):
         # self.exit_all.activated.connect(self.sneaky_exit)
 
     def exit_fullscreen(self):
+        self.window().show()
         self.contentView.setWindowFlags(QtCore.Qt.Widget)
         self.contentView.setWindowState(QtCore.Qt.WindowNoState)
         self.contentView.show()
-        self.window().show()
+
+    def chapter_change(self):
+        chapter_name = self.window().bookToolBar.tocBox.currentText()
+        required_content = self.metadata['content'][chapter_name]
+
+        if self.are_we_doing_images_only:
+            self.contentView.loadImage(required_content)
+        else:
+            self.contentView.clear()
+            self.contentView.setHtml(required_content)
+
+    def format_view(self, font, font_size, foreground, background, padding):
+        self.contentView.setViewportMargins(padding, 0, padding, 0)
+
+        if self.are_we_doing_images_only:
+            self.contentView.setBackgroundBrush(
+                QtGui.QBrush(QtCore.Qt.black, QtCore.Qt.SolidPattern))
+        else:
+            self.contentView.setStyleSheet(
+                "QTextEdit {{font-family: {0}; font-size: {1}px; color: {2}; background-color: {3}}}".format(
+                    font, font_size, foreground, background))
 
     def sneaky_change(self):
         direction = -1
         if self.sender().objectName() == 'nextChapter':
             direction = 1
 
-        self.contentView.change_chapter(direction, True)
+        self.contentView.common_functions.change_chapter(
+            direction, True)
 
     def sneaky_exit(self):
         self.contentView.hide()
         self.window().closeEvent()
+
+
+class PliantQGraphicsView(QtWidgets.QGraphicsView):
+    def __init__(self, main_window, parent=None):
+        super(PliantQGraphicsView, self).__init__(parent)
+        self.main_window = main_window
+        self.image_pixmap = None
+        self.ignore_wheel_event = False
+        self.ignore_wheel_event_number = 0
+        self.common_functions = PliantWidgetsCommonFunctions(self, self.main_window)
+
+    def loadImage(self, image_path):
+        self.image_pixmap = QtGui.QPixmap()
+        self.image_pixmap.load(image_path)
+        self.resizeEvent()
+
+    def resizeEvent(self, event=None):
+        if not self.image_pixmap:
+            return
+
+        profile_index = self.main_window.bookToolBar.profileBox.currentIndex()
+        current_profile = self.main_window.bookToolBar.profileBox.itemData(
+            profile_index, QtCore.Qt.UserRole)
+        padding = current_profile['padding']
+
+        available_width = self.viewport().width() - 2 * padding
+
+        if self.image_pixmap.width() > available_width:
+            image_pixmap = self.image_pixmap.scaledToWidth(
+                available_width, QtCore.Qt.SmoothTransformation)
+        else:
+            image_pixmap = self.image_pixmap
+
+        graphics_scene = QtWidgets.QGraphicsScene()
+        graphics_scene.addPixmap(image_pixmap)
+
+        self.setScene(graphics_scene)
+        self.show()
+
+    def wheelEvent(self, event):
+        self.common_functions.wheelEvent(event, True)
 
 
 class PliantQTextBrowser(QtWidgets.QTextBrowser):
@@ -375,17 +453,30 @@ class PliantQTextBrowser(QtWidgets.QTextBrowser):
         self.main_window = main_window
         self.ignore_wheel_event = False
         self.ignore_wheel_event_number = 0
+        self.common_functions = PliantWidgetsCommonFunctions(self, self.main_window)
 
     def wheelEvent(self, event):
-        if self.ignore_wheel_event:
+        self.common_functions.wheelEvent(event, False)
+
+
+class PliantWidgetsCommonFunctions():
+    def __init__(self, parent_widget, main_window):
+        self.pw = parent_widget
+        self.main_window = main_window
+
+    def wheelEvent(self, event, are_we_doing_images_only):
+        if self.pw.ignore_wheel_event:
             # Ignore first n wheel events after a chapter change
-            self.ignore_wheel_event_number += 1
-            if self.ignore_wheel_event_number > 20:
-                self.ignore_wheel_event = False
-                self.ignore_wheel_event_number = 0
+            self.pw.ignore_wheel_event_number += 1
+            if self.pw.ignore_wheel_event_number > 20:
+                self.pw.ignore_wheel_event = False
+                self.pw.ignore_wheel_event_number = 0
             return
 
-        QtWidgets.QTextBrowser.wheelEvent(self, event)
+        if are_we_doing_images_only:
+            QtWidgets.QGraphicsView.wheelEvent(self.pw, event)
+        else:
+            QtWidgets.QTextBrowser.wheelEvent(self.pw, event)
 
         # Since this is a delta on a mouse move event, it cannot ever be 0
         vertical_pdelta = event.pixelDelta().y()
@@ -396,19 +487,19 @@ class PliantQTextBrowser(QtWidgets.QTextBrowser):
 
         if abs(vertical_pdelta) > 100:  # Adjust sensitivity here
             # Implies that no scrollbar movement is possible
-            if self.verticalScrollBar().value() == self.verticalScrollBar().maximum() == 0:
+            if self.pw.verticalScrollBar().value() == self.pw.verticalScrollBar().maximum() == 0:
                 if moving_up:
                     self.change_chapter(-1)
                 else:
                     self.change_chapter(1)
 
             # Implies that the scrollbar is at the bottom
-            elif self.verticalScrollBar().value() == self.verticalScrollBar().maximum():
+            elif self.pw.verticalScrollBar().value() == self.pw.verticalScrollBar().maximum():
                 if not moving_up:
                     self.change_chapter(1)
 
             # Implies scrollbar is at the top
-            elif self.verticalScrollBar().value() == 0:
+            elif self.pw.verticalScrollBar().value() == 0:
                 if moving_up:
                     self.change_chapter(-1)
 
@@ -422,12 +513,12 @@ class PliantQTextBrowser(QtWidgets.QTextBrowser):
 
             # Set page position depending on if the chapter number is increasing or decreasing
             if direction == 1 or was_button_pressed:
-                self.verticalScrollBar().setValue(0)
+                self.pw.verticalScrollBar().setValue(0)
             else:
-                self.verticalScrollBar().setValue(
-                    self.verticalScrollBar().maximum())
+                self.pw.verticalScrollBar().setValue(
+                    self.pw.verticalScrollBar().maximum())
 
-            self.ignore_wheel_event = True
+            self.pw.ignore_wheel_event = True
 
 
 class LibraryDelegate(QtWidgets.QStyledItemDelegate):

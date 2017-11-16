@@ -34,6 +34,8 @@
         ✓ Keep fontsize and margins consistent - Let page increase in length
         ✓ Fullscreening
         ✓ Remember open tabs
+        Special Keyboard shortcuts and view modes for QGraphicsView
+        Selectable background color for QGraphicsView
         Record progress
         Pagination
         Set context menu for definitions and the like
@@ -286,11 +288,9 @@ class MainUI(QtWidgets.QMainWindow, mainwindow.Ui_MainWindow):
         self.tabWidget.removeTab(tab_index)
 
     def set_toc_position(self, event=None):
-        chapter_name = self.bookToolBar.tocBox.currentText()
         current_tab = self.tabWidget.widget(self.tabWidget.currentIndex())
-        required_content = current_tab.metadata['content'][chapter_name]
 
-        # We're also updating the underlying model to have real-time
+        # We're updating the underlying model to have real-time
         # updates on the read status
 
         # Set a baseline model index in case the item gets deleted
@@ -314,14 +314,13 @@ class MainUI(QtWidgets.QMainWindow, mainwindow.Ui_MainWindow):
             self.viewModel.setData(
                 model_index, current_tab.metadata['position'], QtCore.Qt.UserRole + 7)
 
-        # current_tab.contentView.verticalScrollBar().setValue(0)
-        current_tab.contentView.clear()
-        current_tab.contentView.setHtml(required_content)
+        current_tab.chapter_change()
 
     def set_fullscreen(self):
         current_tab = self.tabWidget.currentIndex()
         current_tab_widget = self.tabWidget.widget(current_tab)
-        self.current_contentView = current_tab_widget.findChildren(QtWidgets.QTextBrowser)[0]
+        self.current_contentView = current_tab_widget.findChildren(
+            (QtWidgets.QTextBrowser, QtWidgets.QGraphicsView))[0]
 
         self.current_contentView.setWindowFlags(QtCore.Qt.Window)
         self.current_contentView.setWindowState(QtCore.Qt.WindowFullScreen)
@@ -458,16 +457,8 @@ class MainUI(QtWidgets.QMainWindow, mainwindow.Ui_MainWindow):
             return
 
         # Change contentView to match new settings
-        current_tab = self.tabWidget.currentIndex()
-        current_tab_widget = self.tabWidget.widget(current_tab)
-        current_contentView = current_tab_widget.findChildren(QtWidgets.QTextBrowser)[0]
-
-        # This allows for the scrollbar to always be at the edge of the screen
-        current_contentView.setViewportMargins(padding, 0, padding, 0)
-
-        current_contentView.setStyleSheet(
-            "QTextEdit {{font-family: {0}; font-size: {1}px; color: {2}; background-color: {3}}}".format(
-                font, font_size, foreground, background))
+        current_tab = self.tabWidget.widget(self.tabWidget.currentIndex())
+        current_tab.format_view(font, font_size, foreground, background, padding)
 
     def reset_profile(self):
         current_profile_index = self.bookToolBar.profileBox.currentIndex()
