@@ -19,9 +19,12 @@ import database
 # get_cover_image()
 # get_isbn()
 # get_contents() - Should return a tuple with 0: TOC 1: Deletable temp_directory
+# Parsers for files containing only images need to return only
+# the image path, and images_only = True
 
 from parsers.epub import ParseEPUB
 from parsers.cbz import ParseCBZ
+from parsers.cbr import ParseCBR
 
 
 class BookSorter:
@@ -95,6 +98,8 @@ class BookSorter:
                 book_ref = ParseEPUB(filename, self.temp_dir, file_md5)
             if file_extension == 'cbz':
                 book_ref = ParseCBZ(filename, self.temp_dir, file_md5)
+            if file_extension == 'cbr':
+                book_ref = ParseCBR(filename, self.temp_dir, file_md5)
         except IndexError:
             return
 
@@ -128,12 +133,10 @@ class BookSorter:
                 # get_contents() returns a tuple. Index 1 is a collection of
                 # special settings that depend on the kind of data being parsed.
                 # Currently, this includes:
-                # Temporary Directory       temp_dir        STR     Deleted upon exit
                 # Only images included      images_only     BOOL    Specify only paths to images
                 #                                                   File will not be cached on exit
 
                 content = all_content[0]
-                temp_dir = all_content[1]['temp_dir']
                 images_only = all_content[1]['images_only']
 
                 if not content.keys():
@@ -149,7 +152,6 @@ class BookSorter:
                     'path': filename,
                     'position': position,
                     'content': content,
-                    'temp_dir': temp_dir,
                     'images_only': images_only}
 
 

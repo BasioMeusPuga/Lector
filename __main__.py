@@ -55,6 +55,7 @@
         ✓ Include icons for emblems
 """
 
+import os
 import sys
 
 from PyQt5 import QtWidgets, QtGui, QtCore
@@ -204,9 +205,10 @@ class MainUI(QtWidgets.QMainWindow, mainwindow.Ui_MainWindow):
 
         my_file = QtWidgets.QFileDialog.getOpenFileNames(
             self, 'Open file', self.last_open_path,
-            "eBooks (*.epub *.mobi *.aws *.txt *.pdf *.fb2 *.djvu *.cbz)")
+            "eBooks (*.epub *.cbz *.cbr)")
 
         if my_file[0]:
+            self.last_open_path = os.path.dirname(my_file[0][0])
             self.thread = BackGroundBookAddition(self, my_file[0], self.database_path)
             self.thread.finished.connect(self.lib_ref.create_proxymodel)
             self.thread.start()

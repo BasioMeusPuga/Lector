@@ -83,9 +83,6 @@ class Library:
                 'tags': tags,
                 'hash': i[8]}
 
-            # import pprint
-            # pprint.pprint(all_metadata)
-
             tooltip_string = title + '\nAuthor: ' + author + '\nYear: ' + str(year)
             if tags:
                 tooltip_string += ('\nTags: ' + tags)

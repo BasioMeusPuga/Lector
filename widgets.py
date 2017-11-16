@@ -307,7 +307,8 @@ class Tab(QtWidgets.QWidget):
         else:
             self.contentView = PliantQTextBrowser(self.window())
 
-            relative_path_root = self.metadata['temp_dir']
+            relative_path_root = os.path.join(
+                self.window().temp_dir.path(), self.metadata['hash'])
             relative_paths = []
             for i in os.walk(relative_path_root):
                 relative_paths.append(os.path.join(relative_path_root, i[0]))
@@ -517,7 +518,8 @@ class PliantWidgetsCommonFunctions():
                 self.pw.verticalScrollBar().setValue(
                     self.pw.verticalScrollBar().maximum())
 
-            self.pw.ignore_wheel_event = True
+            if not was_button_pressed:
+                self.pw.ignore_wheel_event = True
 
 
 class LibraryDelegate(QtWidgets.QStyledItemDelegate):

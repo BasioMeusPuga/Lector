@@ -2,11 +2,11 @@
 
 import os
 import time
-import zipfile
 import collections
+from rarfile import rarfile
 
 
-class ParseCBZ:
+class ParseCBR:
     def __init__(self, filename, temp_dir, file_md5):
         self.filename = filename
         self.book = None
@@ -15,16 +15,13 @@ class ParseCBZ:
 
     def read_book(self):
         try:
-            self.book = zipfile.ZipFile(self.filename, mode='r', allowZip64=True)
-        except FileNotFoundError:
-            print('Invalid path for ' + self.filename)
-            return
-        except (KeyError, AttributeError, zipfile.BadZipFile):
+            self.book = rarfile.RarFile(self.filename)
+        except:  # Specifying no exception types might be warranted here
             print('Cannot parse ' + self.filename)
             return
 
     def get_title(self):
-        filename = os.path.basename(self.book.filename)
+        filename = os.path.basename(self.filename)
         filename_proper = os.path.splitext(filename)[0]
         return filename_proper
 
@@ -41,12 +38,12 @@ class ParseCBZ:
         # It is implied, however, that the first image in order
         # will be the cover
 
-        image_list = [i.filename for i in self.book.infolist() if not i.is_dir()]
+        image_list = [i.filename for i in self.book.infolist() if not i.isdir()]
         image_list.sort()
         cover_image_filename = image_list[0]
 
         for i in self.book.infolist():
-            if not i.is_dir():
+            if not i.isdir():
                 if i.filename == cover_image_filename:
                     cover_image = self.book.read(i)
                     return cover_image
@@ -56,7 +53,7 @@ class ParseCBZ:
 
     def get_contents(self):
         # TODO
-        # CBZ files containing multiple directories for multiple chapters
+        # CBR files containing multiple directories for multiple chapters
 
         file_settings = {
             'images_only': True}

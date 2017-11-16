@@ -144,7 +144,6 @@ class ParseEPUB:
         # Special settings that have to be returned with the file
         # Referenced in sorter.py
         file_settings = {
-            'temp_dir': extract_path,
             'images_only': False}
 
         return contents, file_settings
