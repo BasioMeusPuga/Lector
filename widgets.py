@@ -8,6 +8,7 @@ import database
 import pie_chart
 import resources
 
+
 class BookToolBar(QtWidgets.QToolBar):
     def __init__(self, parent=None):
         super(BookToolBar, self).__init__(parent)

@@ -16,7 +16,10 @@ class ParseCBZ:
     def read_book(self):
         try:
             self.book = zipfile.ZipFile(self.filename, mode='r', allowZip64=True)
-        except (KeyError, AttributeError, FileNotFoundError, zipfile.BadZipFile):
+        except FileNotFoundError:
+            print('Invalid path for ' + self.filename)
+            return
+        except (KeyError, AttributeError, zipfile.BadZipFile):
             print('Cannot parse ' + self.filename)
             return
 
@@ -34,14 +37,34 @@ class ParseCBZ:
         return creation_year
 
     def get_cover_image(self):
-        cover_image_info = self.book.infolist()[0]
-        cover_image = self.book.read(cover_image_info)
-        return cover_image
+        # The first image in the archive may not be the cover
+        # It is implied, however, that the first image in order
+        # will be the cover
+
+        image_list = [i.filename for i in self.book.infolist() if not i.is_dir()]
+        image_list.sort()
+        cover_image_filename = image_list[0]
+
+        for i in self.book.infolist():
+            if not i.is_dir():
+                if i.filename == cover_image_filename:
+                    cover_image = self.book.read(i)
+                    return cover_image
 
     def get_isbn(self):
         return None
 
     def get_contents(self):
+        # TODO
+        # Image resizing, formatting
+        # Include this as a collection of absolute paths only
+        # Post processing can be carried out by the program
+        # CBZ files containing multiple directories for multiple chapters
+
+        file_settings = {
+            'temp_dir': self.temp_dir,
+            'images_only': True}
+
         extract_path = os.path.join(self.temp_dir, self.file_md5)
         contents = collections.OrderedDict()
         # This is a brute force approach
@@ -49,21 +72,28 @@ class ParseCBZ:
         # matures a little bit more
 
         contents = collections.OrderedDict()
-        for count, i in enumerate(self.book.infolist()):
-            self.book.extract(i, path=extract_path)
-            page_name = 'Page ' + str(count + 1)
-            image_path = os.path.join(extract_path, i.filename)
-            # This does image returns.
 
-            # TODO
-            # Image resizing, formatting
-            # Include this as a collection of absolute paths only
-            # Post processing can be carried out by the program
+        # I'm currently choosing not to keep multiple files in memory
+        self.book.extractall(extract_path)
 
+        found_images = []
+        for i in os.walk(extract_path):
+            if i[2]:  # Implies files were found
+                image_dir = i[0]
+                found_images = i[2]
+                break
+
+        if not found_images:
+            print('Found nothing in ' + self.filename)
+            return None, file_settings
+
+        found_images.sort()
+
+        for count, i in enumerate(found_images):
+            page_name = 'Page ' + str(count)
+            image_path = os.path.join(extract_path, image_dir, i)
+
+            # contents[page_name] = image_path
             contents[page_name] = "<img src='%s' align='middle'/>" % image_path
-
-        file_settings = {
-            'temp_dir': self.temp_dir,
-            'images_only': True}
 
         return contents, file_settings

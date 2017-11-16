@@ -64,6 +64,7 @@ class Settings:
         self.settings.endGroup()
 
     def save_settings(self):
+        print('Saving settings...')
         self.settings.beginGroup('mainWindow')
         self.settings.setValue('windowSize', self.parent_window.size())
         self.settings.setValue('windowPosition', self.parent_window.pos())
