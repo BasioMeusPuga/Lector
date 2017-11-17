@@ -42,6 +42,7 @@ class BookToolBar(QtWidgets.QToolBar):
         self.addSeparator()
         self.addAction(self.fullscreenButton)
         self.addAction(self.settingsButton)
+        self.settingsButton.setCheckable(True)
 
         # Font modification
         font_sizes = [str(i) for i in range(8, 48, 2)]
@@ -213,6 +214,7 @@ class LibraryToolBar(QtWidgets.QToolBar):
         self.addAction(self.deleteButton)
         self.addSeparator()
         self.addAction(self.settingsButton)
+        self.settingsButton.setCheckable(True)
 
         # Filter
         sizePolicy = QtWidgets.QSizePolicy(
@@ -331,6 +333,8 @@ class Tab(QtWidgets.QWidget):
         title = self.metadata['title']
         self.parent.addTab(self, title)
 
+        self.contentView.setFocus()
+
     def generate_position(self):
         total_chapters = len(self.metadata['content'].keys())
         # TODO
@@ -353,13 +357,6 @@ class Tab(QtWidgets.QWidget):
         self.prev_chapter.setObjectName('prevChapter')
         self.prev_chapter.activated.connect(self.sneaky_change)
 
-        # TODO
-        # Get this working
-        self.space_press = QtWidgets.QShortcut(
-            QtGui.QKeySequence('Spacebar'), self.contentView)
-        self.space_press.setObjectName('spacePress')
-        self.space_press.activated.connect(self.spacebar_pressed)
-
         self.go_fs = QtWidgets.QShortcut(
             QtGui.QKeySequence('F11'), self.contentView)
         self.go_fs.activated.connect(self.window().set_fullscreen)
@@ -378,14 +375,6 @@ class Tab(QtWidgets.QWidget):
         self.contentView.setWindowFlags(QtCore.Qt.Widget)
         self.contentView.setWindowState(QtCore.Qt.WindowNoState)
         self.contentView.show()
-
-    def spacebar_pressed(self):
-        vertical = self.verticalScrollBar().value()
-        maximum = self.verticalScrollBar().maximum()
-
-        if vertical == maximum:
-            self.contentView.common_functions.change_chapter(
-                1, True)
 
     def change_chapter_tocBox(self):
         chapter_name = self.window().bookToolBar.tocBox.currentText()
@@ -462,6 +451,21 @@ class PliantQGraphicsView(QtWidgets.QGraphicsView):
     def wheelEvent(self, event):
         self.common_functions.wheelEvent(event, True)
 
+    def keyPressEvent(self, event):
+        # This function is sufficiently different to warrant
+        # exclusion from the common functions class
+        if event.key() == 32:  # Spacebar press
+            vertical = self.verticalScrollBar().value()
+            maximum = self.verticalScrollBar().maximum()
+
+            if vertical == maximum:
+                self.common_functions.change_chapter(1, True)
+
+            else:
+                # Increment by following value
+                scroll_increment = int((maximum - 0) / 2)
+                self.verticalScrollBar().setValue(vertical + scroll_increment)
+
 
 class PliantQTextBrowser(QtWidgets.QTextBrowser):
     def __init__(self, main_window, parent=None):
@@ -474,6 +478,19 @@ class PliantQTextBrowser(QtWidgets.QTextBrowser):
 
     def wheelEvent(self, event):
         self.common_functions.wheelEvent(event, False)
+
+    def keyPressEvent(self, event):
+        if event.key() == 32:
+            vertical = self.verticalScrollBar().value()
+            maximum = self.verticalScrollBar().maximum()
+
+            if vertical == maximum:
+                self.common_functions.change_chapter(1, True)
+            else:
+                QtWidgets.QTextBrowser.keyPressEvent(self, event)
+
+        else:
+            QtWidgets.QTextBrowser.keyPressEvent(self, event)
 
 
 class PliantWidgetsCommonFunctions():

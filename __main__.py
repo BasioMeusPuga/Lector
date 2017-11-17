@@ -68,7 +68,7 @@ from PyQt5 import QtWidgets, QtGui, QtCore
 import sorter
 import database
 
-from resources import mainwindow
+from resources import mainwindow, settingswindow
 from widgets import LibraryToolBar, BookToolBar, Tab
 from widgets import LibraryDelegate, BackGroundTabUpdate, BackGroundBookAddition
 from library import Library
@@ -79,6 +79,8 @@ class MainUI(QtWidgets.QMainWindow, mainwindow.Ui_MainWindow):
     def __init__(self):
         super(MainUI, self).__init__()
         self.setupUi(self)
+
+        self.settings_dialog = SettingsUI()
 
         # Empty variables that will be infested soon
         self.last_open_books = None
@@ -110,6 +112,7 @@ class MainUI(QtWidgets.QMainWindow, mainwindow.Ui_MainWindow):
         self.libraryToolBar = LibraryToolBar(self)
         self.libraryToolBar.addButton.triggered.connect(self.add_books)
         self.libraryToolBar.deleteButton.triggered.connect(self.delete_books)
+        self.libraryToolBar.settingsButton.triggered.connect(self.show_settings)
         self.libraryToolBar.searchBar.textChanged.connect(self.lib_ref.update_proxymodel)
         self.libraryToolBar.sortingBox.activated.connect(self.lib_ref.update_proxymodel)
         self.addToolBar(self.libraryToolBar)
@@ -117,6 +120,7 @@ class MainUI(QtWidgets.QMainWindow, mainwindow.Ui_MainWindow):
         # Book toolbar
         self.bookToolBar = BookToolBar(self)
         self.bookToolBar.fullscreenButton.triggered.connect(self.set_fullscreen)
+        self.bookToolBar.settingsButton.triggered.connect(self.show_settings)
 
         for count, i in enumerate(self.display_profiles):
             self.bookToolBar.profileBox.setItemData(count, i, QtCore.Qt.UserRole)
@@ -475,10 +479,19 @@ class MainUI(QtWidgets.QMainWindow, mainwindow.Ui_MainWindow):
             current_profile_index, current_profile_default, QtCore.Qt.UserRole)
         self.format_contentView()
 
+    def show_settings(self):
+        # TODO
+        # The hiding of the settings dialog should uncheck the settings show action
+        if not self.settings_dialog.isVisible():
+            self.settings_dialog.show()
+        else:
+            self.settings_dialog.hide()
+
     def closeEvent(self, event=None):
         # All tabs must be iterated upon here
-        self.temp_dir.remove()
         self.hide()
+        self.settings_dialog.hide()
+        self.temp_dir.remove()
 
         self.last_open_books = []
         if self.tabWidget.count() > 1:
@@ -497,6 +510,12 @@ class MainUI(QtWidgets.QMainWindow, mainwindow.Ui_MainWindow):
         else:
             Settings(self).save_settings()
             QtWidgets.qApp.exit()
+
+
+class SettingsUI(QtWidgets.QDialog, settingswindow.Ui_Dialog):
+    def __init__(self):
+        super(SettingsUI, self).__init__()
+        self.setupUi(self)
 
 
 def main():
