@@ -353,6 +353,13 @@ class Tab(QtWidgets.QWidget):
         self.prev_chapter.setObjectName('prevChapter')
         self.prev_chapter.activated.connect(self.sneaky_change)
 
+        # TODO
+        # Get this working
+        self.space_press = QtWidgets.QShortcut(
+            QtGui.QKeySequence('Spacebar'), self.contentView)
+        self.space_press.setObjectName('spacePress')
+        self.space_press.activated.connect(self.spacebar_pressed)
+
         self.go_fs = QtWidgets.QShortcut(
             QtGui.QKeySequence('F11'), self.contentView)
         self.go_fs.activated.connect(self.window().set_fullscreen)
@@ -372,7 +379,15 @@ class Tab(QtWidgets.QWidget):
         self.contentView.setWindowState(QtCore.Qt.WindowNoState)
         self.contentView.show()
 
-    def chapter_change(self):
+    def spacebar_pressed(self):
+        vertical = self.verticalScrollBar().value()
+        maximum = self.verticalScrollBar().maximum()
+
+        if vertical == maximum:
+            self.contentView.common_functions.change_chapter(
+                1, True)
+
+    def change_chapter_tocBox(self):
         chapter_name = self.window().bookToolBar.tocBox.currentText()
         required_content = self.metadata['content'][chapter_name]
 
@@ -413,7 +428,8 @@ class PliantQGraphicsView(QtWidgets.QGraphicsView):
         self.image_pixmap = None
         self.ignore_wheel_event = False
         self.ignore_wheel_event_number = 0
-        self.common_functions = PliantWidgetsCommonFunctions(self, self.main_window)
+        self.common_functions = PliantWidgetsCommonFunctions(
+            self, self.main_window)
 
     def loadImage(self, image_path):
         self.image_pixmap = QtGui.QPixmap()
@@ -453,7 +469,8 @@ class PliantQTextBrowser(QtWidgets.QTextBrowser):
         self.main_window = main_window
         self.ignore_wheel_event = False
         self.ignore_wheel_event_number = 0
-        self.common_functions = PliantWidgetsCommonFunctions(self, self.main_window)
+        self.common_functions = PliantWidgetsCommonFunctions(
+            self, self.main_window)
 
     def wheelEvent(self, event):
         self.common_functions.wheelEvent(event, False)
@@ -562,6 +579,8 @@ class LibraryDelegate(QtWidgets.QStyledItemDelegate):
             elif current_chapter == 1:
                 QtWidgets.QStyledItemDelegate.paint(self, painter, option, index)
             else:
+                # TODO
+                # See if saving the svg to disk can be avoided
                 QtWidgets.QStyledItemDelegate.paint(self, painter, option, index)
                 pie_chart.GeneratePie(progress_percent, self.temp_dir).generate()
                 svg_path = os.path.join(self.temp_dir, 'lector_progress.svg')

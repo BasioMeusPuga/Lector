@@ -2,10 +2,13 @@
 
 """ TODO
     Options:
+        Automatic library management
+            Auto deletion
+            Recursive file addition
+            Add only one file type if multiple are present
+        Remember files
         Check files (hashes) upon restart
-        Recursive file addition
         Show what on startup
-        If cache large files
     Library:
         ✓ sqlite3 for cover images cache
         ✓ sqlite3 for storing metadata
@@ -24,6 +27,7 @@
         Information dialog widget
         Context menu: Cache, Read, Edit database, delete, Mark read/unread
         Create separate thread for parser - Show progress in main window
+        Set focus to newly added file
     Reading:
         ✓ Drop down for TOC
         ✓ Override the keypress event of the textedit
@@ -40,13 +44,14 @@
         Pagination
         Set context menu for definitions and the like
     Filetypes:
-        ? Plugin system for parsers
-        ? pdf support
+        ✓ cbz, cbr support
+            ✓ Keep font settings enabled but only for background color
+            Cache next and previous images
         epub support
         mobi, azw support
-        txt, doc, djvu support
-        cbz, cbr support
-            Keep font settings enabled but only for background color
+        txt, doc, djvu, fb2 support
+        ? Plugin system for parsers
+        ? pdf support
     Internet:
         Goodreads API: Ratings, Read, Recommendations
         Get ISBN using python-isbnlib
@@ -243,6 +248,7 @@ class MainUI(QtWidgets.QMainWindow, mainwindow.Ui_MainWindow):
     def tab_switch(self):
         if self.tabWidget.currentIndex() == 0:
 
+            self.resizeEvent()
             self.bookToolBar.hide()
             self.libraryToolBar.show()
 
@@ -316,7 +322,7 @@ class MainUI(QtWidgets.QMainWindow, mainwindow.Ui_MainWindow):
             self.viewModel.setData(
                 model_index, current_tab.metadata['position'], QtCore.Qt.UserRole + 7)
 
-        current_tab.chapter_change()
+        current_tab.change_chapter_tocBox()
 
     def set_fullscreen(self):
         current_tab = self.tabWidget.currentIndex()

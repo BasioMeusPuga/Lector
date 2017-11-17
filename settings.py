@@ -43,7 +43,7 @@ class Settings:
             QtCore.QSize(1299, 748)))
         self.parent_window.move(self.settings.value(
             'windowPosition',
-            QtCore.QPoint(286, 141)))
+            QtCore.QPoint(0, 0)))
         self.settings.endGroup()
 
         self.settings.beginGroup('runtimeVariables')

@@ -18,9 +18,8 @@ import database
 # get_year()
 # get_cover_image()
 # get_isbn()
-# get_contents() - Should return a tuple with 0: TOC 1: Deletable temp_directory
-# Parsers for files containing only images need to return only
-# the image path, and images_only = True
+# get_contents() - Should return a tuple with 0: TOC 1: special_settings (dict)
+# Parsers for files containing only images need to return only images_only = True
 
 from parsers.epub import ParseEPUB
 from parsers.cbz import ParseCBZ
@@ -99,7 +98,11 @@ class BookSorter:
         }
 
         file_extension = os.path.splitext(filename)[1][1:]
-        book_ref = sorter[file_extension](filename, self.temp_dir, file_md5)
+        try:
+            book_ref = sorter[file_extension](filename, self.temp_dir, file_md5)
+        except KeyError:
+            print(filename + ' has an unsupported extension')
+            return
 
         # Everything following this is standard
         # None values are accounted for here
@@ -117,6 +120,9 @@ class BookSorter:
             # Different modes require different values
             if self.mode == 'addition':
                 cover_image = book_ref.get_cover_image()
+                # TODO
+                # Consider sizing down the image in case
+                # it's too big
                 self.all_books[file_md5] = {
                     'title': title,
                     'author': author,
