@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 
 import os
-from PyQt5 import QtCore
+from PyQt5 import QtCore, QtGui
 
 
 class Settings:
@@ -36,6 +36,11 @@ class Settings:
         self.default_profiles = [
             default_profile1, default_profile2, default_profile3]
 
+        self.default_comic_profile = {
+            'padding': 100,  # pixel padding on either size
+            'background': QtGui.QColor().fromRgb(0, 0, 0),
+            'zoom_mode': 'bestFit'}
+
     def read_settings(self):
         self.settings.beginGroup('mainWindow')
         self.parent_window.resize(self.settings.value(
@@ -56,6 +61,8 @@ class Settings:
             'displayProfiles', self.default_profiles)
         self.parent_window.current_profile_index = int(self.settings.value(
             'currentProfileIndex', 0))
+        self.parent_window.comic_profile = self.settings.value(
+            'comicProfile', self.default_comic_profile)
         self.settings.endGroup()
 
         self.settings.beginGroup('lastOpen')
@@ -86,6 +93,7 @@ class Settings:
             current_profile2,
             current_profile3])
         self.settings.setValue('currentProfileIndex', current_profile_index)
+        self.settings.setValue('comicProfile', self.parent_window.comic_profile)
         self.settings.endGroup()
 
         current_tab_index = self.parent_window.tabWidget.currentIndex()

@@ -73,8 +73,9 @@ class ParseCBR:
         for i in os.walk(extract_path):
             if i[2]:  # Implies files were found
                 image_dir = i[0]
-                found_images = i[2]
-                break
+                add_path_to_file = [
+                    os.path.join(image_dir, j) for j in i[2]]
+                found_images.extend(add_path_to_file)
 
         if not found_images:
             print('Found nothing in ' + self.filename)
@@ -84,7 +85,7 @@ class ParseCBR:
 
         for count, i in enumerate(found_images):
             page_name = 'Page ' + str(count + 1)
-            image_path = os.path.join(extract_path, image_dir, i)
+            image_path = os.path.join(extract_path, i)
 
             contents[page_name] = image_path
 

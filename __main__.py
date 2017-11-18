@@ -90,6 +90,9 @@ class MainUI(QtWidgets.QMainWindow, mainwindow.Ui_MainWindow):
         self.thread = None  # Background Thread
         self.viewModel = None
         self.current_contentView = None  # For fullscreening purposes
+        self.display_profiles = None
+        self.current_profile_index = None
+        # self.comic_profile = None
 
         # Initialize application
         Settings(self).read_settings()  # This should populate all variables that need
@@ -135,6 +138,13 @@ class MainUI(QtWidgets.QMainWindow, mainwindow.Ui_MainWindow):
         self.bookToolBar.paddingUp.triggered.connect(self.modify_font)
         self.bookToolBar.paddingDown.triggered.connect(self.modify_font)
         self.bookToolBar.resetProfile.triggered.connect(self.reset_profile)
+
+        self.bookToolBar.zoomIn.triggered.connect(self.modify_comic_view)
+        self.bookToolBar.zoomOut.triggered.connect(self.modify_comic_view)
+        self.bookToolBar.fitWidth.triggered.connect(self.modify_comic_view)
+        self.bookToolBar.bestFit.triggered.connect(self.modify_comic_view)
+        self.bookToolBar.originalSize.triggered.connect(self.modify_comic_view)
+        self.bookToolBar.comicBGColor.clicked.connect(self.get_color)
 
         self.bookToolBar.colorBoxFG.clicked.connect(self.get_color)
         self.bookToolBar.colorBoxBG.clicked.connect(self.get_color)
@@ -336,13 +346,7 @@ class MainUI(QtWidgets.QMainWindow, mainwindow.Ui_MainWindow):
     def set_fullscreen(self):
         current_tab = self.tabWidget.currentIndex()
         current_tab_widget = self.tabWidget.widget(current_tab)
-        self.current_contentView = current_tab_widget.findChildren(
-            (QtWidgets.QTextBrowser, QtWidgets.QGraphicsView))[0]
-
-        self.current_contentView.setWindowFlags(QtCore.Qt.Window)
-        self.current_contentView.setWindowState(QtCore.Qt.WindowFullScreen)
-        self.current_contentView.show()
-        self.hide()
+        current_tab_widget.go_fullscreen()
 
     def list_doubleclick(self, myindex):
         index = self.listView.model().index(myindex.row(), 0)
@@ -366,8 +370,13 @@ class MainUI(QtWidgets.QMainWindow, mainwindow.Ui_MainWindow):
         if not file_paths:
             return
 
+        print('Attempting to open: ' + ', '.join(file_paths))
+
         contents = sorter.BookSorter(
-            file_paths, 'reading', self.database_path, self.temp_dir.path()).initiate_threads()
+            file_paths,
+            'reading',
+            self.database_path,
+            self.temp_dir.path()).initiate_threads()
 
         found_a_focusable_tab = False
 
@@ -405,6 +414,11 @@ class MainUI(QtWidgets.QMainWindow, mainwindow.Ui_MainWindow):
             self.bookToolBar.colorBoxBG.setStyleSheet(
                 'background-color: %s' % color_name)
             current_profile['background'] = color_name
+        
+        elif signal_sender == 'comicBGColor':
+            self.bookToolBar.comicBGColor.setStyleSheet(
+                'background-color: %s' % color_name)
+            self.comic_profile['background'] = new_color
 
         self.bookToolBar.profileBox.setItemData(
             profile_index, current_profile, QtCore.Qt.UserRole)
@@ -441,41 +455,90 @@ class MainUI(QtWidgets.QMainWindow, mainwindow.Ui_MainWindow):
             profile_index, current_profile, QtCore.Qt.UserRole)
         self.format_contentView()
 
+    def modify_comic_view(self):
+        signal_sender = self.sender().objectName()
+        current_tab = self.tabWidget.widget(self.tabWidget.currentIndex())
+
+        self.bookToolBar.fitWidth.setChecked(False)
+        self.bookToolBar.bestFit.setChecked(False)
+        self.bookToolBar.originalSize.setChecked(False)
+
+        if signal_sender == 'zoomOut':
+            self.comic_profile['zoom_mode'] = 'manualZoom'
+            self.comic_profile['padding'] += 50
+            if self.comic_profile['padding'] * 2 > current_tab.contentView.viewport().width():
+                self.comic_profile['padding'] -= 50
+
+        if signal_sender == 'zoomIn':
+            self.comic_profile['zoom_mode'] = 'manualZoom'
+            self.comic_profile['padding'] -= 50
+            if self.comic_profile['padding'] < 0:
+                self.comic_profile['padding'] = 0
+
+        if signal_sender == 'fitWidth':
+            self.comic_profile['zoom_mode'] = 'fitWidth'
+            self.comic_profile['padding'] = 0
+            self.bookToolBar.fitWidth.setChecked(True)
+
+        if signal_sender == 'bestFit':
+            self.comic_profile['zoom_mode'] = 'bestFit'
+            self.bookToolBar.bestFit.setChecked(True)
+
+        if signal_sender == 'originalSize':
+            self.comic_profile['zoom_mode'] = 'originalSize'
+            self.bookToolBar.originalSize.setChecked(True)
+
+        self.format_contentView()
+
+
     def format_contentView(self):
         # TODO
         # Implement line spacing
         # See what happens if a font isn't installed
 
-        profile_index = self.bookToolBar.profileBox.currentIndex()
-        current_profile = self.bookToolBar.profileBox.itemData(
-            profile_index, QtCore.Qt.UserRole)
+        current_tab = self.tabWidget.widget(self.tabWidget.currentIndex())
 
-        font = current_profile['font']
-        foreground = current_profile['foreground']
-        background = current_profile['background']
-        padding = current_profile['padding']
-        font_size = current_profile['font_size']
-
-        # Change toolbar widgets to match new settings
-        self.bookToolBar.fontBox.blockSignals(True)
-        self.bookToolBar.fontSizeBox.blockSignals(True)
-        self.bookToolBar.fontBox.setCurrentText(font)
-        self.bookToolBar.fontSizeBox.setCurrentText(str(font_size))
-        self.bookToolBar.fontBox.blockSignals(False)
-        self.bookToolBar.fontSizeBox.blockSignals(False)
-
-        self.bookToolBar.colorBoxFG.setStyleSheet(
-            'background-color: %s' % foreground)
-        self.bookToolBar.colorBoxBG.setStyleSheet(
-            'background-color: %s' % background)
-
-        # Do not run when only the library tab is open
-        if self.tabWidget.count() == 1:
+        try:
+            current_metadata = current_tab.metadata
+        except AttributeError:
             return
 
-        # Change contentView to match new settings
-        current_tab = self.tabWidget.widget(self.tabWidget.currentIndex())
-        current_tab.format_view(font, font_size, foreground, background, padding)
+        if current_metadata['images_only']:
+            background = self.comic_profile['background']
+            padding = self.comic_profile['padding']
+
+            self.bookToolBar.comicBGColor.setStyleSheet(
+                'background-color: %s' % background.name())
+
+            current_tab.format_view(
+                None, None, None, background, padding)
+
+        else:
+            profile_index = self.bookToolBar.profileBox.currentIndex()
+            current_profile = self.bookToolBar.profileBox.itemData(
+                profile_index, QtCore.Qt.UserRole)
+
+            font = current_profile['font']
+            foreground = current_profile['foreground']
+            background = current_profile['background']
+            padding = current_profile['padding']
+            font_size = current_profile['font_size']
+
+            # Change toolbar widgets to match new settings
+            self.bookToolBar.fontBox.blockSignals(True)
+            self.bookToolBar.fontSizeBox.blockSignals(True)
+            self.bookToolBar.fontBox.setCurrentText(font)
+            self.bookToolBar.fontSizeBox.setCurrentText(str(font_size))
+            self.bookToolBar.fontBox.blockSignals(False)
+            self.bookToolBar.fontSizeBox.blockSignals(False)
+
+            self.bookToolBar.colorBoxFG.setStyleSheet(
+                'background-color: %s' % foreground)
+            self.bookToolBar.colorBoxBG.setStyleSheet(
+                'background-color: %s' % background)
+
+            current_tab.format_view(
+                font, font_size, foreground, background, padding)
 
     def reset_profile(self):
         current_profile_index = self.bookToolBar.profileBox.currentIndex()

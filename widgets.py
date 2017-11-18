@@ -127,26 +127,31 @@ class BookToolBar(QtWidgets.QToolBar):
         self.zoomIn = QtWidgets.QAction(
             QtGui.QIcon.fromTheme('zoom-in'),
             'Zoom in', self)
+        self.zoomIn.setObjectName('zoomIn')
         self.zoomOut = QtWidgets.QAction(
             QtGui.QIcon.fromTheme('zoom-out'),
             'Zoom Out', self)
+        self.zoomOut.setObjectName('zoomOut')
 
         self.fitWidth = QtWidgets.QAction(
             QtGui.QIcon.fromTheme('zoom-fit-width'),
             'Fit Width', self)
+        self.fitWidth.setObjectName('fitWidth')
         self.fitWidth.setCheckable(True)
         self.bestFit = QtWidgets.QAction(
             QtGui.QIcon.fromTheme('zoom-fit-best'),
             'Best Fit', self)
+        self.bestFit.setObjectName('bestFit')
         self.bestFit.setCheckable(True)
         self.originalSize = QtWidgets.QAction(
             QtGui.QIcon.fromTheme('zoom-original'),
             'Original size', self)
+        self.originalSize.setObjectName('originalSize')
         self.originalSize.setCheckable(True)
 
-        self.comicColorBG = FixedPushButton(self)
-        self.comicColorBG.setToolTip('Background color')
-        self.comicColorBG.setObjectName('comicColorBG')
+        self.comicBGColor = FixedPushButton(self)
+        self.comicBGColor.setToolTip('Background color')
+        self.comicBGColor.setObjectName('comicBGColor')
 
         self.comicSeparator1 = self.addSeparator()
         self.addAction(self.zoomIn)
@@ -155,7 +160,7 @@ class BookToolBar(QtWidgets.QToolBar):
         self.addAction(self.bestFit)
         self.addAction(self.originalSize)
         self.comicSeparator2 = self.addSeparator()
-        self.comicBGColorAction = self.addWidget(self.comicColorBG)
+        self.comicBGColorAction = self.addWidget(self.comicBGColor)
 
         self.comicActions = [
             self.comicBGColorAction,
@@ -211,6 +216,10 @@ class BookToolBar(QtWidgets.QToolBar):
     def customize_view_on(self):
         if self.parent().tabWidget.widget(
                 self.parent().tabWidget.currentIndex()).metadata['images_only']:
+
+            # The following might seem redundant,
+            # but it's necessary for tab switching
+
             for i in self.comicActions:
                 i.setVisible(True)
 
@@ -354,7 +363,6 @@ class Tab(QtWidgets.QWidget):
         if self.are_we_doing_images_only:  # Boolean
             self.contentView = PliantQGraphicsView(self.window())
             self.contentView.loadImage(chapter_content)
-            self.setStyleSheet("background-color: black;")
         else:
             self.contentView = PliantQTextBrowser(self.window())
 
@@ -408,7 +416,7 @@ class Tab(QtWidgets.QWidget):
 
         self.go_fs = QtWidgets.QShortcut(
             QtGui.QKeySequence('F11'), self.contentView)
-        self.go_fs.activated.connect(self.window().set_fullscreen)
+        self.go_fs.activated.connect(self.go_fullscreen)
 
         self.exit_fs = QtWidgets.QShortcut(
             QtGui.QKeySequence('Escape'), self.contentView)
@@ -418,6 +426,16 @@ class Tab(QtWidgets.QWidget):
         # self.exit_all = QtWidgets.QShortcut(
         #     QtGui.QKeySequence('Ctrl+Q'), self.contentView)
         # self.exit_all.activated.connect(self.sneaky_exit)
+
+    def go_fullscreen(self):
+        if self.contentView.windowState() == QtCore.Qt.WindowFullScreen:
+            self.exit_fullscreen()
+            return
+
+        self.contentView.setWindowFlags(QtCore.Qt.Window)
+        self.contentView.setWindowState(QtCore.Qt.WindowFullScreen)
+        self.contentView.show()
+        self.window().hide()
 
     def exit_fullscreen(self):
         self.window().show()
@@ -436,12 +454,17 @@ class Tab(QtWidgets.QWidget):
             self.contentView.setHtml(required_content)
 
     def format_view(self, font, font_size, foreground, background, padding):
-        self.contentView.setViewportMargins(padding, 0, padding, 0)
-
         if self.are_we_doing_images_only:
-            self.contentView.setBackgroundBrush(
-                QtGui.QBrush(QtCore.Qt.black, QtCore.Qt.SolidPattern))
+            # Tab color does not need to be set separately in case
+            # no padding is set for the viewport of a QGraphicsView
+            # and image resizing in done in the pixmap
+            my_qbrush = QtGui.QBrush(QtCore.Qt.SolidPattern)
+            my_qbrush.setColor(background)
+            self.contentView.setBackgroundBrush(my_qbrush)
+            self.contentView.resizeEvent()
+
         else:
+            self.contentView.setViewportMargins(padding, 0, padding, 0)
             self.contentView.setStyleSheet(
                 "QTextEdit {{font-family: {0}; font-size: {1}px; color: {2}; background-color: {3}}}".format(
                     font, font_size, foreground, background))
@@ -478,18 +501,29 @@ class PliantQGraphicsView(QtWidgets.QGraphicsView):
         if not self.image_pixmap:
             return
 
-        profile_index = self.main_window.bookToolBar.profileBox.currentIndex()
-        current_profile = self.main_window.bookToolBar.profileBox.itemData(
-            profile_index, QtCore.Qt.UserRole)
-        padding = current_profile['padding']
+        zoom_mode = self.main_window.comic_profile['zoom_mode']
+        padding = self.main_window.comic_profile['padding']
 
-        available_width = self.viewport().width() - 2 * padding
-
-        if self.image_pixmap.width() > available_width:
+        if zoom_mode == 'fitWidth':
+            available_width = self.viewport().width()
             image_pixmap = self.image_pixmap.scaledToWidth(
                 available_width, QtCore.Qt.SmoothTransformation)
-        else:
+
+        elif zoom_mode == 'originalSize':
             image_pixmap = self.image_pixmap
+
+        elif zoom_mode == 'bestFit':
+            available_width = self.viewport().width()
+            available_height = self.viewport().height()
+
+            image_pixmap = self.image_pixmap.scaled(
+                available_width, available_height,
+                QtCore.Qt.KeepAspectRatio, QtCore.Qt.SmoothTransformation)
+
+        elif zoom_mode == 'manualZoom':
+            available_width = self.viewport().width() - 2 * padding
+            image_pixmap = self.image_pixmap.scaledToWidth(
+                available_width, QtCore.Qt.SmoothTransformation)
 
         graphics_scene = QtWidgets.QGraphicsScene()
         graphics_scene.addPixmap(image_pixmap)
@@ -689,7 +723,10 @@ class BackGroundBookAddition(QtCore.QThread):
         self.database_path = database_path
 
     def run(self):
-        books = sorter.BookSorter(self.file_list, 'addition', self.database_path)
+        books = sorter.BookSorter(
+            self.file_list,
+            'addition',
+            self.database_path)
         parsed_books = books.initiate_threads()
         database.DatabaseFunctions(self.database_path).add_to_database(parsed_books)
         self.parent_window.lib_ref.generate_model('addition', parsed_books)
