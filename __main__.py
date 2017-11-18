@@ -40,6 +40,7 @@
         ✓ Remember open tabs
         Special Keyboard shortcuts and view modes for QGraphicsView
         Selectable background color for QGraphicsView
+        View and hide toolbar actions in a list
         Record progress
         Pagination
         Set context menu for definitions and the like
@@ -268,6 +269,9 @@ class MainUI(QtWidgets.QMainWindow, mainwindow.Ui_MainWindow):
             current_metadata = self.tabWidget.widget(
                 self.tabWidget.currentIndex()).metadata
 
+            if self.bookToolBar.fontButton.isChecked():
+                self.bookToolBar.customize_view_on()
+
             current_title = current_metadata['title']
             current_author = current_metadata['author']
             current_position = current_metadata['position']
@@ -277,7 +281,8 @@ class MainUI(QtWidgets.QMainWindow, mainwindow.Ui_MainWindow):
             self.bookToolBar.tocBox.clear()
             self.bookToolBar.tocBox.addItems(current_toc)
             if current_position:
-                self.bookToolBar.tocBox.setCurrentIndex(current_position['current_chapter'] - 1)
+                self.bookToolBar.tocBox.setCurrentIndex(
+                    current_position['current_chapter'] - 1)
             self.bookToolBar.tocBox.blockSignals(False)
 
             self.format_contentView()

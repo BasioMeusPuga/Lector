@@ -26,14 +26,18 @@ class BookToolBar(QtWidgets.QToolBar):
         self.setObjectName("LibraryToolBar")
 
         # Buttons
-        self.fullscreenButton = QtWidgets.QAction(
-            QtGui.QIcon.fromTheme('view-fullscreen'), 'Fullscreen', self)
         self.fontButton = QtWidgets.QAction(
-            QtGui.QIcon.fromTheme('gtk-select-font'), 'Font settings', self)
+            QtGui.QIcon.fromTheme('gtk-select-font'),
+            'Font settings', self)
+        self.fullscreenButton = QtWidgets.QAction(
+            QtGui.QIcon.fromTheme('view-fullscreen'),
+            'Fullscreen', self)
         self.settingsButton = QtWidgets.QAction(
-            QtGui.QIcon.fromTheme('settings'), 'Settings', self)
+            QtGui.QIcon.fromTheme('settings'),
+            'Settings', self)
         self.resetProfile = QtWidgets.QAction(
-            QtGui.QIcon.fromTheme('view-refresh'), 'Reset profile', self)
+            QtGui.QIcon.fromTheme('view-refresh'),
+            'Reset profile', self)
 
         # Add buttons
         self.addAction(self.fontButton)
@@ -100,20 +104,73 @@ class BookToolBar(QtWidgets.QToolBar):
         self.addAction(self.paddingUp)
         self.addAction(self.paddingDown)
 
-        self.fontBoxAction.setVisible(False)
-        self.fontSizeBoxAction.setVisible(False)
-        self.fgColorAction.setVisible(False)
-        self.bgColorAction.setVisible(False)
-        self.lineSpacingUp.setVisible(False)
-        self.lineSpacingDown.setVisible(False)
-        self.paddingUp.setVisible(False)
-        self.paddingDown.setVisible(False)
-        self.profileAction.setVisible(False)
-        self.fontSeparator1.setVisible(False)
-        self.fontSeparator2.setVisible(False)
-        self.fontSeparator3.setVisible(False)
-        self.fontSeparator4.setVisible(False)
+        self.fontActions = [
+            self.fontBoxAction,
+            self.fontSizeBoxAction,
+            self.fgColorAction,
+            self.bgColorAction,
+            self.lineSpacingUp,
+            self.lineSpacingDown,
+            self.paddingUp,
+            self.paddingDown,
+            self.profileAction,
+            self.fontSeparator1,
+            self.fontSeparator2,
+            self.fontSeparator3,
+            self.fontSeparator4,
+            self.resetProfile]
 
+        for i in self.fontActions:
+            i.setVisible(False)
+
+        # Comic view modification
+        self.zoomIn = QtWidgets.QAction(
+            QtGui.QIcon.fromTheme('zoom-in'),
+            'Zoom in', self)
+        self.zoomOut = QtWidgets.QAction(
+            QtGui.QIcon.fromTheme('zoom-out'),
+            'Zoom Out', self)
+
+        self.fitWidth = QtWidgets.QAction(
+            QtGui.QIcon.fromTheme('zoom-fit-width'),
+            'Fit Width', self)
+        self.fitWidth.setCheckable(True)
+        self.bestFit = QtWidgets.QAction(
+            QtGui.QIcon.fromTheme('zoom-fit-best'),
+            'Best Fit', self)
+        self.bestFit.setCheckable(True)
+        self.originalSize = QtWidgets.QAction(
+            QtGui.QIcon.fromTheme('zoom-original'),
+            'Original size', self)
+        self.originalSize.setCheckable(True)
+
+        self.comicColorBG = FixedPushButton(self)
+        self.comicColorBG.setToolTip('Background color')
+        self.comicColorBG.setObjectName('comicColorBG')
+
+        self.comicSeparator1 = self.addSeparator()
+        self.addAction(self.zoomIn)
+        self.addAction(self.zoomOut)
+        self.addAction(self.fitWidth)
+        self.addAction(self.bestFit)
+        self.addAction(self.originalSize)
+        self.comicSeparator2 = self.addSeparator()
+        self.comicBGColorAction = self.addWidget(self.comicColorBG)
+
+        self.comicActions = [
+            self.comicBGColorAction,
+            self.zoomIn,
+            self.zoomOut,
+            self.fitWidth,
+            self.bestFit,
+            self.originalSize,
+            self.comicSeparator1,
+            self.comicSeparator2]
+
+        for i in self.comicActions:
+            i.setVisible(False)
+
+        # Other booktoolbar widgets
         self.searchBar = FixedLineEdit(self)
         self.searchBar.setPlaceholderText(
             'Search...')
@@ -133,59 +190,51 @@ class BookToolBar(QtWidgets.QToolBar):
 
         self.tocBoxAction = self.addWidget(self.tocBox)
         self.searchBarAction = self.addWidget(self.searchBar)
+
+        self.bookActions = [
+            self.fullscreenButton,
+            self.settingsButton,
+            self.tocBoxAction,
+            self.searchBarAction]
+
+        for i in self.bookActions:
+            i.setVisible(True)
+
         self.addAction(self.resetProfile)
-        self.resetProfile.setVisible(False)
 
     def toggle_font_settings(self):
         if self.fontButton.isChecked():
-            self.font_settings_on()
+            self.customize_view_on()
         else:
-            self.font_settings_off()
+            self.customize_view_off()
 
-    def font_settings_on(self):
-        self.fullscreenButton.setVisible(False)
-        self.settingsButton.setVisible(False)
+    def customize_view_on(self):
+        if self.parent().tabWidget.widget(
+                self.parent().tabWidget.currentIndex()).metadata['images_only']:
+            for i in self.comicActions:
+                i.setVisible(True)
 
-        self.fontBoxAction.setVisible(True)
-        self.fontSizeBoxAction.setVisible(True)
-        self.fgColorAction.setVisible(True)
-        self.bgColorAction.setVisible(True)
-        self.lineSpacingUp.setVisible(True)
-        self.lineSpacingDown.setVisible(True)
-        self.paddingUp.setVisible(True)
-        self.paddingDown.setVisible(True)
-        self.profileAction.setVisible(True)
-        self.fontSeparator1.setVisible(True)
-        self.fontSeparator2.setVisible(True)
-        self.fontSeparator3.setVisible(True)
-        self.fontSeparator3.setVisible(True)
-        self.fontSeparator4.setVisible(False)
+            for i in self.fontActions:
+                i.setVisible(False)
+        else:
+            for i in self.fontActions:
+                i.setVisible(True)
 
-        self.tocBoxAction.setVisible(False)
-        self.searchBarAction.setVisible(False)
-        self.resetProfile.setVisible(True)
+            for i in self.comicActions:
+                i.setVisible(False)
 
-    def font_settings_off(self):
-        self.fullscreenButton.setVisible(True)
-        self.settingsButton.setVisible(True)
+        for i in self.bookActions:
+            i.setVisible(False)
 
-        self.fontBoxAction.setVisible(False)
-        self.fontSizeBoxAction.setVisible(False)
-        self.fgColorAction.setVisible(False)
-        self.bgColorAction.setVisible(False)
-        self.lineSpacingUp.setVisible(False)
-        self.lineSpacingDown.setVisible(False)
-        self.paddingUp.setVisible(False)
-        self.paddingDown.setVisible(False)
-        self.profileAction.setVisible(False)
-        self.fontSeparator1.setVisible(False)
-        self.fontSeparator2.setVisible(False)
-        self.fontSeparator3.setVisible(False)
-        self.fontSeparator4.setVisible(False)
+    def customize_view_off(self):
+        for i in self.fontActions:
+            i.setVisible(False)
 
-        self.tocBoxAction.setVisible(True)
-        self.searchBarAction.setVisible(True)
-        self.resetProfile.setVisible(False)
+        for i in self.comicActions:
+            i.setVisible(False)
+
+        for i in self.bookActions:
+            i.setVisible(True)
 
 
 class LibraryToolBar(QtWidgets.QToolBar):
@@ -220,8 +269,8 @@ class LibraryToolBar(QtWidgets.QToolBar):
         sizePolicy = QtWidgets.QSizePolicy(
             QtWidgets.QSizePolicy.Fixed, QtWidgets.QSizePolicy.Fixed)
 
-        # self.searchBar = QtWidgets.QLineEdit()
         self.searchBar = FixedLineEdit(self)
+        self.searchBar.setClearButtonEnabled(True)
         self.searchBar.setPlaceholderText(
             'Search for Title, Author, Tags...')
         self.searchBar.setSizePolicy(sizePolicy)
