@@ -27,8 +27,8 @@ class BookToolBar(QtWidgets.QToolBar):
 
         # Buttons
         self.fontButton = QtWidgets.QAction(
-            QtGui.QIcon.fromTheme('gtk-select-font'),
-            'Font settings', self)
+            QtGui.QIcon.fromTheme('visibility'),
+            'View settings', self)
         self.fullscreenButton = QtWidgets.QAction(
             QtGui.QIcon.fromTheme('view-fullscreen'),
             'Fullscreen', self)

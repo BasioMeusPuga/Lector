@@ -55,18 +55,10 @@ class ParseCBZ:
         return None
 
     def get_contents(self):
-        # TODO
-        # CBZ files containing multiple directories for multiple chapters
-
         file_settings = {
             'images_only': True}
 
         extract_path = os.path.join(self.temp_dir, self.file_md5)
-        contents = collections.OrderedDict()
-        # This is a brute force approach
-        # Maybe try reading from the file as everything
-        # matures a little bit more
-
         contents = collections.OrderedDict()
 
         # I'm currently choosing not to keep multiple files in memory

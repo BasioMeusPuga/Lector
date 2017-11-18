@@ -38,9 +38,10 @@
         ✓ Keep fontsize and margins consistent - Let page increase in length
         ✓ Fullscreening
         ✓ Remember open tabs
-        Special Keyboard shortcuts and view modes for QGraphicsView
-        Selectable background color for QGraphicsView
-        View and hide toolbar actions in a list
+        ✓ Selectable background color for QGraphicsView
+        ✓ View modes for QGraphicsView
+        ✓ View and hide toolbar actions in a list
+        Comic view kayboard shortcuts
         Record progress
         Pagination
         Set context menu for definitions and the like
@@ -214,7 +215,7 @@ class MainUI(QtWidgets.QMainWindow, mainwindow.Ui_MainWindow):
         try:
             layout_extra_space_per_image = space_left // num_images
             self.listView.setGridSize(
-                QtCore.QSize(default_size + layout_extra_space_per_image, 240))
+                QtCore.QSize(default_size + layout_extra_space_per_image, 250))
         except ZeroDivisionError:  # Initial resize is ignored
             return
 
@@ -414,7 +415,7 @@ class MainUI(QtWidgets.QMainWindow, mainwindow.Ui_MainWindow):
             self.bookToolBar.colorBoxBG.setStyleSheet(
                 'background-color: %s' % color_name)
             current_profile['background'] = color_name
-        
+
         elif signal_sender == 'comicBGColor':
             self.bookToolBar.comicBGColor.setStyleSheet(
                 'background-color: %s' % color_name)
@@ -489,7 +490,6 @@ class MainUI(QtWidgets.QMainWindow, mainwindow.Ui_MainWindow):
             self.bookToolBar.originalSize.setChecked(True)
 
         self.format_contentView()
-
 
     def format_contentView(self):
         # TODO

@@ -26,11 +26,11 @@ class Settings:
             'line_spacing': 1.5}
 
         default_profile3 = {
-            'font': 'Roboto',
+            'font': 'Clear Sans',
             'foreground': '#657b83',
             'background': '#002b36',
             'padding': 140,
-            'font_size': 20,
+            'font_size': 30,
             'line_spacing': 1.5}
 
         self.default_profiles = [
