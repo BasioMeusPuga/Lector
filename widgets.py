@@ -23,6 +23,7 @@ class BookToolBar(QtWidgets.QToolBar):
         self.setMovable(False)
         self.setIconSize(QtCore.QSize(22, 22))
         self.setFloatable(False)
+        self.setContextMenuPolicy(QtCore.Qt.PreventContextMenu)
         self.setObjectName("LibraryToolBar")
 
         # Buttons
@@ -257,6 +258,7 @@ class LibraryToolBar(QtWidgets.QToolBar):
         self.setMovable(False)
         self.setIconSize(QtCore.QSize(22, 22))
         self.setFloatable(False)
+        self.setContextMenuPolicy(QtCore.Qt.PreventContextMenu)
         self.setObjectName("LibraryToolBar")
 
         # Buttons
@@ -735,8 +737,7 @@ class BackGroundBookAddition(QtCore.QThread):
         books = sorter.BookSorter(
             self.file_list,
             'addition',
-            self.database_path,
-            self.parent_window)
+            self.database_path)
         parsed_books = books.initiate_threads()
         database.DatabaseFunctions(self.database_path).add_to_database(parsed_books)
         self.parent_window.lib_ref.generate_model('addition', parsed_books)

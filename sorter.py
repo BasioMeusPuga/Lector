@@ -7,6 +7,7 @@ import os
 import pickle
 import hashlib
 from multiprocessing.dummy import Pool
+from PyQt5 import QtCore
 
 import database
 
@@ -24,9 +25,22 @@ from parsers.epub import ParseEPUB
 from parsers.cbz import ParseCBZ
 from parsers.cbr import ParseCBR
 
+progressbar = None  # This is populated by __main__
+
+
+# This is for thread safety
+class UpdateProgress(QtCore.QObject):
+    update_signal = QtCore.pyqtSignal(int)
+
+    def connect_to_progressbar(self):
+        self.update_signal.connect(progressbar.setValue)
+
+    def update_progress(self, progress_percent):
+        self.update_signal.emit(progress_percent)
+
 
 class BookSorter:
-    def __init__(self, file_list, mode, database_path, parent_window, temp_dir=None):
+    def __init__(self, file_list, mode, database_path, temp_dir=None):
         # Have the GUI pass a list of files straight to here
         # Then, on the basis of what is needed, pass the
         # filenames to the requisite functions
@@ -40,20 +54,12 @@ class BookSorter:
         self.mode = mode
         self.database_path = database_path
         self.temp_dir = temp_dir
-        self.parent_window = parent_window
         if database_path:
             self.database_hashes()
 
-        # Maybe check why this isn't working the usual way
-        for i in self.parent_window.statusBar.children():
-            if i.objectName() == 'sorterProgress':
-                self.progressbar = i
-            if i.objectName() == 'statusMessage':
-                self.statuslabel = i
-
-        self.progressbar.show()
-        self.statuslabel.setText('Adding books...')
-        self.progressbar.setMaximum(self.statistics[1])
+        if self.mode == 'addition':
+            self.progress_emitter = UpdateProgress()
+            self.progress_emitter.connect_to_progressbar()
 
     def database_hashes(self):
         all_hashes = database.DatabaseFunctions(
@@ -89,12 +95,14 @@ class BookSorter:
             # This should speed up addition for larger files
             # without compromising the integrity of the process
             first_bytes = current_book.read(1024 * 32)  # First 32KB of the file
-            salt = filename.encode()
+            salt = 'Caesar si viveret, ad remum dareris'.encode()
             first_bytes += salt
             file_md5 = hashlib.md5(first_bytes).hexdigest()
 
-        self.statistics[0] += 1
-        self.progressbar.setValue(self.statistics[0])
+        if self.mode == 'addition':
+            self.statistics[0] += 1
+            self.progress_emitter.update_progress(
+                self.statistics[0] * 100 // self.statistics[1])
 
         # IF the file is NOT being loaded into the reader,
         # Do not allow addition in case the file is dupicated in the directory
@@ -179,6 +187,4 @@ class BookSorter:
         _pool.close()
         _pool.join()
 
-        self.progressbar.hide()
-        self.statuslabel.setText('Populating table...')
         return self.all_books

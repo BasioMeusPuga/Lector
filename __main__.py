@@ -28,7 +28,6 @@
         Information dialog widget
         Context menu: Cache, Read, Edit database, delete, Mark read/unread
         Set focus to newly added file
-        Better way to thread than subprocess QThread
     Reading:
         ✓ Drop down for TOC
         ✓ Override the keypress event of the textedit
@@ -42,7 +41,7 @@
         ✓ Selectable background color for QGraphicsView
         ✓ View modes for QGraphicsView
         ✓ View and hide toolbar actions in a list
-        Comic view kayboard shortcuts
+        Comic view keyboard shortcuts
         Record progress
         Pagination
         Set context menu for definitions and the like
@@ -113,8 +112,10 @@ class MainUI(QtWidgets.QMainWindow, mainwindow.Ui_MainWindow):
         self.statusBar.addPermanentWidget(self.statusMessage)
         self.sorterProgress = QtWidgets.QProgressBar()
         self.sorterProgress.setObjectName('sorterProgress')
+        sorter.progressbar = self.sorterProgress  # This is so that updates can be
+                                                  # connected to setValue
         self.statusBar.addWidget(self.sorterProgress)
-        self.sorterProgress.hide()
+        self.sorterProgress.setVisible(False)
 
         # Init the QListView
         self.lib_ref = Library(self)
@@ -247,9 +248,15 @@ class MainUI(QtWidgets.QMainWindow, mainwindow.Ui_MainWindow):
 
         if my_file[0]:
             self.last_open_path = os.path.dirname(my_file[0][0])
+            self.sorterProgress.setVisible(True)
+            self.statusMessage.setText('Adding books...')
             self.thread = BackGroundBookAddition(self, my_file[0], self.database_path)
-            self.thread.finished.connect(self.lib_ref.create_proxymodel)
+            self.thread.finished.connect(self.move_on)
             self.thread.start()
+
+    def move_on(self):
+        self.sorterProgress.setVisible(False)
+        self.lib_ref.create_proxymodel()
 
     def delete_books(self):
         selected_books = self.listView.selectedIndexes()
@@ -394,7 +401,6 @@ class MainUI(QtWidgets.QMainWindow, mainwindow.Ui_MainWindow):
             file_paths,
             'reading',
             self.database_path,
-            self,
             self.temp_dir.path()).initiate_threads()
 
         found_a_focusable_tab = False

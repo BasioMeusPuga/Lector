@@ -119,7 +119,11 @@ class DatabaseFunctions:
             pickled_position = pickle.dumps(position)
 
             sql_command = "UPDATE books SET Position = ? WHERE Hash = ?"
-            self.database.execute(sql_command, [sqlite3.Binary(pickled_position), file_hash])
+            try:
+                self.database.execute(sql_command, [sqlite3.Binary(pickled_position), file_hash])
+            except sqlite3.OperationalError:
+                print('SQLite is in rebellion, Commander')
+                return
 
         self.database.commit()
         self.close_database()
