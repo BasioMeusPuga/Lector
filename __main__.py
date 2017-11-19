@@ -18,6 +18,7 @@
         ✓ Search bar in toolbar
         ✓ Shift focus to the tab that has the book open
         ✓ Tie file deletion and tab closing to model updates
+        ✓ Create separate thread for parser - Show progress in main window
         ? Create emblem per filetype
         Look into how you might group icons
         Ignore a / the / numbers for sorting purposes
@@ -26,8 +27,8 @@
         Mass tagging
         Information dialog widget
         Context menu: Cache, Read, Edit database, delete, Mark read/unread
-        Create separate thread for parser - Show progress in main window
         Set focus to newly added file
+        Better way to thread than subprocess QThread
     Reading:
         ✓ Drop down for TOC
         ✓ Override the keypress event of the textedit
@@ -494,12 +495,16 @@ class MainUI(QtWidgets.QMainWindow, mainwindow.Ui_MainWindow):
         if signal_sender == 'zoomOut':
             self.comic_profile['zoom_mode'] = 'manualZoom'
             self.comic_profile['padding'] += 50
+
+            # This prevents infinite zoom out
             if self.comic_profile['padding'] * 2 > current_tab.contentView.viewport().width():
                 self.comic_profile['padding'] -= 50
 
         if signal_sender == 'zoomIn':
             self.comic_profile['zoom_mode'] = 'manualZoom'
             self.comic_profile['padding'] -= 50
+
+            # This prevents infinite zoom in
             if self.comic_profile['padding'] < 0:
                 self.comic_profile['padding'] = 0
 
@@ -508,6 +513,8 @@ class MainUI(QtWidgets.QMainWindow, mainwindow.Ui_MainWindow):
             self.comic_profile['padding'] = 0
             self.bookToolBar.fitWidth.setChecked(True)
 
+        # Padding in the following cases is decided by
+        # the image pixmap loaded by the widget
         if signal_sender == 'bestFit':
             self.comic_profile['zoom_mode'] = 'bestFit'
             self.bookToolBar.bestFit.setChecked(True)
@@ -613,7 +620,6 @@ class MainUI(QtWidgets.QMainWindow, mainwindow.Ui_MainWindow):
         else:
             Settings(self).save_settings()
             QtWidgets.qApp.exit()
-
 
 
 def main():

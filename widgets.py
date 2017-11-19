@@ -512,6 +512,12 @@ class PliantQGraphicsView(QtWidgets.QGraphicsView):
         elif zoom_mode == 'originalSize':
             image_pixmap = self.image_pixmap
 
+            new_padding = (self.viewport().width() - image_pixmap.width()) // 2
+            if new_padding < 0:  # The image is larger than the viewport
+                self.main_window.comic_profile['padding'] = 0
+            else:
+                self.main_window.comic_profile['padding'] = new_padding
+
         elif zoom_mode == 'bestFit':
             available_width = self.viewport().width()
             available_height = self.viewport().height()
@@ -519,6 +525,9 @@ class PliantQGraphicsView(QtWidgets.QGraphicsView):
             image_pixmap = self.image_pixmap.scaled(
                 available_width, available_height,
                 QtCore.Qt.KeepAspectRatio, QtCore.Qt.SmoothTransformation)
+
+            self.main_window.comic_profile['padding'] = (
+                self.viewport().width() - image_pixmap.width()) // 2
 
         elif zoom_mode == 'manualZoom':
             available_width = self.viewport().width() - 2 * padding

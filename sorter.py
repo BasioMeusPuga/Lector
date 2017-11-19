@@ -1,7 +1,6 @@
 #!/usr/bin/env python3
 
 # TODO
-# See if tags can be generated from book content
 # See if you want to include a hash of the book's name and author
 
 import os
@@ -87,10 +86,13 @@ class BookSorter:
         # full path of the ebook file
 
         with open(filename, 'rb') as current_book:
-            file_md5 = hashlib.md5(current_book.read()).hexdigest()
+            # This should speed up addition for larger files
+            # without compromising the integrity of the process
+            first_bytes = current_book.read(1024 * 32)  # First 32KB of the file
+            salt = filename.encode()
+            first_bytes += salt
+            file_md5 = hashlib.md5(first_bytes).hexdigest()
 
-        # TODO
-        # Make use of this
         self.statistics[0] += 1
         self.progressbar.setValue(self.statistics[0])
 

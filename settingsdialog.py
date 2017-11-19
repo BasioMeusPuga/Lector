@@ -46,4 +46,3 @@ class SettingsUI(QtWidgets.QDialog, settingswindow.Ui_Dialog):
             QtWidgets.QFileDialog.ShowDirsOnly)
 
         # Directories will NOT be added recursively
-
