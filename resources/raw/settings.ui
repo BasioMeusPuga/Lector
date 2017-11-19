@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>550</width>
-    <height>627</height>
+    <width>879</width>
+    <height>673</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -25,25 +25,13 @@
         <item row="0" column="0">
          <layout class="QVBoxLayout" name="verticalLayout">
           <item>
-           <widget class="QTableWidget" name="tableWidget">
-            <property name="alternatingRowColors">
-             <bool>true</bool>
+           <widget class="QTableView" name="tableView"/>
+          </item>
+          <item>
+           <widget class="QLineEdit" name="lineEdit">
+            <property name="placeholderText">
+             <string>Search for Paths, Names, Tags...</string>
             </property>
-            <column>
-             <property name="text">
-              <string>Path</string>
-             </property>
-            </column>
-            <column>
-             <property name="text">
-              <string>Name</string>
-             </property>
-            </column>
-            <column>
-             <property name="text">
-              <string>Auto Tag</string>
-             </property>
-            </column>
            </widget>
           </item>
           <item>

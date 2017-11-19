@@ -19,6 +19,8 @@ class DatabaseInit:
             "CREATE TABLE books \
             (id INTEGER PRIMARY KEY, Title TEXT, Author TEXT, Year INTEGER, \
             Path TEXT, Position BLOB, ISBN TEXT, Tags TEXT, Hash TEXT, CoverImage BLOB)")
+        self.database.execute(
+            "CREATE TABLE directories (id INTEGER PRIMARY KEY, Path TEXT, Name TEXT, Tags TEXT)")
         self.database.commit()
         self.database.close()
 

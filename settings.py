@@ -11,24 +11,24 @@ class Settings:
 
         default_profile1 = {
             'font': 'Noto Sans',
-            'foreground': '#000000',
-            'background': '#d8d8d8',
+            'foreground': QtGui.QColor().fromRgb(0, 0, 0),
+            'background': QtGui.QColor().fromRgb(216, 216, 216),
             'padding': 140,
             'font_size': 20,
             'line_spacing': 1.5}
 
         default_profile2 = {
             'font': 'Roboto',
-            'foreground': '#c2c2c2',
-            'background': '#161616',
+            'foreground': QtGui.QColor().fromRgb(194, 194, 194),
+            'background': QtGui.QColor().fromRgb(22, 22, 22),
             'padding': 140,
             'font_size': 20,
             'line_spacing': 1.5}
 
         default_profile3 = {
             'font': 'Clear Sans',
-            'foreground': '#657b83',
-            'background': '#002b36',
+            'foreground': QtGui.QColor().fromRgb(101, 123, 131),
+            'background': QtGui.QColor().fromRgb(0, 43, 54),
             'padding': 140,
             'font_size': 30,
             'line_spacing': 1.5}
@@ -68,6 +68,8 @@ class Settings:
         self.settings.beginGroup('lastOpen')
         self.parent_window.last_open_books = self.settings.value('lastOpenFiles', [])
         self.parent_window.last_open_tab = self.settings.value('lastOpenTab', 'library')
+        self.parent_window.settings_dialog.last_open_directory = self.settings.value(
+            'settingsLastOpenDirectory', os.path.expanduser('~'))
         self.settings.endGroup()
 
     def save_settings(self):
@@ -105,4 +107,6 @@ class Settings:
         self.settings.beginGroup('lastOpen')
         self.settings.setValue('lastOpenFiles', self.parent_window.last_open_books)
         self.settings.setValue('lastOpenTab', last_open_tab)
+        self.settings.setValue(
+            'settingsLastOpenDirectory', self.parent_window.settings_dialog.last_open_directory)
         self.settings.endGroup()

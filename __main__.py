@@ -70,11 +70,13 @@ from PyQt5 import QtWidgets, QtGui, QtCore
 import sorter
 import database
 
-from resources import mainwindow, settingswindow
+from resources import mainwindow
 from widgets import LibraryToolBar, BookToolBar, Tab
 from widgets import LibraryDelegate, BackGroundTabUpdate, BackGroundBookAddition
 from library import Library
 from settings import Settings
+
+from settingsdialog import SettingsUI
 
 
 class MainUI(QtWidgets.QMainWindow, mainwindow.Ui_MainWindow):
@@ -82,6 +84,7 @@ class MainUI(QtWidgets.QMainWindow, mainwindow.Ui_MainWindow):
         super(MainUI, self).__init__()
         self.setupUi(self)
 
+        # Initialize settings dialog
         self.settings_dialog = SettingsUI()
 
         # Empty variables that will be infested soon
@@ -93,7 +96,7 @@ class MainUI(QtWidgets.QMainWindow, mainwindow.Ui_MainWindow):
         self.current_contentView = None  # For fullscreening purposes
         self.display_profiles = None
         self.current_profile_index = None
-        # self.comic_profile = None
+        self.database_path = None
 
         # Initialize application
         Settings(self).read_settings()  # This should populate all variables that need
@@ -101,11 +104,16 @@ class MainUI(QtWidgets.QMainWindow, mainwindow.Ui_MainWindow):
 
         # Create the database in case it doesn't exist
         database.DatabaseInit(self.database_path)
+        self.settings_dialog.database_path = self.database_path
 
         # Create and right align the statusbar label widget
         self.statusMessage = QtWidgets.QLabel()
         self.statusMessage.setObjectName('statusMessage')
         self.statusBar.addPermanentWidget(self.statusMessage)
+        self.sorterProgress = QtWidgets.QProgressBar()
+        self.sorterProgress.setObjectName('sorterProgress')
+        self.statusBar.addWidget(self.sorterProgress)
+        self.sorterProgress.hide()
 
         # Init the QListView
         self.lib_ref = Library(self)
@@ -158,9 +166,15 @@ class MainUI(QtWidgets.QMainWindow, mainwindow.Ui_MainWindow):
 
         # Tab closing
         self.tabWidget.setTabsClosable(True)
+
         # TODO
-        # It's possible to add a widget to the Library tab here
-        self.tabWidget.tabBar().setTabButton(0, QtWidgets.QTabBar.RightSide, None)
+        # Associate this with the library switcher
+        library_subclass = QtWidgets.QToolButton()
+        library_subclass.setIcon(QtGui.QIcon.fromTheme('view-readermode'))
+        library_subclass.setAutoRaise(True)
+        library_subclass.setPopupMode(QtWidgets.QToolButton.InstantPopup)
+
+        self.tabWidget.tabBar().setTabButton(0, QtWidgets.QTabBar.RightSide, library_subclass)
         self.tabWidget.tabCloseRequested.connect(self.tab_close)
 
         # ListView
@@ -180,6 +194,8 @@ class MainUI(QtWidgets.QMainWindow, mainwindow.Ui_MainWindow):
         self.ks_exit_all = QtWidgets.QShortcut(QtGui.QKeySequence('Ctrl+Q'), self)
         self.ks_exit_all.setContext(QtCore.Qt.ApplicationShortcut)
         self.ks_exit_all.activated.connect(self.closeEvent)
+
+        self.listView.setFocus()
 
         # Open last... open books.
         self.open_files(self.last_open_books)
@@ -377,6 +393,7 @@ class MainUI(QtWidgets.QMainWindow, mainwindow.Ui_MainWindow):
             file_paths,
             'reading',
             self.database_path,
+            self,
             self.temp_dir.path()).initiate_threads()
 
         found_a_focusable_tab = False
@@ -393,32 +410,42 @@ class MainUI(QtWidgets.QMainWindow, mainwindow.Ui_MainWindow):
         if not found_a_focusable_tab:
             self.tabWidget.setCurrentIndex(self.tabWidget.count() - 1)
 
+        self.format_contentView()
+
     def get_color(self):
         signal_sender = self.sender().objectName()
         profile_index = self.bookToolBar.profileBox.currentIndex()
         current_profile = self.bookToolBar.profileBox.itemData(
             profile_index, QtCore.Qt.UserRole)
 
-        colorDialog = QtWidgets.QColorDialog()
-        new_color = colorDialog.getColor()
-        if not new_color:
-            return
-
-        color_name = new_color.name()
+        # Retain current values on opening a new dialog
+        def open_color_dialog(current_color):
+            color_dialog = QtWidgets.QColorDialog()
+            new_color = color_dialog.getColor(current_color)
+            if new_color.isValid():  # Returned in case cancel is pressed
+                return new_color
+            else:
+                return current_color
 
         if signal_sender == 'fgColor':
+            current_color = current_profile['foreground']
+            new_color = open_color_dialog(current_color)
             self.bookToolBar.colorBoxFG.setStyleSheet(
-                'background-color: %s' % color_name)
-            current_profile['foreground'] = color_name
+                'background-color: %s' % new_color.name())
+            current_profile['foreground'] = new_color
 
         elif signal_sender == 'bgColor':
+            current_color = current_profile['background']
+            new_color = open_color_dialog(current_color)
             self.bookToolBar.colorBoxBG.setStyleSheet(
-                'background-color: %s' % color_name)
-            current_profile['background'] = color_name
+                'background-color: %s' % new_color.name())
+            current_profile['background'] = new_color
 
         elif signal_sender == 'comicBGColor':
+            current_color = self.comic_profile['background']
+            new_color = open_color_dialog(current_color)
             self.bookToolBar.comicBGColor.setStyleSheet(
-                'background-color: %s' % color_name)
+                'background-color: %s' % new_color.name())
             self.comic_profile['background'] = new_color
 
         self.bookToolBar.profileBox.setItemData(
@@ -506,6 +533,14 @@ class MainUI(QtWidgets.QMainWindow, mainwindow.Ui_MainWindow):
         if current_metadata['images_only']:
             background = self.comic_profile['background']
             padding = self.comic_profile['padding']
+            zoom_mode = self.comic_profile['zoom_mode']
+
+            if zoom_mode == 'fitWidth':
+                self.bookToolBar.fitWidth.setChecked(True)
+            if zoom_mode == 'bestFit':
+                self.bookToolBar.bestFit.setChecked(True)
+            if zoom_mode == 'originalSize':
+                self.bookToolBar.originalSize.setChecked(True)
 
             self.bookToolBar.comicBGColor.setStyleSheet(
                 'background-color: %s' % background.name())
@@ -533,9 +568,9 @@ class MainUI(QtWidgets.QMainWindow, mainwindow.Ui_MainWindow):
             self.bookToolBar.fontSizeBox.blockSignals(False)
 
             self.bookToolBar.colorBoxFG.setStyleSheet(
-                'background-color: %s' % foreground)
+                'background-color: %s' % foreground.name())
             self.bookToolBar.colorBoxBG.setStyleSheet(
-                'background-color: %s' % background)
+                'background-color: %s' % background.name())
 
             current_tab.format_view(
                 font, font_size, foreground, background, padding)
@@ -579,11 +614,6 @@ class MainUI(QtWidgets.QMainWindow, mainwindow.Ui_MainWindow):
             Settings(self).save_settings()
             QtWidgets.qApp.exit()
 
-
-class SettingsUI(QtWidgets.QDialog, settingswindow.Ui_Dialog):
-    def __init__(self):
-        super(SettingsUI, self).__init__()
-        self.setupUi(self)
 
 
 def main():

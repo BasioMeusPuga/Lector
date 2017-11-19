@@ -27,7 +27,7 @@ from parsers.cbr import ParseCBR
 
 
 class BookSorter:
-    def __init__(self, file_list, mode, database_path, temp_dir=None):
+    def __init__(self, file_list, mode, database_path, parent_window, temp_dir=None):
         # Have the GUI pass a list of files straight to here
         # Then, on the basis of what is needed, pass the
         # filenames to the requisite functions
@@ -41,8 +41,20 @@ class BookSorter:
         self.mode = mode
         self.database_path = database_path
         self.temp_dir = temp_dir
-        if database_path and self.mode == 'reading':
+        self.parent_window = parent_window
+        if database_path:
             self.database_hashes()
+
+        # Maybe check why this isn't working the usual way
+        for i in self.parent_window.statusBar.children():
+            if i.objectName() == 'sorterProgress':
+                self.progressbar = i
+            if i.objectName() == 'statusMessage':
+                self.statuslabel = i
+
+        self.progressbar.show()
+        self.statuslabel.setText('Adding books...')
+        self.progressbar.setMaximum(self.statistics[1])
 
     def database_hashes(self):
         all_hashes = database.DatabaseFunctions(
@@ -79,8 +91,8 @@ class BookSorter:
 
         # TODO
         # Make use of this
-        # self.statistics[0] += 1
-        # print(self.statistics)
+        self.statistics[0] += 1
+        self.progressbar.setValue(self.statistics[0])
 
         # IF the file is NOT being loaded into the reader,
         # Do not allow addition in case the file is dupicated in the directory
@@ -165,4 +177,6 @@ class BookSorter:
         _pool.close()
         _pool.join()
 
+        self.progressbar.hide()
+        self.statuslabel.setText('Populating table...')
         return self.all_books

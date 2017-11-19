@@ -467,7 +467,7 @@ class Tab(QtWidgets.QWidget):
             self.contentView.setViewportMargins(padding, 0, padding, 0)
             self.contentView.setStyleSheet(
                 "QTextEdit {{font-family: {0}; font-size: {1}px; color: {2}; background-color: {3}}}".format(
-                    font, font_size, foreground, background))
+                    font, font_size, foreground.name(), background.name()))
 
     def sneaky_change(self):
         direction = -1
@@ -726,7 +726,8 @@ class BackGroundBookAddition(QtCore.QThread):
         books = sorter.BookSorter(
             self.file_list,
             'addition',
-            self.database_path)
+            self.database_path,
+            self.parent_window)
         parsed_books = books.initiate_threads()
         database.DatabaseFunctions(self.database_path).add_to_database(parsed_books)
         self.parent_window.lib_ref.generate_model('addition', parsed_books)
