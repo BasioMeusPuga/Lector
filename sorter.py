@@ -3,11 +3,12 @@
 # TODO
 # See if you want to include a hash of the book's name and author
 
+import io
 import os
 import pickle
 import hashlib
 from multiprocessing.dummy import Pool
-from PyQt5 import QtCore
+from PyQt5 import QtCore, QtGui
 
 import database
 
@@ -141,10 +142,13 @@ class BookSorter:
 
             # Different modes require different values
             if self.mode == 'addition':
-                cover_image = book_ref.get_cover_image()
-                # TODO
-                # Consider sizing down the image in case
-                # it's too big
+                cover_image_raw = book_ref.get_cover_image()
+                if cover_image_raw:
+                    # Reduce the size of the incoming image
+                    cover_image = resize_image(cover_image_raw)
+                else:
+                    cover_image = None
+
                 self.all_books[file_md5] = {
                     'title': title,
                     'author': author,
@@ -188,3 +192,19 @@ class BookSorter:
         _pool.join()
 
         return self.all_books
+
+
+def resize_image(cover_image_raw):
+    cover_image = QtGui.QImage()
+    cover_image.loadFromData(cover_image_raw)
+    cover_image = cover_image.scaled(
+        420, 600, QtCore.Qt.IgnoreAspectRatio)
+
+    byte_array = QtCore.QByteArray()
+    buffer = QtCore.QBuffer(byte_array)
+    buffer.open(QtCore.QIODevice.WriteOnly)
+    cover_image.save(buffer, 'jpg', 75)
+
+    cover_image_final = io.BytesIO(byte_array)
+    cover_image_final.seek(0)
+    return cover_image_final.getvalue()

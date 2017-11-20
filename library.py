@@ -32,7 +32,6 @@ class Library:
                 print('Database returned nothing')
                 return
 
-
         elif mode == 'addition':
             # Assumes parent_window.viewModel already exists and may be extended
             # Because any additional books have already been added to the
@@ -56,7 +55,6 @@ class Library:
 
         else:
             return
-
 
         for i in books:
             # The database query returns (or the extension data is)
@@ -106,7 +104,7 @@ class Library:
                 img_pixmap.loadFromData(cover)
             else:
                 img_pixmap.load(':/images/NotFound.png')
-            img_pixmap = img_pixmap.scaled(420, 600, QtCore.Qt.IgnoreAspectRatio)
+                img_pixmap = img_pixmap.scaled(420, 600, QtCore.Qt.IgnoreAspectRatio)
             item = QtGui.QStandardItem()
             item.setToolTip(tooltip_string)
             # The following order is needed to keep sorting working
