@@ -26,6 +26,7 @@ from parsers.epub import ParseEPUB
 from parsers.cbz import ParseCBZ
 from parsers.cbr import ParseCBR
 
+available_parsers = ['epub', 'cbz', 'cbr']
 progressbar = None  # This is populated by __main__
 
 

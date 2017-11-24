@@ -169,6 +169,10 @@ class MainUI(QtWidgets.QMainWindow, mainwindow.Ui_MainWindow):
         # Tab closing
         self.tabWidget.setTabsClosable(True)
 
+        # Get list of available parsers
+        self.available_parsers = '*.' + ' *.'.join(sorter.available_parsers)
+        print('Available parsers: ' + self.available_parsers)
+
         # TODO
         # Associate this with the library switcher
         library_subclass = QtWidgets.QToolButton()
@@ -200,6 +204,7 @@ class MainUI(QtWidgets.QMainWindow, mainwindow.Ui_MainWindow):
         self.listView.setFocus()
 
         # Open last... open books.
+        # Then set the value to None for the next run
         self.open_files(self.last_open_books)
         self.last_open_books = None
 
@@ -240,17 +245,16 @@ class MainUI(QtWidgets.QMainWindow, mainwindow.Ui_MainWindow):
     def add_books(self):
         # TODO
         # Maybe expand this to traverse directories recursively
-        # Generate list of available parsers
 
-        my_file = QtWidgets.QFileDialog.getOpenFileNames(
+        opened_files = QtWidgets.QFileDialog.getOpenFileNames(
             self, 'Open file', self.last_open_path,
-            "eBooks (*.epub *.cbz *.cbr)")
+            f'eBooks ({self.available_parsers})')
 
-        if my_file[0]:
-            self.last_open_path = os.path.dirname(my_file[0][0])
+        if opened_files[0]:
+            self.last_open_path = os.path.dirname(opened_files[0][0])
             self.sorterProgress.setVisible(True)
             self.statusMessage.setText('Adding books...')
-            self.thread = BackGroundBookAddition(self, my_file[0], self.database_path)
+            self.thread = BackGroundBookAddition(self, opened_files[0], self.database_path)
             self.thread.finished.connect(self.move_on)
             self.thread.start()
 
