@@ -71,8 +71,8 @@ import sorter
 import database
 
 from resources import mainwindow
-from widgets import LibraryToolBar, BookToolBar, Tab
-from widgets import LibraryDelegate, BackGroundTabUpdate, BackGroundBookAddition
+from widgets import LibraryToolBar, BookToolBar, Tab, LibraryDelegate
+from threaded import BackGroundTabUpdate, BackGroundBookAddition
 from library import Library
 from settings import Settings
 
