@@ -668,16 +668,28 @@ class LibraryDelegate(QtWidgets.QStyledItemDelegate):
         # TODO
         # Calculate progress on the basis of lines
 
+        # The shadow pixmap currently is set to 420 x 600
+        shadow_pixmap = QtGui.QPixmap()
+        shadow_pixmap.load(':/images/gray-shadow.png')
+        shadow_pixmap = shadow_pixmap.scaled(160, 230, QtCore.Qt.IgnoreAspectRatio)
+        shadow_x = option.rect.topLeft().x() + 10
+        shadow_y = option.rect.topLeft().y() - 5
+
         if not file_exists:
-            read_icon = QtGui.QIcon(':/images/error.svg').pixmap(36)
             painter.setOpacity(.7)
+            painter.drawPixmap(shadow_x, shadow_y, shadow_pixmap)
             QtWidgets.QStyledItemDelegate.paint(self, painter, option, index)
             painter.setOpacity(1)
+
+            read_icon = QtGui.QIcon(':/images/error.svg').pixmap(36)
             x_draw = option.rect.bottomRight().x() - 30
             y_draw = option.rect.bottomRight().y() - 35
             painter.drawPixmap(x_draw, y_draw, read_icon)
             return
 
+        painter.setOpacity(.8)
+        painter.drawPixmap(shadow_x, shadow_y, shadow_pixmap)
+        painter.setOpacity(1)
         QtWidgets.QStyledItemDelegate.paint(self, painter, option, index)
         if position:
             current_chapter = position['current_chapter']
@@ -685,14 +697,10 @@ class LibraryDelegate(QtWidgets.QStyledItemDelegate):
             progress_percent = int(current_chapter * 100 / total_chapters)
 
             if current_chapter == total_chapters:
-                QtWidgets.QStyledItemDelegate.paint(self, painter, option, index)
                 read_icon = QtGui.QIcon(':/images/checkmark.svg').pixmap(36)
-            elif current_chapter == 1:
-                QtWidgets.QStyledItemDelegate.paint(self, painter, option, index)
             else:
                 # TODO
                 # See if saving the svg to disk can be avoided
-                QtWidgets.QStyledItemDelegate.paint(self, painter, option, index)
                 pie_chart.GeneratePie(progress_percent, self.temp_dir).generate()
                 svg_path = os.path.join(self.temp_dir, 'lector_progress.svg')
                 read_icon = QtGui.QIcon(svg_path).pixmap(32)

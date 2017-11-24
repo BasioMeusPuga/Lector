@@ -104,7 +104,7 @@ class Library:
                 img_pixmap.loadFromData(cover)
             else:
                 img_pixmap.load(':/images/NotFound.png')
-                img_pixmap = img_pixmap.scaled(420, 600, QtCore.Qt.IgnoreAspectRatio)
+            img_pixmap = img_pixmap.scaled(420, 600, QtCore.Qt.IgnoreAspectRatio)
             item = QtGui.QStandardItem()
             item.setToolTip(tooltip_string)
             # The following order is needed to keep sorting working

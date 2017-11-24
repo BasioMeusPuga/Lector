@@ -1,5 +1,6 @@
 <RCC>
   <qresource prefix="images">
+    <file>gray-shadow.png</file>
     <file>NotFound.png</file>
     <file>checkmark.svg</file>
     <file>error.svg</file>

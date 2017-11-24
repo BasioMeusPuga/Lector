@@ -216,7 +216,7 @@ class MainUI(QtWidgets.QMainWindow, mainwindow.Ui_MainWindow):
                 return
 
         # The hackiness of this hack is just...
-        default_size = 175  # This is size of the QIcon (160 by default) +
+        default_size = 170  # This is size of the QIcon (160 by default) +
                             # minimum margin is needed between thumbnails
 
         # for n icons, the n + 1th icon will appear at > n +1.11875
