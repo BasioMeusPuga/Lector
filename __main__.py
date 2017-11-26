@@ -20,7 +20,7 @@
         ✓ Tie file deletion and tab closing to model updates
         ✓ Create separate thread for parser - Show progress in main window
         ? Create emblem per filetype
-        Look into how you might group icons
+        Table view
         Ignore a / the / numbers for sorting purposes
         Put the path in the scope of the search
             maybe as a type: switch
@@ -41,6 +41,7 @@
         ✓ Selectable background color for QGraphicsView
         ✓ View modes for QGraphicsView
         ✓ View and hide toolbar actions in a list
+        Graphical themes
         Comic view keyboard shortcuts
         Record progress
         Pagination

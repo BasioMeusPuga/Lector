@@ -3,8 +3,6 @@
 import os
 from PyQt5 import QtWidgets, QtGui, QtCore
 
-import sorter
-import database
 from resources import resources, pie_chart
 
 
@@ -28,7 +26,7 @@ class BookToolBar(QtWidgets.QToolBar):
 
         # Buttons
         self.fontButton = QtWidgets.QAction(
-            QtGui.QIcon.fromTheme('visibility'),
+            QtGui.QIcon.fromTheme('gtk-select-font'),
             'View settings', self)
         self.fullscreenButton = QtWidgets.QAction(
             QtGui.QIcon.fromTheme('view-fullscreen'),

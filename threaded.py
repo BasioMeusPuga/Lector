@@ -5,6 +5,7 @@ import database
 
 from PyQt5 import QtCore
 
+
 class BackGroundTabUpdate(QtCore.QThread):
     def __init__(self, database_path, all_metadata, parent=None):
         super(BackGroundTabUpdate, self).__init__(parent)

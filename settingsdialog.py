@@ -45,4 +45,16 @@ class SettingsUI(QtWidgets.QDialog, settingswindow.Ui_Dialog):
             self, 'Select Directory', self.last_open_directory,
             QtWidgets.QFileDialog.ShowDirsOnly)
 
-        # Directories will NOT be added recursively
+        # Directories will be added recursively
+        # Sub directory addition is allowed in that files will not
+        # be duplicated. However, any additional tags will get
+        # added to file tags
+
+        # Database tags for files should not be updated each time
+        # a new folder gets added or deleted from the directory
+        # This will be done @ runtime
+        # Individually set file tags will be preserved
+        # Duplicate file tags will be removed
+
+        # Whatever code you write to recurse through directories will
+        # have to go into the threaded module
