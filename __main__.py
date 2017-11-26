@@ -9,6 +9,7 @@
         Remember files
         Check files (hashes) upon restart
         Show what on startup
+        Draw shadows
     Library:
         ✓ sqlite3 for cover images cache
         ✓ sqlite3 for storing metadata
@@ -93,7 +94,6 @@ class MainUI(QtWidgets.QMainWindow, mainwindow.Ui_MainWindow):
         self.last_open_tab = None
         self.last_open_path = None
         self.thread = None  # Background Thread
-        self.viewModel = None
         self.current_contentView = None  # For fullscreening purposes
         self.display_profiles = None
         self.current_profile_index = None
@@ -353,22 +353,22 @@ class MainUI(QtWidgets.QMainWindow, mainwindow.Ui_MainWindow):
         # Set a baseline model index in case the item gets deleted
         # E.g It's open in a tab and deleted from the library
         model_index = None
-        start_index = self.viewModel.index(0, 0)
+        start_index = self.lib_ref.view_model.index(0, 0)
         # Find index of the model item that corresponds to the tab
-        matching_item = self.viewModel.match(
+        matching_item = self.lib_ref.view_model.match(
             start_index,
             QtCore.Qt.UserRole + 6,
             current_tab.metadata['hash'],
             1, QtCore.Qt.MatchExactly)
         if matching_item:
             model_row = matching_item[0].row()
-            model_index = self.viewModel.index(model_row, 0)
+            model_index = self.lib_ref.view_model.index(model_row, 0)
 
         current_tab.metadata[
             'position']['current_chapter'] = event + 1
 
         if model_index:
-            self.viewModel.setData(
+            self.lib_ref.view_model.setData(
                 model_index, current_tab.metadata['position'], QtCore.Qt.UserRole + 7)
 
         current_tab.change_chapter_tocBox()

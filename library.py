@@ -11,15 +11,16 @@ from widgets import MyAbsModel
 class Library:
     def __init__(self, parent):
         self.parent_window = parent
+        self.view_model = None
         self.proxy_model = None
 
     def generate_model(self, mode, parsed_books=None):
         # The QlistView widget needs to be populated
-        # with a model that inherits from QStandardItemModel
-        # self.parent_window.viewModel = QtGui.QStandardItemModel()
+        # with a model that inherits from QAbstractItemModel
+        # because I kinda sorta NEED the match() method
 
         if mode == 'build':
-            self.parent_window.viewModel = MyAbsModel()
+            self.view_model = MyAbsModel()
 
             books = database.DatabaseFunctions(
                 self.parent_window.database_path).fetch_data(
@@ -33,7 +34,7 @@ class Library:
                 return
 
         elif mode == 'addition':
-            # Assumes parent_window.viewModel already exists and may be extended
+            # Assumes self.view_model already exists and may be extended
             # Because any additional books have already been added to the
             # database using background threads
 
@@ -117,11 +118,11 @@ class Library:
             item.setData(i[8], QtCore.Qt.UserRole + 6)  # File hash
             item.setData(position, QtCore.Qt.UserRole + 7)
             item.setIcon(QtGui.QIcon(img_pixmap))
-            self.parent_window.viewModel.appendRow(item)
+            self.view_model.appendRow(item)
 
     def create_proxymodel(self):
         self.proxy_model = QtCore.QSortFilterProxyModel()
-        self.proxy_model.setSourceModel(self.parent_window.viewModel)
+        self.proxy_model.setSourceModel(self.view_model)
         s = QtCore.QSize(160, 250)  # Set icon sizing here
         self.parent_window.listView.setIconSize(s)
         self.parent_window.listView.setModel(self.proxy_model)
