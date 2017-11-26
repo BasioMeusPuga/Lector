@@ -297,7 +297,7 @@ class LibraryToolBar(QtWidgets.QToolBar):
 
         # Add widgets
         self.addWidget(spacer)
-        self.addWidget(self.sortingBox)
+        self.sortingBoxAction = self.addWidget(self.sortingBox)
         self.addWidget(self.searchBar)
 
 
@@ -709,7 +709,49 @@ class LibraryDelegate(QtWidgets.QStyledItemDelegate):
                 painter.drawPixmap(x_draw, y_draw, read_icon)
 
 
-class MyAbsModel(QtGui.QStandardItemModel, QtCore.QAbstractItemModel):
+class LibraryItemModel(QtGui.QStandardItemModel, QtCore.QAbstractItemModel):
     def __init__(self, parent=None):
         # We're using this to be able to access the match() method
-        super(MyAbsModel, self).__init__(parent)
+        super(LibraryItemModel, self).__init__(parent)
+
+class LibraryTableModel(QtCore.QAbstractTableModel):
+    # TODO
+    # Speed up sorting
+    # Associate with a proxy model to enable searching
+    # Double clicking
+    # Auto resize with emphasis on Name
+    # Hide path but send it anyway
+
+    def __init__(self, header_data, display_data, parent=None):
+        super(LibraryTableModel, self).__init__(parent)
+        self.header_data = header_data
+        self.display_data = display_data
+
+    def rowCount(self, parent):
+        return len(self.display_data)
+
+    def columnCount(self, parent):
+        return len(self.header_data)
+
+    def data(self, index, role):
+        if not index.isValid():
+            return None
+
+        if role == QtCore.Qt.DisplayRole:
+            value = self.display_data[index.row()][index.column()]
+            return value
+        else:
+            return QtCore.QVariant()
+
+    def headerData(self, col, orientation, role):
+        if orientation == QtCore.Qt.Horizontal and role == QtCore.Qt.DisplayRole:
+            return self.header_data[col]
+        return None
+
+    def sort(self, col, order):
+        # self.emit(SIGNAL("layoutAboutToBeChanged()"))
+        self.display_data.sort(key=lambda x: x[col])
+        if order == QtCore.Qt.DescendingOrder:
+            self.display_data.sort(key=lambda x: x[col], reverse=True)
+        
+        # self.emit(SIGNAL("layoutChanged()"))

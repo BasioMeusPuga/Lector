@@ -12,6 +12,7 @@ import os
 import re
 import zipfile
 import collections
+from urllib.parse import unquote
 
 import ebooklib.epub
 
@@ -101,37 +102,36 @@ class ParseEPUB:
             return None
 
     def get_contents(self):
-        # Extract all contents to a temporary directory
-        # for relative path lookup voodoo
         extract_path = os.path.join(self.temp_dir, self.file_md5)
         zipfile.ZipFile(self.filename).extractall(extract_path)
 
         contents = collections.OrderedDict()
 
-        def flatten_chapter(toc_element):
+        def flatten_section(toc_element):
             output_list = []
             for i in toc_element:
                 if isinstance(i, (tuple, list)):
-                    output_list.extend(flatten_chapter(i))
+                    output_list.extend(flatten_section(i))
                 else:
                     output_list.append(i)
             return output_list
 
         for i in self.book.toc:
             if isinstance(i, (tuple, list)):
-                title = i[0].title
-                contents[title] = 'Composite Chapter'
-                # composite_chapter = flatten_chapter(i)
-                # composite_chapter_content = []
-                # for j in composite_chapter:
-                #     href = j.href
-                #     composite_chapter_content.append(
-                #         self.book.get_item_with_href(href).get_content())
+                flattened = flatten_section(i)
 
-                # contents[title] = composite_chapter_content
+                for j in flattened:
+                    title = j.title
+                    href = unquote(j.href)
+                    try:
+                        content = self.book.get_item_with_href(href).get_content()
+                        contents[title] = content.decode()
+                    except AttributeError:
+                        pass
+
             else:
                 title = i.title
-                href = i.href
+                href = unquote(i.href)
                 try:
                     content = self.book.get_item_with_href(href).get_content()
                     if content:
@@ -139,7 +139,7 @@ class ParseEPUB:
                     else:
                         raise AttributeError
                 except AttributeError:
-                    contents[title] = ''
+                    contents[title] = 'Parse Error'
 
         # Special settings that have to be returned with the file
         # Referenced in sorter.py

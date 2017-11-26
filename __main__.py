@@ -89,6 +89,9 @@ class MainUI(QtWidgets.QMainWindow, mainwindow.Ui_MainWindow):
         # Initialize settings dialog
         self.settings_dialog = SettingsUI()
 
+        # Hide or show the main widget of the library
+        self.tableView.setVisible(False)
+
         # Empty variables that will be infested soon
         self.last_open_books = None
         self.last_open_tab = None
@@ -176,13 +179,21 @@ class MainUI(QtWidgets.QMainWindow, mainwindow.Ui_MainWindow):
 
         # TODO
         # Associate this with the library switcher
-        library_subclass = QtWidgets.QToolButton()
-        library_subclass.setIcon(QtGui.QIcon.fromTheme('view-readermode'))
-        library_subclass.setAutoRaise(True)
-        library_subclass.setPopupMode(QtWidgets.QToolButton.InstantPopup)
+        self.library_view_switch = QtWidgets.QToolButton()
+        self.library_view_switch.setIcon(QtGui.QIcon.fromTheme('view-readermode'))
+        self.library_view_switch.setAutoRaise(True)
+        self.library_view_switch.setPopupMode(QtWidgets.QToolButton.InstantPopup)
+        self.library_view_switch.triggered.connect(self.switch_library_view)
 
-        self.tabWidget.tabBar().setTabButton(0, QtWidgets.QTabBar.RightSide, library_subclass)
+        self.tabWidget.tabBar().setTabButton(
+            0, QtWidgets.QTabBar.RightSide, self.library_view_switch)
+        self.library_view_switch.clicked.connect(self.switch_library_view)
         self.tabWidget.tabCloseRequested.connect(self.tab_close)
+
+        # Init display models
+        self.lib_ref.generate_model('build')
+        self.lib_ref.create_tablemodel()  # TODO - Make this accompany other proxy model generations
+        self.lib_ref.create_proxymodel()
 
         # ListView
         self.listView.setGridSize(QtCore.QSize(175, 240))
@@ -190,8 +201,9 @@ class MainUI(QtWidgets.QMainWindow, mainwindow.Ui_MainWindow):
         self.listView.verticalScrollBar().setSingleStep(7)
         self.listView.doubleClicked.connect(self.list_doubleclick)
         self.listView.setItemDelegate(LibraryDelegate(self.temp_dir.path()))
-        self.lib_ref.generate_model('build')
-        self.lib_ref.create_proxymodel()
+
+        # TableView
+        self.tableView.horizontalHeader().setSectionResizeMode(QtWidgets.QHeaderView.Stretch)
 
         # Keyboard shortcuts
         self.ks_close_tab = QtWidgets.QShortcut(QtGui.QKeySequence('Ctrl+W'), self)
@@ -289,6 +301,16 @@ class MainUI(QtWidgets.QMainWindow, mainwindow.Ui_MainWindow):
             msg_box.buttonClicked.connect(ifcontinue)
             msg_box.show()
             msg_box.exec_()
+
+    def switch_library_view(self):
+        if self.listView.isVisible():
+            self.listView.setVisible(False)
+            self.tableView.setVisible(True)
+            self.libraryToolBar.sortingBoxAction.setVisible(False)
+        else:
+            self.listView.setVisible(True)
+            self.tableView.setVisible(False)
+            self.libraryToolBar.sortingBoxAction.setVisible(True)
 
     def tab_switch(self):
         if self.tabWidget.currentIndex() == 0:

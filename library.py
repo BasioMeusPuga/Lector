@@ -5,7 +5,7 @@ import pickle
 import database
 
 from PyQt5 import QtWidgets, QtGui, QtCore
-from widgets import MyAbsModel
+from widgets import LibraryItemModel, LibraryTableModel
 
 
 class Library:
@@ -13,6 +13,8 @@ class Library:
         self.parent_window = parent
         self.view_model = None
         self.proxy_model = None
+        self.table_model = None
+        self.table_rows = []
 
     def generate_model(self, mode, parsed_books=None):
         # The QlistView widget needs to be populated
@@ -20,7 +22,7 @@ class Library:
         # because I kinda sorta NEED the match() method
 
         if mode == 'build':
-            self.view_model = MyAbsModel()
+            self.view_model = LibraryItemModel()
 
             books = database.DatabaseFunctions(
                 self.parent_window.database_path).fetch_data(
@@ -65,7 +67,7 @@ class Library:
             author = i[2]
             year = i[3]
             path = i[4]
-            tags = i[6]
+            tags = i[7]
             cover = i[9]
 
             position = i[5]
@@ -119,6 +121,16 @@ class Library:
             item.setData(position, QtCore.Qt.UserRole + 7)
             item.setIcon(QtGui.QIcon(img_pixmap))
             self.view_model.appendRow(item)
+
+            # Path is just being sent. It is not being displayed
+            self.table_rows.append(
+                (title, author, year, tags, path))
+
+    def create_tablemodel(self):
+        table_header = ['Title', 'Author', 'Year', 'Tags']
+        self.table_rows.sort(key=lambda x: x[0])
+        self.table_model = LibraryTableModel(table_header, self.table_rows)
+        self.parent_window.tableView.setModel(self.table_model)
 
     def create_proxymodel(self):
         self.proxy_model = QtCore.QSortFilterProxyModel()

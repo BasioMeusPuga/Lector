@@ -1,8 +1,8 @@
 # -*- coding: utf-8 -*-
 
-# Form implementation generated from reading ui file 'resources/main.ui'
+# Form implementation generated from reading ui file 'raw/main.ui'
 #
-# Created by: PyQt5 UI code generator 5.9.1
+# Created by: PyQt5 UI code generator 5.9.2
 #
 # WARNING! All changes made in this file will be lost!
 
@@ -23,10 +23,8 @@ class Ui_MainWindow(object):
         self.tabWidget.setObjectName("tabWidget")
         self.tab = QtWidgets.QWidget()
         self.tab.setObjectName("tab")
-        self.gridLayout_2 = QtWidgets.QGridLayout(self.tab)
-        self.gridLayout_2.setObjectName("gridLayout_2")
-        self.verticalLayout = QtWidgets.QVBoxLayout()
-        self.verticalLayout.setObjectName("verticalLayout")
+        self.horizontalLayout_2 = QtWidgets.QHBoxLayout(self.tab)
+        self.horizontalLayout_2.setObjectName("horizontalLayout_2")
         self.listView = QtWidgets.QListView(self.tab)
         self.listView.setFrameShape(QtWidgets.QFrame.NoFrame)
         self.listView.setEditTriggers(QtWidgets.QAbstractItemView.NoEditTriggers)
@@ -40,8 +38,20 @@ class Ui_MainWindow(object):
         self.listView.setUniformItemSizes(True)
         self.listView.setWordWrap(True)
         self.listView.setObjectName("listView")
-        self.verticalLayout.addWidget(self.listView)
-        self.gridLayout_2.addLayout(self.verticalLayout, 0, 0, 1, 1)
+        self.horizontalLayout_2.addWidget(self.listView)
+        self.tableView = QtWidgets.QTableView(self.tab)
+        self.tableView.setFrameShape(QtWidgets.QFrame.NoFrame)
+        self.tableView.setSizeAdjustPolicy(QtWidgets.QAbstractScrollArea.AdjustToContents)
+        self.tableView.setEditTriggers(QtWidgets.QAbstractItemView.DoubleClicked|QtWidgets.QAbstractItemView.EditKeyPressed)
+        self.tableView.setAlternatingRowColors(True)
+        self.tableView.setSelectionBehavior(QtWidgets.QAbstractItemView.SelectRows)
+        self.tableView.setGridStyle(QtCore.Qt.NoPen)
+        self.tableView.setSortingEnabled(True)
+        self.tableView.setWordWrap(False)
+        self.tableView.setObjectName("tableView")
+        self.tableView.horizontalHeader().setVisible(True)
+        self.tableView.verticalHeader().setVisible(False)
+        self.horizontalLayout_2.addWidget(self.tableView)
         self.tabWidget.addTab(self.tab, "")
         self.horizontalLayout.addWidget(self.tabWidget)
         self.gridLayout.addLayout(self.horizontalLayout, 0, 0, 1, 1)
@@ -64,4 +74,3 @@ class Ui_MainWindow(object):
         _translate = QtCore.QCoreApplication.translate
         MainWindow.setWindowTitle(_translate("MainWindow", "Lector"))
         self.tabWidget.setTabText(self.tabWidget.indexOf(self.tab), _translate("MainWindow", "Library"))
-

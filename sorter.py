@@ -132,13 +132,18 @@ class BookSorter:
         # None values are accounted for here
         book_ref.read_book()
         if book_ref.book:
+
             title = book_ref.get_title().title()
+
             author = book_ref.get_author()
             if not author:
                 author = 'Unknown'
-            year = book_ref.get_year()
-            if not year:
+
+            try:
+                year = int(book_ref.get_year())
+            except (TypeError, ValueError):
                 year = 9999
+
             isbn = book_ref.get_isbn()
 
             # Different modes require different values
