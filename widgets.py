@@ -266,13 +266,29 @@ class LibraryToolBar(QtWidgets.QToolBar):
             QtGui.QIcon.fromTheme('remove'), 'Delete book', self)
         self.settingsButton = QtWidgets.QAction(
             QtGui.QIcon.fromTheme('settings'), 'Settings', self)
+        self.settingsButton.setCheckable(True)
+
+        self.coverViewButton = QtWidgets.QAction(
+            QtGui.QIcon.fromTheme('view-grid'), 'View as covers', self)
+        self.coverViewButton.setCheckable(True)
+        self.tableViewButton = QtWidgets.QAction(
+            QtGui.QIcon.fromTheme('table'), 'View as table', self)
+        self.tableViewButton.setCheckable(True)
+
+        # Auto unchecks the other QToolButton in case of clicking
+        self.viewButtons = QtWidgets.QActionGroup(self)
+        self.viewButtons.setExclusive(True)
+        self.viewButtons.addAction(self.coverViewButton)
+        self.viewButtons.addAction(self.tableViewButton)
 
         # Add buttons
         self.addAction(self.addButton)
         self.addAction(self.deleteButton)
         self.addSeparator()
+        self.addAction(self.coverViewButton)
+        self.addAction(self.tableViewButton)
+        self.addSeparator()
         self.addAction(self.settingsButton)
-        self.settingsButton.setCheckable(True)
 
         # Filter
         sizePolicy = QtWidgets.QSizePolicy(

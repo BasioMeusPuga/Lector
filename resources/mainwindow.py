@@ -11,7 +11,7 @@ from PyQt5 import QtCore, QtGui, QtWidgets
 class Ui_MainWindow(object):
     def setupUi(self, MainWindow):
         MainWindow.setObjectName("MainWindow")
-        MainWindow.resize(1064, 724)
+        MainWindow.resize(1062, 720)
         self.centralwidget = QtWidgets.QWidget(MainWindow)
         self.centralwidget.setObjectName("centralwidget")
         self.gridLayout = QtWidgets.QGridLayout(self.centralwidget)
@@ -26,7 +26,7 @@ class Ui_MainWindow(object):
         self.horizontalLayout_2 = QtWidgets.QHBoxLayout(self.tab)
         self.horizontalLayout_2.setObjectName("horizontalLayout_2")
         self.listView = QtWidgets.QListView(self.tab)
-        self.listView.setFrameShape(QtWidgets.QFrame.NoFrame)
+        self.listView.setFrameShape(QtWidgets.QFrame.StyledPanel)
         self.listView.setEditTriggers(QtWidgets.QAbstractItemView.NoEditTriggers)
         self.listView.setProperty("showDropIndicator", False)
         self.listView.setSelectionMode(QtWidgets.QAbstractItemView.ExtendedSelection)
@@ -40,8 +40,8 @@ class Ui_MainWindow(object):
         self.listView.setObjectName("listView")
         self.horizontalLayout_2.addWidget(self.listView)
         self.tableView = QtWidgets.QTableView(self.tab)
-        self.tableView.setFrameShape(QtWidgets.QFrame.NoFrame)
-        self.tableView.setSizeAdjustPolicy(QtWidgets.QAbstractScrollArea.AdjustToContents)
+        self.tableView.setFrameShape(QtWidgets.QFrame.StyledPanel)
+        self.tableView.setSizeAdjustPolicy(QtWidgets.QAbstractScrollArea.AdjustToContentsOnFirstShow)
         self.tableView.setEditTriggers(QtWidgets.QAbstractItemView.DoubleClicked|QtWidgets.QAbstractItemView.EditKeyPressed)
         self.tableView.setAlternatingRowColors(True)
         self.tableView.setSelectionBehavior(QtWidgets.QAbstractItemView.SelectRows)

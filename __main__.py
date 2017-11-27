@@ -121,7 +121,7 @@ class MainUI(QtWidgets.QMainWindow, mainwindow.Ui_MainWindow):
         self.statusBar.addWidget(self.sorterProgress)
         self.sorterProgress.setVisible(False)
 
-        # Init the QListView
+        # Init the Library
         self.lib_ref = Library(self)
 
         # Application wide temporary directory
@@ -131,6 +131,9 @@ class MainUI(QtWidgets.QMainWindow, mainwindow.Ui_MainWindow):
         self.libraryToolBar = LibraryToolBar(self)
         self.libraryToolBar.addButton.triggered.connect(self.add_books)
         self.libraryToolBar.deleteButton.triggered.connect(self.delete_books)
+        self.libraryToolBar.coverViewButton.triggered.connect(self.switch_library_view)
+        self.libraryToolBar.coverViewButton.setChecked(True)
+        self.libraryToolBar.tableViewButton.triggered.connect(self.switch_library_view)
         self.libraryToolBar.settingsButton.triggered.connect(self.show_settings)
         self.libraryToolBar.searchBar.textChanged.connect(self.lib_ref.update_proxymodel)
         self.libraryToolBar.sortingBox.activated.connect(self.lib_ref.update_proxymodel)
@@ -177,17 +180,14 @@ class MainUI(QtWidgets.QMainWindow, mainwindow.Ui_MainWindow):
         self.available_parsers = '*.' + ' *.'.join(sorter.available_parsers)
         print('Available parsers: ' + self.available_parsers)
 
-        # TODO
-        # Associate this with the library switcher
-        self.library_view_switch = QtWidgets.QToolButton()
-        self.library_view_switch.setIcon(QtGui.QIcon.fromTheme('view-readermode'))
-        self.library_view_switch.setAutoRaise(True)
-        self.library_view_switch.setPopupMode(QtWidgets.QToolButton.InstantPopup)
-        self.library_view_switch.triggered.connect(self.switch_library_view)
+        self.reloadLibrary = QtWidgets.QToolButton()
+        self.reloadLibrary.setIcon(QtGui.QIcon.fromTheme('reload'))
+        self.reloadLibrary.setAutoRaise(True)
+        self.reloadLibrary.setPopupMode(QtWidgets.QToolButton.InstantPopup)
+        self.reloadLibrary.triggered.connect(self.switch_library_view)
 
         self.tabWidget.tabBar().setTabButton(
-            0, QtWidgets.QTabBar.RightSide, self.library_view_switch)
-        self.library_view_switch.clicked.connect(self.switch_library_view)
+            0, QtWidgets.QTabBar.RightSide, self.reloadLibrary)
         self.tabWidget.tabCloseRequested.connect(self.tab_close)
 
         # Init display models
@@ -203,7 +203,9 @@ class MainUI(QtWidgets.QMainWindow, mainwindow.Ui_MainWindow):
         self.listView.setItemDelegate(LibraryDelegate(self.temp_dir.path()))
 
         # TableView
-        self.tableView.horizontalHeader().setSectionResizeMode(QtWidgets.QHeaderView.Stretch)
+        self.tableView.horizontalHeader().setSectionResizeMode(
+            QtWidgets.QHeaderView.ResizeToContents)
+        self.tableView.horizontalHeader().setStretchLastSection(True)
 
         # Keyboard shortcuts
         self.ks_close_tab = QtWidgets.QShortcut(QtGui.QKeySequence('Ctrl+W'), self)
@@ -222,6 +224,14 @@ class MainUI(QtWidgets.QMainWindow, mainwindow.Ui_MainWindow):
         self.last_open_books = None
 
     def resizeEvent(self, event=None):
+        # TODO
+        # View switching borks the grid
+
+        # In case the listView isn't visible because the
+        # tableview is highlighted instead
+        if not self.listView.isVisible():
+            return
+
         if event:
             # This implies a vertical resize event only
             # We ain't about that lifestyle
@@ -303,14 +313,14 @@ class MainUI(QtWidgets.QMainWindow, mainwindow.Ui_MainWindow):
             msg_box.exec_()
 
     def switch_library_view(self):
-        if self.listView.isVisible():
-            self.listView.setVisible(False)
-            self.tableView.setVisible(True)
-            self.libraryToolBar.sortingBoxAction.setVisible(False)
-        else:
+        if self.libraryToolBar.coverViewButton.isChecked():
             self.listView.setVisible(True)
             self.tableView.setVisible(False)
             self.libraryToolBar.sortingBoxAction.setVisible(True)
+        else:
+            self.listView.setVisible(False)
+            self.tableView.setVisible(True)
+            self.libraryToolBar.sortingBoxAction.setVisible(False)
 
     def tab_switch(self):
         if self.tabWidget.currentIndex() == 0:
