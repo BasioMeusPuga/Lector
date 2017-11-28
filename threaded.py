@@ -1,9 +1,10 @@
 #!/usr/bin/env python3
 
+import os
+from PyQt5 import QtCore
+
 import sorter
 import database
-
-from PyQt5 import QtCore
 
 
 class BackGroundTabUpdate(QtCore.QThread):
@@ -38,3 +39,19 @@ class BackGroundBookAddition(QtCore.QThread):
         parsed_books = books.initiate_threads()
         database.DatabaseFunctions(self.database_path).add_to_database(parsed_books)
         self.parent_window.lib_ref.generate_model('addition', parsed_books)
+
+
+class BackGroundBookSearch(QtCore.QThread):
+    def __init__(self, parent_window, root_directory, parent=None):
+        super(BackGroundBookSearch, self).__init__(parent)
+        self.parent_window = parent_window
+        self.root_directory = root_directory
+        self.valid_files = []
+
+    def run(self):
+        for directory, subdir, files in os.walk(self.root_directory):
+            for filename in files:
+                if os.path.splitext(filename)[1][1:] in sorter.available_parsers:
+                    self.valid_files.append(os.path.join(directory, filename))
+
+        print(self.valid_files)

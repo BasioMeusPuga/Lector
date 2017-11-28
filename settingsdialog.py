@@ -7,6 +7,7 @@ from PyQt5 import QtWidgets, QtGui, QtCore
 
 import database
 from resources import settingswindow
+from threaded import BackGroundBookSearch, BackGroundBookAddition
 
 
 class SettingsUI(QtWidgets.QDialog, settingswindow.Ui_Dialog):
@@ -20,6 +21,8 @@ class SettingsUI(QtWidgets.QDialog, settingswindow.Ui_Dialog):
 
         self.database_data = collections.OrderedDict()
         self.database_modification = False
+
+        self.thread = None
 
         self.addButton.clicked.connect(self.add_directories)
 
@@ -58,3 +61,11 @@ class SettingsUI(QtWidgets.QDialog, settingswindow.Ui_Dialog):
 
         # Whatever code you write to recurse through directories will
         # have to go into the threaded module
+
+        # Traverse directories looking for files
+        self.thread = BackGroundBookSearch(self, add_directory)
+        self.thread.finished.connect(self.do_something)
+        self.thread.start()
+
+    def do_something(self):
+        print('Book search completed')

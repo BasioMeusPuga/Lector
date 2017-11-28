@@ -67,7 +67,6 @@ class MainUI(QtWidgets.QMainWindow, mainwindow.Ui_MainWindow):
         self.libraryToolBar.addButton.triggered.connect(self.add_books)
         self.libraryToolBar.deleteButton.triggered.connect(self.delete_books)
         self.libraryToolBar.coverViewButton.triggered.connect(self.switch_library_view)
-        # self.libraryToolBar.coverViewButton.setChecked(True)
         self.libraryToolBar.tableViewButton.triggered.connect(self.switch_library_view)
         self.libraryToolBar.settingsButton.triggered.connect(self.show_settings)
         self.libraryToolBar.searchBar.textChanged.connect(self.lib_ref.update_proxymodel)
@@ -84,7 +83,6 @@ class MainUI(QtWidgets.QMainWindow, mainwindow.Ui_MainWindow):
         # Book toolbar
         self.bookToolBar = BookToolBar(self)
         self.bookToolBar.fullscreenButton.triggered.connect(self.set_fullscreen)
-        self.bookToolBar.settingsButton.triggered.connect(self.show_settings)
 
         for count, i in enumerate(self.display_profiles):
             self.bookToolBar.profileBox.setItemData(count, i, QtCore.Qt.UserRole)

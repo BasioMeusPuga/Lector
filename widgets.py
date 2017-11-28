@@ -31,9 +31,6 @@ class BookToolBar(QtWidgets.QToolBar):
         self.fullscreenButton = QtWidgets.QAction(
             QtGui.QIcon.fromTheme('view-fullscreen'),
             'Fullscreen', self)
-        self.settingsButton = QtWidgets.QAction(
-            QtGui.QIcon.fromTheme('settings'),
-            'Settings', self)
         self.resetProfile = QtWidgets.QAction(
             QtGui.QIcon.fromTheme('view-refresh'),
             'Reset profile', self)
@@ -44,8 +41,6 @@ class BookToolBar(QtWidgets.QToolBar):
         self.fontButton.triggered.connect(self.toggle_font_settings)
         self.addSeparator()
         self.addAction(self.fullscreenButton)
-        self.addAction(self.settingsButton)
-        self.settingsButton.setCheckable(True)
 
         # Font modification
         font_sizes = [str(i) for i in range(8, 48, 2)]
@@ -197,7 +192,6 @@ class BookToolBar(QtWidgets.QToolBar):
 
         self.bookActions = [
             self.fullscreenButton,
-            self.settingsButton,
             self.tocBoxAction,
             self.searchBarAction]
 

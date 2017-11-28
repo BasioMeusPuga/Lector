@@ -140,7 +140,10 @@ class Library:
         self.table_proxy_model = TableProxyModel()
         self.table_proxy_model.setSourceModel(self.table_model)
         self.table_proxy_model.setSortCaseSensitivity(False)
+        self.table_proxy_model.sort(0, QtCore.Qt.AscendingOrder)
         self.parent_window.tableView.setModel(self.table_proxy_model)
+        self.parent_window.tableView.horizontalHeader().setSortIndicator(
+            0, QtCore.Qt.AscendingOrder)
 
     def update_table_proxy_model(self):
         self.table_proxy_model.invalidateFilter()
