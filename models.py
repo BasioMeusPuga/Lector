@@ -1,6 +1,9 @@
 #!/usr/bin/env python3
 
+import os
+
 from PyQt5 import QtCore, QtGui
+from resources import pie_chart
 
 
 class LibraryItemModel(QtGui.QStandardItemModel, QtCore.QAbstractItemModel):
@@ -13,10 +16,12 @@ class LibraryTableModel(QtCore.QAbstractTableModel):
     # Sorting is taken care of by the QSortFilterProxy model
     # which has an inbuilt sort method
 
-    def __init__(self, header_data, display_data, parent=None):
+    def __init__(self, header_data, display_data, temp_dir=None, parent=None):
         super(LibraryTableModel, self).__init__(parent)
         self.header_data = header_data
         self.display_data = display_data
+        self.temp_dir = temp_dir  # Is only needed for the main table
+                                  # This model is otherwise reusable if this remains None
 
     def rowCount(self, parent):
         return len(self.display_data)
@@ -28,13 +33,38 @@ class LibraryTableModel(QtCore.QAbstractTableModel):
         if not index.isValid():
             return None
 
+        if role == QtCore.Qt.DecorationRole and index.column() == 2 and self.temp_dir:
+            return_pixmap = None
+            file_exists = self.display_data[index.row()][5]['file_exists']
+            position = self.display_data[index.row()][5]['position']
+
+            if not file_exists:
+                return_pixmap = QtGui.QIcon(':/images/error.svg').pixmap(
+                    QtCore.Qt.SizeHintRole + 10)
+
+            if position:
+                current_chapter = position['current_chapter']
+                total_chapters = position['total_chapters']
+                progress_percent = int(current_chapter * 100 / total_chapters)
+
+                if current_chapter == total_chapters:
+                    return_pixmap = QtGui.QIcon(':/images/checkmark.svg').pixmap(
+                        QtCore.Qt.SizeHintRole + 10)
+                else:
+                    pie_chart.GeneratePie(progress_percent, self.temp_dir).generate()
+                    svg_path = os.path.join(self.temp_dir, 'lector_progress.svg')
+                    return_pixmap = QtGui.QIcon(svg_path).pixmap(
+                        QtCore.Qt.SizeHintRole + 10)
+
+            return return_pixmap
+
         if role == QtCore.Qt.DisplayRole:
             value = self.display_data[index.row()][index.column()]
-            file_exists = self.display_data[index.row()][4]['file_exists']
             return value
+
         elif role == QtCore.Qt.UserRole:
             # The rest of the roles can be accomodated here.
-            value = self.display_data[index.row()][4]
+            value = self.display_data[index.row()][5]
             return value
         else:
             return QtCore.QVariant()

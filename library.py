@@ -129,11 +129,12 @@ class Library:
             # all_metadata is just being sent. It is not being displayed
             # It will be correlated to the current row as its first userrole
             self.table_rows.append(
-                (title, author, year, tags, all_metadata))
+                (title, author, None, year, tags, all_metadata))
 
     def create_table_model(self):
-        table_header = ['Title', 'Author', 'Year', 'Tags']
-        self.table_model = LibraryTableModel(table_header, self.table_rows)
+        table_header = ['Title', 'Author', 'Status', 'Year', 'Tags']
+        self.table_model = LibraryTableModel(
+            table_header, self.table_rows, self.parent_window.temp_dir.path())
         self.create_table_proxy_model()
 
     def create_table_proxy_model(self):
@@ -148,7 +149,7 @@ class Library:
     def update_table_proxy_model(self):
         self.table_proxy_model.invalidateFilter()
         self.table_proxy_model.setFilterParams(
-            self.parent_window.libraryToolBar.searchBar.text(), [0, 1, 3])
+            self.parent_window.libraryToolBar.searchBar.text(), [0, 1, 4])
         # This isn't needed, but it forces a model update every time the
         # text in the line edit changes. So I guess it is needed.
         self.table_proxy_model.setFilterFixedString(

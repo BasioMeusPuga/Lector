@@ -56,11 +56,11 @@ class MainUI(QtWidgets.QMainWindow, mainwindow.Ui_MainWindow):
         self.statusBar.addWidget(self.sorterProgress)
         self.sorterProgress.setVisible(False)
 
-        # Init the Library
-        self.lib_ref = Library(self)
-
         # Application wide temporary directory
         self.temp_dir = QtCore.QTemporaryDir()
+
+        # Init the Library
+        self.lib_ref = Library(self)
 
         # Library toolbar
         self.libraryToolBar = LibraryToolBar(self)

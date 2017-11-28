@@ -339,7 +339,6 @@ class FixedPushButton(QtWidgets.QPushButton):
 class Tab(QtWidgets.QWidget):
     def __init__(self, metadata, parent=None):
         # TODO
-        # A horizontal slider to control flow
         # Take hint from a position function argument to open the book
         # at a specific page
 
