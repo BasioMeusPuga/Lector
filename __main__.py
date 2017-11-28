@@ -90,7 +90,7 @@ class MainUI(QtWidgets.QMainWindow, mainwindow.Ui_MainWindow):
         self.settings_dialog = SettingsUI()
 
         # Hide or show the main widget of the library
-        self.tableView.setVisible(False)
+        self.stackedWidget.setCurrentIndex(0)
 
         # Empty variables that will be infested soon
         self.last_open_books = None
@@ -193,7 +193,7 @@ class MainUI(QtWidgets.QMainWindow, mainwindow.Ui_MainWindow):
 
         # Init display models
         self.lib_ref.generate_model('build')
-        self.lib_ref.create_table_model()  # TODO - Make this accompany other proxy model generations
+        self.lib_ref.create_table_model()
         self.lib_ref.create_proxymodel()
 
         # ListView
@@ -225,14 +225,6 @@ class MainUI(QtWidgets.QMainWindow, mainwindow.Ui_MainWindow):
         self.last_open_books = None
 
     def resizeEvent(self, event=None):
-        # TODO
-        # View switching borks the grid
-
-        # In case the listView isn't visible because the
-        # tableview is highlighted instead
-        if not self.listView.isVisible():
-            return
-
         if event:
             # This implies a vertical resize event only
             # We ain't about that lifestyle
@@ -284,15 +276,14 @@ class MainUI(QtWidgets.QMainWindow, mainwindow.Ui_MainWindow):
 
     def move_on(self):
         self.sorterProgress.setVisible(False)
+        self.lib_ref.create_table_model()
         self.lib_ref.create_proxymodel()
 
-        # Create the table model
-        # Since images aren't displayed here, it's fast enough to not
-        # need addition to
-        # self.create_table_model()
-        self.lib_ref.create_table_model()
-
     def delete_books(self):
+        # TODO
+        # Use maptosource() here to get the view_model 
+        # indices selected in the listView
+
         selected_books = self.listView.selectedIndexes()
         if selected_books:
             def ifcontinue(box_button):
@@ -306,6 +297,7 @@ class MainUI(QtWidgets.QMainWindow, mainwindow.Ui_MainWindow):
                         self.database_path).delete_from_database(selected_hashes)
 
                     self.lib_ref.generate_model('build')
+                    self.lib_ref.create_table_model()
                     self.lib_ref.create_proxymodel()
 
             selected_number = len(selected_books)
@@ -321,13 +313,13 @@ class MainUI(QtWidgets.QMainWindow, mainwindow.Ui_MainWindow):
 
     def switch_library_view(self):
         if self.libraryToolBar.coverViewButton.isChecked():
-            self.listView.setVisible(True)
-            self.tableView.setVisible(False)
+            self.stackedWidget.setCurrentIndex(0)
             self.libraryToolBar.sortingBoxAction.setVisible(True)
         else:
-            self.listView.setVisible(False)
-            self.tableView.setVisible(True)
+            self.stackedWidget.setCurrentIndex(1)
             self.libraryToolBar.sortingBoxAction.setVisible(False)
+
+        self.resizeEvent()
 
     def tab_switch(self):
         if self.tabWidget.currentIndex() == 0:
