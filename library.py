@@ -5,7 +5,7 @@ import pickle
 import database
 
 from PyQt5 import QtWidgets, QtGui, QtCore
-from widgets import LibraryItemModel, LibraryTableModel
+from models import LibraryItemModel, LibraryTableModel, TableProxyModel
 
 
 class Library:
@@ -22,6 +22,7 @@ class Library:
         # because I kinda sorta NEED the match() method
 
         if mode == 'build':
+            self.table_rows = []
             self.view_model = LibraryItemModel()
 
             books = database.DatabaseFunctions(
@@ -126,11 +127,28 @@ class Library:
             self.table_rows.append(
                 (title, author, year, tags, path))
 
-    def create_tablemodel(self):
+    def create_table_model(self):
         table_header = ['Title', 'Author', 'Year', 'Tags']
-        self.table_rows.sort(key=lambda x: x[0])
+        # self.table_rows.sort(key=lambda x: x[0])
         self.table_model = LibraryTableModel(table_header, self.table_rows)
-        self.parent_window.tableView.setModel(self.table_model)
+        self.create_table_proxy_model()
+
+    def create_table_proxy_model(self):
+        self.table_proxy_model = TableProxyModel()
+        self.table_proxy_model.setSourceModel(self.table_model)
+        self.parent_window.tableView.setModel(self.table_proxy_model)
+
+    def update_table_proxy_model(self):
+        self.table_proxy_model.invalidateFilter()
+        self.table_proxy_model.setFilterParams(
+            self.parent_window.libraryToolBar.searchBar.text(), [0, 1, 3])
+
+        # This isn't needed, but it forces a
+        # model update every time the
+        # text in the line edit changes.
+        # So I guess it is needed.
+        self.table_proxy_model.setFilterFixedString(
+            self.parent_window.libraryToolBar.searchBar.text())
 
     def create_proxymodel(self):
         self.proxy_model = QtCore.QSortFilterProxyModel()

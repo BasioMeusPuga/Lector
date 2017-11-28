@@ -136,6 +136,7 @@ class MainUI(QtWidgets.QMainWindow, mainwindow.Ui_MainWindow):
         self.libraryToolBar.tableViewButton.triggered.connect(self.switch_library_view)
         self.libraryToolBar.settingsButton.triggered.connect(self.show_settings)
         self.libraryToolBar.searchBar.textChanged.connect(self.lib_ref.update_proxymodel)
+        self.libraryToolBar.searchBar.textChanged.connect(self.lib_ref.update_table_proxy_model)
         self.libraryToolBar.sortingBox.activated.connect(self.lib_ref.update_proxymodel)
         self.addToolBar(self.libraryToolBar)
 
@@ -192,7 +193,7 @@ class MainUI(QtWidgets.QMainWindow, mainwindow.Ui_MainWindow):
 
         # Init display models
         self.lib_ref.generate_model('build')
-        self.lib_ref.create_tablemodel()  # TODO - Make this accompany other proxy model generations
+        self.lib_ref.create_table_model()  # TODO - Make this accompany other proxy model generations
         self.lib_ref.create_proxymodel()
 
         # ListView
@@ -284,6 +285,12 @@ class MainUI(QtWidgets.QMainWindow, mainwindow.Ui_MainWindow):
     def move_on(self):
         self.sorterProgress.setVisible(False)
         self.lib_ref.create_proxymodel()
+
+        # Create the table model
+        # Since images aren't displayed here, it's fast enough to not
+        # need addition to
+        # self.create_table_model()
+        self.lib_ref.create_table_model()
 
     def delete_books(self):
         selected_books = self.listView.selectedIndexes()
