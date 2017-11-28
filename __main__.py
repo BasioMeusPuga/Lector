@@ -199,14 +199,16 @@ class MainUI(QtWidgets.QMainWindow, mainwindow.Ui_MainWindow):
         # ListView
         self.listView.setGridSize(QtCore.QSize(175, 240))
         self.listView.setMouseTracking(True)
-        self.listView.verticalScrollBar().setSingleStep(7)
-        self.listView.doubleClicked.connect(self.list_doubleclick)
+        self.listView.verticalScrollBar().setSingleStep(9)
+        self.listView.doubleClicked.connect(self.library_doubleclick)
         self.listView.setItemDelegate(LibraryDelegate(self.temp_dir.path()))
 
         # TableView
         self.tableView.horizontalHeader().setSectionResizeMode(
-            QtWidgets.QHeaderView.ResizeToContents)
+            QtWidgets.QHeaderView.ResizeToContents)  # TODO Change this to manual column sizing
         self.tableView.horizontalHeader().setStretchLastSection(True)
+        self.tableView.horizontalHeader().setSortIndicator(0, QtCore.Qt.AscendingOrder)
+        self.tableView.doubleClicked.connect(self.library_doubleclick)
 
         # Keyboard shortcuts
         self.ks_close_tab = QtWidgets.QShortcut(QtGui.QKeySequence('Ctrl+W'), self)
@@ -281,8 +283,9 @@ class MainUI(QtWidgets.QMainWindow, mainwindow.Ui_MainWindow):
 
     def delete_books(self):
         # TODO
-        # Use maptosource() here to get the view_model 
+        # Use maptosource() here to get the view_model
         # indices selected in the listView
+        # Implement this for the tableview
 
         selected_books = self.listView.selectedIndexes()
         if selected_books:
@@ -409,9 +412,15 @@ class MainUI(QtWidgets.QMainWindow, mainwindow.Ui_MainWindow):
         current_tab_widget = self.tabWidget.widget(current_tab)
         current_tab_widget.go_fullscreen()
 
-    def list_doubleclick(self, myindex):
-        index = self.listView.model().index(myindex.row(), 0)
-        metadata = self.listView.model().data(index, QtCore.Qt.UserRole + 3)
+    def library_doubleclick(self, myindex):
+        sender = self.sender().objectName()
+
+        if sender == 'listView':
+            index = self.lib_ref.proxy_model.index(myindex.row(), 0)
+            metadata = self.lib_ref.proxy_model.data(index, QtCore.Qt.UserRole + 3)
+        elif sender == 'tableView':
+            index = self.lib_ref.table_proxy_model.index(myindex.row(), 0)
+            metadata = self.lib_ref.table_proxy_model.data(index, QtCore.Qt.UserRole)
 
         # Shift focus to the tab that has the book open (if there is one)
         for i in range(1, self.tabWidget.count()):

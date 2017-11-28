@@ -11,9 +11,10 @@ class LibraryItemModel(QtGui.QStandardItemModel, QtCore.QAbstractItemModel):
 
 class LibraryTableModel(QtCore.QAbstractTableModel):
     # TODO
-    # Speed up sorting
-    # Double clicking
     # Auto resize with emphasis on Name
+
+    # Sorting is taken care of by the QSortFilterProxy model
+    # which has an inbuilt sort method
 
     def __init__(self, header_data, display_data, parent=None):
         super(LibraryTableModel, self).__init__(parent)
@@ -33,6 +34,10 @@ class LibraryTableModel(QtCore.QAbstractTableModel):
         if role == QtCore.Qt.DisplayRole:
             value = self.display_data[index.row()][index.column()]
             return value
+        elif role == QtCore.Qt.UserRole:
+            # The rest of the roles can be accomodated here.
+            value = self.display_data[index.row()][4]
+            return value
         else:
             return QtCore.QVariant()
 
@@ -40,14 +45,6 @@ class LibraryTableModel(QtCore.QAbstractTableModel):
         if orientation == QtCore.Qt.Horizontal and role == QtCore.Qt.DisplayRole:
             return self.header_data[col]
         return None
-
-    def sort(self, col, order):
-        # self.emit(SIGNAL("layoutAboutToBeChanged()"))
-        self.display_data.sort(key=lambda x: x[col])
-        if order == QtCore.Qt.DescendingOrder:
-            self.display_data.sort(key=lambda x: x[col], reverse=True)
-
-        # self.emit(SIGNAL("layoutChanged()"))
 
 
 class TableProxyModel(QtCore.QSortFilterProxyModel):

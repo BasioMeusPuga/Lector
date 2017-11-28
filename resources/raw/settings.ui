@@ -28,14 +28,14 @@
            <widget class="QTableView" name="tableView"/>
           </item>
           <item>
-           <widget class="QLineEdit" name="lineEdit">
-            <property name="placeholderText">
-             <string>Search for Paths, Names, Tags...</string>
-            </property>
-           </widget>
-          </item>
-          <item>
            <layout class="QHBoxLayout" name="horizontalLayout">
+            <item>
+             <widget class="QLineEdit" name="lineEdit">
+              <property name="placeholderText">
+               <string>Search for Paths, Names, Tags...</string>
+              </property>
+             </widget>
+            </item>
             <item>
              <widget class="QPushButton" name="addButton">
               <property name="text">
@@ -90,6 +90,13 @@
            <widget class="QCheckBox" name="checkBox_2">
             <property name="text">
              <string>Show Library</string>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QCheckBox" name="checkBox_3">
+            <property name="text">
+             <string>Cover Shadows</string>
             </property>
            </widget>
           </item>

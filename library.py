@@ -14,6 +14,7 @@ class Library:
         self.view_model = None
         self.proxy_model = None
         self.table_model = None
+        self.table_proxy_model = None
         self.table_rows = []
 
     def generate_model(self, mode, parsed_books=None):
@@ -111,6 +112,10 @@ class Library:
             img_pixmap = img_pixmap.scaled(420, 600, QtCore.Qt.IgnoreAspectRatio)
             item = QtGui.QStandardItem()
             item.setToolTip(tooltip_string)
+
+            # TODO
+            # Simplify this mess
+
             # The following order is needed to keep sorting working
             item.setData(title, QtCore.Qt.UserRole)
             item.setData(author, QtCore.Qt.UserRole + 1)
@@ -123,19 +128,20 @@ class Library:
             item.setIcon(QtGui.QIcon(img_pixmap))
             self.view_model.appendRow(item)
 
-            # Path is just being sent. It is not being displayed
+            # all_metadata is just being sent. It is not being displayed
+            # It will be correlated to the current row as its first userrole
             self.table_rows.append(
-                (title, author, year, tags, path))
+                (title, author, year, tags, all_metadata))
 
     def create_table_model(self):
         table_header = ['Title', 'Author', 'Year', 'Tags']
-        # self.table_rows.sort(key=lambda x: x[0])
         self.table_model = LibraryTableModel(table_header, self.table_rows)
         self.create_table_proxy_model()
 
     def create_table_proxy_model(self):
         self.table_proxy_model = TableProxyModel()
         self.table_proxy_model.setSourceModel(self.table_model)
+        self.table_proxy_model.setSortCaseSensitivity(False)
         self.parent_window.tableView.setModel(self.table_proxy_model)
 
     def update_table_proxy_model(self):
@@ -153,6 +159,7 @@ class Library:
     def create_proxymodel(self):
         self.proxy_model = QtCore.QSortFilterProxyModel()
         self.proxy_model.setSourceModel(self.view_model)
+        self.proxy_model.setSortCaseSensitivity(False)
         s = QtCore.QSize(160, 250)  # Set icon sizing here
         self.parent_window.listView.setIconSize(s)
         self.parent_window.listView.setModel(self.proxy_model)

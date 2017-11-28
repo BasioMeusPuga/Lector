@@ -2,7 +2,7 @@
 
 # Form implementation generated from reading ui file 'raw/settings.ui'
 #
-# Created by: PyQt5 UI code generator 5.9.1
+# Created by: PyQt5 UI code generator 5.9.2
 #
 # WARNING! All changes made in this file will be lost!
 
@@ -25,11 +25,11 @@ class Ui_Dialog(object):
         self.tableView = QtWidgets.QTableView(self.groupBox_2)
         self.tableView.setObjectName("tableView")
         self.verticalLayout.addWidget(self.tableView)
-        self.lineEdit = QtWidgets.QLineEdit(self.groupBox_2)
-        self.lineEdit.setObjectName("lineEdit")
-        self.verticalLayout.addWidget(self.lineEdit)
         self.horizontalLayout = QtWidgets.QHBoxLayout()
         self.horizontalLayout.setObjectName("horizontalLayout")
+        self.lineEdit = QtWidgets.QLineEdit(self.groupBox_2)
+        self.lineEdit.setObjectName("lineEdit")
+        self.horizontalLayout.addWidget(self.lineEdit)
         self.addButton = QtWidgets.QPushButton(self.groupBox_2)
         self.addButton.setObjectName("addButton")
         self.horizontalLayout.addWidget(self.addButton)
@@ -57,6 +57,9 @@ class Ui_Dialog(object):
         self.checkBox_2 = QtWidgets.QCheckBox(self.groupBox)
         self.checkBox_2.setObjectName("checkBox_2")
         self.horizontalLayout_3.addWidget(self.checkBox_2)
+        self.checkBox_3 = QtWidgets.QCheckBox(self.groupBox)
+        self.checkBox_3.setObjectName("checkBox_3")
+        self.horizontalLayout_3.addWidget(self.checkBox_3)
         self.gridLayout.addLayout(self.horizontalLayout_3, 0, 0, 1, 1)
         self.horizontalLayout_2 = QtWidgets.QHBoxLayout()
         self.horizontalLayout_2.setObjectName("horizontalLayout_2")
@@ -85,6 +88,7 @@ class Ui_Dialog(object):
         self.checkBox.setText(_translate("Dialog", "Auto add files"))
         self.fileRemember.setText(_translate("Dialog", "Remember open files"))
         self.checkBox_2.setText(_translate("Dialog", "Show Library"))
+        self.checkBox_3.setText(_translate("Dialog", "Cover Shadows"))
         self.aboutButton.setText(_translate("Dialog", "About"))
         self.okButton.setText(_translate("Dialog", "OK"))
 
