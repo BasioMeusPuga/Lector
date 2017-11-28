@@ -1,69 +1,5 @@
 #!/usr/bin/env python3
 
-""" TODO
-    Options:
-        Automatic library management
-            Auto deletion
-            Recursive file addition
-            Add only one file type if multiple are present
-        Remember files
-        Check files (hashes) upon restart
-        Show what on startup
-        Draw shadows
-    Library:
-        ✓ sqlite3 for cover images cache
-        ✓ sqlite3 for storing metadata
-        ✓ Drop down for SortBy
-        ✓ Image delegates
-        ✓ Image reflow
-        ✓ Search bar in toolbar
-        ✓ Shift focus to the tab that has the book open
-        ✓ Tie file deletion and tab closing to model updates
-        ✓ Create separate thread for parser - Show progress in main window
-        ? Create emblem per filetype
-        Table view
-        Ignore a / the / numbers for sorting purposes
-        Put the path in the scope of the search
-            maybe as a type: switch
-        Mass tagging
-        Information dialog widget
-        Context menu: Cache, Read, Edit database, delete, Mark read/unread
-        Set focus to newly added file
-    Reading:
-        ✓ Drop down for TOC
-        ✓ Override the keypress event of the textedit
-        ✓ Use format* icons for toolbar buttons
-        ✓ Implement book view settings with a(nother) toolbar
-        ✓ Substitute textedit for another widget
-        ✓ Theming
-        ✓ Keep fontsize and margins consistent - Let page increase in length
-        ✓ Fullscreening
-        ✓ Remember open tabs
-        ✓ Selectable background color for QGraphicsView
-        ✓ View modes for QGraphicsView
-        ✓ View and hide toolbar actions in a list
-        Graphical themes
-        Comic view keyboard shortcuts
-        Record progress
-        Pagination
-        Set context menu for definitions and the like
-    Filetypes:
-        ✓ cbz, cbr support
-            ✓ Keep font settings enabled but only for background color
-            Cache next and previous images
-        epub support
-        mobi, azw support
-        txt, doc, djvu, fb2 support
-        ? Plugin system for parsers
-        ? pdf support
-    Internet:
-        Goodreads API: Ratings, Read, Recommendations
-        Get ISBN using python-isbnlib
-    Other:
-        ✓ Define every widget in code
-        ✓ Include icons for emblems
-"""
-
 import os
 import sys
 
@@ -89,10 +25,8 @@ class MainUI(QtWidgets.QMainWindow, mainwindow.Ui_MainWindow):
         # Initialize settings dialog
         self.settings_dialog = SettingsUI()
 
-        # Hide or show the main widget of the library
-        self.stackedWidget.setCurrentIndex(0)
-
         # Empty variables that will be infested soon
+        self.current_view = None
         self.last_open_books = None
         self.last_open_tab = None
         self.last_open_path = None
@@ -101,6 +35,7 @@ class MainUI(QtWidgets.QMainWindow, mainwindow.Ui_MainWindow):
         self.display_profiles = None
         self.current_profile_index = None
         self.database_path = None
+        self.table_header_sizes = None
 
         # Initialize application
         Settings(self).read_settings()  # This should populate all variables that need
@@ -132,12 +67,18 @@ class MainUI(QtWidgets.QMainWindow, mainwindow.Ui_MainWindow):
         self.libraryToolBar.addButton.triggered.connect(self.add_books)
         self.libraryToolBar.deleteButton.triggered.connect(self.delete_books)
         self.libraryToolBar.coverViewButton.triggered.connect(self.switch_library_view)
-        self.libraryToolBar.coverViewButton.setChecked(True)
+        # self.libraryToolBar.coverViewButton.setChecked(True)
         self.libraryToolBar.tableViewButton.triggered.connect(self.switch_library_view)
         self.libraryToolBar.settingsButton.triggered.connect(self.show_settings)
         self.libraryToolBar.searchBar.textChanged.connect(self.lib_ref.update_proxymodel)
         self.libraryToolBar.searchBar.textChanged.connect(self.lib_ref.update_table_proxy_model)
         self.libraryToolBar.sortingBox.activated.connect(self.lib_ref.update_proxymodel)
+
+        if self.current_view == 0:
+            self.libraryToolBar.coverViewButton.trigger()
+        elif self.current_view == 1:
+            self.libraryToolBar.tableViewButton.trigger()
+
         self.addToolBar(self.libraryToolBar)
 
         # Book toolbar
@@ -204,11 +145,16 @@ class MainUI(QtWidgets.QMainWindow, mainwindow.Ui_MainWindow):
         self.listView.setItemDelegate(LibraryDelegate(self.temp_dir.path()))
 
         # TableView
-        self.tableView.horizontalHeader().setSectionResizeMode(
-            QtWidgets.QHeaderView.ResizeToContents)  # TODO Change this to manual column sizing
-        self.tableView.horizontalHeader().setStretchLastSection(True)
-        self.tableView.horizontalHeader().setSortIndicator(0, QtCore.Qt.AscendingOrder)
         self.tableView.doubleClicked.connect(self.library_doubleclick)
+        self.tableView.horizontalHeader().setSectionResizeMode(
+            QtWidgets.QHeaderView.Interactive)
+        self.tableView.horizontalHeader().setSortIndicator(0, QtCore.Qt.AscendingOrder)
+        self.tableView.horizontalHeader().setHighlightSections(False)
+        if self.table_header_sizes:
+            for count, i in enumerate(self.table_header_sizes):
+                self.tableView.horizontalHeader().resizeSection(count, int(i))
+        self.tableView.horizontalHeader().setStretchLastSection(True)
+        self.tableView.horizontalHeader().setSectionResizeMode(3, QtWidgets.QHeaderView.Stretch)
 
         # Keyboard shortcuts
         self.ks_close_tab = QtWidgets.QShortcut(QtGui.QKeySequence('Ctrl+W'), self)

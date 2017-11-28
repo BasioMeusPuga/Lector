@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+# Keep in mind that all integer settings are returned as strings
 
 import os
 from PyQt5 import QtCore, QtGui
@@ -43,12 +44,10 @@ class Settings:
 
     def read_settings(self):
         self.settings.beginGroup('mainWindow')
-        self.parent_window.resize(self.settings.value(
-            'windowSize',
-            QtCore.QSize(1299, 748)))
-        self.parent_window.move(self.settings.value(
-            'windowPosition',
-            QtCore.QPoint(0, 0)))
+        self.parent_window.resize(self.settings.value('windowSize', QtCore.QSize(1299, 748)))
+        self.parent_window.move(self.settings.value('windowPosition', QtCore.QPoint(0, 0)))
+        self.parent_window.current_view = int(self.settings.value('currentView', 0))
+        self.parent_window.table_header_sizes = self.settings.value('tableHeaders', None)
         self.settings.endGroup()
 
         self.settings.beginGroup('runtimeVariables')
@@ -74,9 +73,16 @@ class Settings:
 
     def save_settings(self):
         print('Saving settings...')
+
         self.settings.beginGroup('mainWindow')
         self.settings.setValue('windowSize', self.parent_window.size())
         self.settings.setValue('windowPosition', self.parent_window.pos())
+        self.settings.setValue('currentView', self.parent_window.stackedWidget.currentIndex())
+
+        table_headers = []
+        for i in range(3):
+            table_headers.append(self.parent_window.tableView.horizontalHeader().sectionSize(i))
+        self.settings.setValue('tableHeaders', table_headers)
         self.settings.endGroup()
 
         self.settings.beginGroup('runtimeVariables')

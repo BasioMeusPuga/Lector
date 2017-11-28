@@ -10,9 +10,6 @@ class LibraryItemModel(QtGui.QStandardItemModel, QtCore.QAbstractItemModel):
 
 
 class LibraryTableModel(QtCore.QAbstractTableModel):
-    # TODO
-    # Auto resize with emphasis on Name
-
     # Sorting is taken care of by the QSortFilterProxy model
     # which has an inbuilt sort method
 
@@ -33,6 +30,7 @@ class LibraryTableModel(QtCore.QAbstractTableModel):
 
         if role == QtCore.Qt.DisplayRole:
             value = self.display_data[index.row()][index.column()]
+            file_exists = self.display_data[index.row()][4]['file_exists']
             return value
         elif role == QtCore.Qt.UserRole:
             # The rest of the roles can be accomodated here.

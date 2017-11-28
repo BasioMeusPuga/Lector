@@ -76,6 +76,8 @@ class Library:
             if position:
                 position = pickle.loads(position)
 
+            file_exists = os.path.exists(path)
+
             all_metadata = {
                 'title': title,
                 'author': author,
@@ -84,7 +86,8 @@ class Library:
                 'position': position,
                 'isbn': i[6],
                 'tags': tags,
-                'hash': i[8]}
+                'hash': i[8],
+                'file_exists': file_exists}
 
             tooltip_string = title + '\nAuthor: ' + author + '\nYear: ' + str(year)
             if tags:
@@ -95,8 +98,6 @@ class Library:
             search_workaround = title + ' ' + author
             if tags:
                 search_workaround += tags
-
-            file_exists = os.path.exists(path)
 
             # Generate image pixmap and then pass it to the widget
             # as a QIcon
@@ -112,9 +113,6 @@ class Library:
             img_pixmap = img_pixmap.scaled(420, 600, QtCore.Qt.IgnoreAspectRatio)
             item = QtGui.QStandardItem()
             item.setToolTip(tooltip_string)
-
-            # TODO
-            # Simplify this mess
 
             # The following order is needed to keep sorting working
             item.setData(title, QtCore.Qt.UserRole)
@@ -148,11 +146,8 @@ class Library:
         self.table_proxy_model.invalidateFilter()
         self.table_proxy_model.setFilterParams(
             self.parent_window.libraryToolBar.searchBar.text(), [0, 1, 3])
-
-        # This isn't needed, but it forces a
-        # model update every time the
-        # text in the line edit changes.
-        # So I guess it is needed.
+        # This isn't needed, but it forces a model update every time the
+        # text in the line edit changes. So I guess it is needed.
         self.table_proxy_model.setFilterFixedString(
             self.parent_window.libraryToolBar.searchBar.text())
 
