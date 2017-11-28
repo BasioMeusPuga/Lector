@@ -58,7 +58,7 @@ class LibraryTableModel(QtCore.QAbstractTableModel):
 
             return return_pixmap
 
-        if role == QtCore.Qt.DisplayRole:
+        elif role == QtCore.Qt.DisplayRole:
             value = self.display_data[index.row()][index.column()]
             return value
 
@@ -66,6 +66,11 @@ class LibraryTableModel(QtCore.QAbstractTableModel):
             # The rest of the roles can be accomodated here.
             value = self.display_data[index.row()][5]
             return value
+
+        elif role == QtCore.Qt.UserRole + 1:
+            value = self.display_data[index.row()][6]
+            return value
+
         else:
             return QtCore.QVariant()
 

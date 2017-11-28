@@ -325,9 +325,12 @@ class MainUI(QtWidgets.QMainWindow, mainwindow.Ui_MainWindow):
     def set_toc_position(self, event=None):
         current_tab = self.tabWidget.widget(self.tabWidget.currentIndex())
 
-        # We're updating the underlying model to have real-time
+        # We're updating the underlying models to have real-time
         # updates on the read status
+        # Since there are 2 separate models, they will each have to
+        # be updated individually
 
+        # The listView model
         # Set a baseline model index in case the item gets deleted
         # E.g It's open in a tab and deleted from the library
         model_index = None
@@ -349,6 +352,21 @@ class MainUI(QtWidgets.QMainWindow, mainwindow.Ui_MainWindow):
             self.lib_ref.view_model.setData(
                 model_index, current_tab.metadata['position'], QtCore.Qt.UserRole + 7)
 
+        # The tableView model
+        model_index = None
+        start_index = self.lib_ref.table_model.index(0, 0)
+        matching_item = self.lib_ref.table_model.match(
+            start_index,
+            QtCore.Qt.UserRole + 1,
+            current_tab.metadata['hash'],
+            1, QtCore.Qt.MatchExactly)
+
+        if matching_item:
+            model_row = matching_item[0].row()
+            self.lib_ref.table_model.display_data[model_row][5][
+                'position'] = current_tab.metadata['position']
+
+        # Go on to change the value of the Table of Contents box
         current_tab.change_chapter_tocBox()
 
     def set_fullscreen(self):

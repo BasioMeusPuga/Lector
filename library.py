@@ -129,7 +129,7 @@ class Library:
             # all_metadata is just being sent. It is not being displayed
             # It will be correlated to the current row as its first userrole
             self.table_rows.append(
-                (title, author, None, year, tags, all_metadata))
+                [title, author, None, year, tags, all_metadata, i[8]])
 
     def create_table_model(self):
         table_header = ['Title', 'Author', 'Status', 'Year', 'Tags']
