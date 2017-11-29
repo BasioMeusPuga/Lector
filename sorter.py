@@ -2,6 +2,7 @@
 
 # TODO
 # See if you want to include a hash of the book's name and author
+# Overwrite book if deleted and then re-added
 
 import io
 import os

@@ -672,9 +672,6 @@ class LibraryDelegate(QtWidgets.QStyledItemDelegate):
         file_exists = index.data(QtCore.Qt.UserRole + 5)
         position = index.data(QtCore.Qt.UserRole + 7)
 
-        # TODO
-        # Calculate progress on the basis of lines
-
         # The shadow pixmap currently is set to 420 x 600
         shadow_pixmap = QtGui.QPixmap()
         shadow_pixmap.load(':/images/gray-shadow.png')
@@ -688,7 +685,7 @@ class LibraryDelegate(QtWidgets.QStyledItemDelegate):
             QtWidgets.QStyledItemDelegate.paint(self, painter, option, index)
             painter.setOpacity(1)
 
-            read_icon = QtGui.QIcon(':/images/error.svg').pixmap(36)
+            read_icon = pie_chart.pixmapper(-1, None, None, 36)
             x_draw = option.rect.bottomRight().x() - 30
             y_draw = option.rect.bottomRight().y() - 35
             painter.drawPixmap(x_draw, y_draw, read_icon)
@@ -701,16 +698,9 @@ class LibraryDelegate(QtWidgets.QStyledItemDelegate):
         if position:
             current_chapter = position['current_chapter']
             total_chapters = position['total_chapters']
-            progress_percent = int(current_chapter * 100 / total_chapters)
 
-            if current_chapter == total_chapters:
-                read_icon = QtGui.QIcon(':/images/checkmark.svg').pixmap(36)
-            else:
-                # TODO
-                # See if saving the svg to disk can be avoided
-                pie_chart.GeneratePie(progress_percent, self.temp_dir).generate()
-                svg_path = os.path.join(self.temp_dir, 'lector_progress.svg')
-                read_icon = QtGui.QIcon(svg_path).pixmap(32)
+            read_icon = pie_chart.pixmapper(
+                current_chapter, total_chapters, self.temp_dir, 36)
 
             x_draw = option.rect.bottomRight().x() - 30
             y_draw = option.rect.bottomRight().y() - 35

@@ -3,13 +3,13 @@
 import os
 import math
 
-class GeneratePie():
-    def __init__(self, progress_percent, temp_dir=None):
-        self.progress_percent = int(progress_percent)
-        self.temp_dir = temp_dir
+from PyQt5 import QtGui
 
-    def generate(self):
-        lSlices = (self.progress_percent, 100 - self.progress_percent)  # percentages to show in pie
+
+def generate_pie(progress_percent, temp_dir=None):
+        progress_percent = int(progress_percent)
+
+        lSlices = (progress_percent, 100 - progress_percent)  # percentages to show in pie
 
         lOffsetX = 150
         lOffsetY = 150
@@ -85,10 +85,35 @@ class GeneratePie():
         """ % (lSvgPath, lOffsetX, lOffsetY)
 
 
-        if self.temp_dir:
-            svg_path = os.path.join(self.temp_dir, 'lector_progress.svg')
+        if temp_dir:
+            svg_path = os.path.join(temp_dir, 'lector_progress.svg')
             lFile = open(svg_path, 'w')
             lFile.write(lSvg)
             lFile.close()
         else:
             return lSvg
+
+
+def pixmapper(current_chapter, total_chapters, temp_dir, size):
+    # A current_chapter of -1 implies the files does not exist
+    # A chapter number == Total chapters implies the file is unread
+    return_pixmap = None
+
+    if current_chapter == -1:
+        return_pixmap = QtGui.QIcon(':/images/error.svg').pixmap(size)
+        return return_pixmap
+
+    if current_chapter == total_chapters:
+        return_pixmap = QtGui.QIcon(':/images/checkmark.svg').pixmap(size)
+    else:
+
+        # TODO
+        # See if saving the svg to disk can be avoided
+        # Shift to lines to track progress
+
+        progress_percent = int(current_chapter * 100 / total_chapters)
+        generate_pie(progress_percent, temp_dir)
+        svg_path = os.path.join(temp_dir, 'lector_progress.svg')
+        return_pixmap = QtGui.QIcon(svg_path).pixmap(size)
+
+    return return_pixmap

@@ -16,12 +16,15 @@ class LibraryTableModel(QtCore.QAbstractTableModel):
     # Sorting is taken care of by the QSortFilterProxy model
     # which has an inbuilt sort method
 
+    # Modifying data in the table model is a case of modifying the
+    # data sent to it as a list
+    # In this case, that's self.data_list
+
     def __init__(self, header_data, display_data, temp_dir=None, parent=None):
         super(LibraryTableModel, self).__init__(parent)
         self.header_data = header_data
         self.display_data = display_data
-        self.temp_dir = temp_dir  # Is only needed for the main table
-                                  # This model is otherwise reusable if this remains None
+        self.temp_dir = temp_dir
 
     def rowCount(self, parent):
         return len(self.display_data)
@@ -33,42 +36,39 @@ class LibraryTableModel(QtCore.QAbstractTableModel):
         if not index.isValid():
             return None
 
-        if role == QtCore.Qt.DecorationRole and index.column() == 2 and self.temp_dir:
-            return_pixmap = None
-            file_exists = self.display_data[index.row()][5]['file_exists']
-            position = self.display_data[index.row()][5]['position']
+        # This block specializaes this function for the library
+        # Not having a self.temp_dir allows for its reuse elsewhere
+        if self.temp_dir:
+            if role == QtCore.Qt.DecorationRole and index.column() == 2:
+                return_pixmap = None
+                file_exists = self.display_data[index.row()][5]['file_exists']
+                position = self.display_data[index.row()][5]['position']
 
-            if not file_exists:
-                return_pixmap = QtGui.QIcon(':/images/error.svg').pixmap(
-                    QtCore.Qt.SizeHintRole + 10)
+                if not file_exists:
+                    return_pixmap = pie_chart.pixmapper(
+                        -1, None, None, QtCore.Qt.SizeHintRole + 10)
 
-            if position:
-                current_chapter = position['current_chapter']
-                total_chapters = position['total_chapters']
-                progress_percent = int(current_chapter * 100 / total_chapters)
+                if position:
+                    current_chapter = position['current_chapter']
+                    total_chapters = position['total_chapters']
 
-                if current_chapter == total_chapters:
-                    return_pixmap = QtGui.QIcon(':/images/checkmark.svg').pixmap(
-                        QtCore.Qt.SizeHintRole + 10)
-                else:
-                    pie_chart.GeneratePie(progress_percent, self.temp_dir).generate()
-                    svg_path = os.path.join(self.temp_dir, 'lector_progress.svg')
-                    return_pixmap = QtGui.QIcon(svg_path).pixmap(
-                        QtCore.Qt.SizeHintRole + 10)
+                    return_pixmap = pie_chart.pixmapper(
+                        current_chapter, total_chapters, self.temp_dir, QtCore.Qt.SizeHintRole + 10)
 
-            return return_pixmap
+                return return_pixmap
 
-        elif role == QtCore.Qt.DisplayRole:
-            value = self.display_data[index.row()][index.column()]
-            return value
-
-        elif role == QtCore.Qt.UserRole:
             # The rest of the roles can be accomodated here.
-            value = self.display_data[index.row()][5]
-            return value
+            elif role == QtCore.Qt.UserRole:
+                value = self.display_data[index.row()][5]  # File metadata
+                return value
 
-        elif role == QtCore.Qt.UserRole + 1:
-            value = self.display_data[index.row()][6]
+            elif role == QtCore.Qt.UserRole + 1:
+                value = self.display_data[index.row()][6]  # File hash
+                return value
+
+        #_________________________________
+        if role == QtCore.Qt.DisplayRole:
+            value = self.display_data[index.row()][index.column()]
             return value
 
         else:
