@@ -32,6 +32,21 @@ class DatabaseFunctions:
         database_path = os.path.join(location_prefix, 'Lector.db')
         self.database = sqlite3.connect(database_path)
 
+    def set_library_paths(self, data_iterable):
+        for i in data_iterable:
+            path = i[0]
+            name = i[1]
+            tags = i[2]
+
+            # TODO
+            # Get insert or replace working
+
+            sql_command = ("INSERT OR REPLACE INTO directories (Path,Name,Tags) VALUES (?, ?, ?)")
+            self.database.execute(sql_command, [path, name, tags])
+
+        self.database.commit()
+        self.close_database()
+
     def add_to_database(self, data):
         # data is expected to be a dictionary
         # with keys corresponding to the book hash
@@ -145,7 +160,7 @@ class DatabaseFunctions:
 
         self.database.commit()
         self.close_database()
-
+    
     def close_database(self):
         self.database.execute("VACUUM")
         self.database.close()

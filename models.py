@@ -12,7 +12,7 @@ class LibraryItemModel(QtGui.QStandardItemModel, QtCore.QAbstractItemModel):
         super(LibraryItemModel, self).__init__(parent)
 
 
-class LibraryTableModel(QtCore.QAbstractTableModel):
+class MostExcellentTableModel(QtCore.QAbstractTableModel):
     # Sorting is taken care of by the QSortFilterProxy model
     # which has an inbuilt sort method
 
@@ -21,13 +21,16 @@ class LibraryTableModel(QtCore.QAbstractTableModel):
     # In this case, that's self.data_list
 
     def __init__(self, header_data, display_data, temp_dir=None, parent=None):
-        super(LibraryTableModel, self).__init__(parent)
+        super(MostExcellentTableModel, self).__init__(parent)
         self.header_data = header_data
         self.display_data = display_data
         self.temp_dir = temp_dir
 
     def rowCount(self, parent):
-        return len(self.display_data)
+        if self.display_data:
+            return len(self.display_data)
+        else:
+            return 0
 
     def columnCount(self, parent):
         return len(self.header_data)
@@ -53,7 +56,8 @@ class LibraryTableModel(QtCore.QAbstractTableModel):
                     total_chapters = position['total_chapters']
 
                     return_pixmap = pie_chart.pixmapper(
-                        current_chapter, total_chapters, self.temp_dir, QtCore.Qt.SizeHintRole + 10)
+                        current_chapter, total_chapters, self.temp_dir,
+                        QtCore.Qt.SizeHintRole + 10)
 
                 return return_pixmap
 
@@ -78,6 +82,14 @@ class LibraryTableModel(QtCore.QAbstractTableModel):
         if orientation == QtCore.Qt.Horizontal and role == QtCore.Qt.DisplayRole:
             return self.header_data[col]
         return None
+
+    def flags(self, index):
+        # In case of the settings model, model column index 1+ are editable
+        if not self.temp_dir and index.column() != 0:
+            return QtCore.Qt.ItemIsEnabled | QtCore.Qt.ItemIsSelectable | QtCore.Qt.ItemIsEditable
+        else:
+            # These are standard select but don't edit values
+            return QtCore.Qt.ItemIsEnabled | QtCore.Qt.ItemIsSelectable
 
 
 class TableProxyModel(QtCore.QSortFilterProxyModel):

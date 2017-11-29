@@ -36,8 +36,11 @@
           <property name="alternatingRowColors">
            <bool>true</bool>
           </property>
+          <property name="selectionMode">
+           <enum>QAbstractItemView::SingleSelection</enum>
+          </property>
           <property name="selectionBehavior">
-           <enum>QAbstractItemView::SelectRows</enum>
+           <enum>QAbstractItemView::SelectItems</enum>
           </property>
           <property name="gridStyle">
            <enum>Qt::NoPen</enum>
@@ -59,7 +62,7 @@
         <item row="1" column="0">
          <layout class="QHBoxLayout" name="horizontalLayout">
           <item>
-           <widget class="QLineEdit" name="lineEdit">
+           <widget class="QLineEdit" name="tableFilterEdit">
             <property name="placeholderText">
              <string>Search for Paths, Names, Tags...</string>
             </property>

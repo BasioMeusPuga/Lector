@@ -5,7 +5,7 @@ import pickle
 import database
 
 from PyQt5 import QtWidgets, QtGui, QtCore
-from models import LibraryItemModel, LibraryTableModel, TableProxyModel
+from models import LibraryItemModel, MostExcellentTableModel, TableProxyModel
 
 
 class Library:
@@ -133,7 +133,7 @@ class Library:
 
     def create_table_model(self):
         table_header = ['Title', 'Author', 'Status', 'Year', 'Tags']
-        self.table_model = LibraryTableModel(
+        self.table_model = MostExcellentTableModel(
             table_header, self.table_rows, self.parent_window.temp_dir.path())
         self.create_table_proxy_model()
 

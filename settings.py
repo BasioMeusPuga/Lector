@@ -67,8 +67,16 @@ class Settings:
         self.settings.beginGroup('lastOpen')
         self.parent_window.last_open_books = self.settings.value('lastOpenFiles', [])
         self.parent_window.last_open_tab = self.settings.value('lastOpenTab', 'library')
-        self.parent_window.settings_dialog.last_open_directory = self.settings.value(
-            'settingsLastOpenDirectory', os.path.expanduser('~'))
+        self.settings.endGroup()
+
+        self.settings.beginGroup('settingsWindow')
+        self.parent_window.settings_dialog_settings = {}
+        self.parent_window.settings_dialog_settings['size'] = self.settings.value(
+            'windowSize', QtCore.QSize(700, 500))
+        self.parent_window.settings_dialog_settings['position'] = self.settings.value(
+            'windowPosition', QtCore.QPoint(0, 0))
+        self.parent_window.settings_dialog_settings['headers'] = self.settings.value(
+            'tableHeaders', [200, 150])
         self.settings.endGroup()
 
     def save_settings(self):
@@ -113,6 +121,9 @@ class Settings:
         self.settings.beginGroup('lastOpen')
         self.settings.setValue('lastOpenFiles', self.parent_window.last_open_books)
         self.settings.setValue('lastOpenTab', last_open_tab)
-        self.settings.setValue(
-            'settingsLastOpenDirectory', self.parent_window.settings_dialog.last_open_directory)
         self.settings.endGroup()
+
+        self.settings.beginGroup('settingsWindow')
+        self.settings.setValue('windowSize', self.parent_window.settings_dialog.window_size)
+        self.settings.setValue('windowPosition', self.parent_window.settings_dialog.window_position)
+        self.settings.setValue('tableHeaders', self.parent_window.settings_dialog.table_headers)

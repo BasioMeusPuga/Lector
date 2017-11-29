@@ -22,9 +22,6 @@ class MainUI(QtWidgets.QMainWindow, mainwindow.Ui_MainWindow):
         super(MainUI, self).__init__()
         self.setupUi(self)
 
-        # Initialize settings dialog
-        self.settings_dialog = SettingsUI()
-
         # Empty variables that will be infested soon
         self.current_view = None
         self.last_open_books = None
@@ -36,6 +33,7 @@ class MainUI(QtWidgets.QMainWindow, mainwindow.Ui_MainWindow):
         self.current_profile_index = None
         self.database_path = None
         self.table_header_sizes = None
+        self.settings_dialog_settings = None
 
         # Initialize application
         Settings(self).read_settings()  # This should populate all variables that need
@@ -43,7 +41,9 @@ class MainUI(QtWidgets.QMainWindow, mainwindow.Ui_MainWindow):
 
         # Create the database in case it doesn't exist
         database.DatabaseInit(self.database_path)
-        self.settings_dialog.database_path = self.database_path
+
+        # Initialize settings dialog
+        self.settings_dialog = SettingsUI(self)
 
         # Create and right align the statusbar label widget
         self.statusMessage = QtWidgets.QLabel()
