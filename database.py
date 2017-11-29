@@ -15,6 +15,8 @@ class DatabaseInit:
             self.create_database()
 
     def create_database(self):
+        # TODO
+        # Add a separate column for directory tags
         self.database.execute(
             "CREATE TABLE books \
             (id INTEGER PRIMARY KEY, Title TEXT, Author TEXT, Year INTEGER, \
