@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 
 import os
+from multiprocessing.dummy import Pool
 from PyQt5 import QtCore
 
 import sorter
@@ -42,16 +43,39 @@ class BackGroundBookAddition(QtCore.QThread):
 
 
 class BackGroundBookSearch(QtCore.QThread):
-    def __init__(self, parent_window, root_directory, parent=None):
+    def __init__(self, parent_window, data_list, parent=None):
         super(BackGroundBookSearch, self).__init__(parent)
         self.parent_window = parent_window
-        self.root_directory = root_directory
-        self.valid_files = []
+        self.data_list = data_list
+        self.valid_files = []  # A tuple should get added to this containing the
+                               # file path and the folder name / tags
 
     def run(self):
-        for directory, subdir, files in os.walk(self.root_directory):
-            for filename in files:
-                if os.path.splitext(filename)[1][1:] in sorter.available_parsers:
-                    self.valid_files.append(os.path.join(directory, filename))
 
-        print(self.valid_files)
+        def traverse_directory(incoming_data):
+            root_directory = incoming_data[0]
+            folder_name = incoming_data[1]
+            folder_tags = incoming_data[2]
+
+            for directory, subdir, files in os.walk(root_directory):
+                for filename in files:
+                    if os.path.splitext(filename)[1][1:] in sorter.available_parsers:
+                        self.valid_files.append(
+                            (os.path.join(directory, filename), folder_name, folder_tags))
+
+        def initiate_threads():
+            _pool = Pool(5)
+            _pool.map(traverse_directory, self.data_list)
+            _pool.close()
+            _pool.join()
+
+        initiate_threads()
+
+        # TODO
+        # Change existing sorter module functionality to handle
+        # preset tags
+        # Change database to accomodate User Tags, Folder Name, Folder Tags
+
+        # self.valid_files will now be added to the database
+        # and models will be rebuilt accordingly
+        # Coming soon to a commit near you

@@ -38,11 +38,10 @@ class DatabaseFunctions:
             name = i[1]
             tags = i[2]
 
-            # TODO
-            # Get insert or replace working
-
-            sql_command = ("INSERT OR REPLACE INTO directories (Path,Name,Tags) VALUES (?, ?, ?)")
-            self.database.execute(sql_command, [path, name, tags])
+            sql_command = (
+                "INSERT OR REPLACE INTO directories (ID, Path, Name, Tags)\
+                 VALUES ((SELECT ID FROM directories WHERE Path = ?), ?, ?, ?)")
+            self.database.execute(sql_command, [path, path, name, tags])
 
         self.database.commit()
         self.close_database()

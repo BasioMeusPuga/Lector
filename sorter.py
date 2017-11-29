@@ -2,7 +2,6 @@
 
 # TODO
 # See if you want to include a hash of the book's name and author
-# Overwrite book if deleted and then re-added
 
 import io
 import os
@@ -65,6 +64,10 @@ class BookSorter:
             self.progress_emitter.connect_to_progressbar()
 
     def database_hashes(self):
+        # TODO
+        # Overwrite book if deleted and then re-added
+        # Also fetch the path of the file here
+
         all_hashes = database.DatabaseFunctions(
             self.database_path).fetch_data(
                 ('Hash',),

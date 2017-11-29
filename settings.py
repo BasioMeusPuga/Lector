@@ -124,6 +124,7 @@ class Settings:
         self.settings.endGroup()
 
         self.settings.beginGroup('settingsWindow')
-        self.settings.setValue('windowSize', self.parent_window.settings_dialog.window_size)
-        self.settings.setValue('windowPosition', self.parent_window.settings_dialog.window_position)
-        self.settings.setValue('tableHeaders', self.parent_window.settings_dialog.table_headers)
+        these_settings = self.parent_window.settings_dialog_settings
+        self.settings.setValue('windowSize', these_settings['size'])
+        self.settings.setValue('windowPosition', these_settings['position'])
+        self.settings.setValue('tableHeaders', these_settings['headers'])

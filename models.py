@@ -91,6 +91,21 @@ class MostExcellentTableModel(QtCore.QAbstractTableModel):
             # These are standard select but don't edit values
             return QtCore.Qt.ItemIsEnabled | QtCore.Qt.ItemIsSelectable
 
+    def setData(self, index, value, role=QtCore.Qt.EditRole):
+        # We don't need to connect this to dataChanged since the underlying
+        # table model (not the proxy model) is the one that's being updated
+
+        # Database tags for files should not be updated each time
+        # a new folder gets added or deleted from the directory
+        # This will be done @ runtime
+        # Individually set file tags will be preserved
+        # Duplicate file tags will be removed
+
+        row = index.row()
+        col = index.column()
+        self.display_data[row][col] = value
+        return True
+
 
 class TableProxyModel(QtCore.QSortFilterProxyModel):
     def __init__(self, parent=None):

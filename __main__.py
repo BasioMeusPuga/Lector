@@ -230,6 +230,7 @@ class MainUI(QtWidgets.QMainWindow, mainwindow.Ui_MainWindow):
         # Use maptosource() here to get the view_model
         # indices selected in the listView
         # Implement this for the tableview
+        # The same process can be used to mirror selection
 
         selected_books = self.listView.selectedIndexes()
         if selected_books:
@@ -603,8 +604,6 @@ class MainUI(QtWidgets.QMainWindow, mainwindow.Ui_MainWindow):
         self.format_contentView()
 
     def show_settings(self):
-        # TODO
-        # The hiding of the settings dialog should uncheck the settings show action
         if not self.settings_dialog.isVisible():
             self.settings_dialog.show()
         else:

@@ -82,13 +82,6 @@
             </property>
            </widget>
           </item>
-          <item>
-           <widget class="QPushButton" name="refreshButton">
-            <property name="text">
-             <string>Refresh</string>
-            </property>
-           </widget>
-          </item>
          </layout>
         </item>
        </layout>
@@ -135,16 +128,23 @@
         <item row="1" column="0">
          <layout class="QHBoxLayout" name="horizontalLayout_2">
           <item>
-           <widget class="QPushButton" name="aboutButton">
+           <widget class="QPushButton" name="okButton">
             <property name="text">
-             <string>About</string>
+             <string>OK</string>
             </property>
            </widget>
           </item>
           <item>
-           <widget class="QPushButton" name="okButton">
+           <widget class="QPushButton" name="cancelButton">
             <property name="text">
-             <string>OK</string>
+             <string>Cancel</string>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QPushButton" name="aboutButton">
+            <property name="text">
+             <string>About</string>
             </property>
            </widget>
           </item>
