@@ -1,156 +1,247 @@
 #!/usr/bin/env python3
 
-import os
-import collections
+# This file is a part of Lector, a Qt based ebook reader
+# Copyright (C) 2017 BasioMeusPuga
 
-from PyQt5 import QtWidgets, QtGui, QtCore
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+
+# You should have received a copy of the GNU General Public License
+# along with this program.  If not, see <http://www.gnu.org/licenses/>.
+
+# TODO
+# Get Cancel working with the file system model
+
+import os
+import copy
+from PyQt5 import QtWidgets, QtCore
 
 import database
 from resources import settingswindow
-from models import MostExcellentTableModel, TableProxyModel
+from models import MostExcellentFileSystemModel, FileSystemProxyModel
 from threaded import BackGroundBookSearch, BackGroundBookAddition
 
 
 class SettingsUI(QtWidgets.QDialog, settingswindow.Ui_Dialog):
-    # TODO
-    # Deletion from table
-    # Cancel behavior
-    # Update database on table model update
-
-    def __init__(self, parent_window):
+    def __init__(self, parent):
         super(SettingsUI, self).__init__()
         self.setupUi(self)
 
-        self.last_open_directory = None
-        self.parent_window = parent_window
-        self.database_path = self.parent_window.database_path
+        self.parent = parent
+        self.database_path = self.parent.database_path
 
-        self.resize(self.parent_window.settings_dialog_settings['size'])
-        self.move(self.parent_window.settings_dialog_settings['position'])
+        self.resize(self.parent.settings['settings_dialog_size'])
+        self.move(self.parent.settings['settings_dialog_position'])
 
-        self.table_model = None
-        self.old_table_model = None
-        self.table_proxy_model = None
+        self.aboutBox.setVisible(False)
+        with open('resources/about.html') as about_html:
+            self.aboutBox.setHtml(about_html.read())
+
         self.paths = None
-
         self.thread = None
+        self.filesystem_model = None
+        self.tag_data_copy = None
 
-        self.tableFilterEdit.textChanged.connect(self.update_table_proxy_model)
-        self.addButton.clicked.connect(self.add_directories)
+        self.okButton.setToolTip('Save changes and start library scan')
+        self.okButton.clicked.connect(self.start_library_scan)
         self.cancelButton.clicked.connect(self.cancel_pressed)
-        self.okButton.clicked.connect(self.ok_pressed)
+        self.aboutButton.clicked.connect(self.about_pressed)
 
-        self.generate_table()
-        header_sizes = self.parent_window.settings_dialog_settings['headers']
-        if header_sizes:
-            for count, i in enumerate(header_sizes):
-                self.tableView.horizontalHeader().resizeSection(count, int(i))
+        # Check boxes
+        self.autoTags.setChecked(self.parent.settings['auto_tags'])
+        self.coverShadows.setChecked(self.parent.settings['cover_shadows'])
+        self.refreshLibrary.setChecked(self.parent.settings['scan_library'])
+        self.fileRemember.setChecked(self.parent.settings['remember_files'])
 
-        self.tableView.horizontalHeader().setSectionResizeMode(
-            QtWidgets.QHeaderView.Interactive)
-        self.tableView.horizontalHeader().setHighlightSections(False)
-        self.tableView.horizontalHeader().setStretchLastSection(True)
-        # self.tableView.horizontalHeader().setSectionResizeMode(3, QtWidgets.QHeaderView.Stretch)
+        self.autoTags.clicked.connect(self.manage_checkboxes)
+        self.coverShadows.clicked.connect(self.manage_checkboxes)
+        self.refreshLibrary.clicked.connect(self.manage_checkboxes)
+        self.fileRemember.clicked.connect(self.manage_checkboxes)
 
-    def generate_table(self):
+        # Generate the filesystem treeView
+        self.generate_tree()
+
+    def generate_tree(self):
         # Fetch all directories in the database
-        self.paths = database.DatabaseFunctions(
+        paths = database.DatabaseFunctions(
             self.database_path).fetch_data(
-                ('Path', 'Name', 'Tags'),
+                ('Path', 'Name', 'Tags', 'CheckState'),
                 'directories',
                 {'Path': ''},
                 'LIKE')
 
-        if not self.paths:
+        self.parent.generate_library_filter_menu(paths)
+        directory_data = {}
+        if not paths:
             print('Database returned no paths for settings...')
         else:
-            # Convert to a list because tuples, well, they're tuples
-            self.paths = [list(i) for i in self.paths]
+            # Convert to the dictionary format that is
+            # to be fed into the QFileSystemModel
+            for i in paths:
+                directory_data[i[0]] = {
+                    'name': i[1],
+                    'tags': i[2],
+                    'check_state': i[3]}
 
-        table_header = ['Path', 'Name', 'Tags']
-        self.table_model = MostExcellentTableModel(
-            table_header, self.paths, None)
-
-        self.create_table_proxy_model()
-
-    def create_table_proxy_model(self):
-        self.table_proxy_model = TableProxyModel()
-        self.table_proxy_model.setSourceModel(self.table_model)
-        self.table_proxy_model.setSortCaseSensitivity(False)
-        self.table_proxy_model.sort(1, QtCore.Qt.AscendingOrder)
-        self.tableView.setModel(self.table_proxy_model)
-        self.tableView.horizontalHeader().setSortIndicator(
-            1, QtCore.Qt.AscendingOrder)
-
-    def update_table_proxy_model(self):
-        self.table_proxy_model.invalidateFilter()
-        self.table_proxy_model.setFilterParams(
-            self.tableFilterEdit.text(), [0, 1, 2])
-        self.table_proxy_model.setFilterFixedString(
-            self.tableFilterEdit.text())
-
-    def add_directories(self):
-        # Directories will be added recursively
-        # Sub directory addition is not allowed
-        # In case it is to be allowed eventually, files will not
-        # be duplicated. However, any additional tags will get
-        # added to file tags
-
-        add_directory = QtWidgets.QFileDialog.getExistingDirectory(
-            self, 'Select Directory', self.last_open_directory,
-            QtWidgets.QFileDialog.ShowDirsOnly)
-        add_directory = os.path.realpath(add_directory)
+        self.filesystem_model = MostExcellentFileSystemModel(directory_data)
+        self.filesystem_model.setFilter(QtCore.QDir.NoDotAndDotDot | QtCore.QDir.Dirs)
+        self.treeView.setModel(self.filesystem_model)
 
         # TODO
-        # Account for a parent folder getting added after a subfolder
-        # Currently this does the inverse only
+        # This here might break on them pestilent non unixy OSes
+        # Check and see
 
-        for i in self.paths:
-            already_present = os.path.realpath(i[0])
-            if already_present == add_directory or already_present in add_directory:
-                QtWidgets.QMessageBox.critical(
-                    self,
-                    'Error',
-                    'Duplicate or sub folder: ' + already_present + ' ',
-                    QtWidgets.QMessageBox.Ok)
-                return
+        root_directory = QtCore.QDir().rootPath()
+        self.treeView.setRootIndex(self.filesystem_model.setRootPath(root_directory))
 
-        # Set default name for the directory
-        directory_name = os.path.basename(add_directory).title()
-        data_pair = [[add_directory, directory_name, None]]
-        database.DatabaseFunctions(self.database_path).set_library_paths(data_pair)
-        self.generate_table()
+        # Set the treeView and QFileSystemModel to its desired state
+        selected_paths = [
+            i for i in directory_data if directory_data[i]['check_state'] == QtCore.Qt.Checked]
+        expand_paths = set()
+        for i in selected_paths:
 
-    def ok_pressed(self):
-        # Traverse directories looking for files
-        self.thread = BackGroundBookSearch(self, self.table_model.display_data)
-        self.thread.finished.connect(self.do_something)
-        self.thread.start()
+            # Recursively grind down parent paths for expansion
+            this_path = i
+            while True:
+                parent_path = os.path.dirname(this_path)
+                if parent_path == this_path:
+                    break
+                expand_paths.add(parent_path)
+                this_path = parent_path
 
-    def do_something(self):
-        print('Book search completed')
+        # Expand all the parent paths derived from the selected path
+        if root_directory in expand_paths:
+            expand_paths.remove(root_directory)
 
-    def cancel_pressed(self):
+        for i in expand_paths:
+            this_index = self.filesystem_model.index(i)
+            self.treeView.expand(this_index)
+
+        header_sizes = self.parent.settings['settings_dialog_headers']
+        if header_sizes:
+            for count, i in enumerate((0, 4)):
+                self.treeView.setColumnWidth(i, int(header_sizes[count]))
+
+        # TODO
+        # Set a QSortFilterProxy model on top of the existing QFileSystem model
+        # self.filesystem_proxy_model = FileSystemProxyModel()
+        # self.filesystem_proxy_model.setSourceModel(self.filesystem_model)
+        # self.treeView.setModel(self.filesystem_proxy_model)
+
+        for i in range(1, 4):
+            self.treeView.hideColumn(i)
+
+    def start_library_scan(self):
+        # TODO
+        # return in case the treeView is not edited
+
         self.hide()
 
-    # TODO
-    # Implement cancel by restoring the table model to an older version
-    # def showEvent(self, event):
-    #     event.accept()
+        data_pairs = []
+        for i in self.filesystem_model.tag_data.items():
+            data_pairs.append([
+                i[0], i[1]['name'], i[1]['tags'], i[1]['check_state']
+            ])
+
+        database.DatabaseFunctions(
+            self.database_path).set_library_paths(data_pairs)
+
+        if not data_pairs:
+            try:
+                if self.sender().objectName() == 'reloadLibrary':
+                    self.show()
+            except AttributeError:
+                pass
+
+            self.parent.lib_ref.view_model.clear()
+            self.parent.lib_ref.table_rows = []
+
+            # TODO
+            # Change this to no longer include files added manually
+
+            database.DatabaseFunctions(
+                self.database_path).delete_from_database('*', '*')
+
+            return
+
+        # Update the main window library filter menu
+        self.parent.generate_library_filter_menu(data_pairs)
+
+        # Disallow rechecking until the first check completes
+        self.okButton.setEnabled(False)
+        self.parent.reloadLibrary.setEnabled(False)
+        self.okButton.setToolTip('Library scan in progress...')
+
+        # Traverse directories looking for files
+        self.parent.statusMessage.setText('Checking library folders')
+        self.thread = BackGroundBookSearch(data_pairs, self)
+        self.thread.finished.connect(self.finished_iterating)
+        self.thread.start()
+
+    def finished_iterating(self):
+        # TODO
+        # Account for file tags
+
+        # The books the search thread has found
+        # are now in self.thread.valid_files
+        valid_files = [i[0] for i in self.thread.valid_files]
+        if not valid_files:
+            return
+
+        # Hey, messaging is important, okay?
+        self.parent.sorterProgress.setVisible(True)
+        self.parent.statusMessage.setText('Parsing files')
+
+        # We now create a new thread to put those files into the database
+        self.thread = BackGroundBookAddition(
+            valid_files, self.database_path, True, self.parent)
+        self.thread.finished.connect(self.parent.move_on)
+        self.thread.start()
+
+    def cancel_pressed(self):
+        self.filesystem_model.tag_data = copy.deepcopy(self.tag_data_copy)
+        self.hide()
 
     def hideEvent(self, event):
         self.no_more_settings()
         event.accept()
 
+    def showEvent(self, event):
+        self.tag_data_copy = copy.deepcopy(self.filesystem_model.tag_data)
+        event.accept()
+
     def no_more_settings(self):
-        self.table_model = self.old_table_model
-        self.parent_window.libraryToolBar.settingsButton.setChecked(False)
+        self.parent.libraryToolBar.settingsButton.setChecked(False)
+        self.aboutBox.hide()
+        self.treeView.show()
         self.resizeEvent()
 
     def resizeEvent(self, event=None):
-        self.parent_window.settings_dialog_settings['size'] = self.size()
-        self.parent_window.settings_dialog_settings['position'] = self.pos()
+        self.parent.settings['settings_dialog_size'] = self.size()
+        self.parent.settings['settings_dialog_position'] = self.pos()
         table_headers = []
-        for i in range(2):
-            table_headers.append(self.tableView.horizontalHeader().sectionSize(i))
-        self.parent_window.settings_dialog_settings['headers'] = table_headers
+        for i in [0, 4]:
+            table_headers.append(self.treeView.columnWidth(i))
+        self.parent.settings['settings_dialog_headers'] = table_headers
+
+    def manage_checkboxes(self, event=None):
+        sender = self.sender().objectName()
+
+        sender_dict = {
+            'coverShadows': 'cover_shadows',
+            'autoTags': 'auto_tags',
+            'refreshLibrary': 'scan_library',
+            'fileRemember': 'remember_files'}
+
+        self.parent.settings[sender_dict[sender]] = not self.parent.settings[sender_dict[sender]]
+
+    def about_pressed(self):
+        self.treeView.setVisible(not self.treeView.isVisible())
+        self.aboutBox.setVisible(not self.aboutBox.isVisible())

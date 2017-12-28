@@ -1,5 +1,24 @@
 #!/usr/bin/env python3
 
+# This file is a part of Lector, a Qt based ebook reader
+# Copyright (C) 2017 BasioMeusPuga
+
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+
+# You should have received a copy of the GNU General Public License
+# along with this program.  If not, see <http://www.gnu.org/licenses/>.
+
+# TODO
+# Consider using sender().text() instead of sender().objectName()
+
 import os
 import sys
 
@@ -8,9 +27,9 @@ from PyQt5 import QtWidgets, QtGui, QtCore
 import sorter
 import database
 
-from resources import mainwindow
+from resources import mainwindow, resources
 from widgets import LibraryToolBar, BookToolBar, Tab, LibraryDelegate
-from threaded import BackGroundTabUpdate, BackGroundBookAddition
+from threaded import BackGroundTabUpdate, BackGroundBookAddition, BackGroundBookDeletion
 from library import Library
 from settings import Settings
 
@@ -23,8 +42,7 @@ class MainUI(QtWidgets.QMainWindow, mainwindow.Ui_MainWindow):
         self.setupUi(self)
 
         # Empty variables that will be infested soon
-        self.current_view = None
-        self.last_open_books = None
+        self.settings = {}
         self.last_open_tab = None
         self.last_open_path = None
         self.thread = None  # Background Thread
@@ -32,8 +50,17 @@ class MainUI(QtWidgets.QMainWindow, mainwindow.Ui_MainWindow):
         self.display_profiles = None
         self.current_profile_index = None
         self.database_path = None
-        self.table_header_sizes = None
-        self.settings_dialog_settings = None
+        self.library_filter_menu = None
+
+        # Initialize toolbars
+        self.libraryToolBar = LibraryToolBar(self)
+        self.bookToolBar = BookToolBar(self)
+
+        # Widget declarations
+        self.library_filter_menu = QtWidgets.QMenu()
+        self.statusMessage = QtWidgets.QLabel()
+        self.toolbarToggle = QtWidgets.QToolButton()
+        self.reloadLibrary = QtWidgets.QToolButton()
 
         # Initialize application
         Settings(self).read_settings()  # This should populate all variables that need
@@ -45,16 +72,32 @@ class MainUI(QtWidgets.QMainWindow, mainwindow.Ui_MainWindow):
         # Initialize settings dialog
         self.settings_dialog = SettingsUI(self)
 
-        # Create and right align the statusbar label widget
-        self.statusMessage = QtWidgets.QLabel()
+        # Statusbar widgets
         self.statusMessage.setObjectName('statusMessage')
         self.statusBar.addPermanentWidget(self.statusMessage)
         self.sorterProgress = QtWidgets.QProgressBar()
+        self.sorterProgress.setMaximumWidth(300)
         self.sorterProgress.setObjectName('sorterProgress')
         sorter.progressbar = self.sorterProgress  # This is so that updates can be
                                                   # connected to setValue
         self.statusBar.addWidget(self.sorterProgress)
         self.sorterProgress.setVisible(False)
+
+        self.toolbarToggle.setIcon(QtGui.QIcon.fromTheme('visibility'))
+        self.toolbarToggle.setObjectName('toolbarToggle')
+        self.toolbarToggle.setToolTip('Toggle toolbar')
+        self.toolbarToggle.setAutoRaise(True)
+        self.toolbarToggle.clicked.connect(self.toggle_toolbars)
+        self.statusBar.addPermanentWidget(self.toolbarToggle)
+
+        # THIS IS TEMPORARY
+        self.guiTest = QtWidgets.QToolButton()
+        self.guiTest.setIcon(QtGui.QIcon.fromTheme('mail-thread-watch'))
+        self.guiTest.setObjectName('guiTest')
+        self.guiTest.setToolTip('Test Function')
+        self.guiTest.setAutoRaise(True)
+        self.guiTest.clicked.connect(self.test_function)
+        self.statusBar.addPermanentWidget(self.guiTest)
 
         # Application wide temporary directory
         self.temp_dir = QtCore.QTemporaryDir()
@@ -62,8 +105,11 @@ class MainUI(QtWidgets.QMainWindow, mainwindow.Ui_MainWindow):
         # Init the Library
         self.lib_ref = Library(self)
 
+        # Toolbar display
+        # Maybe make this a persistent option
+        self.settings['show_toolbars'] = True
+
         # Library toolbar
-        self.libraryToolBar = LibraryToolBar(self)
         self.libraryToolBar.addButton.triggered.connect(self.add_books)
         self.libraryToolBar.deleteButton.triggered.connect(self.delete_books)
         self.libraryToolBar.coverViewButton.triggered.connect(self.switch_library_view)
@@ -72,16 +118,16 @@ class MainUI(QtWidgets.QMainWindow, mainwindow.Ui_MainWindow):
         self.libraryToolBar.searchBar.textChanged.connect(self.lib_ref.update_proxymodel)
         self.libraryToolBar.searchBar.textChanged.connect(self.lib_ref.update_table_proxy_model)
         self.libraryToolBar.sortingBox.activated.connect(self.lib_ref.update_proxymodel)
-
-        if self.current_view == 0:
-            self.libraryToolBar.coverViewButton.trigger()
-        elif self.current_view == 1:
-            self.libraryToolBar.tableViewButton.trigger()
-
+        self.libraryToolBar.libraryFilterButton.setPopupMode(QtWidgets.QToolButton.InstantPopup)
         self.addToolBar(self.libraryToolBar)
 
+        if self.settings['current_view'] == 0:
+            self.libraryToolBar.coverViewButton.trigger()
+        else:
+            self.libraryToolBar.tableViewButton.trigger()
+
         # Book toolbar
-        self.bookToolBar = BookToolBar(self)
+        self.bookToolBar.bookmarkButton.triggered.connect(self.toggle_dock_widget)
         self.bookToolBar.fullscreenButton.triggered.connect(self.set_fullscreen)
 
         for count, i in enumerate(self.display_profiles):
@@ -120,11 +166,12 @@ class MainUI(QtWidgets.QMainWindow, mainwindow.Ui_MainWindow):
         self.available_parsers = '*.' + ' *.'.join(sorter.available_parsers)
         print('Available parsers: ' + self.available_parsers)
 
-        self.reloadLibrary = QtWidgets.QToolButton()
+        # The library refresh button on the Library tab
         self.reloadLibrary.setIcon(QtGui.QIcon.fromTheme('reload'))
+        self.reloadLibrary.setObjectName('reloadLibrary')
         self.reloadLibrary.setAutoRaise(True)
-        self.reloadLibrary.setPopupMode(QtWidgets.QToolButton.InstantPopup)
-        self.reloadLibrary.triggered.connect(self.switch_library_view)
+        self.reloadLibrary.clicked.connect(self.settings_dialog.start_library_scan)
+        # self.reloadLibrary.clicked.connect(self.cull_covers)  # TODO
 
         self.tabWidget.tabBar().setTabButton(
             0, QtWidgets.QTabBar.RightSide, self.reloadLibrary)
@@ -140,7 +187,7 @@ class MainUI(QtWidgets.QMainWindow, mainwindow.Ui_MainWindow):
         self.listView.setMouseTracking(True)
         self.listView.verticalScrollBar().setSingleStep(9)
         self.listView.doubleClicked.connect(self.library_doubleclick)
-        self.listView.setItemDelegate(LibraryDelegate(self.temp_dir.path()))
+        self.listView.setItemDelegate(LibraryDelegate(self.temp_dir.path(), self))
 
         # TableView
         self.tableView.doubleClicked.connect(self.library_doubleclick)
@@ -148,11 +195,10 @@ class MainUI(QtWidgets.QMainWindow, mainwindow.Ui_MainWindow):
             QtWidgets.QHeaderView.Interactive)
         self.tableView.horizontalHeader().setSortIndicator(0, QtCore.Qt.AscendingOrder)
         self.tableView.horizontalHeader().setHighlightSections(False)
-        if self.table_header_sizes:
-            for count, i in enumerate(self.table_header_sizes):
+        if self.settings['main_window_headers']:
+            for count, i in enumerate(self.settings['main_window_headers']):
                 self.tableView.horizontalHeader().resizeSection(count, int(i))
         self.tableView.horizontalHeader().setStretchLastSection(True)
-        self.tableView.horizontalHeader().setSectionResizeMode(3, QtWidgets.QHeaderView.Stretch)
 
         # Keyboard shortcuts
         self.ks_close_tab = QtWidgets.QShortcut(QtGui.QKeySequence('Ctrl+W'), self)
@@ -167,8 +213,34 @@ class MainUI(QtWidgets.QMainWindow, mainwindow.Ui_MainWindow):
 
         # Open last... open books.
         # Then set the value to None for the next run
-        self.open_files(self.last_open_books)
-        self.last_open_books = None
+        self.open_files(self.settings['last_open_books'])
+
+        # Scan the library @ startup
+        if self.settings['scan_library']:
+            self.settings_dialog.start_library_scan()
+
+    def test_function(self, event=None):
+        top_index = self.listView.indexAt(QtCore.QPoint(20, 20))
+        model_index = self.lib_ref.proxy_model.mapToSource(top_index)
+        top_item = self.lib_ref.view_model.item(model_index.row())
+
+        if top_item:
+            img_pixmap = QtGui.QPixmap()
+            img_pixmap.load(':/images/blank.png')
+            top_item.setIcon(QtGui.QIcon(img_pixmap))
+        else:
+            print('Invalid index')
+
+    def cull_covers(self):
+        # TODO
+        # Use this to reduce memory utilization
+
+        img_pixmap = QtGui.QPixmap()
+        img_pixmap.load(':/images/blank.png')
+
+        for i in range(self.lib_ref.view_model.rowCount()):
+            item = self.lib_ref.view_model.item(i)
+            item.setIcon(QtGui.QIcon(img_pixmap))
 
     def resizeEvent(self, event=None):
         if event:
@@ -206,58 +278,95 @@ class MainUI(QtWidgets.QMainWindow, mainwindow.Ui_MainWindow):
 
     def add_books(self):
         # TODO
-        # Maybe expand this to traverse directories recursively
+        # Remember file addition modality
+        # If a file is added from here, it should not be removed
+        # from the libary in case of a database refresh
 
         opened_files = QtWidgets.QFileDialog.getOpenFileNames(
             self, 'Open file', self.last_open_path,
             f'eBooks ({self.available_parsers})')
 
-        if opened_files[0]:
-            self.last_open_path = os.path.dirname(opened_files[0][0])
-            self.sorterProgress.setVisible(True)
-            self.statusMessage.setText('Adding books...')
-            self.thread = BackGroundBookAddition(self, opened_files[0], self.database_path)
-            self.thread.finished.connect(self.move_on)
-            self.thread.start()
+        if not opened_files[0]:
+            return
 
-    def move_on(self):
-        self.sorterProgress.setVisible(False)
-        self.lib_ref.create_table_model()
-        self.lib_ref.create_proxymodel()
+        self.settings_dialog.okButton.setEnabled(False)
+        self.reloadLibrary.setEnabled(False)
+
+        self.last_open_path = os.path.dirname(opened_files[0][0])
+        self.sorterProgress.setVisible(True)
+        self.statusMessage.setText('Adding books...')
+        self.thread = BackGroundBookAddition(
+            opened_files[0], self.database_path, False, self)
+        self.thread.finished.connect(self.move_on)
+        self.thread.start()
 
     def delete_books(self):
         # TODO
-        # Use maptosource() here to get the view_model
-        # indices selected in the listView
         # Implement this for the tableview
         # The same process can be used to mirror selection
+        # Ask if library files are to be excluded from further scans
+        # Make a checkbox for this
 
-        selected_books = self.listView.selectedIndexes()
-        if selected_books:
-            def ifcontinue(box_button):
-                if box_button.text() == '&Yes':
-                    selected_hashes = []
-                    for i in selected_books:
-                        data = i.data(QtCore.Qt.UserRole + 3)
-                        selected_hashes.append(data['hash'])
+        # Get a list of QItemSelection objects
+        # What we're interested in is the indexes()[0] in each of them
+        # That gives a list of indexes from the view model
+        selected_books = self.lib_ref.proxy_model.mapSelectionToSource(
+            self.listView.selectionModel().selection())
 
-                    database.DatabaseFunctions(
-                        self.database_path).delete_from_database(selected_hashes)
+        if not selected_books:
+            return
 
-                    self.lib_ref.generate_model('build')
-                    self.lib_ref.create_table_model()
-                    self.lib_ref.create_proxymodel()
+        # Deal with message box selection
+        def ifcontinue(box_button):
+            if box_button.text() != '&Yes':
+                return
 
-            selected_number = len(selected_books)
-            msg_box = QtWidgets.QMessageBox()
-            msg_box.setText('Delete %d book(s)?' % selected_number)
-            msg_box.setIcon(QtWidgets.QMessageBox.Question)
-            msg_box.setWindowTitle('Confirm deletion')
-            msg_box.setStandardButtons(
-                QtWidgets.QMessageBox.Yes | QtWidgets.QMessageBox.No)
-            msg_box.buttonClicked.connect(ifcontinue)
-            msg_box.show()
-            msg_box.exec_()
+            # Generate list of selected indexes and deletable hashes
+            selected_indexes = [i.indexes() for i in selected_books]
+            delete_hashes = [
+                self.lib_ref.view_model.data(
+                    i[0], QtCore.Qt.UserRole + 6) for i in selected_indexes]
+
+            # Delete the entries from the table model by way of filtering by hash
+            self.lib_ref.table_rows = [
+                i for i in self.lib_ref.table_rows if i[6] not in delete_hashes]
+
+            # Persistent model indexes are required beause deletion mutates the model
+            # Gnerate and delete by persistent index
+            persistent_indexes = [
+                QtCore.QPersistentModelIndex(i[0]) for i in selected_indexes]
+            for i in persistent_indexes:
+                self.lib_ref.view_model.removeRow(i.row())
+
+            # Update the database in the background
+            self.thread = BackGroundBookDeletion(
+                delete_hashes, self.database_path, self)
+            self.thread.finished.connect(self.move_on)
+            self.thread.start()
+
+        # Generate a message box to confirm deletion
+        selected_number = len(selected_books)
+        confirm_deletion = QtWidgets.QMessageBox()
+        confirm_deletion.setText('Delete %d book(s)?' % selected_number)
+        confirm_deletion.setIcon(QtWidgets.QMessageBox.Question)
+        confirm_deletion.setWindowTitle('Confirm deletion')
+        confirm_deletion.setStandardButtons(
+            QtWidgets.QMessageBox.Yes | QtWidgets.QMessageBox.No)
+        confirm_deletion.buttonClicked.connect(ifcontinue)
+        confirm_deletion.show()
+        confirm_deletion.exec_()
+
+    def move_on(self):
+        self.settings_dialog.okButton.setEnabled(True)
+        self.settings_dialog.okButton.setToolTip(
+            'Save changes and start library scan')
+        self.reloadLibrary.setEnabled(True)
+
+        self.sorterProgress.setVisible(False)
+        self.sorterProgress.setValue(0)
+
+        self.lib_ref.create_table_model()
+        self.lib_ref.create_proxymodel()
 
     def switch_library_view(self):
         if self.libraryToolBar.coverViewButton.isChecked():
@@ -273,8 +382,9 @@ class MainUI(QtWidgets.QMainWindow, mainwindow.Ui_MainWindow):
         if self.tabWidget.currentIndex() == 0:
 
             self.resizeEvent()
-            self.bookToolBar.hide()
-            self.libraryToolBar.show()
+            if self.settings['show_toolbars']:
+                self.bookToolBar.hide()
+                self.libraryToolBar.show()
 
             if self.lib_ref.proxy_model:
                 # Making the proxy model available doesn't affect
@@ -282,8 +392,10 @@ class MainUI(QtWidgets.QMainWindow, mainwindow.Ui_MainWindow):
                 self.statusMessage.setText(
                     str(self.lib_ref.proxy_model.rowCount()) + ' Books')
         else:
-            self.bookToolBar.show()
-            self.libraryToolBar.hide()
+
+            if self.settings['show_toolbars']:
+                self.bookToolBar.show()
+                self.libraryToolBar.hide()
 
             current_metadata = self.tabWidget.widget(
                 self.tabWidget.currentIndex()).metadata
@@ -375,14 +487,24 @@ class MainUI(QtWidgets.QMainWindow, mainwindow.Ui_MainWindow):
         current_tab_widget = self.tabWidget.widget(current_tab)
         current_tab_widget.go_fullscreen()
 
-    def library_doubleclick(self, myindex):
+    def toggle_dock_widget(self):
+        sender = self.sender().objectName()
+        current_tab = self.tabWidget.currentIndex()
+        current_tab_widget = self.tabWidget.widget(current_tab)
+
+        # TODO
+        # Extend this to other context related functions
+        # Make this fullscreenable
+
+        if sender == 'bookmarkButton':
+            current_tab_widget.toggle_bookmarks()
+
+    def library_doubleclick(self, index):
         sender = self.sender().objectName()
 
         if sender == 'listView':
-            index = self.lib_ref.proxy_model.index(myindex.row(), 0)
             metadata = self.lib_ref.proxy_model.data(index, QtCore.Qt.UserRole + 3)
         elif sender == 'tableView':
-            index = self.lib_ref.table_proxy_model.index(myindex.row(), 0)
             metadata = self.lib_ref.table_proxy_model.data(index, QtCore.Qt.UserRole)
 
         # Shift focus to the tab that has the book open (if there is one)
@@ -409,6 +531,7 @@ class MainUI(QtWidgets.QMainWindow, mainwindow.Ui_MainWindow):
             file_paths,
             'reading',
             self.database_path,
+            True,
             self.temp_dir.path()).initiate_threads()
 
         found_a_focusable_tab = False
@@ -609,19 +732,69 @@ class MainUI(QtWidgets.QMainWindow, mainwindow.Ui_MainWindow):
         else:
             self.settings_dialog.hide()
 
+    def generate_library_filter_menu(self, directory_list=None):
+        # TODO
+        # Connect this to filtering @ the level of the library
+        # Remember state of the checkboxes on library update and application restart
+        # Behavior for clicking on All
+        # Don't show anything for less than 2 library folders
+
+        self.library_filter_menu.clear()
+
+        def generate_name(path_data):
+            this_filter = path_data[1]
+            if not this_filter:
+                this_filter = os.path.basename(
+                    path_data[0]).title()
+            return this_filter
+
+        filter_actions = []
+        filter_list = []
+        if directory_list:
+            checked = [i for i in directory_list if i[3] == QtCore.Qt.Checked]
+            filter_list = list(map(generate_name, checked))
+            filter_list.sort()
+            filter_actions = [QtWidgets.QAction(i, self.library_filter_menu) for i in filter_list]
+
+        filter_all = QtWidgets.QAction('All', self.library_filter_menu)
+        filter_actions.append(filter_all)
+        for i in filter_actions:
+            i.setCheckable(True)
+            i.setChecked(True)
+            i.triggered.connect(self.set_library_filter)
+
+        self.library_filter_menu.addActions(filter_actions)
+        self.library_filter_menu.insertSeparator(filter_all)
+        self.libraryToolBar.libraryFilterButton.setMenu(self.library_filter_menu)
+
+    def set_library_filter(self, event=None):
+        print(event)
+        print(self.sender().text())
+
+    def toggle_toolbars(self):
+        self.settings['show_toolbars'] = not self.settings['show_toolbars']
+
+        current_tab = self.tabWidget.currentIndex()
+        if current_tab == 0:
+            self.libraryToolBar.setVisible(
+                not self.libraryToolBar.isVisible())
+        else:
+            self.bookToolBar.setVisible(
+                not self.bookToolBar.isVisible())
+
     def closeEvent(self, event=None):
         # All tabs must be iterated upon here
         self.hide()
         self.settings_dialog.hide()
         self.temp_dir.remove()
 
-        self.last_open_books = []
-        if self.tabWidget.count() > 1:
+        self.settings['last_open_books'] = []
+        if self.tabWidget.count() > 1 and self.settings['remember_files']:
 
             all_metadata = []
             for i in range(1, self.tabWidget.count()):
                 tab_metadata = self.tabWidget.widget(i).metadata
-                self.last_open_books.append(tab_metadata['path'])
+                self.settings['last_open_books'].append(tab_metadata['path'])
                 all_metadata.append(tab_metadata)
 
             Settings(self).save_settings()

@@ -1,12 +1,20 @@
 #!/usr/bin/env python3
-# Every parser is supposed to have the following methods, even if they return None:
-# read_book()
-# get_title()
-# get_author()
-# get_year()
-# get_cover_image()
-# get_isbn()
-# get_contents() - Should return a tuple with 0: TOC 1: Deletable temp_directory
+
+# This file is a part of Lector, a Qt based ebook reader
+# Copyright (C) 2017 BasioMeusPuga
+
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+
+# You should have received a copy of the GNU General Public License
+# along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 import os
 import re
@@ -40,13 +48,13 @@ class ParseEPUB:
         try:
             return self.book.metadata['http://purl.org/dc/elements/1.1/']['creator'][0][0]
         except KeyError:
-            return None
+            return
 
     def get_year(self):
         try:
             return self.book.metadata['http://purl.org/dc/elements/1.1/']['date'][0][0][:4]
         except KeyError:
-            return None
+            return
 
     def get_cover_image(self):
         # Get cover image
@@ -89,7 +97,6 @@ class ParseEPUB:
             if i.media_type == 'image/jpeg' or i.media_type == 'image/png':
                 return i.get_content()
 
-
     def get_isbn(self):
         try:
             identifier = self.book.metadata['http://purl.org/dc/elements/1.1/']['identifier']
@@ -99,7 +106,15 @@ class ParseEPUB:
                     isbn = i[0]
                     return isbn
         except KeyError:
-            return None
+            return
+
+    def get_tags(self):
+        try:
+            subject = self.book.metadata['http://purl.org/dc/elements/1.1/']['subject']
+            tags = [i[0] for i in subject]
+            return tags
+        except KeyError:
+            return
 
     def get_contents(self):
         extract_path = os.path.join(self.temp_dir, self.file_md5)

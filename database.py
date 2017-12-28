@@ -1,5 +1,21 @@
 #!/usr/bin/env python3
 
+# This file is a part of Lector, a Qt based ebook reader
+# Copyright (C) 2017 BasioMeusPuga
+
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+
+# You should have received a copy of the GNU General Public License
+# along with this program.  If not, see <http://www.gnu.org/licenses/>.
+
 import os
 import pickle
 import sqlite3
@@ -16,13 +32,20 @@ class DatabaseInit:
 
     def create_database(self):
         # TODO
-        # Add a separate column for directory tags
+        # Add separate columns for:
+        # directory tags
+        # bookmarks
+        # date added
+        # addition mode
         self.database.execute(
             "CREATE TABLE books \
             (id INTEGER PRIMARY KEY, Title TEXT, Author TEXT, Year INTEGER, \
             Path TEXT, Position BLOB, ISBN TEXT, Tags TEXT, Hash TEXT, CoverImage BLOB)")
+
+        # CheckState is the standard QtCore.Qt.Checked / Unchecked
         self.database.execute(
-            "CREATE TABLE directories (id INTEGER PRIMARY KEY, Path TEXT, Name TEXT, Tags TEXT)")
+            "CREATE TABLE directories (id INTEGER PRIMARY KEY, Path TEXT, \
+            Name TEXT, Tags TEXT, CheckState INTEGER)")
         self.database.commit()
         self.database.close()
 
@@ -33,15 +56,22 @@ class DatabaseFunctions:
         self.database = sqlite3.connect(database_path)
 
     def set_library_paths(self, data_iterable):
+        # TODO
+        # INSERT OR REPLACE is not working
+        # So this is the old fashion kitchen sink approach
+
+        self.database.execute("DELETE FROM directories")
+
         for i in data_iterable:
             path = i[0]
             name = i[1]
             tags = i[2]
+            is_checked = i[3]
 
             sql_command = (
-                "INSERT OR REPLACE INTO directories (ID, Path, Name, Tags)\
-                 VALUES ((SELECT ID FROM directories WHERE Path = ?), ?, ?, ?)")
-            self.database.execute(sql_command, [path, path, name, tags])
+                "INSERT OR REPLACE INTO directories (ID, Path, Name, Tags, CheckState)\
+                 VALUES ((SELECT ID FROM directories WHERE Path = ?), ?, ?, ?, ?)")
+            self.database.execute(sql_command, [path, path, name, tags, is_checked])
 
         self.database.commit()
         self.close_database()
@@ -61,9 +91,15 @@ class DatabaseFunctions:
             path = i[1]['path']
             cover = i[1]['cover_image']
             isbn = i[1]['isbn']
+            tags = i[1]['tags']
+            if tags:
+                # Is a tuple. Needs to be a string
+                tags = ', '.join([j for j in tags if j])
 
             sql_command_add = (
-                "INSERT INTO books (Title,Author,Year,Path,ISBN,Hash,CoverImage) VALUES(?, ?, ?, ?, ?, ?, ?)")
+                "INSERT INTO \
+                books (Title, Author, Year, Path, ISBN, Tags, Hash, CoverImage) \
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?)")
 
             cover_insert = None
             if cover:
@@ -72,7 +108,7 @@ class DatabaseFunctions:
             self.database.execute(
                 sql_command_add,
                 [title, author, year,
-                 path, isbn, book_hash, cover_insert])
+                 path, isbn, tags, book_hash, cover_insert])
 
         self.database.commit()
         self.close_database()
@@ -121,8 +157,7 @@ class DatabaseFunctions:
             else:
                 return None
 
-        # except sqlite3.OperationalError:
-        except KeyError:
+        except (KeyError, sqlite3.OperationalError):
             print('SQLite is in rebellion, Commander')
 
         self.close_database()
@@ -136,7 +171,9 @@ class DatabaseFunctions:
 
             sql_command = "UPDATE books SET Position = ? WHERE Hash = ?"
             try:
-                self.database.execute(sql_command, [sqlite3.Binary(pickled_position), file_hash])
+                self.database.execute(
+                    sql_command,
+                    [sqlite3.Binary(pickled_position), file_hash])
             except sqlite3.OperationalError:
                 print('SQLite is in rebellion, Commander')
                 return
@@ -144,22 +181,19 @@ class DatabaseFunctions:
         self.database.commit()
         self.close_database()
 
-    def delete_from_database(self, file_hashes):
-        # file_hashes is expected as a list that will be iterated upon
-        # This should enable multiple deletion
+    def delete_from_database(self, column_name, target_data):
+        # target_data is an iterable
 
-        first = file_hashes[0]
-        sql_command = f"DELETE FROM books WHERE Hash = '{first}'"
-
-        if len(file_hashes) > 1:
-            for i in file_hashes[1:]:
-                sql_command += f" OR Hash = '{i}'"
-
-        self.database.execute(sql_command)
+        if column_name == '*':
+            self.database.execute('DELETE FROM books')
+        else:
+            sql_command = f'DELETE FROM books WHERE {column_name} = ?'
+            for i in target_data:
+                self.database.execute(sql_command, (i,))
 
         self.database.commit()
         self.close_database()
-    
+
     def close_database(self):
         self.database.execute("VACUUM")
         self.database.close()

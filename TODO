@@ -1,13 +1,12 @@
 TODO
     Options:
         Automatic library management
+            ✓ Recursive file addition
             Auto deletion
-            Recursive file addition
             Add only one file type if multiple are present
-        Remember files
-        Check files (hashes) upon restart
-        Show what on startup
-        Draw shadows
+        ✓ Remember files
+        ✓ Check files (hashes) upon restart
+        ✓ Draw shadows
     Library:
         ✓ sqlite3 for cover images cache
         ✓ sqlite3 for storing metadata
@@ -19,6 +18,7 @@ TODO
         ✓ Tie file deletion and tab closing to model updates
         ✓ Create separate thread for parser - Show progress in main window
         ? Create emblem per filetype
+        Memory management
         Table view
         Ignore a / the / numbers for sorting purposes
         Put the path in the scope of the search
@@ -27,6 +27,7 @@ TODO
         Information dialog widget
         Context menu: Cache, Read, Edit database, delete, Mark read/unread
         Set focus to newly added file
+        Add capability to sort by new
     Reading:
         ✓ Drop down for TOC
         ✓ Override the keypress event of the textedit
@@ -45,6 +46,7 @@ TODO
         Record progress
         Pagination
         Set context menu for definitions and the like
+        Hide progressbar
     Filetypes:
         ✓ cbz, cbr support
             ✓ Keep font settings enabled but only for background color
@@ -60,3 +62,4 @@ TODO
     Other:
         ✓ Define every widget in code
         ✓ Include icons for emblems
+        Shift to logging instead of print statements

@@ -1,9 +1,31 @@
 #!usr/bin/env python3
 
+# This file is a part of Lector, a Qt based ebook reader
+# Copyright (C) 2017 BasioMeusPuga
+
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+
+# You should have received a copy of the GNU General Public License
+# along with this program.  If not, see <http://www.gnu.org/licenses/>.
+
+# TODO
+# Reading modes
+# Double page, Continuous etc
+# Especially for comics
+
+
 import os
 from PyQt5 import QtWidgets, QtGui, QtCore
 
-from resources import resources, pie_chart
+from resources import pie_chart
 
 
 class BookToolBar(QtWidgets.QToolBar):
@@ -31,6 +53,10 @@ class BookToolBar(QtWidgets.QToolBar):
         self.fullscreenButton = QtWidgets.QAction(
             QtGui.QIcon.fromTheme('view-fullscreen'),
             'Fullscreen', self)
+        self.bookmarkButton = QtWidgets.QAction(
+            QtGui.QIcon.fromTheme('bookmarks'),
+            'Bookmark', self)
+        self.bookmarkButton.setObjectName('bookmarkButton')
         self.resetProfile = QtWidgets.QAction(
             QtGui.QIcon.fromTheme('view-refresh'),
             'Reset profile', self)
@@ -40,6 +66,8 @@ class BookToolBar(QtWidgets.QToolBar):
         self.fontButton.setCheckable(True)
         self.fontButton.triggered.connect(self.toggle_font_settings)
         self.addSeparator()
+        self.addAction(self.bookmarkButton)
+        self.bookmarkButton.setCheckable(True)
         self.addAction(self.fullscreenButton)
 
         # Font modification
@@ -191,6 +219,7 @@ class BookToolBar(QtWidgets.QToolBar):
         self.searchBarAction = self.addWidget(self.searchBar)
 
         self.bookActions = [
+            self.bookmarkButton,
             self.fullscreenButton,
             self.tocBoxAction,
             self.searchBarAction]
@@ -269,6 +298,11 @@ class LibraryToolBar(QtWidgets.QToolBar):
             QtGui.QIcon.fromTheme('table'), 'View as table', self)
         self.tableViewButton.setCheckable(True)
 
+        self.libraryFilterButton = QtWidgets.QToolButton(self)
+        self.libraryFilterButton.setIcon(QtGui.QIcon.fromTheme('view-readermode'))
+        self.libraryFilterButton.setText('Filter library')
+        self.libraryFilterButton.setToolTip('Filter library')
+
         # Auto unchecks the other QToolButton in case of clicking
         self.viewButtons = QtWidgets.QActionGroup(self)
         self.viewButtons.setExclusive(True)
@@ -281,6 +315,8 @@ class LibraryToolBar(QtWidgets.QToolBar):
         self.addSeparator()
         self.addAction(self.coverViewButton)
         self.addAction(self.tableViewButton)
+        self.addSeparator()
+        self.addWidget(self.libraryFilterButton)
         self.addSeparator()
         self.addAction(self.settingsButton)
 
@@ -346,8 +382,10 @@ class Tab(QtWidgets.QWidget):
         self.parent = parent
         self.metadata = metadata  # Save progress data into this dictionary
 
-        self.gridLayout = QtWidgets.QGridLayout(self)
-        self.gridLayout.setObjectName("gridLayout")
+        self.masterLayout = QtWidgets.QHBoxLayout(self)
+        self.horzLayout = QtWidgets.QSplitter(self)
+        self.horzLayout.setOrientation(QtCore.Qt.Horizontal)
+        self.masterLayout.addWidget(self.horzLayout)
 
         position = self.metadata['position']
 
@@ -374,6 +412,7 @@ class Tab(QtWidgets.QWidget):
             self.contentView.loadImage(chapter_content)
         else:
             self.contentView = PliantQTextBrowser(self.window())
+            # print(dir(self.contentView.document()))  ## TODO USE this for modifying formatting and searching
 
             relative_path_root = os.path.join(
                 self.window().temp_dir.path(), self.metadata['hash'])
@@ -393,9 +432,20 @@ class Tab(QtWidgets.QWidget):
         self.contentView.setHorizontalScrollBarPolicy(
             QtCore.Qt.ScrollBarAlwaysOff)
 
+        # Create the dock widget for context specific display
+        self.dockWidget = QtWidgets.QDockWidget(self)
+        self.dockWidget.setFeatures(QtWidgets.QDockWidget.DockWidgetClosable)
+        self.dockWidget.setFloating(False)
+        self.dockListWidget = QtWidgets.QListWidget()
+        self.dockListWidget.setResizeMode(QtWidgets.QListWidget.Adjust)
+        self.dockListWidget.setMaximumWidth(350)
+        self.dockWidget.setWidget(self.dockListWidget)
+        self.dockWidget.hide()
+
         self.generate_keyboard_shortcuts()
 
-        self.gridLayout.addWidget(self.contentView, 0, 0, 1, 1)
+        self.horzLayout.addWidget(self.contentView)
+        self.horzLayout.addWidget(self.dockWidget)
         title = self.metadata['title']
         self.parent.addTab(self, title)
 
@@ -462,6 +512,11 @@ class Tab(QtWidgets.QWidget):
             self.contentView.clear()
             self.contentView.setHtml(required_content)
 
+            # TODO
+            # This here. Use it for stuff.
+            # self.contentView.document().begin().blockFormat().setLineHeight(1000, QtGui.QTextBlockFormat.FixedHeight)
+            # self.contentView.document().end().blockFormat().setLineHeight(1000, QtGui.QTextBlockFormat.FixedHeight)
+
     def format_view(self, font, font_size, foreground, background, padding):
         if self.are_we_doing_images_only:
             # Tab color does not need to be set separately in case
@@ -473,10 +528,21 @@ class Tab(QtWidgets.QWidget):
             self.contentView.resizeEvent()
 
         else:
+            # print(dir(self.contentView.document().begin().blockFormat())) ## TODO Line Height here
+            # self.contentView.document().begin().blockFormat().setLineHeight(1000, QtGui.QTextBlockFormat.FixedHeight)
+            # self.contentView.document().end().blockFormat().setLineHeight(1000, QtGui.QTextBlockFormat.FixedHeight)
             self.contentView.setViewportMargins(padding, 0, padding, 0)
             self.contentView.setStyleSheet(
                 "QTextEdit {{font-family: {0}; font-size: {1}px; color: {2}; background-color: {3}}}".format(
                     font, font_size, foreground.name(), background.name()))
+
+    def toggle_bookmarks(self):
+        self.dockWidget.setWindowTitle('Bookmarks')
+
+        if self.dockWidget.isVisible():
+            self.dockWidget.hide()
+        else:
+            self.dockWidget.show()
 
     def sneaky_change(self):
         direction = -1
@@ -661,6 +727,7 @@ class LibraryDelegate(QtWidgets.QStyledItemDelegate):
     def __init__(self, temp_dir, parent=None):
         super(LibraryDelegate, self).__init__(parent)
         self.temp_dir = temp_dir
+        self.parent = parent
 
     def paint(self, painter, option, index):
         # This is a hint for the future
@@ -673,27 +740,27 @@ class LibraryDelegate(QtWidgets.QStyledItemDelegate):
         position = index.data(QtCore.Qt.UserRole + 7)
 
         # The shadow pixmap currently is set to 420 x 600
-        shadow_pixmap = QtGui.QPixmap()
-        shadow_pixmap.load(':/images/gray-shadow.png')
-        shadow_pixmap = shadow_pixmap.scaled(160, 230, QtCore.Qt.IgnoreAspectRatio)
-        shadow_x = option.rect.topLeft().x() + 10
-        shadow_y = option.rect.topLeft().y() - 5
+        # Only draw the cover shadow in case the setting is enabled
+        if self.parent.settings['cover_shadows']:
+            shadow_pixmap = QtGui.QPixmap()
+            shadow_pixmap.load(':/images/gray-shadow.png')
+            shadow_pixmap = shadow_pixmap.scaled(160, 230, QtCore.Qt.IgnoreAspectRatio)
+            shadow_x = option.rect.topLeft().x() + 10
+            shadow_y = option.rect.topLeft().y() - 5
+            painter.setOpacity(.7)
+            painter.drawPixmap(shadow_x, shadow_y, shadow_pixmap)
+            painter.setOpacity(1)
 
         if not file_exists:
             painter.setOpacity(.7)
-            painter.drawPixmap(shadow_x, shadow_y, shadow_pixmap)
             QtWidgets.QStyledItemDelegate.paint(self, painter, option, index)
-            painter.setOpacity(1)
-
             read_icon = pie_chart.pixmapper(-1, None, None, 36)
             x_draw = option.rect.bottomRight().x() - 30
             y_draw = option.rect.bottomRight().y() - 35
             painter.drawPixmap(x_draw, y_draw, read_icon)
+            painter.setOpacity(1)
             return
 
-        painter.setOpacity(.8)
-        painter.drawPixmap(shadow_x, shadow_y, shadow_pixmap)
-        painter.setOpacity(1)
         QtWidgets.QStyledItemDelegate.paint(self, painter, option, index)
         if position:
             current_chapter = position['current_chapter']

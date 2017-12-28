@@ -1,17 +1,22 @@
 #!/usr/bin/env python3
 
-# TODO
-# See if you want to include a hash of the book's name and author
+# This file is a part of Lector, a Qt based ebook reader
+# Copyright (C) 2017 BasioMeusPuga
 
-import io
-import os
-import pickle
-import hashlib
-from multiprocessing.dummy import Pool
-from PyQt5 import QtCore, QtGui
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
 
-import database
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
 
+# You should have received a copy of the GNU General Public License
+# along with this program.  If not, see <http://www.gnu.org/licenses/>.
+
+# INSTRUCTIONS
 # Every parser is supposed to have the following methods, even if they return None:
 # read_book()
 # get_title()
@@ -19,19 +24,42 @@ import database
 # get_year()
 # get_cover_image()
 # get_isbn()
+# get_tags()
 # get_contents() - Should return a tuple with 0: TOC 1: special_settings (dict)
 # Parsers for files containing only images need to return only images_only = True
+
+# TODO
+# Maybe shift to insert or replace instead of hash checking
+# See if you want to include a hash of the book's name and author
+# Change thread niceness
+
+import io
+import os
+import time
+import pickle
+import hashlib
+import threading
+from multiprocessing import Pool, Manager
+from PyQt5 import QtCore, QtGui
+
+import database
 
 from parsers.epub import ParseEPUB
 from parsers.cbz import ParseCBZ
 from parsers.cbr import ParseCBR
 
-available_parsers = ['epub', 'cbz', 'cbr']
+sorter = {
+    'epub': ParseEPUB,
+    'cbz': ParseCBZ,
+    'cbr': ParseCBR}
+
+available_parsers = [i for i in sorter]
 progressbar = None  # This is populated by __main__
+progress_emitter = None  # This is to be made into a global variable
 
 
-# This is for thread safety
 class UpdateProgress(QtCore.QObject):
+    # This is for thread safety
     update_signal = QtCore.pyqtSignal(int)
 
     def connect_to_progressbar(self):
@@ -42,7 +70,7 @@ class UpdateProgress(QtCore.QObject):
 
 
 class BookSorter:
-    def __init__(self, file_list, mode, database_path, temp_dir=None):
+    def __init__(self, file_list, mode, database_path, auto_tags=True, temp_dir=None):
         # Have the GUI pass a list of files straight to here
         # Then, on the basis of what is needed, pass the
         # filenames to the requisite functions
@@ -51,17 +79,20 @@ class BookSorter:
         # Caching upon closing
         self.file_list = [i for i in file_list if os.path.exists(i)]
         self.statistics = [0, (len(file_list))]
-        self.all_books = {}
         self.hashes = []
         self.mode = mode
         self.database_path = database_path
+        self.auto_tags = auto_tags
         self.temp_dir = temp_dir
         if database_path:
             self.database_hashes()
 
+        self.threading_completed = []
+        self.queue = Manager().Queue()
+        self.processed_books = []
+
         if self.mode == 'addition':
-            self.progress_emitter = UpdateProgress()
-            self.progress_emitter.connect_to_progressbar()
+            progress_object_generator()
 
     def database_hashes(self):
         # TODO
@@ -101,32 +132,21 @@ class BookSorter:
             # This should speed up addition for larger files
             # without compromising the integrity of the process
             first_bytes = current_book.read(1024 * 32)  # First 32KB of the file
-            salt = 'Caesar si viveret, ad remum dareris'.encode()
-            first_bytes += salt
             file_md5 = hashlib.md5(first_bytes).hexdigest()
 
-        if self.mode == 'addition':
-            self.statistics[0] += 1
-            self.progress_emitter.update_progress(
-                self.statistics[0] * 100 // self.statistics[1])
+        # Update the progress queue
+        self.queue.put(filename)
 
-        # IF the file is NOT being loaded into the reader,
-        # Do not allow addition in case the file is dupicated in the directory
-        # OR is already in the database
         # This should not get triggered in reading mode
-        if (self.mode == 'addition'
-                and (file_md5 in self.all_books.items() or file_md5 in self.hashes)):
+        # IF the file is NOT being loaded into the reader,
+        # Do not allow addition in case the file
+        # is already in the database
+        if self.mode == 'addition' and file_md5 in self.hashes:
             return
-
-        # ___________SORTING TAKES PLACE HERE___________
-        sorter = {
-            'epub': ParseEPUB,
-            'cbz': ParseCBZ,
-            'cbr': ParseCBR
-        }
 
         file_extension = os.path.splitext(filename)[1][1:]
         try:
+            # Get the requisite parser from the sorter dict
             book_ref = sorter[file_extension](filename, self.temp_dir, file_md5)
         except KeyError:
             print(filename + ' has an unsupported extension')
@@ -137,7 +157,7 @@ class BookSorter:
         book_ref.read_book()
         if book_ref.book:
 
-            title = book_ref.get_title().title()
+            title = book_ref.get_title()
 
             author = book_ref.get_author()
             if not author:
@@ -150,22 +170,32 @@ class BookSorter:
 
             isbn = book_ref.get_isbn()
 
+            tags = None
+            if self.auto_tags:
+                tags = book_ref.get_tags()
+
+            this_book = {}
+            this_book[file_md5] = {
+                'title': title,
+                'author': author,
+                'year': year,
+                'isbn': isbn,
+                'hash': file_md5,
+                'path': filename,
+                'tags': tags}
+
             # Different modes require different values
             if self.mode == 'addition':
+                # Reduce the size of the incoming image
+                # if one is found
+
                 cover_image_raw = book_ref.get_cover_image()
                 if cover_image_raw:
-                    # Reduce the size of the incoming image
                     cover_image = resize_image(cover_image_raw)
                 else:
                     cover_image = None
 
-                self.all_books[file_md5] = {
-                    'title': title,
-                    'author': author,
-                    'year': year,
-                    'isbn': isbn,
-                    'path': filename,
-                    'cover_image': cover_image}
+                this_book[file_md5]['cover_image'] = cover_image
 
             if self.mode == 'reading':
                 all_content = book_ref.get_contents()
@@ -183,25 +213,65 @@ class BookSorter:
                     content['Invalid'] = 'Possible Parse Error'
 
                 position = self.database_position(file_md5)
-                self.all_books[file_md5] = {
-                    'title': title,
-                    'author': author,
-                    'year': year,
-                    'isbn': isbn,
-                    'hash': file_md5,
-                    'path': filename,
-                    'position': position,
-                    'content': content,
-                    'images_only': images_only}
 
+                this_book[file_md5]['position'] = position
+                this_book[file_md5]['content'] = content
+                this_book[file_md5]['images_only'] = images_only
+
+            return this_book
+
+    def read_progress(self):
+        while True:
+            processed_file = self.queue.get()
+            self.threading_completed.append(processed_file)
+
+            total_number = len(self.file_list)
+            completed_number = len(self.threading_completed)
+
+            if progress_emitter:  # Skip update in reading mode
+                progress_emitter.update_progress(
+                    completed_number * 100 // total_number)
+
+            if total_number == completed_number:
+                break
 
     def initiate_threads(self):
-        _pool = Pool(5)
-        _pool.map(self.read_book, self.file_list)
-        _pool.close()
-        _pool.join()
+        def pool_creator():
+            _pool = Pool(5)
+            self.processed_books = _pool.map(
+                self.read_book, self.file_list)
 
-        return self.all_books
+            _pool.close()
+            _pool.join()
+
+        start_time = time.time()
+
+        worker_thread = threading.Thread(target=pool_creator)
+        progress_thread = threading.Thread(target=self.read_progress)
+        worker_thread.start()
+        progress_thread.start()
+
+        worker_thread.join()
+        progress_thread.join(timeout=.5)
+
+        return_books = {}
+        # Exclude None returns generated in case of duplication / parse errors
+        self.processed_books = [i for i in self.processed_books if i]
+        for i in self.processed_books:
+            for j in i:
+                return_books[j] = i[j]
+
+        del self.processed_books
+        print('Finished processing in', time.time() - start_time)
+        return return_books
+
+
+def progress_object_generator():
+    # This has to be kept separate from the BookSorter class because
+    # the QtObject inheritance disallows pickling
+    global progress_emitter
+    progress_emitter = UpdateProgress()
+    progress_emitter.connect_to_progressbar()
 
 
 def resize_image(cover_image_raw):

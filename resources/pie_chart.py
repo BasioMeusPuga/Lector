@@ -110,10 +110,11 @@ def pixmapper(current_chapter, total_chapters, temp_dir, size):
         # TODO
         # See if saving the svg to disk can be avoided
         # Shift to lines to track progress
+        # Maybe make the alignment a little more uniform across emblems
 
         progress_percent = int(current_chapter * 100 / total_chapters)
         generate_pie(progress_percent, temp_dir)
         svg_path = os.path.join(temp_dir, 'lector_progress.svg')
-        return_pixmap = QtGui.QIcon(svg_path).pixmap(size)
+        return_pixmap = QtGui.QIcon(svg_path).pixmap(size - 4)  ## The -4 looks more proportional
 
     return return_pixmap
