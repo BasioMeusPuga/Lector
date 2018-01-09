@@ -219,28 +219,53 @@ class MainUI(QtWidgets.QMainWindow, mainwindow.Ui_MainWindow):
         if self.settings['scan_library']:
             self.settings_dialog.start_library_scan()
 
-    def test_function(self, event=None):
-        top_index = self.listView.indexAt(QtCore.QPoint(20, 20))
-        model_index = self.lib_ref.proxy_model.mapToSource(top_index)
-        top_item = self.lib_ref.view_model.item(model_index.row())
+    def cull_covers(self, event=None):
 
-        if top_item:
-            img_pixmap = QtGui.QPixmap()
-            img_pixmap.load(':/images/blank.png')
-            top_item.setIcon(QtGui.QIcon(img_pixmap))
-        else:
-            print('Invalid index')
+        blank_pixmap = QtGui.QPixmap()
+        blank_pixmap.load(':/images/blank.png')
 
-    def cull_covers(self):
-        # TODO
-        # Use this to reduce memory utilization
+        all_indexes = set()
+        for i in range(self.lib_ref.proxy_model.rowCount()):
+            all_indexes.add(self.lib_ref.proxy_model.index(i, 0))
 
-        img_pixmap = QtGui.QPixmap()
-        img_pixmap.load(':/images/blank.png')
+        y_range = range(-20, self.listView.viewport().height(), 10)
+        x_range = range(0, self.listView.viewport().width(), 80)
 
-        for i in range(self.lib_ref.view_model.rowCount()):
-            item = self.lib_ref.view_model.item(i)
-            item.setIcon(QtGui.QIcon(img_pixmap))
+        visible_indexes = set()
+        for i in y_range:
+            for j in x_range:
+                this_index = self.listView.indexAt(QtCore.QPoint(j, i))
+                visible_indexes.add(this_index)
+
+        invisible_indexes = all_indexes - visible_indexes
+        for i in invisible_indexes:
+            model_index = self.lib_ref.proxy_model.mapToSource(i)
+            this_item = self.lib_ref.view_model.item(model_index.row())
+
+            if this_item:
+                this_item.setIcon(QtGui.QIcon(blank_pixmap))
+
+        for i in visible_indexes:
+            model_index = self.lib_ref.proxy_model.mapToSource(i)
+            this_item = self.lib_ref.view_model.item(model_index.row())
+
+            if this_item:
+                book_hash = this_item.data(QtCore.Qt.UserRole + 6)
+                cover = database.DatabaseFunctions(
+                    self.database_path).fetch_data(
+                        ('CoverImage',),
+                        'books',
+                        {'Hash': book_hash},
+                        'EQUALS',
+                        True)
+
+                img_pixmap = QtGui.QPixmap()
+                if cover:
+                    img_pixmap.loadFromData(cover)
+                else:
+                    img_pixmap.load(':/images/NotFound.png')
+                img_pixmap = img_pixmap.scaled(420, 600, QtCore.Qt.IgnoreAspectRatio)
+                this_item.setIcon(QtGui.QIcon(img_pixmap))
 
     def resizeEvent(self, event=None):
         if event:
