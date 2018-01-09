@@ -187,7 +187,7 @@ class Library:
         self.proxy_model.setSortRole(
             QtCore.Qt.UserRole + self.parent.libraryToolBar.sortingBox.currentIndex())
         self.proxy_model.sort(0)
-        self.parent.culling_timer.start(100)
+        self.parent.start_culling_timer()
 
     def prune_models(self, valid_paths):
         # To be executed when the library is updated by folder

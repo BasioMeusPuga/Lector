@@ -104,7 +104,6 @@ class MainUI(QtWidgets.QMainWindow, mainwindow.Ui_MainWindow):
 
         # Init the culling timer
         self.culling_timer = QtCore.QTimer()
-        # self.culling_timer.setInterval(300)
         self.culling_timer.setSingleShot(True)
         self.culling_timer.timeout.connect(self.cull_covers)
 
@@ -194,6 +193,7 @@ class MainUI(QtWidgets.QMainWindow, mainwindow.Ui_MainWindow):
         self.listView.verticalScrollBar().setSingleStep(9)
         self.listView.doubleClicked.connect(self.library_doubleclick)
         self.listView.setItemDelegate(LibraryDelegate(self.temp_dir.path(), self))
+        self.listView.verticalScrollBar().valueChanged.connect(self.start_culling_timer)
 
         # TableView
         self.tableView.doubleClicked.connect(self.library_doubleclick)
@@ -278,8 +278,11 @@ class MainUI(QtWidgets.QMainWindow, mainwindow.Ui_MainWindow):
                 this_item.setIcon(QtGui.QIcon(img_pixmap))
                 this_item.setData(True, QtCore.Qt.UserRole + 8)
 
+    def start_culling_timer(self):
+        self.culling_timer.start(50)
+
     def test_function(self):
-        pass
+        print('Caesar si viveret, ad remum dareris')
 
     def resizeEvent(self, event=None):
         if event:
