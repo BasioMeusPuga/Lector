@@ -102,6 +102,12 @@ class MainUI(QtWidgets.QMainWindow, mainwindow.Ui_MainWindow):
         # Application wide temporary directory
         self.temp_dir = QtCore.QTemporaryDir()
 
+        # Init the culling timer
+        self.culling_timer = QtCore.QTimer()
+        # self.culling_timer.setInterval(300)
+        self.culling_timer.setSingleShot(True)
+        self.culling_timer.timeout.connect(self.cull_covers)
+
         # Init the Library
         self.lib_ref = Library(self)
 
@@ -220,7 +226,6 @@ class MainUI(QtWidgets.QMainWindow, mainwindow.Ui_MainWindow):
             self.settings_dialog.start_library_scan()
 
     def cull_covers(self, event=None):
-
         blank_pixmap = QtGui.QPixmap()
         blank_pixmap.load(':/images/blank.png')
 
@@ -244,12 +249,17 @@ class MainUI(QtWidgets.QMainWindow, mainwindow.Ui_MainWindow):
 
             if this_item:
                 this_item.setIcon(QtGui.QIcon(blank_pixmap))
+                this_item.setData(False, QtCore.Qt.UserRole + 8)
 
         for i in visible_indexes:
             model_index = self.lib_ref.proxy_model.mapToSource(i)
             this_item = self.lib_ref.view_model.item(model_index.row())
 
             if this_item:
+                is_cover_already_displayed = this_item.data(QtCore.Qt.UserRole + 8)
+                if is_cover_already_displayed:
+                    continue
+
                 book_hash = this_item.data(QtCore.Qt.UserRole + 6)
                 cover = database.DatabaseFunctions(
                     self.database_path).fetch_data(
@@ -266,6 +276,10 @@ class MainUI(QtWidgets.QMainWindow, mainwindow.Ui_MainWindow):
                     img_pixmap.load(':/images/NotFound.png')
                 img_pixmap = img_pixmap.scaled(420, 600, QtCore.Qt.IgnoreAspectRatio)
                 this_item.setIcon(QtGui.QIcon(img_pixmap))
+                this_item.setData(True, QtCore.Qt.UserRole + 8)
+
+    def test_function(self):
+        pass
 
     def resizeEvent(self, event=None):
         if event:

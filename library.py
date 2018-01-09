@@ -44,7 +44,7 @@ class Library:
 
             books = database.DatabaseFunctions(
                 self.parent.database_path).fetch_data(
-                    ('*',),
+                    ('Title', 'Author', 'Year', 'Path', 'Position', 'ISBN', 'Tags', 'Hash',),
                     'books',
                     {'Title': ''},
                     'LIKE')
@@ -60,18 +60,13 @@ class Library:
 
             books = []
             for i in parsed_books.items():
-                # Scheme
-                # 1: Title, 2: Author, 3: Year, 4: Path
-                # 5: Position, 6: isbn, 7: Tags, 8: Hash
-                # 9: CoverImage
-
                 _tags = i[1]['tags']
                 if _tags:
                     _tags = ', '.join([j for j in _tags if j])
 
                 books.append([
-                    None, i[1]['title'], i[1]['author'], i[1]['year'], i[1]['path'],
-                    None, i[1]['isbn'], _tags, i[0], i[1]['cover_image']])
+                    i[1]['title'], i[1]['author'], i[1]['year'], i[1]['path'],
+                    None, i[1]['isbn'], _tags, i[0]])
 
         else:
             return
@@ -80,14 +75,14 @@ class Library:
             # The database query returns (or the extension data is)
             # an iterable with the following indices:
             # Index 0 is the key ID is ignored
-            title = i[1]
-            author = i[2]
-            year = i[3]
-            path = i[4]
-            tags = i[7]
-            cover = i[9]
+            title = i[0]
+            author = i[1]
+            year = i[2]
+            path = i[3]
+            tags = i[6]
+            # cover = i[9]
 
-            position = i[5]
+            position = i[4]
             if position:
                 position = pickle.loads(position)
 
@@ -99,9 +94,9 @@ class Library:
                 'year': year,
                 'path': path,
                 'position': position,
-                'isbn': i[6],
+                'isbn': i[5],
                 'tags': tags,
-                'hash': i[8],
+                'hash': i[7],
                 'file_exists': file_exists}
 
             tooltip_string = title + '\nAuthor: ' + author + '\nYear: ' + str(year)
@@ -114,17 +109,15 @@ class Library:
             if tags:
                 search_workaround += tags
 
-            # Generate image pixmap and then pass it to the widget
-            # as a QIcon
             # Additional data can be set using an incrementing
             # QtCore.Qt.UserRole
             # QtCore.Qt.DisplayRole is the same as item.setText()
             # The model is a single row and has no columns
+
+            # No covers are set at this time
+            # That is to be achieved by way of the culling function
             img_pixmap = QtGui.QPixmap()
-            if cover:
-                img_pixmap.loadFromData(cover)
-            else:
-                img_pixmap.load(':/images/NotFound.png')
+            img_pixmap.load(':/images/blank.png')
             img_pixmap = img_pixmap.scaled(420, 600, QtCore.Qt.IgnoreAspectRatio)
             item = QtGui.QStandardItem()
             item.setToolTip(tooltip_string)
@@ -136,15 +129,16 @@ class Library:
             item.setData(all_metadata, QtCore.Qt.UserRole + 3)
             item.setData(search_workaround, QtCore.Qt.UserRole + 4)
             item.setData(file_exists, QtCore.Qt.UserRole + 5)
-            item.setData(i[8], QtCore.Qt.UserRole + 6)  # File hash
+            item.setData(i[7], QtCore.Qt.UserRole + 6)  # File hash
             item.setData(position, QtCore.Qt.UserRole + 7)
+            item.setData(False, QtCore.Qt.UserRole + 8) # Is the cover being displayed?
             item.setIcon(QtGui.QIcon(img_pixmap))
             self.view_model.appendRow(item)
 
             # all_metadata is just being sent. It is not being displayed
             # It will be correlated to the current row as its first userrole
             self.table_rows.append(
-                [title, author, None, year, tags, all_metadata, i[8]])
+                [title, author, None, year, tags, all_metadata, i[7]])
 
     def create_table_model(self):
         table_header = ['Title', 'Author', 'Status', 'Year', 'Tags']
@@ -193,6 +187,7 @@ class Library:
         self.proxy_model.setSortRole(
             QtCore.Qt.UserRole + self.parent.libraryToolBar.sortingBox.currentIndex())
         self.proxy_model.sort(0)
+        self.parent.culling_timer.start(100)
 
     def prune_models(self, valid_paths):
         # To be executed when the library is updated by folder
