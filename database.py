@@ -97,7 +97,7 @@ class DatabaseFunctions:
                 tags = ', '.join([j for j in tags if j])
 
             sql_command_add = (
-                "INSERT INTO \
+                "INSERT OR REPLACE INTO \
                 books (Title, Author, Year, Path, ISBN, Tags, Hash, CoverImage) \
                 VALUES (?, ?, ?, ?, ?, ?, ?, ?)")
 

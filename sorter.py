@@ -79,7 +79,7 @@ class BookSorter:
         # Caching upon closing
         self.file_list = [i for i in file_list if os.path.exists(i)]
         self.statistics = [0, (len(file_list))]
-        self.hashes = []
+        self.hashes_and_paths = {}
         self.mode = mode
         self.database_path = database_path
         self.auto_tags = auto_tags
@@ -99,15 +99,17 @@ class BookSorter:
         # Overwrite book if deleted and then re-added
         # Also fetch the path of the file here
 
-        all_hashes = database.DatabaseFunctions(
+        all_hashes_and_paths = database.DatabaseFunctions(
             self.database_path).fetch_data(
-                ('Hash',),
+                ('Hash', 'Path'),
                 'books',
                 {'Hash': ''},
                 'LIKE')
 
-        if all_hashes:
-            self.hashes = [i[0] for i in all_hashes]
+        if all_hashes_and_paths:
+            # self.hashes = [i[0] for i in all_hashes]
+            self.hashes_and_paths = {
+                i[0]: i[1] for i in all_hashes_and_paths}
 
     def database_position(self, file_hash):
         position = database.DatabaseFunctions(
@@ -139,10 +141,12 @@ class BookSorter:
 
         # This should not get triggered in reading mode
         # IF the file is NOT being loaded into the reader,
+
         # Do not allow addition in case the file
-        # is already in the database
-        if self.mode == 'addition' and file_md5 in self.hashes:
-            return
+        # is already in the database and it remains at its original path
+        if self.mode == 'addition' and file_md5 in self.hashes_and_paths:
+            if self.hashes_and_paths[file_md5] == filename:
+                return
 
         file_extension = os.path.splitext(filename)[1][1:]
         try:

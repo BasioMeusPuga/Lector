@@ -92,7 +92,6 @@ class BackGroundBookSearch(QtCore.QThread):
             pathlib.Path(i[0]) for i in data_list if i[3] == QtCore.Qt.Unchecked]
 
     def run(self):
-
         def is_wanted(directory):
             directory_parents = pathlib.Path(directory).parents
             for i in self.unwanted_directories:
