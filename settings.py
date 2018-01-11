@@ -52,7 +52,7 @@ class Settings:
         self.settings.endGroup()
 
         self.settings.beginGroup('runtimeVariables')
-        self.parent.last_open_path = self.settings.value(
+        self.parent.settings['last_open_path'] = self.settings.value(
             'lastOpenPath', os.path.expanduser('~'))
         self.parent.database_path = self.settings.value(
             'databasePath',
@@ -67,7 +67,7 @@ class Settings:
 
         self.settings.beginGroup('lastOpen')
         self.parent.settings['last_open_books'] = self.settings.value('lastOpenBooks', [])
-        self.parent.last_open_tab = self.settings.value('lastOpenTab', 'library')
+        self.parent.settings['last_open_tab'] = self.settings.value('lastOpenTab', 'library')
         self.settings.endGroup()
 
         self.settings.beginGroup('settingsWindow')
@@ -107,7 +107,7 @@ class Settings:
         self.settings.endGroup()
 
         self.settings.beginGroup('runtimeVariables')
-        self.settings.setValue('lastOpenPath', self.parent.last_open_path)
+        self.settings.setValue('lastOpenPath', self.parent.settings['last_open_path'])
         self.settings.setValue('databasePath', self.parent.database_path)
 
         current_profile1 = self.parent.bookToolBar.profileBox.itemData(

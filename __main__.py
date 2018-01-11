@@ -43,12 +43,11 @@ class MainUI(QtWidgets.QMainWindow, mainwindow.Ui_MainWindow):
 
         # Empty variables that will be infested soon
         self.settings = {}
-        self.last_open_tab = None
-        self.last_open_path = None
         self.thread = None  # Background Thread
         self.current_contentView = None  # For fullscreening purposes
         self.display_profiles = None
         self.current_profile_index = None
+        self.comic_profile = {}
         self.database_path = None
         self.library_filter_menu = None
 
@@ -176,7 +175,6 @@ class MainUI(QtWidgets.QMainWindow, mainwindow.Ui_MainWindow):
         self.reloadLibrary.setObjectName('reloadLibrary')
         self.reloadLibrary.setAutoRaise(True)
         self.reloadLibrary.clicked.connect(self.settings_dialog.start_library_scan)
-        # self.reloadLibrary.clicked.connect(self.cull_covers)  # TODO
 
         self.tabWidget.tabBar().setTabButton(
             0, QtWidgets.QTabBar.RightSide, self.reloadLibrary)
@@ -233,7 +231,8 @@ class MainUI(QtWidgets.QMainWindow, mainwindow.Ui_MainWindow):
         for i in range(self.lib_ref.proxy_model.rowCount()):
             all_indexes.add(self.lib_ref.proxy_model.index(i, 0))
 
-        y_range = range(-20, self.listView.viewport().height(), 10)
+        y_range = list(range(0, self.listView.viewport().height(), 100))
+        y_range.extend((-20, self.listView.viewport().height() + 20))
         x_range = range(0, self.listView.viewport().width(), 80)
 
         visible_indexes = set()
@@ -279,7 +278,7 @@ class MainUI(QtWidgets.QMainWindow, mainwindow.Ui_MainWindow):
                 this_item.setData(True, QtCore.Qt.UserRole + 8)
 
     def start_culling_timer(self):
-        self.culling_timer.start(50)
+        self.culling_timer.start(30)
 
     def test_function(self):
         print('Caesar si viveret, ad remum dareris')
@@ -315,6 +314,7 @@ class MainUI(QtWidgets.QMainWindow, mainwindow.Ui_MainWindow):
             layout_extra_space_per_image = space_left // num_images
             self.listView.setGridSize(
                 QtCore.QSize(default_size + layout_extra_space_per_image, 250))
+            self.start_culling_timer()
         except ZeroDivisionError:  # Initial resize is ignored
             return
 
@@ -325,7 +325,7 @@ class MainUI(QtWidgets.QMainWindow, mainwindow.Ui_MainWindow):
         # from the libary in case of a database refresh
 
         opened_files = QtWidgets.QFileDialog.getOpenFileNames(
-            self, 'Open file', self.last_open_path,
+            self, 'Open file', self.settings['last_open_path'],
             f'eBooks ({self.available_parsers})')
 
         if not opened_files[0]:
@@ -334,7 +334,7 @@ class MainUI(QtWidgets.QMainWindow, mainwindow.Ui_MainWindow):
         self.settings_dialog.okButton.setEnabled(False)
         self.reloadLibrary.setEnabled(False)
 
-        self.last_open_path = os.path.dirname(opened_files[0][0])
+        self.settings['last_open_path'] = os.path.dirname(opened_files[0][0])
         self.sorterProgress.setVisible(True)
         self.statusMessage.setText('Adding books...')
         self.thread = BackGroundBookAddition(
@@ -424,6 +424,7 @@ class MainUI(QtWidgets.QMainWindow, mainwindow.Ui_MainWindow):
         if self.tabWidget.currentIndex() == 0:
 
             self.resizeEvent()
+            self.start_culling_timer()
             if self.settings['show_toolbars']:
                 self.bookToolBar.hide()
                 self.libraryToolBar.show()
@@ -576,20 +577,26 @@ class MainUI(QtWidgets.QMainWindow, mainwindow.Ui_MainWindow):
             True,
             self.temp_dir.path()).initiate_threads()
 
-        found_a_focusable_tab = False
-
         for i in contents:
+            # New tabs are created here
+            # Initial position adjustment is carried out by the tab itself
             file_data = contents[i]
-            Tab(file_data, self.tabWidget)  # New tabs are created here
-                                            # Initial position adjustment
-                                            # is carried out by the tab itself
-            if file_data['path'] == self.last_open_tab:
-                found_a_focusable_tab = True
-                self.tabWidget.setCurrentIndex(self.tabWidget.count() - 1)
+            Tab(file_data, self.tabWidget)
 
-        if not found_a_focusable_tab:
-            self.tabWidget.setCurrentIndex(self.tabWidget.count() - 1)
+        if self.settings['last_open_tab'] == 'library':
+            self.tabWidget.setCurrentIndex(0)
+            self.listView.setFocus()
+            self.settings['last_open_tab'] = None
+            return
 
+        for i in range(1, self.tabWidget.count()):
+            this_path = self.tabWidget.widget(i).metadata['path']
+            if self.settings['last_open_tab'] == this_path:
+                self.tabWidget.setCurrentIndex(i)
+                self.settings['last_open_tab'] = None
+                return
+
+        self.tabWidget.setCurrentIndex(self.tabWidget.count() - 1)
         self.format_contentView()
 
     def get_color(self):

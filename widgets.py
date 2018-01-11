@@ -408,10 +408,10 @@ class Tab(QtWidgets.QWidget):
         self.are_we_doing_images_only = self.metadata['images_only']
 
         if self.are_we_doing_images_only:  # Boolean
-            self.contentView = PliantQGraphicsView(self.window())
+            self.contentView = PliantQGraphicsView(self.window(), self)
             self.contentView.loadImage(chapter_content)
         else:
-            self.contentView = PliantQTextBrowser(self.window())
+            self.contentView = PliantQTextBrowser(self.window(), self)
             # print(dir(self.contentView.document()))  ## TODO USE this for modifying formatting and searching
 
             relative_path_root = os.path.join(
@@ -448,6 +448,11 @@ class Tab(QtWidgets.QWidget):
         self.horzLayout.addWidget(self.dockWidget)
         title = self.metadata['title']
         self.parent.addTab(self, title)
+
+        # Hide mouse cursor timer
+        self.mouse_hide_timer = QtCore.QTimer()
+        self.mouse_hide_timer.setSingleShot(True)
+        self.mouse_hide_timer.timeout.connect(self.hide_mouse)
 
         self.contentView.setFocus()
 
@@ -544,6 +549,9 @@ class Tab(QtWidgets.QWidget):
         else:
             self.dockWidget.show()
 
+    def hide_mouse(self):
+        self.contentView.setCursor(QtCore.Qt.BlankCursor)
+
     def sneaky_change(self):
         direction = -1
         if self.sender().objectName() == 'nextChapter':
@@ -561,11 +569,13 @@ class PliantQGraphicsView(QtWidgets.QGraphicsView):
     def __init__(self, main_window, parent=None):
         super(PliantQGraphicsView, self).__init__(parent)
         self.main_window = main_window
+        self.parent = parent
         self.image_pixmap = None
         self.ignore_wheel_event = False
         self.ignore_wheel_event_number = 0
         self.common_functions = PliantWidgetsCommonFunctions(
             self, self.main_window)
+        self.setMouseTracking(True)
 
     def loadImage(self, image_path):
         self.image_pixmap = QtGui.QPixmap()
@@ -633,15 +643,21 @@ class PliantQGraphicsView(QtWidgets.QGraphicsView):
                 scroll_increment = int((maximum - 0) / 2)
                 self.verticalScrollBar().setValue(vertical + scroll_increment)
 
+    def mouseMoveEvent(self, event):
+        self.setCursor(QtCore.Qt.ArrowCursor)
+        self.parent.mouse_hide_timer.start(3000)
+
 
 class PliantQTextBrowser(QtWidgets.QTextBrowser):
     def __init__(self, main_window, parent=None):
         super(PliantQTextBrowser, self).__init__(parent)
         self.main_window = main_window
+        self.parent = parent
         self.ignore_wheel_event = False
         self.ignore_wheel_event_number = 0
         self.common_functions = PliantWidgetsCommonFunctions(
             self, self.main_window)
+        self.setMouseTracking(True)
 
     def wheelEvent(self, event):
         self.common_functions.wheelEvent(event, False)
@@ -658,6 +674,13 @@ class PliantQTextBrowser(QtWidgets.QTextBrowser):
 
         else:
             QtWidgets.QTextBrowser.keyPressEvent(self, event)
+
+    # def mouseMoveEvent(self, event):
+        # TODO
+        # This does not work as expected
+        # event.accept()
+        # self.setCursor(QtCore.Qt.ArrowCursor)
+        # self.parent.mouse_hide_timer.start(3000)
 
 
 class PliantWidgetsCommonFunctions():
@@ -686,7 +709,7 @@ class PliantWidgetsCommonFunctions():
         elif vertical_pdelta < 0:
             moving_up = False
 
-        if abs(vertical_pdelta) > 100:  # Adjust sensitivity here
+        if abs(vertical_pdelta) > 80:  # Adjust sensitivity here
             # Implies that no scrollbar movement is possible
             if self.pw.verticalScrollBar().value() == self.pw.verticalScrollBar().maximum() == 0:
                 if moving_up:
@@ -721,7 +744,7 @@ class PliantWidgetsCommonFunctions():
 
             if not was_button_pressed:
                 self.pw.ignore_wheel_event = True
-
+    
 
 class LibraryDelegate(QtWidgets.QStyledItemDelegate):
     def __init__(self, temp_dir, parent=None):
