@@ -19,6 +19,9 @@
 import os
 import pickle
 import sqlite3
+import datetime
+
+from PyQt5 import QtCore
 
 
 class DatabaseInit:
@@ -39,8 +42,9 @@ class DatabaseInit:
         # addition mode
         self.database.execute(
             "CREATE TABLE books \
-            (id INTEGER PRIMARY KEY, Title TEXT, Author TEXT, Year INTEGER, \
-            Path TEXT, Position BLOB, ISBN TEXT, Tags TEXT, Hash TEXT, CoverImage BLOB)")
+            (id INTEGER PRIMARY KEY, Title TEXT, Author TEXT, Year INTEGER, DateAdded TEXT, \
+            Path TEXT, Position BLOB, ISBN TEXT, Tags TEXT, DirTags TEXT, Hash TEXT, \
+            Bookmarks BLOB, CoverImage BLOB)")
 
         # CheckState is the standard QtCore.Qt.Checked / Unchecked
         self.database.execute(
@@ -83,6 +87,14 @@ class DatabaseFunctions:
         # whatever else needs insertion
         # Haha I said insertion
 
+        # Add the current datetime value to each file's database entry
+        # current_time = datetime.datetime.now()
+        current_datetime = QtCore.QDateTime().currentDateTime()
+        current_datetime_bin = sqlite3.Binary(pickle.dumps(current_datetime))
+
+        # TODO
+        # Account for directory tags
+
         for i in data.items():
             book_hash = i[0]
             title = i[1]['title']
@@ -98,8 +110,8 @@ class DatabaseFunctions:
 
             sql_command_add = (
                 "INSERT OR REPLACE INTO \
-                books (Title, Author, Year, Path, ISBN, Tags, Hash, CoverImage) \
-                VALUES (?, ?, ?, ?, ?, ?, ?, ?)")
+                books (Title, Author, Year, DateAdded, Path, ISBN, Tags, Hash, CoverImage) \
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)")
 
             cover_insert = None
             if cover:
@@ -107,7 +119,7 @@ class DatabaseFunctions:
 
             self.database.execute(
                 sql_command_add,
-                [title, author, year,
+                [title, author, year, current_datetime_bin,
                  path, isbn, tags, book_hash, cover_insert])
 
         self.database.commit()

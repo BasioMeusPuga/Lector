@@ -333,7 +333,7 @@ class LibraryToolBar(QtWidgets.QToolBar):
         self.searchBar.setObjectName('searchBar')
 
         # Sorter
-        sorting_choices = ['Title', 'Author', 'Year']
+        sorting_choices = ['Title', 'Author', 'Year', 'Newest']
         self.sortingBox = FixedComboBox(self)
         self.sortingBox.addItems(sorting_choices)
         self.sortingBox.setObjectName('sortingBox')

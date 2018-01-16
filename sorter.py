@@ -111,20 +111,22 @@ class BookSorter:
             self.hashes_and_paths = {
                 i[0]: i[1] for i in all_hashes_and_paths}
 
-    def database_position(self, file_hash):
-        position = database.DatabaseFunctions(
+    def database_entry_for_book(self, file_hash):
+        database_return = database.DatabaseFunctions(
             self.database_path).fetch_data(
-                ('Position',),
+                ('DateAdded', 'Position', 'Bookmarks'),
                 'books',
                 {'Hash': file_hash},
                 'EQUALS',
                 True)
 
-        if position:
-            position_dict = pickle.loads(position)
-            return position_dict
-        else:
-            return None
+        book_data = []
+        for i in database_return:
+            if i:
+                book_data.append(pickle.loads(i))
+            else:
+                book_data.append(None)
+        return book_data
 
     def read_book(self, filename):
         # filename is expected as a string containg the
@@ -216,9 +218,15 @@ class BookSorter:
                 if not content.keys():
                     content['Invalid'] = 'Possible Parse Error'
 
-                position = self.database_position(file_md5)
+                book_data = self.database_entry_for_book(file_md5)
 
+                date_added = book_data[0]
+                position = book_data[1]
+                bookmarks = book_data[2]
+
+                this_book[file_md5]['date_added'] = date_added
                 this_book[file_md5]['position'] = position
+                this_book[file_md5]['bookmarks'] = bookmarks
                 this_book[file_md5]['content'] = content
                 this_book[file_md5]['images_only'] = images_only
 

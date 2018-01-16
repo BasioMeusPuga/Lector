@@ -22,9 +22,9 @@
 
 import os
 import pickle
-import database
-
 from PyQt5 import QtGui, QtCore
+
+import database
 from models import MostExcellentTableModel, TableProxyModel
 
 
@@ -44,7 +44,8 @@ class Library:
 
             books = database.DatabaseFunctions(
                 self.parent.database_path).fetch_data(
-                    ('Title', 'Author', 'Year', 'Path', 'Position', 'ISBN', 'Tags', 'Hash',),
+                    ('Title', 'Author', 'Year', 'DateAdded', 'Path',
+                     'Position', 'ISBN', 'Tags', 'Hash',),
                     'books',
                     {'Title': ''},
                     'LIKE')
@@ -59,14 +60,15 @@ class Library:
             # database using background threads
 
             books = []
+            current_qdatetime = QtCore.QDateTime().currentDateTime()
             for i in parsed_books.items():
                 _tags = i[1]['tags']
                 if _tags:
                     _tags = ', '.join([j for j in _tags if j])
 
                 books.append([
-                    i[1]['title'], i[1]['author'], i[1]['year'], i[1]['path'],
-                    None, i[1]['isbn'], _tags, i[0]])
+                    i[1]['title'], i[1]['author'], i[1]['year'], current_qdatetime,
+                    i[1]['path'], None, i[1]['isbn'], _tags, i[0]])
 
         else:
             return
@@ -78,11 +80,15 @@ class Library:
             title = i[0]
             author = i[1]
             year = i[2]
-            path = i[3]
-            tags = i[6]
-            # cover = i[9]
+            path = i[4]
+            tags = i[7]
 
-            position = i[4]
+            try:
+                date_added = pickle.loads(i[3])
+            except TypeError:  # Because of datetime.datetime.now() above
+                date_added = i[3]
+
+            position = i[5]
             if position:
                 position = pickle.loads(position)
 
@@ -92,11 +98,12 @@ class Library:
                 'title': title,
                 'author': author,
                 'year': year,
+                'date_added': date_added,
                 'path': path,
                 'position': position,
-                'isbn': i[5],
+                'isbn': i[6],
                 'tags': tags,
-                'hash': i[7],
+                'hash': i[8],
                 'file_exists': file_exists}
 
             tooltip_string = title + '\nAuthor: ' + author + '\nYear: ' + str(year)
@@ -129,9 +136,10 @@ class Library:
             item.setData(all_metadata, QtCore.Qt.UserRole + 3)
             item.setData(search_workaround, QtCore.Qt.UserRole + 4)
             item.setData(file_exists, QtCore.Qt.UserRole + 5)
-            item.setData(i[7], QtCore.Qt.UserRole + 6)  # File hash
+            item.setData(i[8], QtCore.Qt.UserRole + 6)  # File hash
             item.setData(position, QtCore.Qt.UserRole + 7)
             item.setData(False, QtCore.Qt.UserRole + 8) # Is the cover being displayed?
+            item.setData(date_added, QtCore.Qt.UserRole + 9)
             item.setIcon(QtGui.QIcon(img_pixmap))
             self.view_model.appendRow(item)
 
@@ -183,10 +191,29 @@ class Library:
         self.parent.statusMessage.setText(
             str(self.proxy_model.rowCount()) + ' books')
 
-        # Sorting according to roles and the drop down in the library
+        # TODO
+        # Allow sorting by type
+
+        # Index of the sorting drop down corresponding to the
+        # UserRole of the item model
+        # This keeps from having to rearrange all the UserRoles in the
+        # existing model
+        sort_roles = {
+            0: 0,
+            1: 1,
+            2: 2,
+            3: 9}
+
+        # Sorting according to roles and the drop down in the library toolbar
         self.proxy_model.setSortRole(
-            QtCore.Qt.UserRole + self.parent.libraryToolBar.sortingBox.currentIndex())
-        self.proxy_model.sort(0)
+            QtCore.Qt.UserRole + sort_roles[self.parent.libraryToolBar.sortingBox.currentIndex()])
+
+        # This can be expanded to other fields by appending to the list
+        sort_order = QtCore.Qt.AscendingOrder
+        if self.parent.libraryToolBar.sortingBox.currentIndex() in [3]:
+            sort_order = QtCore.Qt.DescendingOrder
+
+        self.proxy_model.sort(0, sort_order)
         self.parent.start_culling_timer()
 
     def prune_models(self, valid_paths):
