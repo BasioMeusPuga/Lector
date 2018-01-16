@@ -226,52 +226,52 @@ class Library:
                 {'Path': ''},
                 'LIKE')
 
+        if not db_library_directories:  # Empty database / table
+            return
+
         library_directories = {
             i[0]: (i[1], i[2]) for i in db_library_directories}
+
+        def get_tags(all_metadata):
+            path = os.path.dirname(all_metadata['path'])
+            path_ref = pathlib.Path(path)
+
+            for i in library_directories:
+                if i == path or pathlib.Path(i) in path_ref.parents:
+                    directory_name = library_directories[i][0]
+                    if directory_name:
+                        directory_name = directory_name.lower()
+
+                    directory_tags = library_directories[i][1]
+                    if directory_tags:
+                        directory_tags = directory_tags.lower()
+
+                    return directory_name, directory_tags
 
         # Both the models will have to be done separately
         # Item Model
         for i in range(self.view_model.rowCount()):
             this_item = self.view_model.item(i, 0)
-
             all_metadata = this_item.data(QtCore.Qt.UserRole + 3)
             search_workaround_base = this_item.data(QtCore.Qt.UserRole + 10)
 
-            path = os.path.dirname(all_metadata['path'])
-            path_ref = pathlib.Path(path)
-
-            for j in library_directories:
-                if j == path or pathlib.Path(j) in path_ref.parents:
-                    directory_name = library_directories[j][0].lower()
-                    directory_tags = library_directories[j][1].lower()
-
-                    if directory_name:
-                        search_workaround_base += directory_name
-                    if directory_tags:
-                        search_workaround_base += directory_tags
-
-                    this_item.setData(search_workaround_base, QtCore.Qt.UserRole + 4)
-                    break
+            for j in get_tags(all_metadata):
+                if j:
+                    search_workaround_base += j
+            this_item.setData(search_workaround_base, QtCore.Qt.UserRole + 4)
 
         # Table Model
         for count, i in enumerate(self.table_model.display_data):
             all_metadata = i[5]
-            path = os.path.dirname(all_metadata['path'])
-            path_ref = pathlib.Path(path)
 
-            for j in library_directories:
-                if j == path or pathlib.Path(j) in path_ref.parents:
-                    directory_name = library_directories[j][0].lower()
-                    directory_tags = library_directories[j][1].lower()
+            directory_name, directory_tags = get_tags(all_metadata)
+            try:
+                i[7] = directory_name
+                i[8] = directory_tags
+            except IndexError:
+                i.extend([directory_name, directory_tags])
 
-                try:
-                    i[7] = directory_name
-                    i[8] = directory_tags
-                except IndexError:
-                    i.extend([directory_name, directory_tags])
-
-                self.table_model.display_data[count] = i
-                break
+            self.table_model.display_data[count] = i
 
     def prune_models(self, valid_paths):
         # To be executed when the library is updated by folder
