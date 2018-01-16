@@ -19,7 +19,6 @@
 import os
 import pickle
 import sqlite3
-import datetime
 
 from PyQt5 import QtCore
 
@@ -43,7 +42,7 @@ class DatabaseInit:
         self.database.execute(
             "CREATE TABLE books \
             (id INTEGER PRIMARY KEY, Title TEXT, Author TEXT, Year INTEGER, DateAdded TEXT, \
-            Path TEXT, Position BLOB, ISBN TEXT, Tags TEXT, DirTags TEXT, Hash TEXT, \
+            Path TEXT, Position BLOB, ISBN TEXT, Tags TEXT, Hash TEXT, \
             Bookmarks BLOB, CoverImage BLOB)")
 
         # CheckState is the standard QtCore.Qt.Checked / Unchecked
@@ -91,9 +90,6 @@ class DatabaseFunctions:
         # current_time = datetime.datetime.now()
         current_datetime = QtCore.QDateTime().currentDateTime()
         current_datetime_bin = sqlite3.Binary(pickle.dumps(current_datetime))
-
-        # TODO
-        # Account for directory tags
 
         for i in data.items():
             book_hash = i[0]

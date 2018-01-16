@@ -184,6 +184,7 @@ class MainUI(QtWidgets.QMainWindow, mainwindow.Ui_MainWindow):
         self.lib_ref.generate_model('build')
         self.lib_ref.create_table_model()
         self.lib_ref.create_proxymodel()
+        self.lib_ref.generate_library_tags()
 
         # ListView
         self.listView.setGridSize(QtCore.QSize(175, 240))
@@ -409,6 +410,7 @@ class MainUI(QtWidgets.QMainWindow, mainwindow.Ui_MainWindow):
 
         self.lib_ref.create_table_model()
         self.lib_ref.create_proxymodel()
+        self.lib_ref.generate_library_tags()
 
     def switch_library_view(self):
         if self.libraryToolBar.coverViewButton.isChecked():

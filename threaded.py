@@ -101,17 +101,13 @@ class BackGroundBookSearch(QtCore.QThread):
 
         def traverse_directory(incoming_data):
             root_directory = incoming_data[0]
-            folder_name = incoming_data[1]
-            folder_tags = incoming_data[2]
-
             for directory, subdirs, files in os.walk(root_directory, topdown=True):
                 # Black magic fuckery
                 # Skip subdir tree in case it's not wanted
                 subdirs[:] = [d for d in subdirs if is_wanted(os.path.join(directory, d))]
                 for filename in files:
                     if os.path.splitext(filename)[1][1:] in sorter.available_parsers:
-                        self.valid_files.append(
-                            (os.path.join(directory, filename), folder_name, folder_tags))
+                        self.valid_files.append(os.path.join(directory, filename))
 
         def initiate_threads():
             _pool = Pool(5)

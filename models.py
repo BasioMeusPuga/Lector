@@ -147,6 +147,11 @@ class TableProxyModel(QtCore.QSortFilterProxyModel):
             model.data(i, QtCore.Qt.DisplayRole).lower() for i in valid_indices if model.data(
                 i, QtCore.Qt.DisplayRole) is not None]
 
+        try:
+            valid_data.extend([model.display_data[row_num][7], model.display_data[row_num][8]])
+        except IndexError:  # Columns 7 and 8 are added after creation of the model
+            pass
+
         for i in valid_data:
             if self.filter_string in i:
                 return True

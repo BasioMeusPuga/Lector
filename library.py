@@ -22,6 +22,7 @@
 
 import os
 import pickle
+import pathlib
 from PyQt5 import QtGui, QtCore
 
 import database
@@ -112,9 +113,9 @@ class Library:
 
             # This remarkably ugly hack is because the QSortFilterProxyModel
             # doesn't easily allow searching through multiple item roles
-            search_workaround = title + ' ' + author
+            search_workaround_base = title + ' ' + author
             if tags:
-                search_workaround += tags
+                search_workaround_base += tags
 
             # Additional data can be set using an incrementing
             # QtCore.Qt.UserRole
@@ -134,19 +135,20 @@ class Library:
             item.setData(author, QtCore.Qt.UserRole + 1)
             item.setData(year, QtCore.Qt.UserRole + 2)
             item.setData(all_metadata, QtCore.Qt.UserRole + 3)
-            item.setData(search_workaround, QtCore.Qt.UserRole + 4)
+            item.setData(search_workaround_base, QtCore.Qt.UserRole + 4)
             item.setData(file_exists, QtCore.Qt.UserRole + 5)
             item.setData(i[8], QtCore.Qt.UserRole + 6)  # File hash
             item.setData(position, QtCore.Qt.UserRole + 7)
             item.setData(False, QtCore.Qt.UserRole + 8) # Is the cover being displayed?
             item.setData(date_added, QtCore.Qt.UserRole + 9)
+            item.setData(search_workaround_base, QtCore.Qt.UserRole + 10)
             item.setIcon(QtGui.QIcon(img_pixmap))
             self.view_model.appendRow(item)
 
             # all_metadata is just being sent. It is not being displayed
             # It will be correlated to the current row as its first userrole
             self.table_rows.append(
-                [title, author, None, year, tags, all_metadata, i[7]])
+                [title, author, None, year, tags, all_metadata, i[8]])
 
     def create_table_model(self):
         table_header = ['Title', 'Author', 'Status', 'Year', 'Tags']
@@ -215,6 +217,61 @@ class Library:
 
         self.proxy_model.sort(0, sort_order)
         self.parent.start_culling_timer()
+
+    def generate_library_tags(self):
+        db_library_directories = database.DatabaseFunctions(
+            self.parent.database_path).fetch_data(
+                ('Path', 'Name', 'Tags'),
+                'directories',
+                {'Path': ''},
+                'LIKE')
+
+        library_directories = {
+            i[0]: (i[1], i[2]) for i in db_library_directories}
+
+        # Both the models will have to be done separately
+        # Item Model
+        for i in range(self.view_model.rowCount()):
+            this_item = self.view_model.item(i, 0)
+
+            all_metadata = this_item.data(QtCore.Qt.UserRole + 3)
+            search_workaround_base = this_item.data(QtCore.Qt.UserRole + 10)
+
+            path = os.path.dirname(all_metadata['path'])
+            path_ref = pathlib.Path(path)
+
+            for j in library_directories:
+                if j == path or pathlib.Path(j) in path_ref.parents:
+                    directory_name = library_directories[j][0].lower()
+                    directory_tags = library_directories[j][1].lower()
+
+                    if directory_name:
+                        search_workaround_base += directory_name
+                    if directory_tags:
+                        search_workaround_base += directory_tags
+
+                    this_item.setData(search_workaround_base, QtCore.Qt.UserRole + 4)
+                    break
+
+        # Table Model
+        for count, i in enumerate(self.table_model.display_data):
+            all_metadata = i[5]
+            path = os.path.dirname(all_metadata['path'])
+            path_ref = pathlib.Path(path)
+
+            for j in library_directories:
+                if j == path or pathlib.Path(j) in path_ref.parents:
+                    directory_name = library_directories[j][0].lower()
+                    directory_tags = library_directories[j][1].lower()
+
+                try:
+                    i[7] = directory_name
+                    i[8] = directory_tags
+                except IndexError:
+                    i.extend([directory_name, directory_tags])
+
+                self.table_model.display_data[count] = i
+                break
 
     def prune_models(self, valid_paths):
         # To be executed when the library is updated by folder

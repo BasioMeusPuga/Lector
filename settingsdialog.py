@@ -191,8 +191,7 @@ class SettingsUI(QtWidgets.QDialog, settingswindow.Ui_Dialog):
 
         # The books the search thread has found
         # are now in self.thread.valid_files
-        valid_files = [i[0] for i in self.thread.valid_files]
-        if not valid_files:
+        if not self.thread.valid_files:
             return
 
         # Hey, messaging is important, okay?
@@ -201,7 +200,7 @@ class SettingsUI(QtWidgets.QDialog, settingswindow.Ui_Dialog):
 
         # We now create a new thread to put those files into the database
         self.thread = BackGroundBookAddition(
-            valid_files, self.database_path, True, self.parent)
+            self.thread.valid_files, self.database_path, True, self.parent)
         self.thread.finished.connect(self.parent.move_on)
         self.thread.start()
 
