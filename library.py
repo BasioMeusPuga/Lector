@@ -248,6 +248,8 @@ class Library:
 
                     return directory_name, directory_tags
 
+            return None, None
+
         # Both the models will have to be done separately
         # Item Model
         for i in range(self.view_model.rowCount()):

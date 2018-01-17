@@ -18,16 +18,14 @@ TODO
         ✓ Tie file deletion and tab closing to model updates
         ✓ Create separate thread for parser - Show progress in main window
         ✓ Memory management
+        ✓ Mass tagging
+        ✓ Add capability to sort by new
         ? Create emblem per filetype
         Table view
         Ignore a / the / numbers for sorting purposes
-        Put the path in the scope of the search
-            maybe as a type: switch
-        Mass tagging
         Information dialog widget
         Context menu: Cache, Read, Edit database, delete, Mark read/unread
         Set focus to newly added file
-        Add capability to sort by new
     Reading:
         ✓ Drop down for TOC
         ✓ Override the keypress event of the textedit
@@ -46,7 +44,6 @@ TODO
         Record progress
         Pagination
         Set context menu for definitions and the like
-        Hide progressbar
     Filetypes:
         ✓ cbz, cbr support
             ✓ Keep font settings enabled but only for background color

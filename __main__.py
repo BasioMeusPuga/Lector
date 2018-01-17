@@ -218,7 +218,10 @@ class MainUI(QtWidgets.QMainWindow, mainwindow.Ui_MainWindow):
 
         # Open last... open books.
         # Then set the value to None for the next run
-        self.open_files(self.settings['last_open_books'])
+        if self.settings['last_open_books']:
+            self.open_files(self.settings['last_open_books'])
+        else:
+            self.settings['last_open_tab'] = None
 
         # Scan the library @ startup
         if self.settings['scan_library']:
@@ -570,6 +573,10 @@ class MainUI(QtWidgets.QMainWindow, mainwindow.Ui_MainWindow):
         if not file_paths:
             return
 
+        def finishing_touches():
+            self.format_contentView()
+            self.start_culling_timer()
+
         print('Attempting to open: ' + ', '.join(file_paths))
 
         contents = sorter.BookSorter(
@@ -596,10 +603,11 @@ class MainUI(QtWidgets.QMainWindow, mainwindow.Ui_MainWindow):
             if self.settings['last_open_tab'] == this_path:
                 self.tabWidget.setCurrentIndex(i)
                 self.settings['last_open_tab'] = None
+                finishing_touches()
                 return
 
         self.tabWidget.setCurrentIndex(self.tabWidget.count() - 1)
-        self.format_contentView()
+        finishing_touches()
 
     def get_color(self):
         signal_sender = self.sender().objectName()

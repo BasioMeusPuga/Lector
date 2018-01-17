@@ -117,8 +117,7 @@ class BookSorter:
                 ('DateAdded', 'Position', 'Bookmarks'),
                 'books',
                 {'Hash': file_hash},
-                'EQUALS',
-                True)
+                'EQUALS')[0]
 
         book_data = []
         for i in database_return:

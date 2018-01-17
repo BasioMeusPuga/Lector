@@ -153,8 +153,9 @@ class TableProxyModel(QtCore.QSortFilterProxyModel):
             pass
 
         for i in valid_data:
-            if self.filter_string in i:
-                return True
+            if i:
+                if self.filter_string in i:
+                    return True
 
         return False
 
