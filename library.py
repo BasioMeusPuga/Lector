@@ -16,10 +16,6 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-# TODO
-# Implement filterAcceptsRow for the view_model
-
-
 import os
 import pickle
 import pathlib
@@ -108,14 +104,6 @@ class Library:
                 'file_exists': file_exists}
 
             tooltip_string = title + '\nAuthor: ' + author + '\nYear: ' + str(year)
-            if tags:
-                tooltip_string += ('\nTags: ' + tags)
-
-            # This remarkably ugly hack is because the QSortFilterProxyModel
-            # doesn't easily allow searching through multiple item roles
-            search_workaround_base = title + ' ' + author
-            if tags:
-                search_workaround_base += tags
 
             # Additional data can be set using an incrementing
             # QtCore.Qt.UserRole
@@ -130,21 +118,17 @@ class Library:
             item = QtGui.QStandardItem()
             item.setToolTip(tooltip_string)
 
-            # The following order is needed to keep sorting working
-            # search_workaround_base is present in 2 places so that the UserRole + 10
-            # value can be used to create a new UserRole + 4 value whenever there's
-            # a change in the directory tags
+            # Just keep the following order. It's way too much trouble otherwise
             item.setData(title, QtCore.Qt.UserRole)
             item.setData(author, QtCore.Qt.UserRole + 1)
             item.setData(year, QtCore.Qt.UserRole + 2)
             item.setData(all_metadata, QtCore.Qt.UserRole + 3)
-            item.setData(search_workaround_base, QtCore.Qt.UserRole + 4)
+            item.setData(tags, QtCore.Qt.UserRole + 4)
             item.setData(file_exists, QtCore.Qt.UserRole + 5)
             item.setData(i[8], QtCore.Qt.UserRole + 6)  # File hash
             item.setData(position, QtCore.Qt.UserRole + 7)
             item.setData(False, QtCore.Qt.UserRole + 8) # Is the cover being displayed?
             item.setData(date_added, QtCore.Qt.UserRole + 9)
-            item.setData(search_workaround_base, QtCore.Qt.UserRole + 10)
             item.setIcon(QtGui.QIcon(img_pixmap))
             self.view_model.appendRow(item)
 
@@ -181,8 +165,8 @@ class Library:
             self.parent.libraryToolBar.searchBar.text())
 
     def create_proxymodel(self):
-        self.proxy_model = QtCore.QSortFilterProxyModel()
-        # self.proxy_model = ItemProxyModel()
+        # self.proxy_model = QtCore.QSortFilterProxyModel()
+        self.proxy_model = ItemProxyModel()
         self.proxy_model.setSourceModel(self.view_model)
         self.proxy_model.setSortCaseSensitivity(False)
         s = QtCore.QSize(160, 250)  # Set icon sizing here
@@ -191,9 +175,11 @@ class Library:
         self.update_proxymodel()
 
     def update_proxymodel(self):
-        self.proxy_model.setFilterRole(QtCore.Qt.UserRole + 4)
-        self.proxy_model.setFilterCaseSensitivity(QtCore.Qt.CaseInsensitive)
-        self.proxy_model.setFilterWildcard(
+        self.proxy_model.invalidateFilter()
+        self.proxy_model.setFilterParams(
+            self.parent.libraryToolBar.searchBar.text(),
+            self.parent.active_library_filters)
+        self.proxy_model.setFilterFixedString(
             self.parent.libraryToolBar.searchBar.text())
 
         self.parent.statusMessage.setText(
@@ -228,7 +214,7 @@ class Library:
         db_library_directories = database.DatabaseFunctions(
             self.parent.database_path).fetch_data(
                 ('Path', 'Name', 'Tags'),
-                'directories',
+                'directories',  # This checks the directories table NOT the book one
                 {'Path': ''},
                 'LIKE')
 
@@ -261,12 +247,17 @@ class Library:
         for i in range(self.view_model.rowCount()):
             this_item = self.view_model.item(i, 0)
             all_metadata = this_item.data(QtCore.Qt.UserRole + 3)
-            search_workaround_base = this_item.data(QtCore.Qt.UserRole + 10)
+            directory_name, directory_tags = get_tags(all_metadata)
 
-            for j in get_tags(all_metadata):
-                if j:
-                    search_workaround_base += j
-            this_item.setData(search_workaround_base, QtCore.Qt.UserRole + 4)
+            this_item.setData(directory_name, QtCore.Qt.UserRole + 10)
+            this_item.setData(directory_tags, QtCore.Qt.UserRole + 11)
+
+            # search_workaround_base = this_item.data(QtCore.Qt.UserRole + 10)
+
+            # for j in get_tags(all_metadata):
+            #     if j:
+            #         search_workaround_base += j
+            # this_item.setData(search_workaround_base, QtCore.Qt.UserRole + 4)
 
         # Table Model
         for count, i in enumerate(self.table_model.display_data):

@@ -186,9 +186,6 @@ class SettingsUI(QtWidgets.QDialog, settingswindow.Ui_Dialog):
         self.thread.start()
 
     def finished_iterating(self):
-        # TODO
-        # Account for file tags
-
         # The books the search thread has found
         # are now in self.thread.valid_files
         if not self.thread.valid_files:

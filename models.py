@@ -21,12 +21,43 @@ import pathlib
 from PyQt5 import QtCore, QtWidgets
 from resources import pie_chart
 
+
 class ItemProxyModel(QtCore.QSortFilterProxyModel):
     def __init__(self, parent=None):
         super(ItemProxyModel, self).__init__(parent)
+        self.filter_text = None
+        self.active_library_filters = None
+
+    def setFilterParams(self, filter_text, active_library_filters):
+        self.filter_text = filter_text
+        self.active_library_filters = active_library_filters
 
     def filterAcceptsRow(self, row, parent):
-        return True
+        model = self.sourceModel()
+
+        this_index = model.index(row, 0)
+
+        title = model.data(this_index, QtCore.Qt.UserRole)
+        author = model.data(this_index, QtCore.Qt.UserRole + 1)
+        tags = model.data(this_index, QtCore.Qt.UserRole + 4)
+        directory_name = model.data(this_index, QtCore.Qt.UserRole + 10)
+        directory_tags = model.data(this_index, QtCore.Qt.UserRole + 11)
+
+        if self.active_library_filters:
+            if directory_name not in self.active_library_filters:
+                return False
+        else:
+            return False
+
+        if not self.filter_text:
+            return True
+        else:
+            valid_data = [i.lower() for i in (title, author, tags, directory_name, directory_tags) if i is not None]
+            for i in valid_data:
+                if self.filter_text.lower() in i:
+                    return True
+
+        return False
 
 
 class MostExcellentTableModel(QtCore.QAbstractTableModel):

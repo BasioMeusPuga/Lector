@@ -76,10 +76,6 @@ class BackGroundBookDeletion(QtCore.QThread):
 
 
 class BackGroundBookSearch(QtCore.QThread):
-    # TODO
-    # Change existing sorter module functionality to handle preset tags
-    # Change database to accomodate User Tags, Folder Name, Folder Tags
-
     def __init__(self, data_list, parent=None):
         super(BackGroundBookSearch, self).__init__(parent)
         self.parent = parent
