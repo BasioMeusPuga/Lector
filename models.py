@@ -21,13 +21,12 @@ import pathlib
 from PyQt5 import QtCore, QtWidgets
 from resources import pie_chart
 
-
 class ItemProxyModel(QtCore.QSortFilterProxyModel):
-    # TODO
-    # Implement filterAcceptsRow
-
     def __init__(self, parent=None):
         super(ItemProxyModel, self).__init__(parent)
+
+    def filterAcceptsRow(self, row, parent):
+        return True
 
 
 class MostExcellentTableModel(QtCore.QAbstractTableModel):
@@ -131,10 +130,12 @@ class TableProxyModel(QtCore.QSortFilterProxyModel):
         super(TableProxyModel, self).__init__(parent)
         self.filter_string = None
         self.filter_columns = None
+        self.active_library_filters = None
 
-    def setFilterParams(self, filter_text, filter_columns):
+    def setFilterParams(self, filter_text, filter_columns, active_library_filters):
         self.filter_string = filter_text.lower()
         self.filter_columns = filter_columns
+        self.active_library_filters = active_library_filters
 
     def filterAcceptsRow(self, row_num, parent):
         if self.filter_string is None or self.filter_columns is None:
@@ -151,6 +152,14 @@ class TableProxyModel(QtCore.QSortFilterProxyModel):
             valid_data.extend([model.display_data[row_num][7], model.display_data[row_num][8]])
         except IndexError:  # Columns 7 and 8 are added after creation of the model
             pass
+
+        # Filter out all books not in the active library filters
+        if self.active_library_filters:
+            current_library_name = valid_data[-2]
+            if current_library_name not in self.active_library_filters:
+                return False
+        else:
+            return False
 
         for i in valid_data:
             if i:

@@ -49,7 +49,7 @@ class MainUI(QtWidgets.QMainWindow, mainwindow.Ui_MainWindow):
         self.current_profile_index = None
         self.comic_profile = {}
         self.database_path = None
-        self.library_filter_menu = None
+        self.active_library_filters = []
 
         # Initialize toolbars
         self.libraryToolBar = LibraryToolBar(self)
@@ -185,6 +185,8 @@ class MainUI(QtWidgets.QMainWindow, mainwindow.Ui_MainWindow):
         self.lib_ref.create_table_model()
         self.lib_ref.create_proxymodel()
         self.lib_ref.generate_library_tags()
+        self.set_library_filter()
+        self.start_culling_timer()
 
         # ListView
         self.listView.setGridSize(QtCore.QSize(175, 240))
@@ -327,6 +329,7 @@ class MainUI(QtWidgets.QMainWindow, mainwindow.Ui_MainWindow):
         # Remember file addition modality
         # If a file is added from here, it should not be removed
         # from the libary in case of a database refresh
+        # Individually added files are not subject to library filtering
 
         opened_files = QtWidgets.QFileDialog.getOpenFileNames(
             self, 'Open file', self.settings['last_open_path'],
@@ -827,8 +830,27 @@ class MainUI(QtWidgets.QMainWindow, mainwindow.Ui_MainWindow):
         self.libraryToolBar.libraryFilterButton.setMenu(self.library_filter_menu)
 
     def set_library_filter(self, event=None):
-        print(event)
-        print(self.sender().text())
+        self.active_library_filters = []
+        something_was_unchecked = False
+
+        if self.sender():  # Program startup sends a None here
+            if self.sender().text() == 'All':
+                for i in self.library_filter_menu.actions():
+                    i.setChecked(self.sender().isChecked())
+
+        for i in self.library_filter_menu.actions()[:-2]:
+            if i.isChecked():
+                self.active_library_filters.append(i.text())
+            else:
+                something_was_unchecked = True
+
+        if something_was_unchecked:
+            self.library_filter_menu.actions()[-1].setChecked(False)
+        else:
+            self.library_filter_menu.actions()[-1].setChecked(True)
+
+        self.lib_ref.update_proxymodel()
+        self.lib_ref.update_table_proxy_model()
 
     def toggle_toolbars(self):
         self.settings['show_toolbars'] = not self.settings['show_toolbars']

@@ -26,6 +26,7 @@ TODO
         Information dialog widget
         Context menu: Cache, Read, Edit database, delete, Mark read/unread
         Set focus to newly added file
+        Allow editing of database data through the UI
     Reading:
         ✓ Drop down for TOC
         ✓ Override the keypress event of the textedit
@@ -44,6 +45,7 @@ TODO
         Record progress
         Pagination
         Set context menu for definitions and the like
+        Line spacing
     Filetypes:
         ✓ cbz, cbr support
             ✓ Keep font settings enabled but only for background color

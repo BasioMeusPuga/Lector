@@ -35,9 +35,6 @@ class DatabaseInit:
     def create_database(self):
         # TODO
         # Add separate columns for:
-        # directory tags
-        # bookmarks
-        # date added
         # addition mode
         self.database.execute(
             "CREATE TABLE books \

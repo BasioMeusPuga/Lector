@@ -26,7 +26,7 @@ import pathlib
 from PyQt5 import QtGui, QtCore
 
 import database
-from models import MostExcellentTableModel, TableProxyModel
+from models import MostExcellentTableModel, TableProxyModel, ItemProxyModel
 
 
 class Library:
@@ -131,6 +131,9 @@ class Library:
             item.setToolTip(tooltip_string)
 
             # The following order is needed to keep sorting working
+            # search_workaround_base is present in 2 places so that the UserRole + 10
+            # value can be used to create a new UserRole + 4 value whenever there's
+            # a change in the directory tags
             item.setData(title, QtCore.Qt.UserRole)
             item.setData(author, QtCore.Qt.UserRole + 1)
             item.setData(year, QtCore.Qt.UserRole + 2)
@@ -169,7 +172,9 @@ class Library:
     def update_table_proxy_model(self):
         self.table_proxy_model.invalidateFilter()
         self.table_proxy_model.setFilterParams(
-            self.parent.libraryToolBar.searchBar.text(), [0, 1, 4])
+            self.parent.libraryToolBar.searchBar.text(),
+            [0, 1, 4],
+            self.parent.active_library_filters)
         # This isn't needed, but it forces a model update every time the
         # text in the line edit changes. So I guess it is needed.
         self.table_proxy_model.setFilterFixedString(
@@ -177,6 +182,7 @@ class Library:
 
     def create_proxymodel(self):
         self.proxy_model = QtCore.QSortFilterProxyModel()
+        # self.proxy_model = ItemProxyModel()
         self.proxy_model.setSourceModel(self.view_model)
         self.proxy_model.setSortCaseSensitivity(False)
         s = QtCore.QSize(160, 250)  # Set icon sizing here
