@@ -52,7 +52,9 @@ class ItemProxyModel(QtCore.QSortFilterProxyModel):
         if not self.filter_text:
             return True
         else:
-            valid_data = [i.lower() for i in (title, author, tags, directory_name, directory_tags) if i is not None]
+            valid_data = [
+                i.lower() for i in (
+                    title, author, tags, directory_name, directory_tags) if i is not None]
             for i in valid_data:
                 if self.filter_text.lower() in i:
                     return True

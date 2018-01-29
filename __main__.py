@@ -140,7 +140,7 @@ class MainUI(QtWidgets.QMainWindow, mainwindow.Ui_MainWindow):
         self.bookToolBar.profileBox.setCurrentIndex(self.current_profile_index)
 
         self.bookToolBar.fontBox.currentFontChanged.connect(self.modify_font)
-        self.bookToolBar.fontSizeBox.currentTextChanged.connect(self.modify_font)
+        self.bookToolBar.fontSizeBox.currentIndexChanged.connect(self.modify_font)
         self.bookToolBar.lineSpacingUp.triggered.connect(self.modify_font)
         self.bookToolBar.lineSpacingDown.triggered.connect(self.modify_font)
         self.bookToolBar.paddingUp.triggered.connect(self.modify_font)
@@ -663,9 +663,10 @@ class MainUI(QtWidgets.QMainWindow, mainwindow.Ui_MainWindow):
 
         if signal_sender == 'fontSizeBox':
             old_size = current_profile['font_size']
-            new_size = self.bookToolBar.fontSizeBox.currentText()
+            new_size = self.bookToolBar.fontSizeBox.itemText(
+                self.bookToolBar.fontSizeBox.currentIndex())
             if new_size.isdigit():
-                current_profile['font_size'] = int(new_size)
+                current_profile['font_size'] = new_size
             else:
                 current_profile['font_size'] = old_size
 
@@ -769,7 +770,9 @@ class MainUI(QtWidgets.QMainWindow, mainwindow.Ui_MainWindow):
             self.bookToolBar.fontBox.blockSignals(True)
             self.bookToolBar.fontSizeBox.blockSignals(True)
             self.bookToolBar.fontBox.setCurrentText(font)
-            self.bookToolBar.fontSizeBox.setCurrentText(str(font_size))
+            current_index = self.bookToolBar.fontSizeBox.findText(
+                str(font_size), QtCore.Qt.MatchExactly)
+            self.bookToolBar.fontSizeBox.setCurrentIndex(current_index)
             self.bookToolBar.fontBox.blockSignals(False)
             self.bookToolBar.fontSizeBox.blockSignals(False)
 

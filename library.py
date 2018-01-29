@@ -165,7 +165,6 @@ class Library:
             self.parent.libraryToolBar.searchBar.text())
 
     def create_proxymodel(self):
-        # self.proxy_model = QtCore.QSortFilterProxyModel()
         self.proxy_model = ItemProxyModel()
         self.proxy_model.setSourceModel(self.view_model)
         self.proxy_model.setSortCaseSensitivity(False)
@@ -251,13 +250,6 @@ class Library:
 
             this_item.setData(directory_name, QtCore.Qt.UserRole + 10)
             this_item.setData(directory_tags, QtCore.Qt.UserRole + 11)
-
-            # search_workaround_base = this_item.data(QtCore.Qt.UserRole + 10)
-
-            # for j in get_tags(all_metadata):
-            #     if j:
-            #         search_workaround_base += j
-            # this_item.setData(search_workaround_base, QtCore.Qt.UserRole + 4)
 
         # Table Model
         for count, i in enumerate(self.table_model.display_data):

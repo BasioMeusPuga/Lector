@@ -95,10 +95,6 @@ class BookSorter:
             progress_object_generator()
 
     def database_hashes(self):
-        # TODO
-        # Overwrite book if deleted and then re-added
-        # Also fetch the path of the file here
-
         all_hashes_and_paths = database.DatabaseFunctions(
             self.database_path).fetch_data(
                 ('Hash', 'Path'),
