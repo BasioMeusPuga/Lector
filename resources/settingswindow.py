@@ -2,7 +2,7 @@
 
 # Form implementation generated from reading ui file 'raw/settings.ui'
 #
-# Created by: PyQt5 UI code generator 5.9.2
+# Created by: PyQt5 UI code generator 5.10
 #
 # WARNING! All changes made in this file will be lost!
 
@@ -51,6 +51,16 @@ class Ui_Dialog(object):
         self.horizontalLayout_4.addWidget(self.autoTags)
         self.verticalLayout.addLayout(self.horizontalLayout_4)
         self.gridLayout.addLayout(self.verticalLayout, 0, 0, 1, 1)
+        self.horizontalLayout = QtWidgets.QHBoxLayout()
+        self.horizontalLayout.setObjectName("horizontalLayout")
+        spacerItem = QtWidgets.QSpacerItem(40, 20, QtWidgets.QSizePolicy.Expanding, QtWidgets.QSizePolicy.Minimum)
+        self.horizontalLayout.addItem(spacerItem)
+        self.performCulling = QtWidgets.QCheckBox(self.groupBox)
+        self.performCulling.setObjectName("performCulling")
+        self.horizontalLayout.addWidget(self.performCulling)
+        spacerItem1 = QtWidgets.QSpacerItem(40, 20, QtWidgets.QSizePolicy.Expanding, QtWidgets.QSizePolicy.Minimum)
+        self.horizontalLayout.addItem(spacerItem1)
+        self.gridLayout.addLayout(self.horizontalLayout, 1, 0, 1, 1)
         self.verticalLayout_2.addWidget(self.groupBox)
         self.gridLayout_3.addLayout(self.verticalLayout_2, 0, 0, 1, 1)
         self.horizontalLayout_2 = QtWidgets.QHBoxLayout()
@@ -78,6 +88,7 @@ class Ui_Dialog(object):
         self.fileRemember.setText(_translate("Dialog", "Remember open files"))
         self.coverShadows.setText(_translate("Dialog", "Cover shadows"))
         self.autoTags.setText(_translate("Dialog", "Generate tags from files"))
+        self.performCulling.setText(_translate("Dialog", "Load covers only when needed"))
         self.okButton.setText(_translate("Dialog", "OK"))
         self.cancelButton.setText(_translate("Dialog", "Cancel"))
         self.aboutButton.setText(_translate("Dialog", "About"))

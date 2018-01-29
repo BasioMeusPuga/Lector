@@ -274,17 +274,43 @@ class MainUI(QtWidgets.QMainWindow, mainwindow.Ui_MainWindow):
                         'EQUALS',
                         True)
 
-                img_pixmap = QtGui.QPixmap()
-                if cover:
-                    img_pixmap.loadFromData(cover)
-                else:
-                    img_pixmap.load(':/images/NotFound.png')
-                img_pixmap = img_pixmap.scaled(420, 600, QtCore.Qt.IgnoreAspectRatio)
-                this_item.setIcon(QtGui.QIcon(img_pixmap))
-                this_item.setData(True, QtCore.Qt.UserRole + 8)
+                self.cover_loader(this_item, cover)
 
     def start_culling_timer(self):
-        self.culling_timer.start(30)
+        if self.settings['perform_culling']:
+            self.culling_timer.start(30)
+
+    def load_all_covers(self):
+        all_covers_db = database.DatabaseFunctions(
+            self.database_path).fetch_data(
+                ('Hash', 'CoverImage',),
+                'books',
+                {'Hash': ''},
+                'LIKE')
+
+        all_covers = {
+            i[0]: i[1] for i in all_covers_db}
+
+        for i in range(self.lib_ref.view_model.rowCount()):
+            this_item = self.lib_ref.view_model.item(i, 0)
+
+            is_cover_already_displayed = this_item.data(QtCore.Qt.UserRole + 8)
+            if is_cover_already_displayed:
+                continue
+
+            book_hash = this_item.data(QtCore.Qt.UserRole + 6)
+            cover = all_covers[book_hash]
+            self.cover_loader(this_item, cover)
+
+    def cover_loader(self, item, cover):
+        img_pixmap = QtGui.QPixmap()
+        if cover:
+            img_pixmap.loadFromData(cover)
+        else:
+            img_pixmap.load(':/images/NotFound.png')
+        img_pixmap = img_pixmap.scaled(420, 600, QtCore.Qt.IgnoreAspectRatio)
+        item.setIcon(QtGui.QIcon(img_pixmap))
+        item.setData(True, QtCore.Qt.UserRole + 8)
 
     def test_function(self):
         print('Caesar si viveret, ad remum dareris')

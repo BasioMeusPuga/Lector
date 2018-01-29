@@ -137,6 +137,9 @@ class Library:
             self.table_rows.append(
                 [title, author, None, year, tags, all_metadata, i[8]])
 
+        if not self.parent.settings['perform_culling']:
+            self.parent.load_all_covers()
+
     def create_table_model(self):
         table_header = ['Title', 'Author', 'Status', 'Year', 'Tags']
         self.table_model = MostExcellentTableModel(

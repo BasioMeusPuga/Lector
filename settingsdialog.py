@@ -59,11 +59,13 @@ class SettingsUI(QtWidgets.QDialog, settingswindow.Ui_Dialog):
         self.coverShadows.setChecked(self.parent.settings['cover_shadows'])
         self.refreshLibrary.setChecked(self.parent.settings['scan_library'])
         self.fileRemember.setChecked(self.parent.settings['remember_files'])
+        self.performCulling.setChecked(self.parent.settings['perform_culling'])
 
         self.autoTags.clicked.connect(self.manage_checkboxes)
         self.coverShadows.clicked.connect(self.manage_checkboxes)
         self.refreshLibrary.clicked.connect(self.manage_checkboxes)
         self.fileRemember.clicked.connect(self.manage_checkboxes)
+        self.performCulling.clicked.connect(self.manage_checkboxes)
 
         # Generate the filesystem treeView
         self.generate_tree()
@@ -234,9 +236,13 @@ class SettingsUI(QtWidgets.QDialog, settingswindow.Ui_Dialog):
             'coverShadows': 'cover_shadows',
             'autoTags': 'auto_tags',
             'refreshLibrary': 'scan_library',
-            'fileRemember': 'remember_files'}
+            'fileRemember': 'remember_files',
+            'performCulling': 'perform_culling'}
 
         self.parent.settings[sender_dict[sender]] = not self.parent.settings[sender_dict[sender]]
+
+        if not self.performCulling.isChecked():
+            self.parent.load_all_covers()
 
     def about_pressed(self):
         self.treeView.setVisible(not self.treeView.isVisible())

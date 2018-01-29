@@ -89,6 +89,8 @@ class Settings:
             'scanLibraryAtStart', 'False').capitalize())
         self.parent.settings['remember_files'] = literal_eval(self.settings.value(
             'rememberFiles', 'False').capitalize())
+        self.parent.settings['perform_culling'] = literal_eval(self.settings.value(
+            'performCulling', 'True').capitalize())
         self.settings.endGroup()
 
     def save_settings(self):
@@ -147,4 +149,5 @@ class Settings:
         self.settings.setValue('coverShadows', current_settings['cover_shadows'])
         self.settings.setValue('autoTags', current_settings['auto_tags'])
         self.settings.setValue('scanLibraryAtStart', current_settings['scan_library'])
+        self.settings.setValue('performCulling', current_settings['perform_culling'])
         self.settings.endGroup()
