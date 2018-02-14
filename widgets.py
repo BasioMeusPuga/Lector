@@ -517,12 +517,7 @@ class Tab(QtWidgets.QWidget):
             self.contentView.clear()
             self.contentView.setHtml(required_content)
 
-            # TODO
-            # This here. Use it for stuff.
-            # self.contentView.document().begin().blockFormat().setLineHeight(1000, QtGui.QTextBlockFormat.FixedHeight)
-            # self.contentView.document().end().blockFormat().setLineHeight(1000, QtGui.QTextBlockFormat.FixedHeight)
-
-    def format_view(self, font, font_size, foreground, background, padding):
+    def format_view(self, font, font_size, foreground, background, padding, line_spacing):
         if self.are_we_doing_images_only:
             # Tab color does not need to be set separately in case
             # no padding is set for the viewport of a QGraphicsView
@@ -533,13 +528,30 @@ class Tab(QtWidgets.QWidget):
             self.contentView.resizeEvent()
 
         else:
-            # print(dir(self.contentView.document().begin().blockFormat())) ## TODO Line Height here
-            # self.contentView.document().begin().blockFormat().setLineHeight(1000, QtGui.QTextBlockFormat.FixedHeight)
-            # self.contentView.document().end().blockFormat().setLineHeight(1000, QtGui.QTextBlockFormat.FixedHeight)
+
             self.contentView.setViewportMargins(padding, 0, padding, 0)
             self.contentView.setStyleSheet(
                 "QTextEdit {{font-family: {0}; font-size: {1}px; color: {2}; background-color: {3}}}".format(
                     font, font_size, foreground.name(), background.name()))
+
+            # Line spacing
+            # Iterate over each block using the QTextCursor
+            # Set line spacing per a block format
+            # This is proportional line spacing so assume a divisor of 100
+            block_format = QtGui.QTextBlockFormat()
+            block_format.setLineHeight(
+                line_spacing, QtGui.QTextBlockFormat.ProportionalHeight)
+
+            this_cursor = self.contentView.textCursor()
+            this_cursor.movePosition(QtGui.QTextCursor.Start, 0, 1)
+
+            while True:
+                old_position = this_cursor.position()
+                this_cursor.mergeBlockFormat(block_format)
+                this_cursor.movePosition(QtGui.QTextCursor.NextBlock, 0, 1)
+                new_position = this_cursor.position()
+                if old_position == new_position:
+                    break
 
     def toggle_bookmarks(self):
         self.dockWidget.setWindowTitle('Bookmarks')
@@ -690,7 +702,6 @@ class PliantWidgetsCommonFunctions():
 
     def wheelEvent(self, event, are_we_doing_images_only):
         if self.pw.ignore_wheel_event:
-            # Ignore first n wheel events after a chapter change
             self.pw.ignore_wheel_event_number += 1
             if self.pw.ignore_wheel_event_number > 20:
                 self.pw.ignore_wheel_event = False

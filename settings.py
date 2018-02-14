@@ -17,7 +17,7 @@ class Settings:
             'background': QtGui.QColor().fromRgb(216, 216, 216),
             'padding': 140,
             'font_size': 20,
-            'line_spacing': 1.5}
+            'line_spacing': 110}
 
         default_profile2 = {
             'font': 'Roboto',
@@ -25,7 +25,7 @@ class Settings:
             'background': QtGui.QColor().fromRgb(22, 22, 22),
             'padding': 140,
             'font_size': 20,
-            'line_spacing': 1.5}
+            'line_spacing': 110}
 
         default_profile3 = {
             'font': 'Clear Sans',
@@ -33,7 +33,7 @@ class Settings:
             'background': QtGui.QColor().fromRgb(0, 43, 54),
             'padding': 140,
             'font_size': 30,
-            'line_spacing': 1.5}
+            'line_spacing': 110}
 
         self.default_profiles = [
             default_profile1, default_profile2, default_profile3]

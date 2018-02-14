@@ -84,6 +84,9 @@
           </item>
           <item>
            <widget class="QCheckBox" name="performCulling">
+            <property name="toolTip">
+             <string>Enabling reduces startup time and memory usage</string>
+            </property>
             <property name="text">
              <string>Load covers only when needed</string>
             </property>
@@ -108,14 +111,14 @@
      <item>
       <widget class="QPushButton" name="okButton">
        <property name="text">
-        <string>OK</string>
+        <string>Scan Library</string>
        </property>
       </widget>
      </item>
      <item>
       <widget class="QPushButton" name="cancelButton">
        <property name="text">
-        <string>Cancel</string>
+        <string>Close</string>
        </property>
       </widget>
      </item>
@@ -123,6 +126,9 @@
       <widget class="QPushButton" name="aboutButton">
        <property name="text">
         <string>About</string>
+       </property>
+       <property name="checkable">
+        <bool>true</bool>
        </property>
       </widget>
      </item>

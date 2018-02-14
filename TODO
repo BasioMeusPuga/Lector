@@ -7,7 +7,7 @@ TODO
         ✓ Remember files
         ✓ Check files (hashes) upon restart
         ✓ Draw shadows
-        Perform culling
+        ✓ Perform culling
     Library:
         ✓ sqlite3 for cover images cache
         ✓ sqlite3 for storing metadata
@@ -41,6 +41,7 @@ TODO
         ✓ Selectable background color for QGraphicsView
         ✓ View modes for QGraphicsView
         ✓ View and hide toolbar actions in a list
+        Use embedded fonts
         Graphical themes
         Comic view keyboard shortcuts
         Comic view modes
@@ -50,13 +51,14 @@ TODO
         Pagination
         Set context menu for definitions and the like
         Line spacing
+        Scrolling: Smooth / By Line
     Filetypes:
         ✓ cbz, cbr support
             ✓ Keep font settings enabled but only for background color
             Cache next and previous images
         epub support
         mobi, azw support
-        txt, doc, djvu, fb2 support
+        txt, doc, chm, djvu, fb2 support
         ? Plugin system for parsers
         ? pdf support
     Internet:

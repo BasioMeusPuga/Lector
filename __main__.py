@@ -696,10 +696,10 @@ class MainUI(QtWidgets.QMainWindow, mainwindow.Ui_MainWindow):
             else:
                 current_profile['font_size'] = old_size
 
-        if signal_sender == 'lineSpacingUp':
-            current_profile['line_spacing'] += .5
-        if signal_sender == 'lineSpacingDown':
-            current_profile['line_spacing'] -= .5
+        if signal_sender == 'lineSpacingUp' and current_profile['line_spacing'] < 200:
+            current_profile['line_spacing'] += 10
+        if signal_sender == 'lineSpacingDown' and current_profile['line_spacing'] > 100:
+            current_profile['line_spacing'] -= 10
 
         if signal_sender == 'paddingUp':
             current_profile['padding'] += 5
@@ -791,6 +791,7 @@ class MainUI(QtWidgets.QMainWindow, mainwindow.Ui_MainWindow):
             background = current_profile['background']
             padding = current_profile['padding']
             font_size = current_profile['font_size']
+            line_spacing = current_profile['line_spacing']
 
             # Change toolbar widgets to match new settings
             self.bookToolBar.fontBox.blockSignals(True)
@@ -808,7 +809,7 @@ class MainUI(QtWidgets.QMainWindow, mainwindow.Ui_MainWindow):
                 'background-color: %s' % background.name())
 
             current_tab.format_view(
-                font, font_size, foreground, background, padding)
+                font, font_size, foreground, background, padding, line_spacing)
 
     def reset_profile(self):
         current_profile_index = self.bookToolBar.profileBox.currentIndex()
