@@ -41,6 +41,8 @@ TODO
         ✓ Selectable background color for QGraphicsView
         ✓ View modes for QGraphicsView
         ✓ View and hide toolbar actions in a list
+        ✓ Line spacing
+        Search document using QTextCursor?
         Use embedded fonts
         Graphical themes
         Comic view keyboard shortcuts
@@ -50,7 +52,6 @@ TODO
         Record progress
         Pagination
         Set context menu for definitions and the like
-        Line spacing
         Scrolling: Smooth / By Line
     Filetypes:
         ✓ cbz, cbr support

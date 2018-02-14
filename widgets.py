@@ -412,7 +412,6 @@ class Tab(QtWidgets.QWidget):
             self.contentView.loadImage(chapter_content)
         else:
             self.contentView = PliantQTextBrowser(self.window(), self)
-            # print(dir(self.contentView.document()))  ## TODO USE this for modifying formatting and searching
 
             relative_path_root = os.path.join(
                 self.window().temp_dir.path(), self.metadata['hash'])
@@ -529,7 +528,6 @@ class Tab(QtWidgets.QWidget):
 
         else:
 
-            self.contentView.setViewportMargins(padding, 0, padding, 0)
             self.contentView.setStyleSheet(
                 "QTextEdit {{font-family: {0}; font-size: {1}px; color: {2}; background-color: {3}}}".format(
                     font, font_size, foreground.name(), background.name()))
@@ -542,9 +540,16 @@ class Tab(QtWidgets.QWidget):
             block_format.setLineHeight(
                 line_spacing, QtGui.QTextBlockFormat.ProportionalHeight)
 
+            # Also for padding
+            # Using setViewPortMargins for this disables scrolling in the margins
+            block_format.setLeftMargin(padding)
+            block_format.setRightMargin(padding)
+
             this_cursor = self.contentView.textCursor()
             this_cursor.movePosition(QtGui.QTextCursor.Start, 0, 1)
 
+            # Iterate over the entire document block by block
+            # The document ends when the cursor position can no longer be incremented
             while True:
                 old_position = this_cursor.position()
                 this_cursor.mergeBlockFormat(block_format)
