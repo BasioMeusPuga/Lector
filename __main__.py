@@ -35,7 +35,6 @@ from settings import Settings
 
 from settingsdialog import SettingsUI
 
-
 class MainUI(QtWidgets.QMainWindow, mainwindow.Ui_MainWindow):
     def __init__(self):
         super(MainUI, self).__init__()
@@ -558,6 +557,7 @@ class MainUI(QtWidgets.QMainWindow, mainwindow.Ui_MainWindow):
 
         # Go on to change the value of the Table of Contents box
         current_tab.change_chapter_tocBox()
+        self.format_contentView()
 
     def set_fullscreen(self):
         current_tab = self.tabWidget.currentIndex()
@@ -637,6 +637,9 @@ class MainUI(QtWidgets.QMainWindow, mainwindow.Ui_MainWindow):
 
         self.tabWidget.setCurrentIndex(self.tabWidget.count() - 1)
         finishing_touches()
+    
+    # TODO
+    # def dropEvent
 
     def get_color(self):
         signal_sender = self.sender().objectName()
@@ -697,9 +700,9 @@ class MainUI(QtWidgets.QMainWindow, mainwindow.Ui_MainWindow):
                 current_profile['font_size'] = old_size
 
         if signal_sender == 'lineSpacingUp' and current_profile['line_spacing'] < 200:
-            current_profile['line_spacing'] += 10
+            current_profile['line_spacing'] += 5
         if signal_sender == 'lineSpacingDown' and current_profile['line_spacing'] > 100:
-            current_profile['line_spacing'] -= 10
+            current_profile['line_spacing'] -= 5
 
         if signal_sender == 'paddingUp':
             current_profile['padding'] += 5
@@ -753,7 +756,6 @@ class MainUI(QtWidgets.QMainWindow, mainwindow.Ui_MainWindow):
 
     def format_contentView(self):
         # TODO
-        # Implement line spacing
         # See what happens if a font isn't installed
 
         current_tab = self.tabWidget.widget(self.tabWidget.currentIndex())

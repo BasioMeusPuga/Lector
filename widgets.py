@@ -420,13 +420,35 @@ class Tab(QtWidgets.QWidget):
                 relative_paths.append(os.path.join(relative_path_root, i[0]))
             self.contentView.setSearchPaths(relative_paths)
 
-            self.contentView.setOpenLinks(False)  # Change this when HTML navigation works
+            self.contentView.setOpenLinks(False)  # TODO Change this when HTML navigation works
             self.contentView.setHtml(chapter_content)
+
+            def set_scroll_value():
+                # self.window().tabWidget.blockSignals(True)
+                previous_widget = self.window().tabWidget.currentWidget()
+                self.window().tabWidget.setCurrentWidget(self)
+
+                scroll_position = int(
+                    self.metadata['position']['scroll_value'] *
+                    self.contentView.verticalScrollBar().maximum())
+
+                # print(self.contentView.verticalScrollBar().maximum(), scroll_position)
+                # print(self.metadata['position'])
+
+                self.contentView.verticalScrollBar().setValue(scroll_position)
+
+                self.window().tabWidget.setCurrentWidget(previous_widget)
+                # self.window().tabWidget.blockSignals(False)
+
+            temp_hidden_button = QtWidgets.QToolButton(self)
+            temp_hidden_button.setVisible(False)
+            temp_hidden_button.clicked.connect(set_scroll_value)
+            temp_hidden_button.animateClick(100)
 
         # The following are common to both the text browser and
         # the graphics view
         self.contentView.setFrameShape(QtWidgets.QFrame.NoFrame)
-        self.contentView.setObjectName("contentView")
+        self.contentView.setObjectName('contentView')
         self.contentView.verticalScrollBar().setSingleStep(7)
         self.contentView.setHorizontalScrollBarPolicy(
             QtCore.Qt.ScrollBarAlwaysOff)
@@ -454,7 +476,7 @@ class Tab(QtWidgets.QWidget):
         self.mouse_hide_timer.timeout.connect(self.hide_mouse)
 
         self.contentView.setFocus()
-
+    
     def generate_position(self):
         total_chapters = len(self.metadata['content'].keys())
         # TODO
@@ -463,8 +485,7 @@ class Tab(QtWidgets.QWidget):
             'current_chapter': 1,
             'current_line': 0,
             'total_chapters': total_chapters,
-            'read_lines': 0,
-            'total_lines': 0}
+            'scroll_value': 0}
 
     def generate_keyboard_shortcuts(self):
         self.next_chapter = QtWidgets.QShortcut(
@@ -527,7 +548,6 @@ class Tab(QtWidgets.QWidget):
             self.contentView.resizeEvent()
 
         else:
-
             self.contentView.setStyleSheet(
                 "QTextEdit {{font-family: {0}; font-size: {1}px; color: {2}; background-color: {3}}}".format(
                     font, font_size, foreground.name(), background.name()))
@@ -677,12 +697,16 @@ class PliantQTextBrowser(QtWidgets.QTextBrowser):
         self.setMouseTracking(True)
 
     def wheelEvent(self, event):
+        self.parent.metadata['position']['scroll_value'] = (
+            self.verticalScrollBar().value() / self.verticalScrollBar().maximum())
         self.common_functions.wheelEvent(event, False)
 
     def keyPressEvent(self, event):
         if event.key() == 32:
             vertical = self.verticalScrollBar().value()
             maximum = self.verticalScrollBar().maximum()
+
+            self.parent.metadata['position']['scroll_value'] = (vertical / maximum)
 
             if vertical == maximum:
                 self.common_functions.change_chapter(1, True)
@@ -760,7 +784,7 @@ class PliantWidgetsCommonFunctions():
 
             if not was_button_pressed:
                 self.pw.ignore_wheel_event = True
-    
+
 
 class LibraryDelegate(QtWidgets.QStyledItemDelegate):
     def __init__(self, temp_dir, parent=None):

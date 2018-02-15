@@ -44,7 +44,7 @@ class ItemProxyModel(QtCore.QSortFilterProxyModel):
         directory_tags = model.data(this_index, QtCore.Qt.UserRole + 11)
 
         if self.active_library_filters:
-            if directory_name not in self.active_library_filters:
+            if directory_name.lower() not in [i.lower() for i in self.active_library_filters]:
                 return False
         else:
             return False
@@ -188,8 +188,8 @@ class TableProxyModel(QtCore.QSortFilterProxyModel):
 
         # Filter out all books not in the active library filters
         if self.active_library_filters:
-            current_library_name = valid_data[-2]
-            if current_library_name not in self.active_library_filters:
+            current_library_name = valid_data[-2].lower()
+            if current_library_name not in [i.lower() for i in self.active_library_filters]:
                 return False
         else:
             return False
@@ -198,7 +198,6 @@ class TableProxyModel(QtCore.QSortFilterProxyModel):
             if i:
                 if self.filter_string in i:
                     return True
-
         return False
 
 
