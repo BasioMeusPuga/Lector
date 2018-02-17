@@ -707,6 +707,10 @@ class PliantQTextBrowser(QtWidgets.QTextBrowser):
         self.setMouseTracking(True)
 
     def wheelEvent(self, event):
+        if self.verticalScrollBar().maximum() == 0:
+            self.common_functions.wheelEvent(event, False)
+            return
+
         self.parent.metadata['position']['scroll_value'] = (
             self.verticalScrollBar().value() / self.verticalScrollBar().maximum())
 
@@ -717,7 +721,7 @@ class PliantQTextBrowser(QtWidgets.QTextBrowser):
         visible_text = cursor.selectedText()
 
         if len(visible_text) > 30:
-            visible_text = visible_text[:31]    
+            visible_text = visible_text[:31]
         self.parent.metadata['position']['last_visible_text'] = visible_text
 
         self.common_functions.wheelEvent(event, False)

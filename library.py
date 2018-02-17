@@ -34,7 +34,7 @@ class Library:
         self.table_proxy_model = None
         self.table_rows = []
 
-    def generate_model(self, mode, parsed_books=None):
+    def generate_model(self, mode, parsed_books=None, is_database_ready=True):
         if mode == 'build':
             self.table_rows = []
             self.view_model = QtGui.QStandardItemModel()
@@ -137,7 +137,9 @@ class Library:
             self.table_rows.append(
                 [title, author, None, year, tags, all_metadata, i[8]])
 
-        if not self.parent.settings['perform_culling']:
+        # The is_database_ready boolean is required when a new thread sends
+        # books here for model generation.
+        if not self.parent.settings['perform_culling'] and is_database_ready:
             self.parent.load_all_covers()
 
     def create_table_model(self):
@@ -235,6 +237,8 @@ class Library:
                     directory_name = library_directories[i][0]
                     if directory_name:
                         directory_name = directory_name.lower()
+                    else:
+                        directory_name = path.rsplit('/')[-1].lower()
 
                     directory_tags = library_directories[i][1]
                     if directory_tags:

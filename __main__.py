@@ -21,7 +21,6 @@
 
 import os
 import sys
-
 from PyQt5 import QtWidgets, QtGui, QtCore
 
 import sorter
@@ -442,6 +441,9 @@ class MainUI(QtWidgets.QMainWindow, mainwindow.Ui_MainWindow):
         self.lib_ref.create_table_model()
         self.lib_ref.create_proxymodel()
         self.lib_ref.generate_library_tags()
+        
+        if not self.settings['perform_culling']:
+            self.load_all_covers()
 
     def switch_library_view(self):
         if self.libraryToolBar.coverViewButton.isChecked():

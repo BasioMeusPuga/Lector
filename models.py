@@ -33,8 +33,6 @@ class ItemProxyModel(QtCore.QSortFilterProxyModel):
         self.active_library_filters = active_library_filters
 
     def filterAcceptsRow(self, row, parent):
-        return True
-
         model = self.sourceModel()
 
         this_index = model.index(row, 0)
@@ -46,7 +44,7 @@ class ItemProxyModel(QtCore.QSortFilterProxyModel):
         directory_tags = model.data(this_index, QtCore.Qt.UserRole + 11)
 
         if self.active_library_filters:
-            if directory_name.lower() not in [i.lower() for i in self.active_library_filters]:
+            if directory_name not in [i.lower() for i in self.active_library_filters]:
                 return False
         else:
             return False
@@ -173,8 +171,6 @@ class TableProxyModel(QtCore.QSortFilterProxyModel):
         self.active_library_filters = active_library_filters
 
     def filterAcceptsRow(self, row_num, parent):
-        return True
-
         if self.filter_string is None or self.filter_columns is None:
             return True
 
