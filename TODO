@@ -70,3 +70,6 @@ TODO
         ✓ Define every widget in code
         ✓ Include icons for emblems
         Shift to logging instead of print statements
+    Bugs:
+        If there are files open and the database is deleted, TypeErrors result
+        The auto scan doesn't work on a new database

@@ -33,6 +33,8 @@ class ItemProxyModel(QtCore.QSortFilterProxyModel):
         self.active_library_filters = active_library_filters
 
     def filterAcceptsRow(self, row, parent):
+        return True
+
         model = self.sourceModel()
 
         this_index = model.index(row, 0)
@@ -171,6 +173,8 @@ class TableProxyModel(QtCore.QSortFilterProxyModel):
         self.active_library_filters = active_library_filters
 
     def filterAcceptsRow(self, row_num, parent):
+        return True
+
         if self.filter_string is None or self.filter_columns is None:
             return True
 
@@ -224,7 +228,10 @@ class MostExcellentFileSystemModel(QtWidgets.QFileSystemModel):
                 0: 'Path',
                 4: 'Name',
                 5: 'Tags'}
-            return column_dict[col]
+            try:
+                return column_dict[col]
+            except KeyError:
+                pass
 
     def data(self, index, role):
         if (index.column() in (4, 5)

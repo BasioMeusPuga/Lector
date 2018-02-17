@@ -422,23 +422,33 @@ class Tab(QtWidgets.QWidget):
 
             self.contentView.setOpenLinks(False)  # TODO Change this when HTML navigation works
             self.contentView.setHtml(chapter_content)
+            self.contentView.setReadOnly(True)
 
             def set_scroll_value():
-                # self.window().tabWidget.blockSignals(True)
+                # TODO
+                # Stays in place upon switching tabs
+
                 previous_widget = self.window().tabWidget.currentWidget()
                 self.window().tabWidget.setCurrentWidget(self)
 
-                scroll_position = int(
+                scroll_position = (
                     self.metadata['position']['scroll_value'] *
                     self.contentView.verticalScrollBar().maximum())
 
-                # print(self.contentView.verticalScrollBar().maximum(), scroll_position)
-                # print(self.metadata['position'])
+                # Scroll a little ahead
+                # This avoids confusion with potentially duplicate phrases
+                # And the found result is at the top of the window
+                self.contentView.verticalScrollBar().setValue(scroll_position * 1.1)
 
-                self.contentView.verticalScrollBar().setValue(scroll_position)
+                last_visible_text = self.metadata['position']['last_visible_text']
+                if last_visible_text:
+                    self.contentView.find(last_visible_text)
+
+                text_cursor = self.contentView.textCursor()
+                text_cursor.clearSelection()
+                self.contentView.setTextCursor(text_cursor)
 
                 self.window().tabWidget.setCurrentWidget(previous_widget)
-                # self.window().tabWidget.blockSignals(False)
 
             temp_hidden_button = QtWidgets.QToolButton(self)
             temp_hidden_button.setVisible(False)
@@ -476,7 +486,7 @@ class Tab(QtWidgets.QWidget):
         self.mouse_hide_timer.timeout.connect(self.hide_mouse)
 
         self.contentView.setFocus()
-    
+
     def generate_position(self):
         total_chapters = len(self.metadata['content'].keys())
         # TODO
@@ -485,7 +495,8 @@ class Tab(QtWidgets.QWidget):
             'current_chapter': 1,
             'current_line': 0,
             'total_chapters': total_chapters,
-            'scroll_value': 0}
+            'scroll_value': 0,
+            'last_visible_text': None}
 
     def generate_keyboard_shortcuts(self):
         self.next_chapter = QtWidgets.QShortcut(
@@ -674,7 +685,6 @@ class PliantQGraphicsView(QtWidgets.QGraphicsView):
 
             if vertical == maximum:
                 self.common_functions.change_chapter(1, True)
-
             else:
                 # Increment by following value
                 scroll_increment = int((maximum - 0) / 2)
@@ -699,6 +709,17 @@ class PliantQTextBrowser(QtWidgets.QTextBrowser):
     def wheelEvent(self, event):
         self.parent.metadata['position']['scroll_value'] = (
             self.verticalScrollBar().value() / self.verticalScrollBar().maximum())
+
+        cursor = self.cursorForPosition(QtCore.QPoint(0, 0))
+        bottom_right = QtCore.QPoint(self.viewport().width() - 1, self.viewport().height())
+        bottom_right_cursor = self.cursorForPosition(bottom_right).position()
+        cursor.setPosition(bottom_right_cursor, QtGui.QTextCursor.KeepAnchor)
+        visible_text = cursor.selectedText()
+
+        if len(visible_text) > 30:
+            visible_text = visible_text[:31]    
+        self.parent.metadata['position']['last_visible_text'] = visible_text
+
         self.common_functions.wheelEvent(event, False)
 
     def keyPressEvent(self, event):
@@ -711,10 +732,10 @@ class PliantQTextBrowser(QtWidgets.QTextBrowser):
             if vertical == maximum:
                 self.common_functions.change_chapter(1, True)
             else:
-                QtWidgets.QTextBrowser.keyPressEvent(self, event)
+                QtWidgets.QTextEdit.keyPressEvent(self, event)
 
         else:
-            QtWidgets.QTextBrowser.keyPressEvent(self, event)
+            QtWidgets.QTextEdit.keyPressEvent(self, event)
 
     # def mouseMoveEvent(self, event):
         # TODO
