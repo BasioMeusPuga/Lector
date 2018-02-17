@@ -175,6 +175,7 @@ class SettingsUI(QtWidgets.QDialog, settingswindow.Ui_Dialog):
 
         # Update the main window library filter menu
         self.parent.generate_library_filter_menu(data_pairs)
+        self.parent.set_library_filter()
 
         # Disallow rechecking until the first check completes
         self.okButton.setEnabled(False)
