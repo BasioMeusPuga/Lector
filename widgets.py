@@ -424,35 +424,9 @@ class Tab(QtWidgets.QWidget):
             self.contentView.setHtml(chapter_content)
             self.contentView.setReadOnly(True)
 
-            def set_scroll_value():
-                # TODO
-                # Stays in place upon switching tabs
-
-                previous_widget = self.window().tabWidget.currentWidget()
-                self.window().tabWidget.setCurrentWidget(self)
-
-                scroll_position = (
-                    self.metadata['position']['scroll_value'] *
-                    self.contentView.verticalScrollBar().maximum())
-
-                # Scroll a little ahead
-                # This avoids confusion with potentially duplicate phrases
-                # And the found result is at the top of the window
-                self.contentView.verticalScrollBar().setValue(scroll_position * 1.1)
-
-                last_visible_text = self.metadata['position']['last_visible_text']
-                if last_visible_text:
-                    self.contentView.find(last_visible_text)
-
-                text_cursor = self.contentView.textCursor()
-                text_cursor.clearSelection()
-                self.contentView.setTextCursor(text_cursor)
-
-                self.window().tabWidget.setCurrentWidget(previous_widget)
-
             temp_hidden_button = QtWidgets.QToolButton(self)
             temp_hidden_button.setVisible(False)
-            temp_hidden_button.clicked.connect(set_scroll_value)
+            temp_hidden_button.clicked.connect(self.set_scroll_value)
             temp_hidden_button.animateClick(100)
 
         # The following are common to both the text browser and
@@ -486,6 +460,31 @@ class Tab(QtWidgets.QWidget):
         self.mouse_hide_timer.timeout.connect(self.hide_mouse)
 
         self.contentView.setFocus()
+
+    def set_scroll_value(self, switch_widgets=True):
+        if switch_widgets:
+            previous_widget = self.window().tabWidget.currentWidget()
+            self.window().tabWidget.setCurrentWidget(self)
+
+        scroll_position = (
+            self.metadata['position']['scroll_value'] *
+            self.contentView.verticalScrollBar().maximum())
+
+        # Scroll a little ahead
+        # This avoids confusion with potentially duplicate phrases
+        # And the found result is at the top of the window
+        self.contentView.verticalScrollBar().setValue(scroll_position * 1.1)
+
+        last_visible_text = self.metadata['position']['last_visible_text']
+        if last_visible_text:
+            self.contentView.find(last_visible_text)
+
+        text_cursor = self.contentView.textCursor()
+        text_cursor.clearSelection()
+        self.contentView.setTextCursor(text_cursor)
+
+        if switch_widgets:
+            self.window().tabWidget.setCurrentWidget(previous_widget)
 
     def generate_position(self):
         total_chapters = len(self.metadata['content'].keys())
@@ -704,15 +703,32 @@ class PliantQTextBrowser(QtWidgets.QTextBrowser):
         self.ignore_wheel_event_number = 0
         self.common_functions = PliantWidgetsCommonFunctions(
             self, self.main_window)
+        self.verticalScrollBar().sliderMoved.connect(self.record_scroll_position)
         self.setMouseTracking(True)
 
     def wheelEvent(self, event):
-        if self.verticalScrollBar().maximum() == 0:
-            self.common_functions.wheelEvent(event, False)
-            return
+        self.record_scroll_position()
+        self.common_functions.wheelEvent(event, False)
 
-        self.parent.metadata['position']['scroll_value'] = (
-            self.verticalScrollBar().value() / self.verticalScrollBar().maximum())
+    def keyPressEvent(self, event):
+        if event.key() == 32:
+            self.record_scroll_position()
+
+            if self.verticalScrollBar().value() == self.verticalScrollBar().maximum():
+                self.common_functions.change_chapter(1, True)
+            else:
+                QtWidgets.QTextEdit.keyPressEvent(self, event)
+
+        else:
+            QtWidgets.QTextEdit.keyPressEvent(self, event)
+
+    def record_scroll_position(self):
+        vertical = self.verticalScrollBar().value()
+        maximum = self.verticalScrollBar().maximum()
+
+        self.parent.metadata['position']['scroll_value'] = 1
+        if maximum != 0:
+            self.parent.metadata['position']['scroll_value'] = (vertical / maximum)
 
         cursor = self.cursorForPosition(QtCore.QPoint(0, 0))
         bottom_right = QtCore.QPoint(self.viewport().width() - 1, self.viewport().height())
@@ -720,26 +736,9 @@ class PliantQTextBrowser(QtWidgets.QTextBrowser):
         cursor.setPosition(bottom_right_cursor, QtGui.QTextCursor.KeepAnchor)
         visible_text = cursor.selectedText()
 
-        if len(visible_text) > 30:
-            visible_text = visible_text[:31]
+        if len(visible_text) > 50:
+            visible_text = visible_text[:51]
         self.parent.metadata['position']['last_visible_text'] = visible_text
-
-        self.common_functions.wheelEvent(event, False)
-
-    def keyPressEvent(self, event):
-        if event.key() == 32:
-            vertical = self.verticalScrollBar().value()
-            maximum = self.verticalScrollBar().maximum()
-
-            self.parent.metadata['position']['scroll_value'] = (vertical / maximum)
-
-            if vertical == maximum:
-                self.common_functions.change_chapter(1, True)
-            else:
-                QtWidgets.QTextEdit.keyPressEvent(self, event)
-
-        else:
-            QtWidgets.QTextEdit.keyPressEvent(self, event)
 
     # def mouseMoveEvent(self, event):
         # TODO

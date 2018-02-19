@@ -246,7 +246,7 @@ class Library:
 
                     return directory_name, directory_tags
 
-            return None, None
+            return 'manually added', None
 
         # Both the models will have to be done separately
         # Item Model

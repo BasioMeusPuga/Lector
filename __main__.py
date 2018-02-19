@@ -216,7 +216,13 @@ class MainUI(QtWidgets.QMainWindow, mainwindow.Ui_MainWindow):
         self.ks_exit_all.activated.connect(self.closeEvent)
 
         self.listView.setFocus()
+        self.open_books_at_startup()
 
+        # Scan the library @ startup
+        if self.settings['scan_library']:
+            self.settings_dialog.start_library_scan()
+
+    def open_books_at_startup(self):
         # Open last... open books.
         # Then set the value to None for the next run
         if self.settings['last_open_books']:
@@ -245,10 +251,6 @@ class MainUI(QtWidgets.QMainWindow, mainwindow.Ui_MainWindow):
             self.open_files(file_dict)
 
             self.move_on()
-
-        # Scan the library @ startup
-        if self.settings['scan_library']:
-            self.settings_dialog.start_library_scan()
 
     def cull_covers(self, event=None):
         blank_pixmap = QtGui.QPixmap()
@@ -498,8 +500,9 @@ class MainUI(QtWidgets.QMainWindow, mainwindow.Ui_MainWindow):
                 self.bookToolBar.show()
                 self.libraryToolBar.hide()
 
-            current_metadata = self.tabWidget.widget(
-                self.tabWidget.currentIndex()).metadata
+            current_tab = self.tabWidget.widget(
+                self.tabWidget.currentIndex())
+            current_metadata = current_tab.metadata
 
             if self.bookToolBar.fontButton.isChecked():
                 self.bookToolBar.customize_view_on()
@@ -515,6 +518,8 @@ class MainUI(QtWidgets.QMainWindow, mainwindow.Ui_MainWindow):
             if current_position:
                 self.bookToolBar.tocBox.setCurrentIndex(
                     current_position['current_chapter'] - 1)
+                if not current_metadata['images_only']:
+                    current_tab.set_scroll_value(False)
             self.bookToolBar.tocBox.blockSignals(False)
 
             self.format_contentView()
@@ -820,7 +825,7 @@ class MainUI(QtWidgets.QMainWindow, mainwindow.Ui_MainWindow):
                 'background-color: %s' % background.name())
 
             current_tab.format_view(
-                None, None, None, background, padding)
+                None, None, None, background, padding, None)
 
         else:
             profile_index = self.bookToolBar.profileBox.currentIndex()
@@ -887,6 +892,7 @@ class MainUI(QtWidgets.QMainWindow, mainwindow.Ui_MainWindow):
             checked = [i for i in directory_list if i[3] == QtCore.Qt.Checked]
             filter_list = list(map(generate_name, checked))
             filter_list.sort()
+            filter_list.append('Manually added')
             filter_actions = [QtWidgets.QAction(i, self.library_filter_menu) for i in filter_list]
 
         filter_all = QtWidgets.QAction('All', self.library_filter_menu)
@@ -967,7 +973,6 @@ def main():
     form.show()
     form.resizeEvent()
     app.exec_()
-
 
 
 if __name__ == '__main__':
