@@ -223,6 +223,14 @@ class MainUI(QtWidgets.QMainWindow, mainwindow.Ui_MainWindow):
         else:
             self.settings['last_open_tab'] = None
 
+        # Open input files if specified
+        cl_parser = QtCore.QCommandLineParser()
+        cl_parser.process(QtWidgets.qApp)
+        my_args = cl_parser.positionalArguments()
+        input_files = [
+            QtCore.QFileInfo(i).absoluteFilePath() for i in my_args]
+        self.open_files(input_files)
+
         # Scan the library @ startup
         if self.settings['scan_library']:
             self.settings_dialog.start_library_scan()
@@ -703,7 +711,7 @@ class MainUI(QtWidgets.QMainWindow, mainwindow.Ui_MainWindow):
 
         if signal_sender == 'lineSpacingUp' and current_profile['line_spacing'] < 200:
             current_profile['line_spacing'] += 5
-        if signal_sender == 'lineSpacingDown' and current_profile['line_spacing'] > 100:
+        if signal_sender == 'lineSpacingDown' and current_profile['line_spacing'] > 90:
             current_profile['line_spacing'] -= 5
 
         if signal_sender == 'paddingUp':
@@ -930,6 +938,7 @@ def main():
     form.show()
     form.resizeEvent()
     app.exec_()
+
 
 
 if __name__ == '__main__':
