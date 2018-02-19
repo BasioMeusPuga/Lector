@@ -42,6 +42,7 @@ TODO
         ✓ View modes for QGraphicsView
         ✓ View and hide toolbar actions in a list
         ✓ Line spacing
+        ✓ Record progress
         Search document using QTextCursor?
         Use embedded fonts
         Graphical themes
@@ -49,7 +50,6 @@ TODO
         Comic view modes
             Continuous paging
             Double pages
-        Record progress
         Bookmarks
         Pagination
         Set context menu for definitions and the like
@@ -72,4 +72,3 @@ TODO
         Shift to logging instead of print statements
     Bugs:
         If there are files open and the database is deleted, TypeErrors result
-        The auto scan doesn't work on a new database

@@ -21,6 +21,7 @@
 
 import os
 import sys
+import hashlib
 from PyQt5 import QtWidgets, QtGui, QtCore
 
 import sorter
@@ -219,7 +220,8 @@ class MainUI(QtWidgets.QMainWindow, mainwindow.Ui_MainWindow):
         # Open last... open books.
         # Then set the value to None for the next run
         if self.settings['last_open_books']:
-            self.open_files(self.settings['last_open_books'])
+            files_to_open = {i: None for i in self.settings['last_open_books']}
+            self.open_files(files_to_open)
         else:
             self.settings['last_open_tab'] = None
 
@@ -227,9 +229,22 @@ class MainUI(QtWidgets.QMainWindow, mainwindow.Ui_MainWindow):
         cl_parser = QtCore.QCommandLineParser()
         cl_parser.process(QtWidgets.qApp)
         my_args = cl_parser.positionalArguments()
-        input_files = [
-            QtCore.QFileInfo(i).absoluteFilePath() for i in my_args]
-        self.open_files(input_files)
+        if my_args:
+            file_list = [QtCore.QFileInfo(i).absoluteFilePath() for i in my_args]
+            books = sorter.BookSorter(
+                file_list,
+                'addition',
+                self.database_path,
+                self.settings['auto_tags'])
+
+            parsed_books = books.initiate_threads()
+            database.DatabaseFunctions(self.database_path).add_to_database(parsed_books)
+            self.lib_ref.generate_model('addition', parsed_books, True)
+
+            file_dict = {QtCore.QFileInfo(i).absoluteFilePath(): None for i in my_args}
+            self.open_files(file_dict)
+
+            self.move_on()
 
         # Scan the library @ startup
         if self.settings['scan_library']:
@@ -449,7 +464,7 @@ class MainUI(QtWidgets.QMainWindow, mainwindow.Ui_MainWindow):
         self.lib_ref.create_table_model()
         self.lib_ref.create_proxymodel()
         self.lib_ref.generate_library_tags()
-        
+
         if not self.settings['perform_culling']:
             self.load_all_covers()
 
@@ -594,21 +609,35 @@ class MainUI(QtWidgets.QMainWindow, mainwindow.Ui_MainWindow):
         elif sender == 'tableView':
             metadata = self.lib_ref.table_proxy_model.data(index, QtCore.Qt.UserRole)
 
-        # Shift focus to the tab that has the book open (if there is one)
-        for i in range(1, self.tabWidget.count()):
-            tab_metadata = self.tabWidget.widget(i).metadata
-            if tab_metadata['hash'] == metadata['hash']:
-                self.tabWidget.setCurrentIndex(i)
-                return
+        path = {metadata['path']: metadata['hash']}
+        self.open_files(path)
 
-        path = metadata['path']
-        self.open_files([path])
-
-    def open_files(self, file_paths):
-        # file_paths is expected to be a list
+    def open_files(self, path_hash_dictionary):
+        # file_paths is expected to be a dictionary
         # This allows for threading file opening
         # Which should speed up multiple file opening
         # especially @ application start
+
+        file_paths = [i for i in path_hash_dictionary]
+
+        for filename in path_hash_dictionary.items():
+
+            file_md5 = filename[1]
+            if not file_md5:
+                with open(filename[0], 'rb') as current_book:
+                    first_bytes = current_book.read(1024 * 32)  # First 32KB of the file
+                    file_md5 = hashlib.md5(first_bytes).hexdigest()
+
+            # Remove any already open files
+            # Set focus to last file in case only one is open
+            for i in range(1, self.tabWidget.count()):
+                tab_metadata = self.tabWidget.widget(i).metadata
+                if tab_metadata['hash'] == file_md5:
+                    file_paths.remove(filename[0])
+                    if not file_paths:
+                        self.tabWidget.setCurrentIndex(i)
+                        return
+
         if not file_paths:
             return
 
