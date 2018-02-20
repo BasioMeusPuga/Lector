@@ -27,10 +27,12 @@ class ItemProxyModel(QtCore.QSortFilterProxyModel):
         super(ItemProxyModel, self).__init__(parent)
         self.filter_text = None
         self.active_library_filters = None
+        self.sorting_position = None
 
-    def setFilterParams(self, filter_text, active_library_filters):
+    def setFilterParams(self, filter_text, active_library_filters, sorting_position):
         self.filter_text = filter_text
         self.active_library_filters = [i.lower() for i in active_library_filters]
+        self.sorting_position = sorting_position
 
     def filterAcceptsRow(self, row, parent):
         model = self.sourceModel()
@@ -42,6 +44,10 @@ class ItemProxyModel(QtCore.QSortFilterProxyModel):
         tags = model.data(this_index, QtCore.Qt.UserRole + 4)
         directory_name = model.data(this_index, QtCore.Qt.UserRole + 10)
         directory_tags = model.data(this_index, QtCore.Qt.UserRole + 11)
+        last_accessed = model.data(this_index, QtCore.Qt.UserRole + 12)
+
+        if self.sorting_position == 4 and not last_accessed:
+            return False
 
         if self.active_library_filters:
             if directory_name not in self.active_library_filters:

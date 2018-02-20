@@ -16,9 +16,6 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-# TODO
-# Consider using sender().text() instead of sender().objectName()
-
 import os
 import sys
 import hashlib
@@ -159,6 +156,7 @@ class MainUI(QtWidgets.QMainWindow, mainwindow.Ui_MainWindow):
         self.addToolBar(self.bookToolBar)
 
         # Make the correct toolbar visible
+        self.current_tab = self.tabWidget.currentIndex()
         self.tab_switch()
         self.tabWidget.currentChanged.connect(self.tab_switch)
 
@@ -481,6 +479,15 @@ class MainUI(QtWidgets.QMainWindow, mainwindow.Ui_MainWindow):
         self.resizeEvent()
 
     def tab_switch(self):
+        try:
+            if self.current_tab != 0:
+                self.tabWidget.widget(
+                    self.current_tab).update_last_accessed_time()
+        except AttributeError:
+            pass
+
+        self.current_tab = self.tabWidget.currentIndex()
+
         if self.tabWidget.currentIndex() == 0:
 
             self.resizeEvent()
@@ -539,6 +546,7 @@ class MainUI(QtWidgets.QMainWindow, mainwindow.Ui_MainWindow):
             self.database_path, [tab_metadata])
         self.thread.start()
 
+        self.tabWidget.widget(tab_index).update_last_accessed_time()
         self.tabWidget.removeTab(tab_index)
 
     def set_toc_position(self, event=None):
@@ -681,7 +689,7 @@ class MainUI(QtWidgets.QMainWindow, mainwindow.Ui_MainWindow):
 
         self.tabWidget.setCurrentIndex(self.tabWidget.count() - 1)
         finishing_touches()
-    
+
     # TODO
     # def dropEvent
 
@@ -892,7 +900,7 @@ class MainUI(QtWidgets.QMainWindow, mainwindow.Ui_MainWindow):
             checked = [i for i in directory_list if i[3] == QtCore.Qt.Checked]
             filter_list = list(map(generate_name, checked))
             filter_list.sort()
-            filter_list.append('Manually added')
+            filter_list.append('Manually Added')
             filter_actions = [QtWidgets.QAction(i, self.library_filter_menu) for i in filter_list]
 
         filter_all = QtWidgets.QAction('All', self.library_filter_menu)

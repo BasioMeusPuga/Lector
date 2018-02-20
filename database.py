@@ -38,8 +38,8 @@ class DatabaseInit:
         # addition mode
         self.database.execute(
             "CREATE TABLE books \
-            (id INTEGER PRIMARY KEY, Title TEXT, Author TEXT, Year INTEGER, DateAdded TEXT, \
-            Path TEXT, Position BLOB, ISBN TEXT, Tags TEXT, Hash TEXT, \
+            (id INTEGER PRIMARY KEY, Title TEXT, Author TEXT, Year INTEGER, DateAdded BLOB, \
+            Path TEXT, Position BLOB, ISBN TEXT, Tags TEXT, Hash TEXT, LastAccessed BLOB,\
             Bookmarks BLOB, CoverImage BLOB)")
 
         # CheckState is the standard QtCore.Qt.Checked / Unchecked
@@ -167,18 +167,22 @@ class DatabaseFunctions:
 
         self.close_database()
 
-    def modify_position(self, hash_position_pairs):
-        for i in hash_position_pairs:
+    def modify_position(self, hash_position_last_accessed):
+        for i in hash_position_last_accessed:
             file_hash = i[0]
             position = i[1]
+            last_accessed = i[2]
 
-            pickled_position = pickle.dumps(position)
+            position_bin = sqlite3.Binary(pickle.dumps(position))
+            last_accessed_bin = sqlite3.Binary(pickle.dumps(last_accessed))
 
-            sql_command = "UPDATE books SET Position = ? WHERE Hash = ?"
+            sql_command = (
+                "UPDATE books SET Position = ?, LastAccessed = ? WHERE Hash = ?")
+
             try:
                 self.database.execute(
                     sql_command,
-                    [sqlite3.Binary(pickled_position), file_hash])
+                    [position_bin, last_accessed_bin, file_hash])
             except sqlite3.OperationalError:
                 print('SQLite is in rebellion, Commander')
                 return

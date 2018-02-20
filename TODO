@@ -45,6 +45,7 @@ TODO
         ✓ Record progress
         Search document using QTextCursor?
         Use embedded fonts
+        Cache multiple images
         Graphical themes
         Comic view keyboard shortcuts
         Comic view modes

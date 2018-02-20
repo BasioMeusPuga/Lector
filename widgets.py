@@ -333,7 +333,7 @@ class LibraryToolBar(QtWidgets.QToolBar):
         self.searchBar.setObjectName('searchBar')
 
         # Sorter
-        sorting_choices = ['Title', 'Author', 'Year', 'Newest']
+        sorting_choices = ['Title', 'Author', 'Year', 'Newest', 'Last read']
         self.sortingBox = FixedComboBox(self)
         self.sortingBox.addItems(sorting_choices)
         self.sortingBox.setObjectName('sortingBox')
@@ -374,10 +374,6 @@ class FixedPushButton(QtWidgets.QPushButton):
 
 class Tab(QtWidgets.QWidget):
     def __init__(self, metadata, parent=None):
-        # TODO
-        # Take hint from a position function argument to open the book
-        # at a specific page
-
         super(Tab, self).__init__(parent)
         self.parent = parent
         self.metadata = metadata  # Save progress data into this dictionary
@@ -387,10 +383,10 @@ class Tab(QtWidgets.QWidget):
         self.horzLayout.setOrientation(QtCore.Qt.Horizontal)
         self.masterLayout.addWidget(self.horzLayout)
 
+        self.metadata['last_accessed'] = QtCore.QDateTime().currentDateTime()
+
         position = self.metadata['position']
 
-        # TODO
-        # Chapter position and vertical scrollbar position
         if position:
             current_chapter = position['current_chapter']
         else:
@@ -461,6 +457,19 @@ class Tab(QtWidgets.QWidget):
 
         self.contentView.setFocus()
 
+    def update_last_accessed_time(self):
+        self.metadata['last_accessed'] = QtCore.QDateTime().currentDateTime()
+
+        start_index = self.window().lib_ref.view_model.index(0, 0)
+        matching_item = self.window().lib_ref.view_model.match(
+            start_index,
+            QtCore.Qt.UserRole + 6,
+            self.metadata['hash'],
+            1, QtCore.Qt.MatchExactly)
+
+        self.window().lib_ref.view_model.setData(
+            matching_item[0], self.metadata['last_accessed'], QtCore.Qt.UserRole + 12)
+
     def set_scroll_value(self, switch_widgets=True):
         if switch_widgets:
             previous_widget = self.window().tabWidget.currentWidget()
@@ -489,7 +498,7 @@ class Tab(QtWidgets.QWidget):
     def generate_position(self):
         total_chapters = len(self.metadata['content'].keys())
         # TODO
-        # Calculate lines
+        # Calculate lines to incorporate into progress
         self.metadata['position'] = {
             'current_chapter': 1,
             'current_line': 0,
@@ -754,9 +763,13 @@ class PliantWidgetsCommonFunctions():
         self.main_window = main_window
 
     def wheelEvent(self, event, are_we_doing_images_only):
+        ignore_events = 20
+        if are_we_doing_images_only:
+            ignore_events = 10
+
         if self.pw.ignore_wheel_event:
             self.pw.ignore_wheel_event_number += 1
-            if self.pw.ignore_wheel_event_number > 20:
+            if self.pw.ignore_wheel_event_number > ignore_events:
                 self.pw.ignore_wheel_event = False
                 self.pw.ignore_wheel_event_number = 0
             return

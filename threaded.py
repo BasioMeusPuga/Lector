@@ -36,7 +36,9 @@ class BackGroundTabUpdate(QtCore.QThread):
         for i in self.all_metadata:
             file_hash = i['hash']
             position = i['position']
-            hash_position_pairs.append([file_hash, position])
+            last_accessed = i['last_accessed']
+
+            hash_position_pairs.append([file_hash, position, last_accessed])
 
         database.DatabaseFunctions(
             self.database_path).modify_position(hash_position_pairs)

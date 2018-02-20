@@ -42,7 +42,7 @@ class Library:
             books = database.DatabaseFunctions(
                 self.parent.database_path).fetch_data(
                     ('Title', 'Author', 'Year', 'DateAdded', 'Path',
-                     'Position', 'ISBN', 'Tags', 'Hash',),
+                     'Position', 'ISBN', 'Tags', 'Hash', 'LastAccessed'),
                     'books',
                     {'Title': ''},
                     'LIKE')
@@ -65,7 +65,7 @@ class Library:
 
                 books.append([
                     i[1]['title'], i[1]['author'], i[1]['year'], current_qdatetime,
-                    i[1]['path'], None, i[1]['isbn'], _tags, i[0]])
+                    i[1]['path'], None, i[1]['isbn'], _tags, i[0], None])
 
         else:
             return
@@ -73,12 +73,12 @@ class Library:
         for i in books:
             # The database query returns (or the extension data is)
             # an iterable with the following indices:
-            # Index 0 is the key ID is ignored
             title = i[0]
             author = i[1]
             year = i[2]
             path = i[4]
             tags = i[7]
+            last_accessed = i[9]
 
             try:
                 date_added = pickle.loads(i[3])
@@ -101,6 +101,7 @@ class Library:
                 'isbn': i[6],
                 'tags': tags,
                 'hash': i[8],
+                'last_accessed': last_accessed,
                 'file_exists': file_exists}
 
             tooltip_string = title + '\nAuthor: ' + author + '\nYear: ' + str(year)
@@ -129,6 +130,7 @@ class Library:
             item.setData(position, QtCore.Qt.UserRole + 7)
             item.setData(False, QtCore.Qt.UserRole + 8) # Is the cover being displayed?
             item.setData(date_added, QtCore.Qt.UserRole + 9)
+            item.setData(last_accessed, QtCore.Qt.UserRole + 12)
             item.setIcon(QtGui.QIcon(img_pixmap))
             self.view_model.appendRow(item)
 
@@ -182,7 +184,8 @@ class Library:
         self.proxy_model.invalidateFilter()
         self.proxy_model.setFilterParams(
             self.parent.libraryToolBar.searchBar.text(),
-            self.parent.active_library_filters)
+            self.parent.active_library_filters,
+            self.parent.libraryToolBar.sortingBox.currentIndex())
         self.proxy_model.setFilterFixedString(
             self.parent.libraryToolBar.searchBar.text())
 
@@ -200,7 +203,8 @@ class Library:
             0: 0,
             1: 1,
             2: 2,
-            3: 9}
+            3: 9,
+            4: 12}
 
         # Sorting according to roles and the drop down in the library toolbar
         self.proxy_model.setSortRole(
@@ -208,7 +212,7 @@ class Library:
 
         # This can be expanded to other fields by appending to the list
         sort_order = QtCore.Qt.AscendingOrder
-        if self.parent.libraryToolBar.sortingBox.currentIndex() in [3]:
+        if self.parent.libraryToolBar.sortingBox.currentIndex() in [3, 4]:
             sort_order = QtCore.Qt.DescendingOrder
 
         self.proxy_model.sort(0, sort_order)
