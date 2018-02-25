@@ -110,13 +110,14 @@ class BookSorter:
     def database_entry_for_book(self, file_hash):
         database_return = database.DatabaseFunctions(
             self.database_path).fetch_data(
-                ('DateAdded', 'Position', 'Bookmarks'),
+                ('Position', 'Bookmarks'),
                 'books',
                 {'Hash': file_hash},
                 'EQUALS')[0]
 
         book_data = []
         for i in database_return:
+            # All of these values are pickled and stored
             if i:
                 book_data.append(pickle.loads(i))
             else:
@@ -214,12 +215,9 @@ class BookSorter:
                     content['Invalid'] = 'Possible Parse Error'
 
                 book_data = self.database_entry_for_book(file_md5)
+                position = book_data[0]
+                bookmarks = book_data[1]
 
-                date_added = book_data[0]
-                position = book_data[1]
-                bookmarks = book_data[2]
-
-                this_book[file_md5]['date_added'] = date_added
                 this_book[file_md5]['position'] = position
                 this_book[file_md5]['bookmarks'] = bookmarks
                 this_book[file_md5]['content'] = content

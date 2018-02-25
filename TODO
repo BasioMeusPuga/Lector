@@ -43,17 +43,17 @@ TODO
         ✓ View and hide toolbar actions in a list
         ✓ Line spacing
         ✓ Record progress
+        Bookmarks
+        Set context menu for definitions and the like
         Search document using QTextCursor?
-        Use embedded fonts
         Cache multiple images
         Graphical themes
         Comic view keyboard shortcuts
         Comic view modes
             Continuous paging
             Double pages
-        Bookmarks
         Pagination
-        Set context menu for definitions and the like
+        Use embedded fonts
         Scrolling: Smooth / By Line
     Filetypes:
         ✓ cbz, cbr support
@@ -73,3 +73,4 @@ TODO
         Shift to logging instead of print statements
     Bugs:
         If there are files open and the database is deleted, TypeErrors result
+        Closing a fullscreened contentView does not save settings

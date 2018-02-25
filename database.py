@@ -19,7 +19,6 @@
 import os
 import pickle
 import sqlite3
-
 from PyQt5 import QtCore
 
 
@@ -163,28 +162,30 @@ class DatabaseFunctions:
                 return None
 
         except (KeyError, sqlite3.OperationalError):
-            print('SQLite is in rebellion, Commander')
+            print('Commander, SQLite is in rebellion @ data fetching handling')
 
         self.close_database()
 
-    def modify_position(self, hash_position_last_accessed):
-        for i in hash_position_last_accessed:
+    def modify_positional_data(self, positional_data):
+        for i in positional_data:
             file_hash = i[0]
             position = i[1]
             last_accessed = i[2]
+            bookmarks = i[3]
 
             position_bin = sqlite3.Binary(pickle.dumps(position))
             last_accessed_bin = sqlite3.Binary(pickle.dumps(last_accessed))
+            bookmarks_bin = sqlite3.Binary(pickle.dumps(bookmarks))
 
             sql_command = (
-                "UPDATE books SET Position = ?, LastAccessed = ? WHERE Hash = ?")
+                "UPDATE books SET Position = ?, LastAccessed = ?, Bookmarks = ? WHERE Hash = ?")
 
             try:
                 self.database.execute(
                     sql_command,
-                    [position_bin, last_accessed_bin, file_hash])
+                    [position_bin, last_accessed_bin, bookmarks_bin, file_hash])
             except sqlite3.OperationalError:
-                print('SQLite is in rebellion, Commander')
+                print('Commander, SQLite is in rebellion @ positional data handling')
                 return
 
         self.database.commit()

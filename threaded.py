@@ -37,11 +37,13 @@ class BackGroundTabUpdate(QtCore.QThread):
             file_hash = i['hash']
             position = i['position']
             last_accessed = i['last_accessed']
+            bookmarks = i['bookmarks']
 
-            hash_position_pairs.append([file_hash, position, last_accessed])
+            hash_position_pairs.append(
+                [file_hash, position, last_accessed, bookmarks])
 
         database.DatabaseFunctions(
-            self.database_path).modify_position(hash_position_pairs)
+            self.database_path).modify_positional_data(hash_position_pairs)
 
 
 class BackGroundBookAddition(QtCore.QThread):

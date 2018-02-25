@@ -386,7 +386,6 @@ class Tab(QtWidgets.QWidget):
         self.metadata['last_accessed'] = QtCore.QDateTime().currentDateTime()
 
         position = self.metadata['position']
-
         if position:
             current_chapter = position['current_chapter']
         else:
@@ -420,10 +419,10 @@ class Tab(QtWidgets.QWidget):
             self.contentView.setHtml(chapter_content)
             self.contentView.setReadOnly(True)
 
-            temp_hidden_button = QtWidgets.QToolButton(self)
-            temp_hidden_button.setVisible(False)
-            temp_hidden_button.clicked.connect(self.set_scroll_value)
-            temp_hidden_button.animateClick(100)
+            tempHiddenButton = QtWidgets.QToolButton(self)
+            tempHiddenButton.setVisible(False)
+            tempHiddenButton.clicked.connect(self.set_scroll_value)
+            tempHiddenButton.animateClick(100)
 
         # The following are common to both the text browser and
         # the graphics view
@@ -437,11 +436,17 @@ class Tab(QtWidgets.QWidget):
         self.dockWidget = QtWidgets.QDockWidget(self)
         self.dockWidget.setFeatures(QtWidgets.QDockWidget.DockWidgetClosable)
         self.dockWidget.setFloating(False)
-        self.dockListWidget = QtWidgets.QListWidget()
-        self.dockListWidget.setResizeMode(QtWidgets.QListWidget.Adjust)
-        self.dockListWidget.setMaximumWidth(350)
-        self.dockWidget.setWidget(self.dockListWidget)
         self.dockWidget.hide()
+
+        self.dockListView = QtWidgets.QListView(self.dockWidget)
+        self.dockListView.setResizeMode(QtWidgets.QListWidget.Adjust)
+        self.dockListView.setMaximumWidth(350)
+        self.dockListView.clicked.connect(self.navigate_to_bookmark)
+        self.dockWidget.setWidget(self.dockListView)
+
+        self.bookmark_model = QtGui.QStandardItemModel()
+        self.generate_bookmark_model()
+        self.dockListView.setModel(self.bookmark_model)
 
         self.generate_keyboard_shortcuts()
 
@@ -470,21 +475,25 @@ class Tab(QtWidgets.QWidget):
         self.window().lib_ref.view_model.setData(
             matching_item[0], self.metadata['last_accessed'], QtCore.Qt.UserRole + 12)
 
-    def set_scroll_value(self, switch_widgets=True):
+    def set_scroll_value(self, switch_widgets=True, search_data=None):
         if switch_widgets:
             previous_widget = self.window().tabWidget.currentWidget()
             self.window().tabWidget.setCurrentWidget(self)
 
-        scroll_position = (
-            self.metadata['position']['scroll_value'] *
-            self.contentView.verticalScrollBar().maximum())
+        scroll_value = self.metadata['position']['scroll_value']
+        if search_data:
+            scroll_value = search_data[0]
 
         # Scroll a little ahead
         # This avoids confusion with potentially duplicate phrases
         # And the found result is at the top of the window
-        self.contentView.verticalScrollBar().setValue(scroll_position * 1.1)
+        scroll_position = scroll_value * self.contentView.verticalScrollBar().maximum() * 1.1
+        self.contentView.verticalScrollBar().setValue(scroll_position)
 
         last_visible_text = self.metadata['position']['last_visible_text']
+        if search_data:
+            last_visible_text = search_data[1]
+
         if last_visible_text:
             self.contentView.find(last_visible_text)
 
@@ -501,7 +510,6 @@ class Tab(QtWidgets.QWidget):
         # Calculate lines to incorporate into progress
         self.metadata['position'] = {
             'current_chapter': 1,
-            'current_line': 0,
             'total_chapters': total_chapters,
             'scroll_value': 0,
             'last_visible_text': None}
@@ -579,6 +587,10 @@ class Tab(QtWidgets.QWidget):
             block_format.setLineHeight(
                 line_spacing, QtGui.QTextBlockFormat.ProportionalHeight)
 
+            # TODO
+            # Give options for alignment
+            # block_format.setAlignment(QtCore.Qt.AlignJustify)
+
             # Also for padding
             # Using setViewPortMargins for this disables scrolling in the margins
             block_format.setLeftMargin(padding)
@@ -605,6 +617,47 @@ class Tab(QtWidgets.QWidget):
         else:
             self.dockWidget.show()
 
+    def add_bookmark(self):
+        chapter, scroll_position, visible_text = self.contentView.record_scroll_position(True)
+        description = 'New bookmark'
+        search_data = (scroll_position, visible_text)
+
+        self.metadata['bookmarks'].append([
+            chapter, search_data, description])
+        self.add_bookmark_to_model(description, chapter, search_data)
+
+    def generate_bookmark_model(self):
+        bookmarks = self.metadata['bookmarks']
+
+        if not bookmarks:
+            self.metadata['bookmarks'] = []
+            return
+
+        # TODO
+        # Replace this with proxy model sorting
+        bookmarks.sort(key=lambda x: x[0])
+
+        for i in bookmarks:
+            self.add_bookmark_to_model(i[2], i[0], i[1])
+
+    def add_bookmark_to_model(self, description, chapter, search_data):
+        bookmark = QtGui.QStandardItem()
+        bookmark.setData(description, QtCore.Qt.DisplayRole)
+        bookmark.setData(chapter, QtCore.Qt.UserRole)
+        bookmark.setData(search_data, QtCore.Qt.UserRole + 1)
+
+        self.bookmark_model.appendRow(bookmark)
+
+    def navigate_to_bookmark(self, index):
+        if not index.isValid():
+            return
+
+        chapter = self.bookmark_model.data(index, QtCore.Qt.UserRole)
+        search_data = self.bookmark_model.data(index, QtCore.Qt.UserRole + 1)
+
+        self.window().bookToolBar.tocBox.setCurrentIndex(chapter - 1)
+        self.set_scroll_value(False, search_data)
+
     def hide_mouse(self):
         self.contentView.setCursor(QtCore.Qt.BlankCursor)
 
@@ -629,11 +682,18 @@ class PliantQGraphicsView(QtWidgets.QGraphicsView):
         self.image_pixmap = None
         self.ignore_wheel_event = False
         self.ignore_wheel_event_number = 0
+        self.setDragMode(QtWidgets.QGraphicsView.ScrollHandDrag)
         self.common_functions = PliantWidgetsCommonFunctions(
             self, self.main_window)
         self.setMouseTracking(True)
 
     def loadImage(self, image_path):
+        # TODO
+        # Cache 4 images
+        # For single page view: 1 before, 2 after
+        # For double page view: 1 before, 1 after
+        # Image panning with mouse
+
         self.image_pixmap = QtGui.QPixmap()
         self.image_pixmap.load(image_path)
         self.resizeEvent()
@@ -731,7 +791,7 @@ class PliantQTextBrowser(QtWidgets.QTextBrowser):
         else:
             QtWidgets.QTextEdit.keyPressEvent(self, event)
 
-    def record_scroll_position(self):
+    def record_scroll_position(self, return_as_bookmark=False):
         vertical = self.verticalScrollBar().value()
         maximum = self.verticalScrollBar().maximum()
 
@@ -747,7 +807,13 @@ class PliantQTextBrowser(QtWidgets.QTextBrowser):
 
         if len(visible_text) > 50:
             visible_text = visible_text[:51]
-        self.parent.metadata['position']['last_visible_text'] = visible_text
+
+        if return_as_bookmark:
+            return (self.parent.metadata['position']['current_chapter'],
+                    self.parent.metadata['position']['scroll_value'],
+                    visible_text)
+        else:
+            self.parent.metadata['position']['last_visible_text'] = visible_text
 
     # def mouseMoveEvent(self, event):
         # TODO

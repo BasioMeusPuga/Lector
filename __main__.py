@@ -334,7 +334,9 @@ class MainUI(QtWidgets.QMainWindow, mainwindow.Ui_MainWindow):
         item.setData(True, QtCore.Qt.UserRole + 8)
 
     def test_function(self):
-        print('Caesar si viveret, ad remum dareris')
+        # print('Caesar si viveret, ad remum dareris')
+        if self.tabWidget.currentIndex() != 0:
+            self.tabWidget.widget(self.tabWidget.currentIndex()).add_bookmark()
 
     def resizeEvent(self, event=None):
         if event:
@@ -376,7 +378,6 @@ class MainUI(QtWidgets.QMainWindow, mainwindow.Ui_MainWindow):
         # Remember file addition modality
         # If a file is added from here, it should not be removed
         # from the libary in case of a database refresh
-        # Individually added files are not subject to library filtering
 
         opened_files = QtWidgets.QFileDialog.getOpenFileNames(
             self, 'Open file', self.settings['last_open_path'],
