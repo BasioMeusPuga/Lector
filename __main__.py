@@ -25,7 +25,8 @@ import sorter
 import database
 
 from resources import mainwindow, resources
-from widgets import LibraryToolBar, BookToolBar, Tab, LibraryDelegate
+from toolbars import LibraryToolBar, BookToolBar
+from widgets import Tab, LibraryDelegate
 from threaded import BackGroundTabUpdate, BackGroundBookAddition, BackGroundBookDeletion
 from library import Library
 from settings import Settings
