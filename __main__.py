@@ -127,6 +127,7 @@ class MainUI(QtWidgets.QMainWindow, mainwindow.Ui_MainWindow):
             self.libraryToolBar.tableViewButton.trigger()
 
         # Book toolbar
+        self.bookToolBar.addBookmarkButton.triggered.connect(self.add_bookmark)
         self.bookToolBar.bookmarkButton.triggered.connect(self.toggle_dock_widget)
         self.bookToolBar.fullscreenButton.triggered.connect(self.set_fullscreen)
 
@@ -221,6 +222,10 @@ class MainUI(QtWidgets.QMainWindow, mainwindow.Ui_MainWindow):
             self.settings_dialog.start_library_scan()
 
     def open_books_at_startup(self):
+        # TODO
+        # See if there's some reason why last open books and command line
+        # argument books can't be opened together
+
         # Open last... open books.
         # Then set the value to None for the next run
         if self.settings['last_open_books']:
@@ -333,10 +338,12 @@ class MainUI(QtWidgets.QMainWindow, mainwindow.Ui_MainWindow):
         item.setIcon(QtGui.QIcon(img_pixmap))
         item.setData(True, QtCore.Qt.UserRole + 8)
 
-    def test_function(self):
-        # print('Caesar si viveret, ad remum dareris')
+    def add_bookmark(self):
         if self.tabWidget.currentIndex() != 0:
             self.tabWidget.widget(self.tabWidget.currentIndex()).add_bookmark()
+
+    def test_function(self):
+        print('Caesar si viveret, ad remum dareris')
 
     def resizeEvent(self, event=None):
         if event:

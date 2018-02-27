@@ -53,9 +53,12 @@ class BookToolBar(QtWidgets.QToolBar):
         self.fullscreenButton = QtWidgets.QAction(
             QtGui.QIcon.fromTheme('view-fullscreen'),
             'Fullscreen', self)
+        self.addBookmarkButton = QtWidgets.QAction(
+            QtGui.QIcon.fromTheme('bookmark-new'),
+            'Add bookmark', self)
         self.bookmarkButton = QtWidgets.QAction(
             QtGui.QIcon.fromTheme('bookmarks'),
-            'Bookmark', self)
+            'Bookmarks', self)
         self.bookmarkButton.setObjectName('bookmarkButton')
         self.resetProfile = QtWidgets.QAction(
             QtGui.QIcon.fromTheme('view-refresh'),
@@ -66,8 +69,10 @@ class BookToolBar(QtWidgets.QToolBar):
         self.fontButton.setCheckable(True)
         self.fontButton.triggered.connect(self.toggle_font_settings)
         self.addSeparator()
+        self.addAction(self.addBookmarkButton)
         self.addAction(self.bookmarkButton)
         self.bookmarkButton.setCheckable(True)
+        self.addSeparator()
         self.addAction(self.fullscreenButton)
 
         # Font modification
@@ -219,6 +224,7 @@ class BookToolBar(QtWidgets.QToolBar):
         self.searchBarAction = self.addWidget(self.searchBar)
 
         self.bookActions = [
+            self.addBookmarkButton,
             self.bookmarkButton,
             self.fullscreenButton,
             self.tocBoxAction,
@@ -441,6 +447,8 @@ class Tab(QtWidgets.QWidget):
         self.dockListView = QtWidgets.QListView(self.dockWidget)
         self.dockListView.setResizeMode(QtWidgets.QListWidget.Adjust)
         self.dockListView.setMaximumWidth(350)
+        self.dockListView.setItemDelegate(BookmarkDelegate(self.dockListView))
+        self.dockListView.setUniformItemSizes(True)
         self.dockListView.clicked.connect(self.navigate_to_bookmark)
         self.dockWidget.setWidget(self.dockListView)
 
@@ -476,6 +484,13 @@ class Tab(QtWidgets.QWidget):
             matching_item[0], self.metadata['last_accessed'], QtCore.Qt.UserRole + 12)
 
     def set_scroll_value(self, switch_widgets=True, search_data=None):
+        # TODO
+        # Bookmark navigation does not work in case 2 entries in the same
+        # chapter are clicked successively
+
+        if self.sender().objectName() == 'tabWidget':
+            return
+
         if switch_widgets:
             previous_widget = self.window().tabWidget.currentWidget()
             self.window().tabWidget.setCurrentWidget(self)
@@ -487,15 +502,15 @@ class Tab(QtWidgets.QWidget):
         # Scroll a little ahead
         # This avoids confusion with potentially duplicate phrases
         # And the found result is at the top of the window
-        scroll_position = scroll_value * self.contentView.verticalScrollBar().maximum() * 1.1
-        self.contentView.verticalScrollBar().setValue(scroll_position)
+        scroll_position = scroll_value * self.contentView.verticalScrollBar().maximum()
+        self.contentView.verticalScrollBar().setValue(scroll_position * 1.1)
 
-        last_visible_text = self.metadata['position']['last_visible_text']
+        search_text = self.metadata['position']['last_visible_text']
         if search_data:
-            last_visible_text = search_data[1]
+            search_text = search_data[1]
 
-        if last_visible_text:
-            self.contentView.find(last_visible_text)
+        if search_text:
+            self.contentView.find(search_text)
 
         text_cursor = self.contentView.textCursor()
         text_cursor.clearSelection()
@@ -939,3 +954,32 @@ class LibraryDelegate(QtWidgets.QStyledItemDelegate):
             y_draw = option.rect.bottomRight().y() - 35
             if current_chapter != 1:
                 painter.drawPixmap(x_draw, y_draw, read_icon)
+
+
+class BookmarkDelegate(QtWidgets.QStyledItemDelegate):
+    def __init__(self, parent=None):
+        super(BookmarkDelegate, self).__init__(parent)
+        self.parent = parent
+
+    def sizeHint(self, *args):
+        dockwidget_width = self.parent.width()
+        return QtCore.QSize(dockwidget_width, 50)
+
+    def paint(self, painter, option, index):
+        # TODO
+        # Alignment of the painted item
+
+        option = option.__class__(option)
+
+        chapter_index = index.data(QtCore.Qt.UserRole)
+        chapter_name = self.parent.window().bookToolBar.tocBox.itemText(chapter_index - 1)
+
+        painter.save()
+        painter.translate(0, -10)
+        QtWidgets.QStyledItemDelegate.paint(self, painter, option, index)
+        painter.restore()
+
+        painter.drawText(
+            option.rect,
+            QtCore.Qt.AlignBottom|QtCore.Qt.AlignLeft|QtCore.Qt.TextWordWrap,
+            '   ' + chapter_name)
