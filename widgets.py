@@ -230,7 +230,10 @@ class Tab(QtWidgets.QWidget):
             self.contentView.clear()
             self.contentView.setHtml(required_content)
 
-    def format_view(self, font, font_size, foreground, background, padding, line_spacing):
+    def format_view(self, font, font_size, foreground,
+                    background, padding, line_spacing,
+                    text_alignment):
+
         if self.are_we_doing_images_only:
             # Tab color does not need to be set separately in case
             # no padding is set for the viewport of a QGraphicsView
@@ -253,9 +256,13 @@ class Tab(QtWidgets.QWidget):
             block_format.setLineHeight(
                 line_spacing, QtGui.QTextBlockFormat.ProportionalHeight)
 
-            # TODO
             # Give options for alignment
-            # block_format.setAlignment(QtCore.Qt.AlignJustify)
+            alignment_dict = {
+                'left': QtCore.Qt.AlignLeft,
+                'right': QtCore.Qt.AlignRight,
+                'center': QtCore.Qt.AlignCenter,
+                'justify': QtCore.Qt.AlignJustify}
+            block_format.setAlignment(alignment_dict[text_alignment])
 
             # Also for padding
             # Using setViewPortMargins for this disables scrolling in the margins
@@ -625,12 +632,8 @@ class BookmarkDelegate(QtWidgets.QStyledItemDelegate):
         chapter_index = index.data(QtCore.Qt.UserRole)
         chapter_name = self.parent.window().bookToolBar.tocBox.itemText(chapter_index - 1)
 
-        painter.save()
-        painter.translate(0, -10)
         QtWidgets.QStyledItemDelegate.paint(self, painter, option, index)
-        painter.restore()
-
         painter.drawText(
             option.rect,
-            QtCore.Qt.AlignBottom|QtCore.Qt.AlignLeft|QtCore.Qt.TextWordWrap,
+            QtCore.Qt.AlignBottom|QtCore.Qt.AlignRight|QtCore.Qt.TextWordWrap,
             '   ' + chapter_name)

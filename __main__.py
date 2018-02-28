@@ -145,6 +145,19 @@ class MainUI(QtWidgets.QMainWindow, mainwindow.Ui_MainWindow):
         self.bookToolBar.paddingDown.triggered.connect(self.modify_font)
         self.bookToolBar.resetProfile.triggered.connect(self.reset_profile)
 
+        alignment_dict = {
+            'left': self.bookToolBar.alignLeft,
+            'right': self.bookToolBar.alignRight,
+            'center': self.bookToolBar.alignCenter,
+            'justify': self.bookToolBar.alignJustify}
+
+        profile_index = self.bookToolBar.profileBox.currentIndex()
+        current_profile = self.bookToolBar.profileBox.itemData(
+            profile_index, QtCore.Qt.UserRole)
+        for i in alignment_dict.items():
+            i[1].triggered.connect(self.modify_font)
+        alignment_dict[current_profile['text_alignment']].setChecked(True)
+
         self.bookToolBar.zoomIn.triggered.connect(self.modify_comic_view)
         self.bookToolBar.zoomOut.triggered.connect(self.modify_comic_view)
         self.bookToolBar.fitWidth.triggered.connect(self.modify_comic_view)
@@ -770,6 +783,14 @@ class MainUI(QtWidgets.QMainWindow, mainwindow.Ui_MainWindow):
         if signal_sender == 'paddingDown':
             current_profile['padding'] -= 5
 
+        alignment_dict = {
+            'alignLeft': 'left',
+            'alignRight': 'right',
+            'alignCenter': 'center',
+            'alignJustify': 'justify'}
+        if signal_sender in alignment_dict:
+            current_profile['text_alignment'] = alignment_dict[signal_sender]
+
         self.bookToolBar.profileBox.setItemData(
             profile_index, current_profile, QtCore.Qt.UserRole)
         self.format_contentView()
@@ -842,7 +863,7 @@ class MainUI(QtWidgets.QMainWindow, mainwindow.Ui_MainWindow):
                 'background-color: %s' % background.name())
 
             current_tab.format_view(
-                None, None, None, background, padding, None)
+                None, None, None, background, padding, None, None)
 
         else:
             profile_index = self.bookToolBar.profileBox.currentIndex()
@@ -855,6 +876,7 @@ class MainUI(QtWidgets.QMainWindow, mainwindow.Ui_MainWindow):
             padding = current_profile['padding']
             font_size = current_profile['font_size']
             line_spacing = current_profile['line_spacing']
+            text_alignment = current_profile['text_alignment']
 
             # Change toolbar widgets to match new settings
             self.bookToolBar.fontBox.blockSignals(True)
@@ -872,7 +894,9 @@ class MainUI(QtWidgets.QMainWindow, mainwindow.Ui_MainWindow):
                 'background-color: %s' % background.name())
 
             current_tab.format_view(
-                font, font_size, foreground, background, padding, line_spacing)
+                font, font_size, foreground,
+                background, padding, line_spacing,
+                text_alignment)
 
     def reset_profile(self):
         current_profile_index = self.bookToolBar.profileBox.currentIndex()

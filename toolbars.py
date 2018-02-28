@@ -81,7 +81,7 @@ class BookToolBar(QtWidgets.QToolBar):
             'Increase padding', self)
         self.paddingUp.setObjectName('paddingUp')
         self.paddingDown = QtWidgets.QAction(
-            QtGui.QIcon.fromTheme('format-justify-fill'),
+            QtGui.QIcon.fromTheme('format-indent-more'),
             'Decrease padding', self)
         self.paddingDown.setObjectName('paddingDown')
 
@@ -93,6 +93,37 @@ class BookToolBar(QtWidgets.QToolBar):
             QtGui.QIcon.fromTheme('format-line-spacing-double'),
             'Decrease line spacing', self)
         self.lineSpacingDown.setObjectName('lineSpacingDown')
+
+        self.alignLeft = QtWidgets.QAction(
+            QtGui.QIcon.fromTheme('format-justify-left'),
+            'Left align text', self)
+        self.alignLeft.setObjectName('alignLeft')
+        self.alignLeft.setCheckable(True)
+
+        self.alignRight = QtWidgets.QAction(
+            QtGui.QIcon.fromTheme('format-justify-right'),
+            'Right align text', self)
+        self.alignRight.setObjectName('alignRight')
+        self.alignRight.setCheckable(True)
+
+        self.alignCenter = QtWidgets.QAction(
+            QtGui.QIcon.fromTheme('format-justify-center'),
+            'Center align text', self)
+        self.alignCenter.setObjectName('alignCenter')
+        self.alignCenter.setCheckable(True)
+
+        self.alignJustify = QtWidgets.QAction(
+            QtGui.QIcon.fromTheme('format-justify-fill'),
+            'Justify text', self)
+        self.alignJustify.setObjectName('alignJustify')
+        self.alignJustify.setCheckable(True)
+
+        self.alignButtons = QtWidgets.QActionGroup(self)
+        self.alignButtons.setExclusive(True)
+        self.alignButtons.addAction(self.alignLeft)
+        self.alignButtons.addAction(self.alignRight)
+        self.alignButtons.addAction(self.alignCenter)
+        self.alignButtons.addAction(self.alignJustify)
 
         self.fontBox = QtWidgets.QFontComboBox()
         self.fontBox.setFontFilters(QtWidgets.QFontComboBox.ScalableFonts)
@@ -122,6 +153,11 @@ class BookToolBar(QtWidgets.QToolBar):
         self.fontSeparator4 = self.addSeparator()
         self.addAction(self.paddingUp)
         self.addAction(self.paddingDown)
+        self.fontSeparator4 = self.addSeparator()
+        self.addAction(self.alignLeft)
+        self.addAction(self.alignRight)
+        self.addAction(self.alignCenter)
+        self.addAction(self.alignJustify)
 
         self.fontActions = [
             self.fontBoxAction,
@@ -132,6 +168,10 @@ class BookToolBar(QtWidgets.QToolBar):
             self.lineSpacingDown,
             self.paddingUp,
             self.paddingDown,
+            self.alignLeft,
+            self.alignRight,
+            self.alignCenter,
+            self.alignJustify,
             self.profileAction,
             self.fontSeparator1,
             self.fontSeparator2,

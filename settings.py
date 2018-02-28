@@ -12,28 +12,31 @@ class Settings:
         self.settings = QtCore.QSettings('Lector', 'Lector')
 
         default_profile1 = {
-            'font': 'Noto Sans',
+            'font': 'Noto Sans Fallback',
             'foreground': QtGui.QColor().fromRgb(0, 0, 0),
             'background': QtGui.QColor().fromRgb(216, 216, 216),
-            'padding': 140,
-            'font_size': 20,
-            'line_spacing': 110}
+            'padding': 150,
+            'font_size': 30,
+            'line_spacing': 110,
+            'text_alignment': 'justify'}
 
         default_profile2 = {
             'font': 'Roboto',
             'foreground': QtGui.QColor().fromRgb(194, 194, 194),
             'background': QtGui.QColor().fromRgb(22, 22, 22),
-            'padding': 140,
-            'font_size': 20,
-            'line_spacing': 110}
+            'padding': 150,
+            'font_size': 30,
+            'line_spacing': 110,
+            'text_alignment': 'justify'}
 
         default_profile3 = {
             'font': 'Clear Sans',
             'foreground': QtGui.QColor().fromRgb(101, 123, 131),
             'background': QtGui.QColor().fromRgb(0, 43, 54),
-            'padding': 140,
+            'padding': 150,
             'font_size': 30,
-            'line_spacing': 110}
+            'line_spacing': 110,
+            'text_alignment': 'justify'}
 
         self.default_profiles = [
             default_profile1, default_profile2, default_profile3]
@@ -88,7 +91,7 @@ class Settings:
         self.parent.settings['scan_library'] = literal_eval(self.settings.value(
             'scanLibraryAtStart', 'False').capitalize())
         self.parent.settings['remember_files'] = literal_eval(self.settings.value(
-            'rememberFiles', 'False').capitalize())
+            'rememberFiles', 'True').capitalize())
         self.parent.settings['perform_culling'] = literal_eval(self.settings.value(
             'performCulling', 'True').capitalize())
         self.settings.endGroup()
