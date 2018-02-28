@@ -145,7 +145,7 @@ class MainUI(QtWidgets.QMainWindow, mainwindow.Ui_MainWindow):
         self.bookToolBar.paddingDown.triggered.connect(self.modify_font)
         self.bookToolBar.resetProfile.triggered.connect(self.reset_profile)
 
-        alignment_dict = {
+        self.alignment_dict = {
             'left': self.bookToolBar.alignLeft,
             'right': self.bookToolBar.alignRight,
             'center': self.bookToolBar.alignCenter,
@@ -154,9 +154,9 @@ class MainUI(QtWidgets.QMainWindow, mainwindow.Ui_MainWindow):
         profile_index = self.bookToolBar.profileBox.currentIndex()
         current_profile = self.bookToolBar.profileBox.itemData(
             profile_index, QtCore.Qt.UserRole)
-        for i in alignment_dict.items():
+        for i in self.alignment_dict.items():
             i[1].triggered.connect(self.modify_font)
-        alignment_dict[current_profile['text_alignment']].setChecked(True)
+        self.alignment_dict[current_profile['text_alignment']].setChecked(True)
 
         self.bookToolBar.zoomIn.triggered.connect(self.modify_comic_view)
         self.bookToolBar.zoomOut.triggered.connect(self.modify_comic_view)
@@ -887,6 +887,8 @@ class MainUI(QtWidgets.QMainWindow, mainwindow.Ui_MainWindow):
             self.bookToolBar.fontSizeBox.setCurrentIndex(current_index)
             self.bookToolBar.fontBox.blockSignals(False)
             self.bookToolBar.fontSizeBox.blockSignals(False)
+
+            self.alignment_dict[current_profile['text_alignment']].setChecked(True)
 
             self.bookToolBar.colorBoxFG.setStyleSheet(
                 'background-color: %s' % foreground.name())
