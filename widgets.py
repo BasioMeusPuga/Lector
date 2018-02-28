@@ -26,6 +26,7 @@ import os
 from PyQt5 import QtWidgets, QtGui, QtCore
 
 from resources import pie_chart
+from models import BookmarkProxyModel
 
 
 class Tab(QtWidgets.QWidget):
@@ -89,7 +90,7 @@ class Tab(QtWidgets.QWidget):
             QtCore.Qt.ScrollBarAlwaysOff)
 
         # Create the dock widget for context specific display
-        self.dockWidget = QtWidgets.QDockWidget(self)
+        self.dockWidget = PliantDockWidget(self)
         self.dockWidget.setFeatures(QtWidgets.QDockWidget.DockWidgetClosable)
         self.dockWidget.setFloating(False)
         self.dockWidget.hide()
@@ -102,9 +103,9 @@ class Tab(QtWidgets.QWidget):
         self.dockListView.clicked.connect(self.navigate_to_bookmark)
         self.dockWidget.setWidget(self.dockListView)
 
-        self.bookmark_model = QtGui.QStandardItemModel()
+        self.bookmark_model = QtGui.QStandardItemModel(self)
+        self.proxy_model = BookmarkProxyModel(self)
         self.generate_bookmark_model()
-        self.dockListView.setModel(self.bookmark_model)
 
         self.generate_keyboard_shortcuts()
 
@@ -249,7 +250,6 @@ class Tab(QtWidgets.QWidget):
                     font, font_size, foreground.name(), background.name()))
 
             # Line spacing
-            # Iterate over each block using the QTextCursor
             # Set line spacing per a block format
             # This is proportional line spacing so assume a divisor of 100
             block_format = QtGui.QTextBlockFormat()
@@ -298,6 +298,25 @@ class Tab(QtWidgets.QWidget):
         self.metadata['bookmarks'].append([
             chapter, search_data, description])
         self.add_bookmark_to_model(description, chapter, search_data)
+        self.dockWidget.setVisible(True)
+
+    def add_bookmark_to_model(self, description, chapter, search_data):
+        bookmark = QtGui.QStandardItem()
+        bookmark.setData(description, QtCore.Qt.DisplayRole)
+        bookmark.setData(chapter, QtCore.Qt.UserRole)
+        bookmark.setData(search_data, QtCore.Qt.UserRole + 1)
+
+        self.bookmark_model.appendRow(bookmark)
+
+    def navigate_to_bookmark(self, index):
+        if not index.isValid():
+            return
+
+        chapter = self.proxy_model.data(index, QtCore.Qt.UserRole)
+        search_data = self.proxy_model.data(index, QtCore.Qt.UserRole + 1)
+
+        self.window().bookToolBar.tocBox.setCurrentIndex(chapter - 1)
+        self.set_scroll_value(False, search_data)
 
     def generate_bookmark_model(self):
         bookmarks = self.metadata['bookmarks']
@@ -313,23 +332,12 @@ class Tab(QtWidgets.QWidget):
         for i in bookmarks:
             self.add_bookmark_to_model(i[2], i[0], i[1])
 
-    def add_bookmark_to_model(self, description, chapter, search_data):
-        bookmark = QtGui.QStandardItem()
-        bookmark.setData(description, QtCore.Qt.DisplayRole)
-        bookmark.setData(chapter, QtCore.Qt.UserRole)
-        bookmark.setData(search_data, QtCore.Qt.UserRole + 1)
+        self.generate_proxy_model()
 
-        self.bookmark_model.appendRow(bookmark)
-
-    def navigate_to_bookmark(self, index):
-        if not index.isValid():
-            return
-
-        chapter = self.bookmark_model.data(index, QtCore.Qt.UserRole)
-        search_data = self.bookmark_model.data(index, QtCore.Qt.UserRole + 1)
-
-        self.window().bookToolBar.tocBox.setCurrentIndex(chapter - 1)
-        self.set_scroll_value(False, search_data)
+    def generate_proxy_model(self):
+        self.proxy_model.setSourceModel(self.bookmark_model)
+        self.proxy_model.setSortCaseSensitivity(False)
+        self.dockListView.setModel(self.proxy_model)
 
     def hide_mouse(self):
         self.contentView.setCursor(QtCore.Qt.BlankCursor)
@@ -620,7 +628,7 @@ class BookmarkDelegate(QtWidgets.QStyledItemDelegate):
         self.parent = parent
 
     def sizeHint(self, *args):
-        dockwidget_width = self.parent.width()
+        dockwidget_width = self.parent.width() - 20
         return QtCore.QSize(dockwidget_width, 50)
 
     def paint(self, painter, option, index):
@@ -637,3 +645,15 @@ class BookmarkDelegate(QtWidgets.QStyledItemDelegate):
             option.rect,
             QtCore.Qt.AlignBottom|QtCore.Qt.AlignRight|QtCore.Qt.TextWordWrap,
             '   ' + chapter_name)
+
+
+class PliantDockWidget(QtWidgets.QDockWidget):
+    def __init__(self, parent=None):
+        super(PliantDockWidget, self).__init__(parent)
+        self.parent = parent
+
+    def showEvent(self, event):
+        self.parent.window().bookToolBar.bookmarkButton.setChecked(True)
+
+    def hideEvent(self, event):
+        self.parent.window().bookToolBar.bookmarkButton.setChecked(False)

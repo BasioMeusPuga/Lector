@@ -27,7 +27,7 @@ TODO
         Information dialog widget
         Context menu: Cache, Read, Edit database, delete, Mark read/unread
         Set focus to newly added file
-        Allow editing of database data through the UI
+        Allow editing of database data through the UI + for Bookmarks
     Reading:
         ✓ Drop down for TOC
         ✓ Override the keypress event of the textedit
@@ -43,6 +43,7 @@ TODO
         ✓ View and hide toolbar actions in a list
         ✓ Line spacing
         ✓ Record progress
+        ✓ Text alignment
         Bookmarks
         Set context menu for definitions and the like
         Search document using QTextCursor?
@@ -59,7 +60,7 @@ TODO
         mobi, azw support
     Other:
         ✓ Define every widget in code
-        ✓ Include icons for emblems
+        Include icons for filetype emblems
     Bugs:
         If there are files open and the database is deleted, TypeErrors result
         Closing a fullscreened contentView does not save settings

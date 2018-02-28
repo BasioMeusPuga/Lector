@@ -22,6 +22,31 @@ from PyQt5 import QtCore, QtWidgets
 from resources import pie_chart
 
 
+class BookmarkProxyModel(QtCore.QSortFilterProxyModel):
+    def __init__(self, parent=None):
+        super(BookmarkProxyModel, self).__init__(parent)
+        self.parent = parent
+        self.filter_string = None
+
+    def setFilterParams(self, filter_text):
+        self.filter_text = filter_text
+
+    def filterAcceptsRow(self, row, parent):
+        # TODO
+        # Connect this to the search bar
+        return True
+
+    def setData(self, index, value, role):
+        if role == QtCore.Qt.EditRole:
+            source_index = self.mapToSource(index)
+            self.sourceModel().setData(source_index, value, QtCore.Qt.DisplayRole)
+
+            row = index.row()
+            print(self.parent.metadata['bookmarks'])
+    
+            return True
+
+
 class ItemProxyModel(QtCore.QSortFilterProxyModel):
     def __init__(self, parent=None):
         super(ItemProxyModel, self).__init__(parent)
