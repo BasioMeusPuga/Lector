@@ -23,6 +23,7 @@
 
 
 import os
+import uuid
 from PyQt5 import QtWidgets, QtGui, QtCore
 
 from resources import pie_chart
@@ -89,8 +90,13 @@ class Tab(QtWidgets.QWidget):
         self.contentView.setHorizontalScrollBarPolicy(
             QtCore.Qt.ScrollBarAlwaysOff)
 
+        # See bookmark availability
+        if not self.metadata['bookmarks']:
+            self.metadata['bookmarks'] = {}
+
         # Create the dock widget for context specific display
         self.dockWidget = PliantDockWidget(self)
+        self.dockWidget.setWindowTitle('Bookmarks')
         self.dockWidget.setFeatures(QtWidgets.QDockWidget.DockWidgetClosable)
         self.dockWidget.setFloating(False)
         self.dockWidget.hide()
@@ -283,8 +289,6 @@ class Tab(QtWidgets.QWidget):
                     break
 
     def toggle_bookmarks(self):
-        self.dockWidget.setWindowTitle('Bookmarks')
-
         if self.dockWidget.isVisible():
             self.dockWidget.hide()
         else:
@@ -294,19 +298,27 @@ class Tab(QtWidgets.QWidget):
         chapter, scroll_position, visible_text = self.contentView.record_scroll_position(True)
         description = 'New bookmark'
         search_data = (scroll_position, visible_text)
+        identifier = uuid.uuid4().hex[:10]
 
-        self.metadata['bookmarks'].append([
-            chapter, search_data, description])
-        self.add_bookmark_to_model(description, chapter, search_data)
+        self.metadata['bookmarks'][identifier] = {
+            'chapter': chapter,
+            'search_data': search_data,
+            'description': description}
+
+        self.add_bookmark_to_model(
+            description, chapter, search_data, identifier)
         self.dockWidget.setVisible(True)
 
-    def add_bookmark_to_model(self, description, chapter, search_data):
+    def add_bookmark_to_model(self, description, chapter, search_data, identifier):
         bookmark = QtGui.QStandardItem()
         bookmark.setData(description, QtCore.Qt.DisplayRole)
+
         bookmark.setData(chapter, QtCore.Qt.UserRole)
         bookmark.setData(search_data, QtCore.Qt.UserRole + 1)
+        bookmark.setData(identifier, QtCore.Qt.UserRole + 2)
 
         self.bookmark_model.appendRow(bookmark)
+        self.update_bookmark_proxy_model()
 
     def navigate_to_bookmark(self, index):
         if not index.isValid():
@@ -319,25 +331,30 @@ class Tab(QtWidgets.QWidget):
         self.set_scroll_value(False, search_data)
 
     def generate_bookmark_model(self):
-        bookmarks = self.metadata['bookmarks']
-
-        if not bookmarks:
-            self.metadata['bookmarks'] = []
-            return
-
         # TODO
-        # Replace this with proxy model sorting
-        bookmarks.sort(key=lambda x: x[0])
+        # Get the proxy model to sort this
 
-        for i in bookmarks:
-            self.add_bookmark_to_model(i[2], i[0], i[1])
+        for i in self.metadata['bookmarks'].items():
+            self.add_bookmark_to_model(
+                i[1]['description'],
+                i[1]['chapter'],
+                i[1]['search_data'],
+                i[0])
 
-        self.generate_proxy_model()
+        self.generate_bookmark_proxy_model()
 
-    def generate_proxy_model(self):
+    def generate_bookmark_proxy_model(self):
         self.proxy_model.setSourceModel(self.bookmark_model)
         self.proxy_model.setSortCaseSensitivity(False)
+        self.proxy_model.setSortRole(QtCore.Qt.UserRole)
         self.dockListView.setModel(self.proxy_model)
+
+    def update_bookmark_proxy_model(self):
+        self.proxy_model.invalidateFilter()
+        self.proxy_model.setFilterParams(
+            self.window().bookToolBar.searchBar.text())
+        self.proxy_model.setFilterFixedString(
+            self.window().bookToolBar.searchBar.text())
 
     def hide_mouse(self):
         self.contentView.setCursor(QtCore.Qt.BlankCursor)

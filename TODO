@@ -45,6 +45,10 @@ TODO
         ✓ Record progress
         ✓ Text alignment
         Bookmarks
+            ✓ Creation
+            ✓ Navigation
+            Editing: Name, Location
+            Deletion
         Set context menu for definitions and the like
         Search document using QTextCursor?
         Cache multiple images

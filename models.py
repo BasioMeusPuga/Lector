@@ -39,11 +39,11 @@ class BookmarkProxyModel(QtCore.QSortFilterProxyModel):
     def setData(self, index, value, role):
         if role == QtCore.Qt.EditRole:
             source_index = self.mapToSource(index)
-            self.sourceModel().setData(source_index, value, QtCore.Qt.DisplayRole)
+            identifier = self.sourceModel().data(source_index, QtCore.Qt.UserRole + 2)
 
-            row = index.row()
-            print(self.parent.metadata['bookmarks'])
-    
+            self.sourceModel().setData(source_index, value, QtCore.Qt.DisplayRole)
+            self.parent.metadata['bookmarks'][identifier]['description'] = value
+
             return True
 
 
