@@ -1,9 +1,8 @@
 TODO
     Options:
-        Automatic library management
+        ✓ Automatic library management
             ✓ Recursive file addition
             ✓ Auto deletion
-            Add only one file type if multiple are present
         ✓ Remember files
         ✓ Check files (hashes) upon restart
         ✓ Draw shadows
@@ -21,7 +20,6 @@ TODO
         ✓ Memory management
         ✓ Mass tagging
         ✓ Add capability to sort by new
-        ? Create emblem per filetype
         Table view
         Ignore a / the / numbers for sorting purposes
         Information dialog widget
@@ -64,19 +62,24 @@ TODO
         mobi, azw support
     Other:
         ✓ Define every widget in code
-        Include icons for filetype emblems
     Bugs:
         If there are files open and the database is deleted, TypeErrors result
         Closing a fullscreened contentView does not save settings
     
     Secondary:
+        Annotations
         Graphical themes
         Goodreads API: Ratings, Read, Recommendations
         Get ISBN using python-isbnlib
         Pagination
         Use embedded fonts
         Scrolling: Smooth / By Line
+        ? Add only one file type if multiple are present
         Shift to logging instead of print statements
         ? Plugin system for parsers
         ? pdf support
+        ? Create emblem per filetype
         txt, doc, chm, djvu, fb2 support
+        Include icons for filetype emblems
+        Drag and drop support for the library
+        Leave comic images on disk in case tab isn't closed and files are remembered

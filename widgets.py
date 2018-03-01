@@ -295,10 +295,15 @@ class Tab(QtWidgets.QWidget):
             self.dockWidget.show()
 
     def add_bookmark(self):
-        chapter, scroll_position, visible_text = self.contentView.record_scroll_position(True)
-        description = 'New bookmark'
-        search_data = (scroll_position, visible_text)
         identifier = uuid.uuid4().hex[:10]
+        description = 'New bookmark'
+
+        if self.are_we_doing_images_only:
+            chapter = self.metadata['position']['current_chapter']
+            search_data = (0, None)
+        else:
+            chapter, scroll_position, visible_text = self.contentView.record_scroll_position(True)
+            search_data = (scroll_position, visible_text)
 
         self.metadata['bookmarks'][identifier] = {
             'chapter': chapter,
@@ -328,11 +333,12 @@ class Tab(QtWidgets.QWidget):
         search_data = self.proxy_model.data(index, QtCore.Qt.UserRole + 1)
 
         self.window().bookToolBar.tocBox.setCurrentIndex(chapter - 1)
-        self.set_scroll_value(False, search_data)
+        if not self.are_we_doing_images_only:
+            self.set_scroll_value(False, search_data)
 
     def generate_bookmark_model(self):
         # TODO
-        # Get the proxy model to sort this
+        # Sorting is not working correctly
 
         for i in self.metadata['bookmarks'].items():
             self.add_bookmark_to_model(
