@@ -666,7 +666,7 @@ class BookmarkDelegate(QtWidgets.QStyledItemDelegate):
         QtWidgets.QStyledItemDelegate.paint(self, painter, option, index)
         painter.drawText(
             option.rect,
-            QtCore.Qt.AlignBottom|QtCore.Qt.AlignRight|QtCore.Qt.TextWordWrap,
+            QtCore.Qt.AlignBottom | QtCore.Qt.AlignRight | QtCore.Qt.TextWordWrap,
             '   ' + chapter_name)
 
 

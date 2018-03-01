@@ -69,11 +69,17 @@ class TableProxyModel(QtCore.QSortFilterProxyModel):
         # TODO
         # The setData method
         super(TableProxyModel, self).__init__(parent)
-        self.header_data = [None, 'Title', 'Author', 'Status', 'Year', 'Tags']
+        self.header_data = [
+            None, 'Title', 'Author', 'Status', 'Year', 'Tags']
         self.temp_dir = temp_dir
         self.filter_text = None
         self.active_library_filters = None
         self.sorting_box_position = None
+        self.role_dictionary = {
+            1: QtCore.Qt.UserRole,      # Title
+            2: QtCore.Qt.UserRole + 1,  # Author
+            4: QtCore.Qt.UserRole + 2,  # Year
+            5: QtCore.Qt.UserRole + 4}  # Tags
         self.common_functions = ProxyModelsCommonFunctions(self)
 
     def columnCount(self, parent):
@@ -84,12 +90,9 @@ class TableProxyModel(QtCore.QSortFilterProxyModel):
             return self.header_data[column]
 
     def flags(self, index):
-        # This means only the Tags column is editable
-        if index.column() == 4:
-            return QtCore.Qt.ItemIsEnabled | QtCore.Qt.ItemIsSelectable | QtCore.Qt.ItemIsEditable
-        else:
-            # These are standard select but don't edit values
-            return QtCore.Qt.ItemIsEnabled | QtCore.Qt.ItemIsSelectable
+        # Tag editing will take place by way of a right click menu
+        # These tags denote clickable and that's about it
+        return QtCore.Qt.ItemIsEnabled | QtCore.Qt.ItemIsSelectable
 
     def data(self, index, role):
         source_index = self.mapToSource(index)
@@ -117,17 +120,10 @@ class TableProxyModel(QtCore.QSortFilterProxyModel):
                 return return_pixmap
 
         elif role == QtCore.Qt.DisplayRole or role == QtCore.Qt.EditRole:
-
             if index.column() in (0, 3):    # Cover and Status
                 return QtCore.QVariant()
 
-            role_dictionary = {
-                1: QtCore.Qt.UserRole,      # Title
-                2: QtCore.Qt.UserRole + 1,  # Author
-                4: QtCore.Qt.UserRole + 2,  # Year
-                5: QtCore.Qt.UserRole + 4}  # Tags
-
-            return item.data(role_dictionary[index.column()])
+            return item.data(self.role_dictionary[index.column()])
 
         else:
             return QtCore.QVariant()
@@ -139,6 +135,14 @@ class TableProxyModel(QtCore.QSortFilterProxyModel):
     def filterAcceptsRow(self, row, parent):
         output = self.common_functions.filterAcceptsRow(row, parent)
         return output
+
+    def sort_table_columns(self, column):
+        if column == 3:
+            return
+
+        sorting_order = self.sender().sortIndicatorOrder()
+        self.sort(0, sorting_order)
+        self.setSortRole(self.role_dictionary[column])
 
 
 class ProxyModelsCommonFunctions:

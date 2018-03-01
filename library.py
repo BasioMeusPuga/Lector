@@ -150,10 +150,7 @@ class Library:
         self.table_proxy_model = TableProxyModel(self.parent.temp_dir.path())
         self.table_proxy_model.setSourceModel(self.view_model)
         self.table_proxy_model.setSortCaseSensitivity(False)
-        self.table_proxy_model.sort(0, QtCore.Qt.AscendingOrder)
         self.parent.tableView.setModel(self.table_proxy_model)
-        self.parent.tableView.horizontalHeader().setSortIndicator(
-            0, QtCore.Qt.AscendingOrder)
 
         self.update_proxymodels()
 

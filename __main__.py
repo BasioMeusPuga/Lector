@@ -210,13 +210,16 @@ class MainUI(QtWidgets.QMainWindow, mainwindow.Ui_MainWindow):
         self.tableView.doubleClicked.connect(self.library_doubleclick)
         self.tableView.horizontalHeader().setSectionResizeMode(
             QtWidgets.QHeaderView.Interactive)
-        self.tableView.horizontalHeader().setSortIndicator(2, QtCore.Qt.AscendingOrder)
+        self.tableView.horizontalHeader().setSortIndicator(
+            2, QtCore.Qt.AscendingOrder)
         self.tableView.setColumnHidden(0, True)
         self.tableView.horizontalHeader().setHighlightSections(False)
         if self.settings['main_window_headers']:
             for count, i in enumerate(self.settings['main_window_headers']):
                 self.tableView.horizontalHeader().resizeSection(count, int(i))
         self.tableView.horizontalHeader().setStretchLastSection(True)
+        self.tableView.horizontalHeader().sectionClicked.connect(
+            self.lib_ref.table_proxy_model.sort_table_columns)
 
         # Keyboard shortcuts
         self.ks_close_tab = QtWidgets.QShortcut(QtGui.QKeySequence('Ctrl+W'), self)
@@ -235,9 +238,9 @@ class MainUI(QtWidgets.QMainWindow, mainwindow.Ui_MainWindow):
             self.settings_dialog.start_library_scan()
 
     def open_books_at_startup(self):
-        # TODO
-        # See if there's some reason why last open books and command line
-        # argument books can't be opened together
+        # Last open books and command line books aren't being opened together
+        # so that command line books are processed last and therefore retain
+        # focus
 
         # Open last... open books.
         # Then set the value to None for the next run
