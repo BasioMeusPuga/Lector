@@ -32,6 +32,8 @@ from library import Library
 from settings import Settings
 
 from settingsdialog import SettingsUI
+from metadatadialog import MetadataUI
+
 
 class MainUI(QtWidgets.QMainWindow, mainwindow.Ui_MainWindow):
     def __init__(self):
@@ -67,6 +69,9 @@ class MainUI(QtWidgets.QMainWindow, mainwindow.Ui_MainWindow):
 
         # Initialize settings dialog
         self.settings_dialog = SettingsUI(self)
+
+        # Initialize metadata dialog
+        self.metadata_dialog = MetadataUI(self)
 
         # Statusbar widgets
         self.statusMessage.setObjectName('statusMessage')
@@ -239,8 +244,7 @@ class MainUI(QtWidgets.QMainWindow, mainwindow.Ui_MainWindow):
 
     def open_books_at_startup(self):
         # Last open books and command line books aren't being opened together
-        # so that command line books are processed last and therefore retain
-        # focus
+        # so that command line books are processed last and therefore retain focus
 
         # Open last... open books.
         # Then set the value to None for the next run
@@ -360,6 +364,8 @@ class MainUI(QtWidgets.QMainWindow, mainwindow.Ui_MainWindow):
 
     def test_function(self):
         print('Caesar si viveret, ad remum dareris')
+        self.metadata_dialog.show()
+
 
     def resizeEvent(self, event=None):
         if event:
