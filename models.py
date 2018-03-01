@@ -53,14 +53,105 @@ class ItemProxyModel(QtCore.QSortFilterProxyModel):
         self.filter_text = None
         self.active_library_filters = None
         self.sorting_box_position = None
+        self.common_functions = ProxyModelsCommonFunctions(self)
 
     def setFilterParams(self, filter_text, active_library_filters, sorting_box_position):
-        self.filter_text = filter_text
-        self.active_library_filters = [i.lower() for i in active_library_filters]
-        self.sorting_box_position = sorting_box_position
+        self.common_functions.setFilterParams(
+            filter_text, active_library_filters, sorting_box_position)
 
     def filterAcceptsRow(self, row, parent):
-        model = self.sourceModel()
+        output = self.common_functions.filterAcceptsRow(row, parent)
+        return output
+
+
+class TableProxyModel(QtCore.QSortFilterProxyModel):
+    def __init__(self, temp_dir, parent=None):
+        # TODO
+        # The setData method
+        super(TableProxyModel, self).__init__(parent)
+        self.header_data = [None, 'Title', 'Author', 'Status', 'Year', 'Tags']
+        self.temp_dir = temp_dir
+        self.filter_text = None
+        self.active_library_filters = None
+        self.sorting_box_position = None
+        self.common_functions = ProxyModelsCommonFunctions(self)
+
+    def columnCount(self, parent):
+        return 6
+
+    def headerData(self, column, orientation, role):
+        if role == QtCore.Qt.DisplayRole:
+            return self.header_data[column]
+
+    def flags(self, index):
+        # This means only the Tags column is editable
+        if index.column() == 4:
+            return QtCore.Qt.ItemIsEnabled | QtCore.Qt.ItemIsSelectable | QtCore.Qt.ItemIsEditable
+        else:
+            # These are standard select but don't edit values
+            return QtCore.Qt.ItemIsEnabled | QtCore.Qt.ItemIsSelectable
+
+    def data(self, index, role):
+        source_index = self.mapToSource(index)
+        item = self.sourceModel().item(source_index.row(), 0)
+
+        if role == QtCore.Qt.DecorationRole:
+            if index.column() == 3:
+                return_pixmap = None
+
+                file_exists = item.data(QtCore.Qt.UserRole + 5)
+                position = item.data(QtCore.Qt.UserRole + 7)
+
+                if not file_exists:
+                    return_pixmap = pie_chart.pixmapper(
+                        -1, None, None, QtCore.Qt.SizeHintRole + 10)
+
+                if position:
+                    current_chapter = position['current_chapter']
+                    total_chapters = position['total_chapters']
+
+                    return_pixmap = pie_chart.pixmapper(
+                        current_chapter, total_chapters, self.temp_dir,
+                        QtCore.Qt.SizeHintRole + 10)
+
+                return return_pixmap
+
+        elif role == QtCore.Qt.DisplayRole or role == QtCore.Qt.EditRole:
+
+            if index.column() in (0, 3):    # Cover and Status
+                return QtCore.QVariant()
+
+            role_dictionary = {
+                1: QtCore.Qt.UserRole,      # Title
+                2: QtCore.Qt.UserRole + 1,  # Author
+                4: QtCore.Qt.UserRole + 2,  # Year
+                5: QtCore.Qt.UserRole + 4}  # Tags
+
+            return item.data(role_dictionary[index.column()])
+
+        else:
+            return QtCore.QVariant()
+
+    def setFilterParams(self, filter_text, active_library_filters, sorting_box_position):
+        self.common_functions.setFilterParams(
+            filter_text, active_library_filters, sorting_box_position)
+
+    def filterAcceptsRow(self, row, parent):
+        output = self.common_functions.filterAcceptsRow(row, parent)
+        return output
+
+
+class ProxyModelsCommonFunctions:
+    def __init__(self, parent_model):
+        self.parent_model = parent_model
+
+    def setFilterParams(self, filter_text, active_library_filters, sorting_box_position):
+        self.parent_model.filter_text = filter_text
+        self.parent_model.active_library_filters = [i.lower() for i in active_library_filters]
+        self.parent_model.sorting_box_position = sorting_box_position
+
+    def filterAcceptsRow(self, row, parent):
+        model = self.parent_model.sourceModel()
 
         this_index = model.index(row, 0)
 
@@ -72,23 +163,23 @@ class ItemProxyModel(QtCore.QSortFilterProxyModel):
         last_accessed = model.data(this_index, QtCore.Qt.UserRole + 12)
 
         # Hide untouched files when sorting by last accessed
-        if self.sorting_box_position == 4 and not last_accessed:
+        if self.parent_model.sorting_box_position == 4 and not last_accessed:
             return False
 
-        if self.active_library_filters:
-            if directory_name not in self.active_library_filters:
+        if self.parent_model.active_library_filters:
+            if directory_name not in self.parent_model.active_library_filters:
                 return False
         else:
             return False
 
-        if not self.filter_text:
+        if not self.parent_model.filter_text:
             return True
         else:
             valid_data = [
                 i.lower() for i in (
                     title, author, tags, directory_name, directory_tags) if i is not None]
             for i in valid_data:
-                if self.filter_text.lower() in i:
+                if self.parent_model.filter_text.lower() in i:
                     return True
         return False
 
@@ -189,9 +280,9 @@ class MostExcellentTableModel(QtCore.QAbstractTableModel):
         return True
 
 
-class TableProxyModel(QtCore.QSortFilterProxyModel):
+class TableProxyModel2(QtCore.QSortFilterProxyModel):
     def __init__(self, parent=None):
-        super(TableProxyModel, self).__init__(parent)
+        super(TableProxyModel2, self).__init__(parent)
         self.filter_string = None
         self.filter_columns = None
         self.active_library_filters = None

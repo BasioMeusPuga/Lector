@@ -212,7 +212,8 @@ class MainUI(QtWidgets.QMainWindow, mainwindow.Ui_MainWindow):
         self.tableView.doubleClicked.connect(self.library_doubleclick)
         self.tableView.horizontalHeader().setSectionResizeMode(
             QtWidgets.QHeaderView.Interactive)
-        self.tableView.horizontalHeader().setSortIndicator(0, QtCore.Qt.AscendingOrder)
+        self.tableView.horizontalHeader().setSortIndicator(1, QtCore.Qt.AscendingOrder)
+        self.tableView.setColumnHidden(0, True)
         self.tableView.horizontalHeader().setHighlightSections(False)
         if self.settings['main_window_headers']:
             for count, i in enumerate(self.settings['main_window_headers']):
@@ -640,11 +641,14 @@ class MainUI(QtWidgets.QMainWindow, mainwindow.Ui_MainWindow):
         sender = self.sender().objectName()
 
         if sender == 'listView':
-            metadata = self.lib_ref.proxy_model.data(index, QtCore.Qt.UserRole + 3)
+            source_index = self.lib_ref.proxy_model.mapToSource(index)
         elif sender == 'tableView':
-            metadata = self.lib_ref.table_proxy_model.data(index, QtCore.Qt.UserRole)
+            source_index = self.lib_ref.table_proxy_model.mapToSource(index)
 
+        item = self.lib_ref.view_model.item(source_index.row(), 0)
+        metadata = item.data(QtCore.Qt.UserRole + 3)
         path = {metadata['path']: metadata['hash']}
+
         self.open_files(path)
 
     def open_files(self, path_hash_dictionary):

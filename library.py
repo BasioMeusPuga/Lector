@@ -38,6 +38,7 @@ class Library:
         if mode == 'build':
             self.table_rows = []
             self.view_model = QtGui.QStandardItemModel()
+            self.view_model.setColumnCount(10)
 
             books = database.DatabaseFunctions(
                 self.parent.database_path).fetch_data(
@@ -115,7 +116,8 @@ class Library:
             # That is to be achieved by way of the culling function
             img_pixmap = QtGui.QPixmap()
             img_pixmap.load(':/images/blank.png')
-            img_pixmap = img_pixmap.scaled(420, 600, QtCore.Qt.IgnoreAspectRatio)
+            img_pixmap = img_pixmap.scaled(
+                420, 600, QtCore.Qt.IgnoreAspectRatio)
             item = QtGui.QStandardItem()
             item.setToolTip(tooltip_string)
 
@@ -132,12 +134,8 @@ class Library:
             item.setData(date_added, QtCore.Qt.UserRole + 9)
             item.setData(last_accessed, QtCore.Qt.UserRole + 12)
             item.setIcon(QtGui.QIcon(img_pixmap))
-            self.view_model.appendRow(item)
 
-            # all_metadata is just being sent. It is not being displayed
-            # It will be correlated to the current row as its first userrole
-            self.table_rows.append(
-                [title, author, None, year, tags, all_metadata, i[8]])
+            self.view_model.appendRow(item)
 
         # The is_database_ready boolean is required when a new thread sends
         # books here for model generation.
@@ -151,8 +149,8 @@ class Library:
         self.create_table_proxy_model()
 
     def create_table_proxy_model(self):
-        self.table_proxy_model = TableProxyModel()
-        self.table_proxy_model.setSourceModel(self.table_model)
+        self.table_proxy_model = TableProxyModel(self.parent.temp_dir.path())
+        self.table_proxy_model.setSourceModel(self.view_model)
         self.table_proxy_model.setSortCaseSensitivity(False)
         self.table_proxy_model.sort(0, QtCore.Qt.AscendingOrder)
         self.parent.tableView.setModel(self.table_proxy_model)
@@ -164,8 +162,8 @@ class Library:
         self.table_proxy_model.invalidateFilter()
         self.table_proxy_model.setFilterParams(
             self.parent.libraryToolBar.searchBar.text(),
-            [0, 1, 4],
-            self.parent.active_library_filters)
+            self.parent.active_library_filters,
+            self.parent.libraryToolBar.sortingBox.currentIndex())
         # This isn't needed, but it forces a model update every time the
         # text in the line edit changes. So I guess it is needed.
         self.table_proxy_model.setFilterFixedString(
