@@ -116,9 +116,8 @@ class MainUI(QtWidgets.QMainWindow, mainwindow.Ui_MainWindow):
         self.libraryToolBar.coverViewButton.triggered.connect(self.switch_library_view)
         self.libraryToolBar.tableViewButton.triggered.connect(self.switch_library_view)
         self.libraryToolBar.settingsButton.triggered.connect(self.show_settings)
-        self.libraryToolBar.searchBar.textChanged.connect(self.lib_ref.update_proxymodel)
-        self.libraryToolBar.searchBar.textChanged.connect(self.lib_ref.update_table_proxy_model)
-        self.libraryToolBar.sortingBox.activated.connect(self.lib_ref.update_proxymodel)
+        self.libraryToolBar.searchBar.textChanged.connect(self.lib_ref.update_proxymodels)
+        self.libraryToolBar.sortingBox.activated.connect(self.lib_ref.update_proxymodels)
         self.libraryToolBar.libraryFilterButton.setPopupMode(QtWidgets.QToolButton.InstantPopup)
         self.addToolBar(self.libraryToolBar)
 
@@ -194,8 +193,7 @@ class MainUI(QtWidgets.QMainWindow, mainwindow.Ui_MainWindow):
 
         # Init display models
         self.lib_ref.generate_model('build')
-        self.lib_ref.create_table_model()
-        self.lib_ref.create_proxymodel()
+        self.lib_ref.generate_proxymodels()
         self.lib_ref.generate_library_tags()
         self.set_library_filter()
         self.start_culling_timer()
@@ -212,7 +210,7 @@ class MainUI(QtWidgets.QMainWindow, mainwindow.Ui_MainWindow):
         self.tableView.doubleClicked.connect(self.library_doubleclick)
         self.tableView.horizontalHeader().setSectionResizeMode(
             QtWidgets.QHeaderView.Interactive)
-        self.tableView.horizontalHeader().setSortIndicator(1, QtCore.Qt.AscendingOrder)
+        self.tableView.horizontalHeader().setSortIndicator(2, QtCore.Qt.AscendingOrder)
         self.tableView.setColumnHidden(0, True)
         self.tableView.horizontalHeader().setHighlightSections(False)
         if self.settings['main_window_headers']:
@@ -275,8 +273,8 @@ class MainUI(QtWidgets.QMainWindow, mainwindow.Ui_MainWindow):
         blank_pixmap.load(':/images/blank.png')
 
         all_indexes = set()
-        for i in range(self.lib_ref.proxy_model.rowCount()):
-            all_indexes.add(self.lib_ref.proxy_model.index(i, 0))
+        for i in range(self.lib_ref.item_proxy_model.rowCount()):
+            all_indexes.add(self.lib_ref.item_proxy_model.index(i, 0))
 
         y_range = list(range(0, self.listView.viewport().height(), 100))
         y_range.extend((-20, self.listView.viewport().height() + 20))
@@ -290,7 +288,7 @@ class MainUI(QtWidgets.QMainWindow, mainwindow.Ui_MainWindow):
 
         invisible_indexes = all_indexes - visible_indexes
         for i in invisible_indexes:
-            model_index = self.lib_ref.proxy_model.mapToSource(i)
+            model_index = self.lib_ref.item_proxy_model.mapToSource(i)
             this_item = self.lib_ref.view_model.item(model_index.row())
 
             if this_item:
@@ -298,7 +296,7 @@ class MainUI(QtWidgets.QMainWindow, mainwindow.Ui_MainWindow):
                 this_item.setData(False, QtCore.Qt.UserRole + 8)
 
         for i in visible_indexes:
-            model_index = self.lib_ref.proxy_model.mapToSource(i)
+            model_index = self.lib_ref.item_proxy_model.mapToSource(i)
             this_item = self.lib_ref.view_model.item(model_index.row())
 
             if this_item:
@@ -429,7 +427,7 @@ class MainUI(QtWidgets.QMainWindow, mainwindow.Ui_MainWindow):
         # Get a list of QItemSelection objects
         # What we're interested in is the indexes()[0] in each of them
         # That gives a list of indexes from the view model
-        selected_books = self.lib_ref.proxy_model.mapSelectionToSource(
+        selected_books = self.lib_ref.item_proxy_model.mapSelectionToSource(
             self.listView.selectionModel().selection())
 
         if not selected_books:
@@ -484,8 +482,7 @@ class MainUI(QtWidgets.QMainWindow, mainwindow.Ui_MainWindow):
         self.sorterProgress.setVisible(False)
         self.sorterProgress.setValue(0)
 
-        self.lib_ref.create_table_model()
-        self.lib_ref.create_proxymodel()
+        self.lib_ref.generate_proxymodels()
         self.lib_ref.generate_library_tags()
 
         if not self.settings['perform_culling']:
@@ -519,11 +516,11 @@ class MainUI(QtWidgets.QMainWindow, mainwindow.Ui_MainWindow):
                 self.bookToolBar.hide()
                 self.libraryToolBar.show()
 
-            if self.lib_ref.proxy_model:
+            if self.lib_ref.item_proxy_model:
                 # Making the proxy model available doesn't affect
                 # memory utilization at all. Bleh.
                 self.statusMessage.setText(
-                    str(self.lib_ref.proxy_model.rowCount()) + ' Books')
+                    str(self.lib_ref.item_proxy_model.rowCount()) + ' Books')
         else:
 
             if self.settings['show_toolbars']:
@@ -575,12 +572,9 @@ class MainUI(QtWidgets.QMainWindow, mainwindow.Ui_MainWindow):
     def set_toc_position(self, event=None):
         current_tab = self.tabWidget.widget(self.tabWidget.currentIndex())
 
-        # We're updating the underlying models to have real-time
+        # We're updating the underlying model to have real-time
         # updates on the read status
-        # Since there are 2 separate models, they will each have to
-        # be updated individually
 
-        # The listView model
         # Set a baseline model index in case the item gets deleted
         # E.g It's open in a tab and deleted from the library
         model_index = None
@@ -601,20 +595,6 @@ class MainUI(QtWidgets.QMainWindow, mainwindow.Ui_MainWindow):
         if model_index:
             self.lib_ref.view_model.setData(
                 model_index, current_tab.metadata['position'], QtCore.Qt.UserRole + 7)
-
-        # The tableView model
-        model_index = None
-        start_index = self.lib_ref.table_model.index(0, 0)
-        matching_item = self.lib_ref.table_model.match(
-            start_index,
-            QtCore.Qt.UserRole + 1,
-            current_tab.metadata['hash'],
-            1, QtCore.Qt.MatchExactly)
-
-        if matching_item:
-            model_row = matching_item[0].row()
-            self.lib_ref.table_model.display_data[model_row][5][
-                'position'] = current_tab.metadata['position']
 
         # Go on to change the value of the Table of Contents box
         current_tab.change_chapter_tocBox()
@@ -641,7 +621,7 @@ class MainUI(QtWidgets.QMainWindow, mainwindow.Ui_MainWindow):
         sender = self.sender().objectName()
 
         if sender == 'listView':
-            source_index = self.lib_ref.proxy_model.mapToSource(index)
+            source_index = self.lib_ref.item_proxy_model.mapToSource(index)
         elif sender == 'tableView':
             source_index = self.lib_ref.table_proxy_model.mapToSource(index)
 
@@ -973,8 +953,7 @@ class MainUI(QtWidgets.QMainWindow, mainwindow.Ui_MainWindow):
         else:
             self.library_filter_menu.actions()[-1].setChecked(True)
 
-        self.lib_ref.update_proxymodel()
-        self.lib_ref.update_table_proxy_model()
+        self.lib_ref.update_proxymodels()
 
     def toggle_toolbars(self):
         self.settings['show_toolbars'] = not self.settings['show_toolbars']

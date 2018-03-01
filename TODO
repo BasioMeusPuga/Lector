@@ -21,6 +21,7 @@ TODO
         ✓ Mass tagging
         ✓ Add capability to sort by new
         Table view
+            Get sorting working again
         Ignore a / the / numbers for sorting purposes
         Information dialog widget
         Context menu: Cache, Read, Edit database, delete, Mark read/unread

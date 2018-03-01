@@ -22,21 +22,18 @@ import pathlib
 from PyQt5 import QtGui, QtCore
 
 import database
-from models import MostExcellentTableModel, TableProxyModel, ItemProxyModel
+from models import TableProxyModel, ItemProxyModel
 
 
 class Library:
     def __init__(self, parent):
         self.parent = parent
         self.view_model = None
-        self.proxy_model = None
-        self.table_model = None
+        self.item_proxy_model = None
         self.table_proxy_model = None
-        self.table_rows = []
 
     def generate_model(self, mode, parsed_books=None, is_database_ready=True):
         if mode == 'build':
-            self.table_rows = []
             self.view_model = QtGui.QStandardItemModel()
             self.view_model.setColumnCount(10)
 
@@ -142,13 +139,14 @@ class Library:
         if not self.parent.settings['perform_culling'] and is_database_ready:
             self.parent.load_all_covers()
 
-    def create_table_model(self):
-        table_header = ['Title', 'Author', 'Status', 'Year', 'Tags']
-        self.table_model = MostExcellentTableModel(
-            table_header, self.table_rows, self.parent.temp_dir.path())
-        self.create_table_proxy_model()
+    def generate_proxymodels(self):
+        self.item_proxy_model = ItemProxyModel()
+        self.item_proxy_model.setSourceModel(self.view_model)
+        self.item_proxy_model.setSortCaseSensitivity(False)
+        s = QtCore.QSize(160, 250)  # Set icon sizing here
+        self.parent.listView.setIconSize(s)
+        self.parent.listView.setModel(self.item_proxy_model)
 
-    def create_table_proxy_model(self):
         self.table_proxy_model = TableProxyModel(self.parent.temp_dir.path())
         self.table_proxy_model.setSourceModel(self.view_model)
         self.table_proxy_model.setSortCaseSensitivity(False)
@@ -156,39 +154,32 @@ class Library:
         self.parent.tableView.setModel(self.table_proxy_model)
         self.parent.tableView.horizontalHeader().setSortIndicator(
             0, QtCore.Qt.AscendingOrder)
-        self.update_table_proxy_model()
 
-    def update_table_proxy_model(self):
+        self.update_proxymodels()
+
+    def update_proxymodels(self):
+        # Table proxy model
         self.table_proxy_model.invalidateFilter()
         self.table_proxy_model.setFilterParams(
             self.parent.libraryToolBar.searchBar.text(),
             self.parent.active_library_filters,
-            self.parent.libraryToolBar.sortingBox.currentIndex())
-        # This isn't needed, but it forces a model update every time the
-        # text in the line edit changes. So I guess it is needed.
+            0) # This doesn't need to know the sorting box position
         self.table_proxy_model.setFilterFixedString(
             self.parent.libraryToolBar.searchBar.text())
+        # ^^^ This isn't needed, but it forces a model update every time the
+        # text in the line edit changes. So I guess it is needed.
 
-    def create_proxymodel(self):
-        self.proxy_model = ItemProxyModel()
-        self.proxy_model.setSourceModel(self.view_model)
-        self.proxy_model.setSortCaseSensitivity(False)
-        s = QtCore.QSize(160, 250)  # Set icon sizing here
-        self.parent.listView.setIconSize(s)
-        self.parent.listView.setModel(self.proxy_model)
-        self.update_proxymodel()
-
-    def update_proxymodel(self):
-        self.proxy_model.invalidateFilter()
-        self.proxy_model.setFilterParams(
+        # Item proxy model
+        self.item_proxy_model.invalidateFilter()
+        self.item_proxy_model.setFilterParams(
             self.parent.libraryToolBar.searchBar.text(),
             self.parent.active_library_filters,
             self.parent.libraryToolBar.sortingBox.currentIndex())
-        self.proxy_model.setFilterFixedString(
+        self.item_proxy_model.setFilterFixedString(
             self.parent.libraryToolBar.searchBar.text())
 
         self.parent.statusMessage.setText(
-            str(self.proxy_model.rowCount()) + ' books')
+            str(self.item_proxy_model.rowCount()) + ' books')
 
         # TODO
         # Allow sorting by type
@@ -205,7 +196,7 @@ class Library:
             4: 12}
 
         # Sorting according to roles and the drop down in the library toolbar
-        self.proxy_model.setSortRole(
+        self.item_proxy_model.setSortRole(
             QtCore.Qt.UserRole + sort_roles[self.parent.libraryToolBar.sortingBox.currentIndex()])
 
         # This can be expanded to other fields by appending to the list
@@ -213,7 +204,7 @@ class Library:
         if self.parent.libraryToolBar.sortingBox.currentIndex() in [3, 4]:
             sort_order = QtCore.Qt.DescendingOrder
 
-        self.proxy_model.sort(0, sort_order)
+        self.item_proxy_model.sort(0, sort_order)
         self.parent.start_culling_timer()
 
     def generate_library_tags(self):
@@ -250,8 +241,7 @@ class Library:
 
             return 'manually added', None
 
-        # Both the models will have to be done separately
-        # Item Model
+        # Generate tags for the QStandardItemModel
         for i in range(self.view_model.rowCount()):
             this_item = self.view_model.item(i, 0)
             all_metadata = this_item.data(QtCore.Qt.UserRole + 3)
@@ -260,19 +250,6 @@ class Library:
             this_item.setData(directory_name, QtCore.Qt.UserRole + 10)
             this_item.setData(directory_tags, QtCore.Qt.UserRole + 11)
 
-        # Table Model
-        for count, i in enumerate(self.table_model.display_data):
-            all_metadata = i[5]
-
-            directory_name, directory_tags = get_tags(all_metadata)
-            try:
-                i[7] = directory_name
-                i[8] = directory_tags
-            except IndexError:
-                i.extend([directory_name, directory_tags])
-
-            self.table_model.display_data[count] = i
-
     def prune_models(self, valid_paths):
         # To be executed when the library is updated by folder
         # All files in unselected directories will have to be removed
@@ -280,16 +257,15 @@ class Library:
         # They will also have to be deleted from the library
         valid_paths = set(valid_paths)
 
-        # Get all paths in the dictionary from either of the models
-        # self.table_rows has all file metadata in position 5
-        all_paths = [i[5]['path'] for i in self.table_rows]
-        all_paths = set(all_paths)
+        # Get all paths
+        all_paths = set()
+        for i in range(self.view_model.rowCount()):
+            item = self.view_model.item(i, 0)
+            item_metadata = item.data(QtCore.Qt.UserRole + 3)
+            book_path = item_metadata['path']
+            all_paths.add(book_path)
 
         invalid_paths = all_paths - valid_paths
-
-        # Remove invalid paths from both of the models
-        self.table_rows = [
-            i for i in self.table_rows if i[5]['path'] not in invalid_paths]
 
         deletable_persistent_indexes = []
         for i in range(self.view_model.rowCount()):
