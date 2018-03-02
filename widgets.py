@@ -670,6 +670,33 @@ class BookmarkDelegate(QtWidgets.QStyledItemDelegate):
             '   ' + chapter_name)
 
 
+class TableViewProgressBarDelegate(QtWidgets.QStyledItemDelegate):
+    def __init__(self, item_model, parent=None):
+        super(TableViewProgressBarDelegate, self).__init__(parent)
+        self.parent = parent
+        self.item_model = item_model
+
+    def paint(self, painter, option, index):
+        item = self.item_model.item(index.row())
+        position = item.data(QtCore.Qt.UserRole + 7)
+
+        if position:
+            current_chapter = position['current_chapter']
+            total_chapters = position['total_chapters']
+
+            progress = (current_chapter * 100) // total_chapters
+
+            progressBarOption = QtWidgets.QStyleOptionProgressBar()
+            progressBarOption.rect = option.rect
+            progressBarOption.minimum = 0
+            progressBarOption.maximum = 100
+            progressBarOption.progress = progress
+            progressBarOption.textVisible = False
+
+            QtWidgets.QApplication.style().drawControl(
+                QtWidgets.QStyle.CE_ProgressBar, progressBarOption, painter)
+
+
 class PliantDockWidget(QtWidgets.QDockWidget):
     def __init__(self, parent=None):
         super(PliantDockWidget, self).__init__(parent)

@@ -69,8 +69,9 @@ class TableProxyModel(QtCore.QSortFilterProxyModel):
         # TODO
         # The setData method
         super(TableProxyModel, self).__init__(parent)
+        self.setObjectName('asdasd')
         self.header_data = [
-            None, 'Title', 'Author', 'Status', 'Year', 'Tags']
+            None, 'Title', 'Author', 'Year', '%', 'Tags']
         self.temp_dir = temp_dir
         self.filter_text = None
         self.active_library_filters = None
@@ -78,7 +79,7 @@ class TableProxyModel(QtCore.QSortFilterProxyModel):
         self.role_dictionary = {
             1: QtCore.Qt.UserRole,      # Title
             2: QtCore.Qt.UserRole + 1,  # Author
-            4: QtCore.Qt.UserRole + 2,  # Year
+            3: QtCore.Qt.UserRole + 2,  # Year
             5: QtCore.Qt.UserRole + 4}  # Tags
         self.common_functions = ProxyModelsCommonFunctions(self)
 
@@ -98,8 +99,11 @@ class TableProxyModel(QtCore.QSortFilterProxyModel):
         source_index = self.mapToSource(index)
         item = self.sourceModel().item(source_index.row(), 0)
 
+        if role == QtCore.Qt.TextAlignmentRole and index.column() == 3:
+            return QtCore.Qt.AlignHCenter
+
         if role == QtCore.Qt.DecorationRole:
-            if index.column() == 3:
+            if index.column() == 4:
                 return_pixmap = None
 
                 file_exists = item.data(QtCore.Qt.UserRole + 5)
@@ -120,7 +124,7 @@ class TableProxyModel(QtCore.QSortFilterProxyModel):
                 return return_pixmap
 
         elif role == QtCore.Qt.DisplayRole or role == QtCore.Qt.EditRole:
-            if index.column() in (0, 3):    # Cover and Status
+            if index.column() in (0, 4):    # Cover and Status
                 return QtCore.QVariant()
 
             return item.data(self.role_dictionary[index.column()])

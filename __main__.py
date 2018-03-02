@@ -26,7 +26,7 @@ import database
 
 from resources import mainwindow, resources
 from toolbars import LibraryToolBar, BookToolBar
-from widgets import Tab, LibraryDelegate
+from widgets import Tab, LibraryDelegate, TableViewProgressBarDelegate
 from threaded import BackGroundTabUpdate, BackGroundBookAddition, BackGroundBookDeletion
 from library import Library
 from settings import Settings
@@ -222,7 +222,10 @@ class MainUI(QtWidgets.QMainWindow, mainwindow.Ui_MainWindow):
         if self.settings['main_window_headers']:
             for count, i in enumerate(self.settings['main_window_headers']):
                 self.tableView.horizontalHeader().resizeSection(count, int(i))
+        self.tableView.horizontalHeader().resizeSection(4, 1)
         self.tableView.horizontalHeader().setStretchLastSection(True)
+        # self.tableView.setItemDelegateForColumn(
+        #     3, TableViewProgressBarDelegate(self.lib_ref.view_model, self))
         self.tableView.horizontalHeader().sectionClicked.connect(
             self.lib_ref.table_proxy_model.sort_table_columns)
 
