@@ -219,6 +219,8 @@ class MainUI(QtWidgets.QMainWindow, mainwindow.Ui_MainWindow):
         self.listView.verticalScrollBar().setSingleStep(9)
         self.listView.doubleClicked.connect(self.library_doubleclick)
         self.listView.setItemDelegate(LibraryDelegate(self.temp_dir.path(), self))
+        self.listView.setContextMenuPolicy(QtCore.Qt.CustomContextMenu)
+        self.listView.customContextMenuRequested.connect(self.generate_library_context_menu)
         self.listView.verticalScrollBar().valueChanged.connect(self.start_culling_timer)
 
         self.listView.setStyleSheet(
@@ -240,6 +242,8 @@ class MainUI(QtWidgets.QMainWindow, mainwindow.Ui_MainWindow):
         self.tableView.horizontalHeader().setStretchLastSection(True)
         self.tableView.horizontalHeader().sectionClicked.connect(
             self.lib_ref.table_proxy_model.sort_table_columns)
+        self.tableView.setContextMenuPolicy(QtCore.Qt.CustomContextMenu)
+        self.tableView.customContextMenuRequested.connect(self.generate_library_context_menu)
 
         # Keyboard shortcuts
         self.ks_close_tab = QtWidgets.QShortcut(QtGui.QKeySequence('Ctrl+W'), self)
@@ -256,6 +260,30 @@ class MainUI(QtWidgets.QMainWindow, mainwindow.Ui_MainWindow):
         # Scan the library @ startup
         if self.settings['scan_library']:
             self.settings_dialog.start_library_scan()
+
+    def generate_library_context_menu(self, position):
+        # TODO
+        # The library might have multiple items selected
+        # Make sure the context menu actions are carried out on each
+
+        index = self.sender().indexAt(position)
+        if not index.isValid():
+            return
+
+        context_menu = QtWidgets.QMenu()
+
+        openAction = context_menu.addAction(
+            QtGui.QIcon.fromTheme('view-readermode'), 'Start reading')
+        editAction = context_menu.addAction(
+            QtGui.QIcon.fromTheme('edit-rename'), 'Edit')
+        deleteAction = context_menu.addAction(
+            QtGui.QIcon.fromTheme('trash-empty'), 'Delete')
+        readAction = context_menu.addAction(
+            QtGui.QIcon.fromTheme('vcs-normal'), 'Mark read')
+        unreadAction = context_menu.addAction(
+            QtGui.QIcon.fromTheme('emblem-unavailable'), 'Mark unread')
+
+        action = context_menu.exec_(self.sender().mapToGlobal(position))
 
     def open_books_at_startup(self):
         # Last open books and command line books aren't being opened together

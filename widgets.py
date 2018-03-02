@@ -106,6 +106,9 @@ class Tab(QtWidgets.QWidget):
         self.dockListView.setMaximumWidth(350)
         self.dockListView.setItemDelegate(BookmarkDelegate(self.dockListView))
         self.dockListView.setUniformItemSizes(True)
+        self.dockListView.setContextMenuPolicy(QtCore.Qt.CustomContextMenu)
+        self.dockListView.customContextMenuRequested.connect(
+            self.generate_bookmark_context_menu)
         self.dockListView.clicked.connect(self.navigate_to_bookmark)
         self.dockWidget.setWidget(self.dockListView)
 
@@ -299,6 +302,9 @@ class Tab(QtWidgets.QWidget):
             self.dockWidget.show()
 
     def add_bookmark(self):
+        # TODO
+        # Start dockListView.edit(index) when something new is added
+
         identifier = uuid.uuid4().hex[:10]
         description = 'New bookmark'
 
@@ -365,6 +371,29 @@ class Tab(QtWidgets.QWidget):
             self.window().bookToolBar.searchBar.text())
         self.proxy_model.setFilterFixedString(
             self.window().bookToolBar.searchBar.text())
+
+    def generate_bookmark_context_menu(self, position):
+        index = self.dockListView.indexAt(position)
+        if not index.isValid():
+            return
+
+        bookmark_menu = QtWidgets.QMenu()
+        editAction = bookmark_menu.addAction(
+            QtGui.QIcon.fromTheme('edit-rename'), 'Edit')
+        deleteAction = bookmark_menu.addAction(
+            QtGui.QIcon.fromTheme('trash-empty'), 'Delete')
+
+        action = bookmark_menu.exec_(self.dockListView.mapToGlobal(position))
+
+        if action == editAction:
+            self.dockListView.edit(index)
+
+        if action == deleteAction:
+            row = index.row()
+            delete_uuid = self.bookmark_model.item(row).data(QtCore.Qt.UserRole + 2)
+
+            self.metadata['bookmarks'].pop(delete_uuid)
+            self.bookmark_model.removeRow(index.row())
 
     def hide_mouse(self):
         self.contentView.setCursor(QtCore.Qt.BlankCursor)

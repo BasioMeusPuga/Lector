@@ -19,7 +19,7 @@
 import os
 import pickle
 import pathlib
-from PyQt5 import QtGui, QtCore
+from PyQt5 import QtGui, QtCore, QtWidgets
 
 import database
 from models import TableProxyModel, ItemProxyModel
