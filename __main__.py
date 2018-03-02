@@ -55,7 +55,7 @@ class MainUI(QtWidgets.QMainWindow, mainwindow.Ui_MainWindow):
         self.bookToolBar = BookToolBar(self)
 
         # Widget declarations
-        self.library_filter_menu = QtWidgets.QMenu()
+        self.libraryFilterMenu = QtWidgets.QMenu()
         self.statusMessage = QtWidgets.QLabel()
         self.toolbarToggle = QtWidgets.QToolButton()
         self.reloadLibrary = QtWidgets.QToolButton()
@@ -68,10 +68,10 @@ class MainUI(QtWidgets.QMainWindow, mainwindow.Ui_MainWindow):
         database.DatabaseInit(self.database_path)
 
         # Initialize settings dialog
-        self.settings_dialog = SettingsUI(self)
+        self.settingsDialog = SettingsUI(self)
 
         # Initialize metadata dialog
-        self.metadata_dialog = MetadataUI(self)
+        self.metadataDialog = MetadataUI(self)
 
         # Statusbar widgets
         self.statusMessage.setObjectName('statusMessage')
@@ -200,7 +200,7 @@ class MainUI(QtWidgets.QMainWindow, mainwindow.Ui_MainWindow):
         self.reloadLibrary.setIcon(QtGui.QIcon.fromTheme('reload'))
         self.reloadLibrary.setObjectName('reloadLibrary')
         self.reloadLibrary.setAutoRaise(True)
-        self.reloadLibrary.clicked.connect(self.settings_dialog.start_library_scan)
+        self.reloadLibrary.clicked.connect(self.settingsDialog.start_library_scan)
 
         self.tabWidget.tabBar().setTabButton(
             0, QtWidgets.QTabBar.RightSide, self.reloadLibrary)
@@ -246,20 +246,20 @@ class MainUI(QtWidgets.QMainWindow, mainwindow.Ui_MainWindow):
         self.tableView.customContextMenuRequested.connect(self.generate_library_context_menu)
 
         # Keyboard shortcuts
-        self.ks_close_tab = QtWidgets.QShortcut(QtGui.QKeySequence('Ctrl+W'), self)
-        self.ks_close_tab.setContext(QtCore.Qt.ApplicationShortcut)
-        self.ks_close_tab.activated.connect(self.tab_close)
+        self.ksCloseTab = QtWidgets.QShortcut(QtGui.QKeySequence('Ctrl+W'), self)
+        self.ksCloseTab.setContext(QtCore.Qt.ApplicationShortcut)
+        self.ksCloseTab.activated.connect(self.tab_close)
 
-        self.ks_exit_all = QtWidgets.QShortcut(QtGui.QKeySequence('Ctrl+Q'), self)
-        self.ks_exit_all.setContext(QtCore.Qt.ApplicationShortcut)
-        self.ks_exit_all.activated.connect(self.closeEvent)
+        self.ksExitAll = QtWidgets.QShortcut(QtGui.QKeySequence('Ctrl+Q'), self)
+        self.ksExitAll.setContext(QtCore.Qt.ApplicationShortcut)
+        self.ksExitAll.activated.connect(self.closeEvent)
 
         self.listView.setFocus()
         self.open_books_at_startup()
 
         # Scan the library @ startup
         if self.settings['scan_library']:
-            self.settings_dialog.start_library_scan()
+            self.settingsDialog.start_library_scan()
 
     def generate_library_context_menu(self, position):
         # TODO
@@ -407,7 +407,7 @@ class MainUI(QtWidgets.QMainWindow, mainwindow.Ui_MainWindow):
 
     def test_function(self):
         print('Caesar si viveret, ad remum dareris')
-        self.metadata_dialog.show()
+        self.metadataDialog.show()
 
     def resizeEvent(self, event=None):
         if event:
@@ -457,7 +457,7 @@ class MainUI(QtWidgets.QMainWindow, mainwindow.Ui_MainWindow):
         if not opened_files[0]:
             return
 
-        self.settings_dialog.okButton.setEnabled(False)
+        self.settingsDialog.okButton.setEnabled(False)
         self.reloadLibrary.setEnabled(False)
 
         self.settings['last_open_path'] = os.path.dirname(opened_files[0][0])
@@ -524,8 +524,8 @@ class MainUI(QtWidgets.QMainWindow, mainwindow.Ui_MainWindow):
         confirm_deletion.exec_()
 
     def move_on(self):
-        self.settings_dialog.okButton.setEnabled(True)
-        self.settings_dialog.okButton.setToolTip(
+        self.settingsDialog.okButton.setEnabled(True)
+        self.settingsDialog.okButton.setToolTip(
             'Save changes and start library scan')
         self.reloadLibrary.setEnabled(True)
 
@@ -951,10 +951,10 @@ class MainUI(QtWidgets.QMainWindow, mainwindow.Ui_MainWindow):
         self.format_contentView()
 
     def show_settings(self):
-        if not self.settings_dialog.isVisible():
-            self.settings_dialog.show()
+        if not self.settingsDialog.isVisible():
+            self.settingsDialog.show()
         else:
-            self.settings_dialog.hide()
+            self.settingsDialog.hide()
 
     def generate_library_filter_menu(self, directory_list=None):
         # TODO
@@ -963,7 +963,7 @@ class MainUI(QtWidgets.QMainWindow, mainwindow.Ui_MainWindow):
         # Behavior for clicking on All
         # Don't show anything for less than 2 library folders
 
-        self.library_filter_menu.clear()
+        self.libraryFilterMenu.clear()
 
         def generate_name(path_data):
             this_filter = path_data[1]
@@ -979,18 +979,18 @@ class MainUI(QtWidgets.QMainWindow, mainwindow.Ui_MainWindow):
             filter_list = list(map(generate_name, checked))
             filter_list.sort()
             filter_list.append('Manually Added')
-            filter_actions = [QtWidgets.QAction(i, self.library_filter_menu) for i in filter_list]
+            filter_actions = [QtWidgets.QAction(i, self.libraryFilterMenu) for i in filter_list]
 
-        filter_all = QtWidgets.QAction('All', self.library_filter_menu)
+        filter_all = QtWidgets.QAction('All', self.libraryFilterMenu)
         filter_actions.append(filter_all)
         for i in filter_actions:
             i.setCheckable(True)
             i.setChecked(True)
             i.triggered.connect(self.set_library_filter)
 
-        self.library_filter_menu.addActions(filter_actions)
-        self.library_filter_menu.insertSeparator(filter_all)
-        self.libraryToolBar.libraryFilterButton.setMenu(self.library_filter_menu)
+        self.libraryFilterMenu.addActions(filter_actions)
+        self.libraryFilterMenu.insertSeparator(filter_all)
+        self.libraryToolBar.libraryFilterButton.setMenu(self.libraryFilterMenu)
 
     def set_library_filter(self, event=None):
         self.active_library_filters = []
@@ -998,19 +998,19 @@ class MainUI(QtWidgets.QMainWindow, mainwindow.Ui_MainWindow):
 
         if self.sender():  # Program startup sends a None here
             if self.sender().text() == 'All':
-                for i in self.library_filter_menu.actions():
+                for i in self.libraryFilterMenu.actions():
                     i.setChecked(self.sender().isChecked())
 
-        for i in self.library_filter_menu.actions()[:-2]:
+        for i in self.libraryFilterMenu.actions()[:-2]:
             if i.isChecked():
                 self.active_library_filters.append(i.text())
             else:
                 something_was_unchecked = True
 
         if something_was_unchecked:
-            self.library_filter_menu.actions()[-1].setChecked(False)
+            self.libraryFilterMenu.actions()[-1].setChecked(False)
         else:
-            self.library_filter_menu.actions()[-1].setChecked(True)
+            self.libraryFilterMenu.actions()[-1].setChecked(True)
 
         self.lib_ref.update_proxymodels()
 
@@ -1028,7 +1028,7 @@ class MainUI(QtWidgets.QMainWindow, mainwindow.Ui_MainWindow):
     def closeEvent(self, event=None):
         # All tabs must be iterated upon here
         self.hide()
-        self.settings_dialog.hide()
+        self.settingsDialog.hide()
         self.temp_dir.remove()
 
         self.settings['last_open_books'] = []

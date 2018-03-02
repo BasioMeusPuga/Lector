@@ -66,10 +66,7 @@ class ItemProxyModel(QtCore.QSortFilterProxyModel):
 
 class TableProxyModel(QtCore.QSortFilterProxyModel):
     def __init__(self, temp_dir, parent=None):
-        # TODO
-        # The setData method
         super(TableProxyModel, self).__init__(parent)
-        self.setObjectName('asdasd')
         self.header_data = [
             None, 'Title', 'Author', 'Year', '%', 'Tags']
         self.temp_dir = temp_dir

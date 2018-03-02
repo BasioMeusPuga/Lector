@@ -21,7 +21,7 @@ TODO
         ✓ Mass tagging
         ✓ Add capability to sort by new
         ✓ Table view
-        Context menu: Cache, Read, Edit database, delete, Mark read/unread
+        ✓ Context menu: Cache, Read, Edit database, delete, Mark read/unread
         Information dialog widget
         Allow editing of database data through the UI + for Bookmarks
         Set focus to newly added file
@@ -41,12 +41,12 @@ TODO
         ✓ Line spacing
         ✓ Record progress
         ✓ Text alignment
-        Background color
-        Bookmarks
+        ✓ Background color
+        ✓ Bookmarks
             ✓ Creation
             ✓ Navigation
-            Editing: Name, Location
-            Deletion
+            ✓ Editing: Name
+            ✓ Deletion
         Set context menu for definitions and the like
         Search document using QTextCursor?
         Cache multiple images
