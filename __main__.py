@@ -26,7 +26,7 @@ import database
 
 from resources import mainwindow, resources
 from toolbars import LibraryToolBar, BookToolBar
-from widgets import Tab, LibraryDelegate, TableViewProgressBarDelegate
+from widgets import Tab, LibraryDelegate
 from threaded import BackGroundTabUpdate, BackGroundBookAddition, BackGroundBookDeletion
 from library import Library
 from settings import Settings
@@ -224,8 +224,6 @@ class MainUI(QtWidgets.QMainWindow, mainwindow.Ui_MainWindow):
                 self.tableView.horizontalHeader().resizeSection(count, int(i))
         self.tableView.horizontalHeader().resizeSection(4, 1)
         self.tableView.horizontalHeader().setStretchLastSection(True)
-        # self.tableView.setItemDelegateForColumn(
-        #     3, TableViewProgressBarDelegate(self.lib_ref.view_model, self))
         self.tableView.horizontalHeader().sectionClicked.connect(
             self.lib_ref.table_proxy_model.sort_table_columns)
 
@@ -439,10 +437,18 @@ class MainUI(QtWidgets.QMainWindow, mainwindow.Ui_MainWindow):
         # Get a list of QItemSelection objects
         # What we're interested in is the indexes()[0] in each of them
         # That gives a list of indexes from the view model
-        selected_books = self.lib_ref.item_proxy_model.mapSelectionToSource(
-            self.listView.selectionModel().selection())
 
-        if not selected_books:
+        if self.listView.isVisible():
+            selected_books = self.lib_ref.item_proxy_model.mapSelectionToSource(
+                self.listView.selectionModel().selection())
+            selected_indexes = [i.indexes()[0] for i in selected_books]
+
+        elif self.tableView.isVisible():
+            selected_books = self.tableView.selectionModel().selectedRows()
+            selected_indexes = [
+                self.lib_ref.table_proxy_model.mapToSource(i) for i in selected_books]
+
+        if not selected_indexes:
             return
 
         # Deal with message box selection
@@ -450,20 +456,13 @@ class MainUI(QtWidgets.QMainWindow, mainwindow.Ui_MainWindow):
             if box_button.text() != '&Yes':
                 return
 
-            # Generate list of selected indexes and deletable hashes
-            selected_indexes = [i.indexes() for i in selected_books]
+            # Persistent model indexes are required beause deletion mutates the model
+            # Generate and delete by persistent index
             delete_hashes = [
                 self.lib_ref.view_model.data(
-                    i[0], QtCore.Qt.UserRole + 6) for i in selected_indexes]
+                    i, QtCore.Qt.UserRole + 6) for i in selected_indexes]
+            persistent_indexes = [QtCore.QPersistentModelIndex(i) for i in selected_indexes]
 
-            # Delete the entries from the table model by way of filtering by hash
-            self.lib_ref.table_rows = [
-                i for i in self.lib_ref.table_rows if i[6] not in delete_hashes]
-
-            # Persistent model indexes are required beause deletion mutates the model
-            # Gnerate and delete by persistent index
-            persistent_indexes = [
-                QtCore.QPersistentModelIndex(i[0]) for i in selected_indexes]
             for i in persistent_indexes:
                 self.lib_ref.view_model.removeRow(i.row())
 
@@ -494,7 +493,7 @@ class MainUI(QtWidgets.QMainWindow, mainwindow.Ui_MainWindow):
         self.sorterProgress.setVisible(False)
         self.sorterProgress.setValue(0)
 
-        self.lib_ref.generate_proxymodels()
+        self.lib_ref.update_proxymodels()
         self.lib_ref.generate_library_tags()
 
         if not self.settings['perform_culling']:
