@@ -84,12 +84,22 @@ class MainUI(QtWidgets.QMainWindow, mainwindow.Ui_MainWindow):
         self.statusBar.addWidget(self.sorterProgress)
         self.sorterProgress.setVisible(False)
 
+        # Statusbar - Toolbar Visibility
         self.toolbarToggle.setIcon(QtGui.QIcon.fromTheme('visibility'))
         self.toolbarToggle.setObjectName('toolbarToggle')
         self.toolbarToggle.setToolTip('Toggle toolbar')
         self.toolbarToggle.setAutoRaise(True)
         self.toolbarToggle.clicked.connect(self.toggle_toolbars)
         self.statusBar.addPermanentWidget(self.toolbarToggle)
+
+        # Statusbar - Library background
+        self.libraryBackground = QtWidgets.QToolButton()
+        self.libraryBackground.setIcon(QtGui.QIcon.fromTheme('color-management'))
+        self.libraryBackground.setObjectName('libraryBackground')
+        self.libraryBackground.setToolTip('Change library background color')
+        self.libraryBackground.setAutoRaise(True)
+        self.libraryBackground.clicked.connect(self.get_color)
+        self.statusBar.addPermanentWidget(self.libraryBackground)
 
         # THIS IS TEMPORARY
         self.guiTest = QtWidgets.QToolButton()
@@ -210,6 +220,10 @@ class MainUI(QtWidgets.QMainWindow, mainwindow.Ui_MainWindow):
         self.listView.doubleClicked.connect(self.library_doubleclick)
         self.listView.setItemDelegate(LibraryDelegate(self.temp_dir.path(), self))
         self.listView.verticalScrollBar().valueChanged.connect(self.start_culling_timer)
+
+        self.listView.setStyleSheet(
+            "QListView {{background-color: {0}}}".format(
+                self.settings['listview_background'].name()))
 
         # TableView
         self.tableView.doubleClicked.connect(self.library_doubleclick)
@@ -367,7 +381,6 @@ class MainUI(QtWidgets.QMainWindow, mainwindow.Ui_MainWindow):
         print('Caesar si viveret, ad remum dareris')
         self.metadata_dialog.show()
 
-
     def resizeEvent(self, event=None):
         if event:
             # This implies a vertical resize event only
@@ -429,15 +442,13 @@ class MainUI(QtWidgets.QMainWindow, mainwindow.Ui_MainWindow):
 
     def delete_books(self):
         # TODO
-        # Implement this for the tableview
-        # The same process can be used to mirror selection
+        # ? Mirror selection
         # Ask if library files are to be excluded from further scans
         # Make a checkbox for this
 
         # Get a list of QItemSelection objects
         # What we're interested in is the indexes()[0] in each of them
         # That gives a list of indexes from the view model
-
         if self.listView.isVisible():
             selected_books = self.lib_ref.item_proxy_model.mapSelectionToSource(
                 self.listView.selectionModel().selection())
@@ -711,12 +722,6 @@ class MainUI(QtWidgets.QMainWindow, mainwindow.Ui_MainWindow):
     # def dropEvent
 
     def get_color(self):
-        signal_sender = self.sender().objectName()
-        profile_index = self.bookToolBar.profileBox.currentIndex()
-        current_profile = self.bookToolBar.profileBox.itemData(
-            profile_index, QtCore.Qt.UserRole)
-
-        # Retain current values on opening a new dialog
         def open_color_dialog(current_color):
             color_dialog = QtWidgets.QColorDialog()
             new_color = color_dialog.getColor(current_color)
@@ -725,6 +730,21 @@ class MainUI(QtWidgets.QMainWindow, mainwindow.Ui_MainWindow):
             else:
                 return current_color
 
+        signal_sender = self.sender().objectName()
+        
+        if signal_sender == 'libraryBackground':
+            current_color = self.settings['listview_background']
+            new_color = open_color_dialog(current_color)
+            self.listView.setStyleSheet("QListView {{background-color: {0}}}".format(
+                new_color.name()))
+            self.settings['listview_background'] = new_color
+            return
+
+        profile_index = self.bookToolBar.profileBox.currentIndex()
+        current_profile = self.bookToolBar.profileBox.itemData(
+            profile_index, QtCore.Qt.UserRole)
+
+        # Retain current values on opening a new dialog
         if signal_sender == 'fgColor':
             current_color = current_profile['foreground']
             new_color = open_color_dialog(current_color)

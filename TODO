@@ -20,12 +20,11 @@ TODO
         ✓ Memory management
         ✓ Mass tagging
         ✓ Add capability to sort by new
-        Table view
-        Ignore a / the / numbers for sorting purposes
-        Information dialog widget
+        ✓ Table view
         Context menu: Cache, Read, Edit database, delete, Mark read/unread
-        Set focus to newly added file
+        Information dialog widget
         Allow editing of database data through the UI + for Bookmarks
+        Set focus to newly added file
     Reading:
         ✓ Drop down for TOC
         ✓ Override the keypress event of the textedit
@@ -42,6 +41,7 @@ TODO
         ✓ Line spacing
         ✓ Record progress
         ✓ Text alignment
+        Background color
         Bookmarks
             ✓ Creation
             ✓ Navigation
@@ -83,3 +83,4 @@ TODO
         Include icons for filetype emblems
         Drag and drop support for the library
         Leave comic images on disk in case tab isn't closed and files are remembered
+        Ignore a / the / numbers for sorting purposes
