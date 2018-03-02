@@ -106,7 +106,8 @@ class Settings:
         self.settings.setValue('windowSize', self.parent.size())
         self.settings.setValue('windowPosition', self.parent.pos())
         self.settings.setValue('currentView', self.parent.stackedWidget.currentIndex())
-        self.settings.setValue('listViewBackground', self.parent.settings['listview_background'])
+        self.settings.setValue(
+            'listViewBackground', self.parent.settings['listview_background'])
 
         table_headers = []
         for i in range(3):

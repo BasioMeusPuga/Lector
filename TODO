@@ -64,8 +64,7 @@ TODO
         ✓ Define every widget in code
     Bugs:
         If there are files open and the database is deleted, TypeErrors result
-        Closing a fullscreened contentView does not save settings
-    
+
     Secondary:
         Annotations
         Graphical themes

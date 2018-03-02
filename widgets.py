@@ -207,6 +207,10 @@ class Tab(QtWidgets.QWidget):
         self.exit_fs.setContext(QtCore.Qt.ApplicationShortcut)
         self.exit_fs.activated.connect(self.exit_fullscreen)
 
+        # TODO
+        # See why Ctrl + Q stop working on a non fullscreened contentView
+        # widget in case the following is in code
+
         # self.exit_all = QtWidgets.QShortcut(
         #     QtGui.QKeySequence('Ctrl+Q'), self.contentView)
         # self.exit_all.activated.connect(self.sneaky_exit)
@@ -466,6 +470,10 @@ class PliantQGraphicsView(QtWidgets.QGraphicsView):
         self.setCursor(QtCore.Qt.ArrowCursor)
         self.parent.mouse_hide_timer.start(3000)
 
+    def closeEvent(self, *args):
+        # In case the program is closed when a contentView is fullscreened
+        self.main_window.closeEvent()
+
 
 class PliantQTextBrowser(QtWidgets.QTextBrowser):
     def __init__(self, main_window, parent=None):
@@ -518,6 +526,9 @@ class PliantQTextBrowser(QtWidgets.QTextBrowser):
                     visible_text)
         else:
             self.parent.metadata['position']['last_visible_text'] = visible_text
+
+    def closeEvent(self, *args):
+        self.main_window.closeEvent()
 
     # def mouseMoveEvent(self, event):
         # TODO

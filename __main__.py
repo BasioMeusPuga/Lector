@@ -731,7 +731,7 @@ class MainUI(QtWidgets.QMainWindow, mainwindow.Ui_MainWindow):
                 return current_color
 
         signal_sender = self.sender().objectName()
-        
+
         if signal_sender == 'libraryBackground':
             current_color = self.settings['listview_background']
             new_color = open_color_dialog(current_color)
