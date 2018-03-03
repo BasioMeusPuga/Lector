@@ -444,24 +444,36 @@ class MainUI(QtWidgets.QMainWindow, mainwindow.Ui_MainWindow):
         self.thread.finished.connect(self.move_on)
         self.thread.start()
 
-    def delete_books(self):
+    def get_selection(self, library_widget):
+        selected_indexes = None
+
+        if library_widget == self.listView:
+            selected_books = self.lib_ref.item_proxy_model.mapSelectionToSource(
+                self.listView.selectionModel().selection())
+            selected_indexes = [i.indexes()[0] for i in selected_books]
+
+        elif library_widget == self.tableView:
+            selected_books = self.tableView.selectionModel().selectedRows()
+            selected_indexes = [
+                self.lib_ref.table_proxy_model.mapToSource(i) for i in selected_books]
+
+        return selected_indexes
+
+    def delete_books(self, selected_indexes=None):
         # TODO
         # ? Mirror selection
         # Ask if library files are to be excluded from further scans
         # Make a checkbox for this
 
-        # Get a list of QItemSelection objects
-        # What we're interested in is the indexes()[0] in each of them
-        # That gives a list of indexes from the view model
-        if self.listView.isVisible():
-            selected_books = self.lib_ref.item_proxy_model.mapSelectionToSource(
-                self.listView.selectionModel().selection())
-            selected_indexes = [i.indexes()[0] for i in selected_books]
+        if not selected_indexes:
+            # Get a list of QItemSelection objects
+            # What we're interested in is the indexes()[0] in each of them
+            # That gives a list of indexes from the view model
+            if self.listView.isVisible():
+                selected_indexes = self.get_selection(self.listView)
 
-        elif self.tableView.isVisible():
-            selected_books = self.tableView.selectionModel().selectedRows()
-            selected_indexes = [
-                self.lib_ref.table_proxy_model.mapToSource(i) for i in selected_books]
+            elif self.tableView.isVisible():
+                selected_indexes = self.get_selection(self.tableView)
 
         if not selected_indexes:
             return
@@ -488,7 +500,7 @@ class MainUI(QtWidgets.QMainWindow, mainwindow.Ui_MainWindow):
             self.thread.start()
 
         # Generate a message box to confirm deletion
-        selected_number = len(selected_books)
+        selected_number = len(selected_indexes)
         confirm_deletion = QtWidgets.QMessageBox()
         confirm_deletion.setText('Delete %d book(s)?' % selected_number)
         confirm_deletion.setIcon(QtWidgets.QMessageBox.Question)
@@ -941,12 +953,19 @@ class MainUI(QtWidgets.QMainWindow, mainwindow.Ui_MainWindow):
         if not index.isValid():
             return
 
+        # It's worth remembering that these are indexes of the view_model
+        # and NOT of the proxy models
+        selected_indexes = self.get_selection(self.sender())
+
         context_menu = QtWidgets.QMenu()
 
         openAction = context_menu.addAction(
             QtGui.QIcon.fromTheme('view-readermode'), 'Start reading')
-        editAction = context_menu.addAction(
-            QtGui.QIcon.fromTheme('edit-rename'), 'Edit')
+
+        if len(selected_indexes) == 1:
+            editAction = context_menu.addAction(
+                QtGui.QIcon.fromTheme('edit-rename'), 'Edit')
+
         deleteAction = context_menu.addAction(
             QtGui.QIcon.fromTheme('trash-empty'), 'Delete')
         readAction = context_menu.addAction(
@@ -955,6 +974,50 @@ class MainUI(QtWidgets.QMainWindow, mainwindow.Ui_MainWindow):
             QtGui.QIcon.fromTheme('emblem-unavailable'), 'Mark unread')
 
         action = context_menu.exec_(self.sender().mapToGlobal(position))
+
+        if action == openAction:
+            books_to_open = {}
+            for i in selected_indexes:
+                metadata = self.lib_ref.view_model.data(i, QtCore.Qt.UserRole + 3)
+                books_to_open[metadata['path']] = metadata['hash']
+
+            self.open_files(books_to_open)
+
+        if action == editAction:
+            edit_book = selected_indexes[0]
+            metadata = self.lib_ref.view_model.data(
+                edit_book, QtCore.Qt.UserRole + 3)
+
+            cover = self.lib_ref.view_model.item(edit_book.row()).icon()
+            title = metadata['title']
+            author = metadata['author']
+            year = str(metadata['year'])
+            tags = metadata['tags']
+
+            self.metadataDialog.load_book(
+                cover, title, author, year, tags, edit_book)
+
+            self.metadataDialog.show()
+
+        if action == deleteAction:
+            self.delete_books(selected_indexes)
+
+        if action == readAction or action == unreadAction:
+            # TODO
+            # This will take some doing
+            # Best idea: Have another field in the db that returns an "is read"
+            # Have that supersede all other considerations of position
+            # Use that to generate a position in the tab when the file is opened
+
+            # OR
+            # Simulate file opening and closure
+
+            for i in selected_indexes:
+                metadata = self.lib_ref.view_model.data(i, QtCore.Qt.UserRole + 7)
+                metadata2 = self.lib_ref.view_model.data(i, QtCore.Qt.UserRole + 3)
+                print(metadata2['position'])
+                # self.lib_ref.view_model.setData(
+                #   model_index, current_tab.metadata['position'], QtCore.Qt.UserRole + 7)
 
     def generate_library_filter_menu(self, directory_list=None):
         self.libraryFilterMenu.clear()
