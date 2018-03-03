@@ -53,7 +53,7 @@ class Tab(QtWidgets.QWidget):
         chapter_name = list(self.metadata['content'])[current_chapter - 1]
         chapter_content = self.metadata['content'][chapter_name]
 
-        # The content display widget is, by default a QTextBrowser
+        # The content display widget is, by default a QTextBrowser.
         # In case the incoming data is only images
         # such as in the case of comic book files,
         # we want a QGraphicsView widget doing all the heavy lifting
@@ -147,6 +147,7 @@ class Tab(QtWidgets.QWidget):
         # TODO
         # Bookmark navigation does not work in case 2 entries in the same
         # chapter are clicked successively
+        # It plain refuses to work other times
 
         if self.sender().objectName() == 'tabWidget':
             return
@@ -702,6 +703,8 @@ class BookmarkDelegate(QtWidgets.QStyledItemDelegate):
 
         chapter_index = index.data(QtCore.Qt.UserRole)
         chapter_name = self.parent.window().bookToolBar.tocBox.itemText(chapter_index - 1)
+        if len(chapter_name) > 25:
+            chapter_name = chapter_name[:25] + '...'
 
         QtWidgets.QStyledItemDelegate.paint(self, painter, option, index)
         painter.drawText(

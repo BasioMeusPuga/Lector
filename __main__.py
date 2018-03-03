@@ -261,30 +261,6 @@ class MainUI(QtWidgets.QMainWindow, mainwindow.Ui_MainWindow):
         if self.settings['scan_library']:
             self.settingsDialog.start_library_scan()
 
-    def generate_library_context_menu(self, position):
-        # TODO
-        # The library might have multiple items selected
-        # Make sure the context menu actions are carried out on each
-
-        index = self.sender().indexAt(position)
-        if not index.isValid():
-            return
-
-        context_menu = QtWidgets.QMenu()
-
-        openAction = context_menu.addAction(
-            QtGui.QIcon.fromTheme('view-readermode'), 'Start reading')
-        editAction = context_menu.addAction(
-            QtGui.QIcon.fromTheme('edit-rename'), 'Edit')
-        deleteAction = context_menu.addAction(
-            QtGui.QIcon.fromTheme('trash-empty'), 'Delete')
-        readAction = context_menu.addAction(
-            QtGui.QIcon.fromTheme('vcs-normal'), 'Mark read')
-        unreadAction = context_menu.addAction(
-            QtGui.QIcon.fromTheme('emblem-unavailable'), 'Mark unread')
-
-        action = context_menu.exec_(self.sender().mapToGlobal(position))
-
     def open_books_at_startup(self):
         # Last open books and command line books aren't being opened together
         # so that command line books are processed last and therefore retain focus
@@ -956,13 +932,31 @@ class MainUI(QtWidgets.QMainWindow, mainwindow.Ui_MainWindow):
         else:
             self.settingsDialog.hide()
 
-    def generate_library_filter_menu(self, directory_list=None):
+    def generate_library_context_menu(self, position):
         # TODO
-        # Connect this to filtering @ the level of the library
-        # Remember state of the checkboxes on library update and application restart
-        # Behavior for clicking on All
-        # Don't show anything for less than 2 library folders
+        # The library might have multiple items selected
+        # Make sure the context menu actions are carried out on each
 
+        index = self.sender().indexAt(position)
+        if not index.isValid():
+            return
+
+        context_menu = QtWidgets.QMenu()
+
+        openAction = context_menu.addAction(
+            QtGui.QIcon.fromTheme('view-readermode'), 'Start reading')
+        editAction = context_menu.addAction(
+            QtGui.QIcon.fromTheme('edit-rename'), 'Edit')
+        deleteAction = context_menu.addAction(
+            QtGui.QIcon.fromTheme('trash-empty'), 'Delete')
+        readAction = context_menu.addAction(
+            QtGui.QIcon.fromTheme('vcs-normal'), 'Mark read')
+        unreadAction = context_menu.addAction(
+            QtGui.QIcon.fromTheme('emblem-unavailable'), 'Mark unread')
+
+        action = context_menu.exec_(self.sender().mapToGlobal(position))
+
+    def generate_library_filter_menu(self, directory_list=None):
         self.libraryFilterMenu.clear()
 
         def generate_name(path_data):
@@ -1026,19 +1020,24 @@ class MainUI(QtWidgets.QMainWindow, mainwindow.Ui_MainWindow):
                 not self.bookToolBar.isVisible())
 
     def closeEvent(self, event=None):
-        # All tabs must be iterated upon here
+        if event:
+            event.ignore()
+
         self.hide()
         self.settingsDialog.hide()
         self.temp_dir.remove()
 
         self.settings['last_open_books'] = []
-        if self.tabWidget.count() > 1 and self.settings['remember_files']:
+        if self.tabWidget.count() > 1:
 
+            # All tabs must be iterated upon here
             all_metadata = []
             for i in range(1, self.tabWidget.count()):
                 tab_metadata = self.tabWidget.widget(i).metadata
-                self.settings['last_open_books'].append(tab_metadata['path'])
                 all_metadata.append(tab_metadata)
+
+                if self.settings['remember_files']:
+                    self.settings['last_open_books'].append(tab_metadata['path'])
 
             Settings(self).save_settings()
             self.thread = BackGroundTabUpdate(self.database_path, all_metadata)
