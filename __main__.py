@@ -296,7 +296,6 @@ class MainUI(QtWidgets.QMainWindow, mainwindow.Ui_MainWindow):
 
     def cull_covers(self, event=None):
         blank_pixmap = QtGui.QPixmap()
-        blank_pixmap.load(':/images/blank.png')
 
         all_indexes = set()
         for i in range(self.lib_ref.item_proxy_model.rowCount()):
@@ -321,25 +320,30 @@ class MainUI(QtWidgets.QMainWindow, mainwindow.Ui_MainWindow):
                 this_item.setIcon(QtGui.QIcon(blank_pixmap))
                 this_item.setData(False, QtCore.Qt.UserRole + 8)
 
+        hash_index_dict = {}
+        hash_list = []
         for i in visible_indexes:
             model_index = self.lib_ref.item_proxy_model.mapToSource(i)
-            this_item = self.lib_ref.view_model.item(model_index.row())
 
-            if this_item:
-                is_cover_already_displayed = this_item.data(QtCore.Qt.UserRole + 8)
-                if is_cover_already_displayed:
-                    continue
+            book_hash = self.lib_ref.view_model.data(
+                model_index, QtCore.Qt.UserRole + 6)
+            cover_displayed = self.lib_ref.view_model.data(
+                model_index, QtCore.Qt.UserRole + 8)
 
-                book_hash = this_item.data(QtCore.Qt.UserRole + 6)
-                cover = database.DatabaseFunctions(
-                    self.database_path).fetch_data(
-                        ('CoverImage',),
-                        'books',
-                        {'Hash': book_hash},
-                        'EQUALS',
-                        True)
+            if book_hash and not cover_displayed:
+                hash_list.append(book_hash)
+                hash_index_dict[book_hash] = model_index
 
-                self.cover_loader(this_item, cover)
+        all_covers = database.DatabaseFunctions(
+            self.database_path).fetch_covers_only(hash_list)
+
+        for i in all_covers:
+            book_hash = i[0]
+            cover = i[1]
+            model_index = hash_index_dict[book_hash]
+
+            book_item = self.lib_ref.view_model.item(model_index.row())
+            self.cover_loader(book_item, cover)
 
     def start_culling_timer(self):
         if self.settings['perform_culling']:
@@ -1104,12 +1108,16 @@ class MainUI(QtWidgets.QMainWindow, mainwindow.Ui_MainWindow):
 
             Settings(self).save_settings()
             self.thread = BackGroundTabUpdate(self.database_path, all_metadata)
-            self.thread.finished.connect(QtWidgets.qApp.exit)
+            self.thread.finished.connect(self.database_care)
             self.thread.start()
 
         else:
             Settings(self).save_settings()
-            QtWidgets.qApp.exit()
+            self.database_care()
+
+    def database_care(self):
+        database.DatabaseFunctions(self.database_path).vacuum_database()
+        QtWidgets.qApp.exit()
 
 
 def main():

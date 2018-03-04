@@ -19,7 +19,7 @@
 import os
 import pickle
 import sqlite3
-from PyQt5 import QtCore
+from PyQt5 import QtCore, QtWidgets
 
 
 class DatabaseInit:
@@ -73,7 +73,7 @@ class DatabaseFunctions:
             self.database.execute(sql_command, [path, path, name, tags, is_checked])
 
         self.database.commit()
-        self.close_database()
+        self.database.close()
 
     def add_to_database(self, data):
         # data is expected to be a dictionary
@@ -115,7 +115,7 @@ class DatabaseFunctions:
                  path, isbn, tags, book_hash, cover_insert])
 
         self.database.commit()
-        self.close_database()
+        self.database.close()
 
     def fetch_data(self, columns, table, selection_criteria, equivalence, fetch_one=False):
         # columns is a tuple that will be passed as a comma separated list
@@ -150,6 +150,7 @@ class DatabaseFunctions:
 
             # book data is returned as a list of tuples
             data = self.database.execute(sql_command_fetch).fetchall()
+            self.database.close()
 
             if data:
                 # Because this is the result of a fetchall(), we need an
@@ -164,7 +165,12 @@ class DatabaseFunctions:
         except (KeyError, sqlite3.OperationalError):
             print('Commander, SQLite is in rebellion @ data fetching handling')
 
-        self.close_database()
+    def fetch_covers_only(self, hash_list):
+        parameter_marks = ','.join(['?' for i in hash_list])
+        sql_command = f"SELECT Hash, CoverImage from books WHERE Hash IN ({parameter_marks})"
+        data = self.database.execute(sql_command, hash_list).fetchall()
+        self.database.close()
+        return data
 
     def modify_positional_data(self, positional_data):
         for i in positional_data:
@@ -189,7 +195,7 @@ class DatabaseFunctions:
                 return
 
         self.database.commit()
-        self.close_database()
+        self.database.close()
 
     def delete_from_database(self, column_name, target_data):
         # target_data is an iterable
@@ -202,8 +208,8 @@ class DatabaseFunctions:
                 self.database.execute(sql_command, (i,))
 
         self.database.commit()
-        self.close_database()
-
-    def close_database(self):
-        self.database.execute("VACUUM")
         self.database.close()
+
+    def vacuum_database(self):
+        self.database.execute("VACUUM")
+        return True
