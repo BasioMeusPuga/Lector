@@ -993,6 +993,17 @@ class MainUI(QtWidgets.QMainWindow, mainwindow.Ui_MainWindow):
             edit_book = selected_indexes[0]
             metadata = self.lib_ref.view_model.data(
                 edit_book, QtCore.Qt.UserRole + 3)
+            is_cover_loaded = self.lib_ref.view_model.data(
+                edit_book, QtCore.Qt.UserRole + 8)
+
+            # Loads a cover in case culling is enabled and the table view is visible
+            if not is_cover_loaded:
+                book_hash = self.lib_ref.view_model.data(
+                    edit_book, QtCore.Qt.UserRole + 6)
+                book_item = self.lib_ref.view_model.item(edit_book.row())
+                book_cover = database.DatabaseFunctions(
+                    self.database_path).fetch_covers_only([book_hash])[0][1]
+                self.cover_loader(book_item, book_cover)
 
             cover = self.lib_ref.view_model.item(edit_book.row()).icon()
             title = metadata['title']

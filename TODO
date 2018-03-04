@@ -25,7 +25,7 @@ TODO
         ✓ Information dialog widget
         Allow editing of database data through the UI + for Bookmarks
         Set focus to newly added file
-        Change selection rectangle position
+        Change focus rectangle dimensions
     Reading:
         ✓ Drop down for TOC
         ✓ Override the keypress event of the textedit
@@ -50,7 +50,6 @@ TODO
             ✓ Deletion
         Set context menu for definitions and the like
         Search document using QTextCursor?
-        Cache multiple images
         Comic view keyboard shortcuts
         Comic view modes
             Continuous paging
