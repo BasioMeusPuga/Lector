@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>728</width>
-    <height>231</height>
+    <height>234</height>
    </rect>
   </property>
   <property name="sizePolicy">
@@ -149,6 +149,26 @@
             <size>
              <width>24</width>
              <height>24</height>
+            </size>
+           </property>
+           <property name="flat">
+            <bool>true</bool>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <widget class="QPushButton" name="colorButton">
+           <property name="text">
+            <string/>
+           </property>
+           <property name="icon">
+            <iconset resource="resources.qrc">
+             <normaloff>:/images/color.svg</normaloff>:/images/color.svg</iconset>
+           </property>
+           <property name="iconSize">
+            <size>
+             <width>26</width>
+             <height>26</height>
             </size>
            </property>
            <property name="flat">

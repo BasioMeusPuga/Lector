@@ -94,7 +94,7 @@ class MainUI(QtWidgets.QMainWindow, mainwindow.Ui_MainWindow):
 
         # Statusbar - Library background
         self.libraryBackground = QtWidgets.QToolButton()
-        self.libraryBackground.setIcon(QtGui.QIcon.fromTheme('color-management'))
+        self.libraryBackground.setIcon(QtGui.QIcon(':/images/color.svg'))
         self.libraryBackground.setObjectName('libraryBackground')
         self.libraryBackground.setToolTip('Change library background color')
         self.libraryBackground.setAutoRaise(True)

@@ -63,6 +63,7 @@ class MetadataUI(QtWidgets.QDialog, metadata.Ui_Dialog):
 
         self.okButton.clicked.connect(self.ok_pressed)
         self.cancelButton.clicked.connect(self.cancel_pressed)
+        self.colorButton.clicked.connect(self.color_background)
 
         self.titleLine.returnPressed.connect(self.ok_pressed)
         self.authorLine.returnPressed.connect(self.ok_pressed)
@@ -148,6 +149,9 @@ class MetadataUI(QtWidgets.QDialog, metadata.Ui_Dialog):
             display_y = desktop_size.height() - size.height()
 
         return QtCore.QPoint(display_x, display_y)
+
+    def color_background(self):
+        pass
 
     def showEvent(self, event):
         if self.previous_position:
