@@ -296,6 +296,8 @@ class MainUI(QtWidgets.QMainWindow, mainwindow.Ui_MainWindow):
 
     def cull_covers(self, event=None):
         blank_pixmap = QtGui.QPixmap()
+        blank_pixmap.load(':/images/blank.png')  # Keep this. Removing it causes the
+                                                 # listView to go blank on a resize
 
         all_indexes = set()
         for i in range(self.lib_ref.item_proxy_model.rowCount()):
@@ -1091,6 +1093,7 @@ class MainUI(QtWidgets.QMainWindow, mainwindow.Ui_MainWindow):
             event.ignore()
 
         self.hide()
+        self.metadataDialog.hide()
         self.settingsDialog.hide()
         self.temp_dir.remove()
 

@@ -28,6 +28,7 @@ from PyQt5 import QtWidgets, QtGui, QtCore
 
 from resources import pie_chart
 from models import BookmarkProxyModel
+from sorter import resize_image
 
 
 class Tab(QtWidgets.QWidget):
@@ -723,3 +724,34 @@ class PliantDockWidget(QtWidgets.QDockWidget):
 
     def hideEvent(self, event):
         self.parent.window().bookToolBar.bookmarkButton.setChecked(False)
+
+
+class PliantQGraphicsScene(QtWidgets.QGraphicsScene):
+    def __init__(self, parent=None):
+        super(PliantQGraphicsScene, self).__init__(parent)
+        self.parent = parent
+
+    def mouseReleaseEvent(self, event):
+        self.parent.previous_position = self.parent.pos()
+
+        image_files = '*.jpg *.png'
+        new_cover = QtWidgets.QFileDialog.getOpenFileName(
+            None, 'Select new cover', self.parent.parent.settings['last_open_path'],
+            f'Images ({image_files})')[0]
+
+        if not new_cover:
+            self.parent.show()
+            return
+
+        with open(new_cover, 'rb') as cover_ref:
+            cover_bytes = cover_ref.read()
+            resized_cover = resize_image(cover_bytes)
+            self.parent.cover_for_database = resized_cover
+
+        cover_pixmap = QtGui.QPixmap()
+        cover_pixmap.load(new_cover)
+        cover_pixmap = cover_pixmap.scaled(
+            140, 205, QtCore.Qt.IgnoreAspectRatio)
+
+        self.parent.load_cover(cover_pixmap, True)
+        self.parent.show()

@@ -19,7 +19,7 @@
 import os
 import pickle
 import sqlite3
-from PyQt5 import QtCore, QtWidgets
+from PyQt5 import QtCore
 
 
 class DatabaseInit:
@@ -163,7 +163,7 @@ class DatabaseFunctions:
                 return None
 
         except (KeyError, sqlite3.OperationalError):
-            print('Commander, SQLite is in rebellion @ data fetching handling')
+            print('SQLite is in wretched rebellion @ data fetching handling')
 
     def fetch_covers_only(self, hash_list):
         parameter_marks = ','.join(['?' for i in hash_list])
@@ -172,27 +172,33 @@ class DatabaseFunctions:
         self.database.close()
         return data
 
-    def modify_positional_data(self, positional_data):
-        for i in positional_data:
-            file_hash = i[0]
-            position = i[1]
-            last_accessed = i[2]
-            bookmarks = i[3]
+    def modify_metadata(self, metadata_dict, book_hash):
 
-            position_bin = sqlite3.Binary(pickle.dumps(position))
-            last_accessed_bin = sqlite3.Binary(pickle.dumps(last_accessed))
-            bookmarks_bin = sqlite3.Binary(pickle.dumps(bookmarks))
+        def generate_binary(column, data):
+            if column in ('Position', 'LastAccessed', 'Bookmarks'):
+                return sqlite3.Binary(pickle.dumps(data))
+            elif column == 'CoverImage':
+                return sqlite3.Binary(data)
+            else:
+                return data
 
-            sql_command = (
-                "UPDATE books SET Position = ?, LastAccessed = ?, Bookmarks = ? WHERE Hash = ?")
+        sql_command = 'UPDATE books SET '
+        update_data = []
+        for i in metadata_dict.items():
+            if i[1]:
+                sql_command += i[0] + ' = ?, '
+                bin_data = generate_binary(i[0], i[1])
+                update_data.append(bin_data)
 
-            try:
-                self.database.execute(
-                    sql_command,
-                    [position_bin, last_accessed_bin, bookmarks_bin, file_hash])
-            except sqlite3.OperationalError:
-                print('Commander, SQLite is in rebellion @ positional data handling')
-                return
+        sql_command = sql_command[:-2]
+        sql_command += ' WHERE Hash = ?'
+        update_data.append(book_hash)
+
+        try:
+            self.database.execute(
+                sql_command, update_data)
+        except sqlite3.OperationalError:
+            print('SQLite is in wretched rebellion @ metadata handling')
 
         self.database.commit()
         self.database.close()

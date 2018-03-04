@@ -22,9 +22,10 @@ TODO
         ✓ Add capability to sort by new
         ✓ Table view
         ✓ Context menu: Cache, Read, Edit database, delete, Mark read/unread
-        Information dialog widget
+        ✓ Information dialog widget
         Allow editing of database data through the UI + for Bookmarks
         Set focus to newly added file
+        Change selection rectangle position
     Reading:
         ✓ Drop down for TOC
         ✓ Override the keypress event of the textedit
@@ -64,6 +65,7 @@ TODO
         ✓ Define every widget in code
     Bugs:
         If there are files open and the database is deleted, TypeErrors result
+        Cover culling does not occur if some other tab has initial focus
 
     Secondary:
         Annotations

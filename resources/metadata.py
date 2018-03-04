@@ -2,7 +2,7 @@
 
 # Form implementation generated from reading ui file 'raw/metadata.ui'
 #
-# Created by: PyQt5 UI code generator 5.10
+# Created by: PyQt5 UI code generator 5.10.1
 #
 # WARNING! All changes made in this file will be lost!
 
@@ -11,27 +11,21 @@ from PyQt5 import QtCore, QtGui, QtWidgets
 class Ui_Dialog(object):
     def setupUi(self, Dialog):
         Dialog.setObjectName("Dialog")
-        Dialog.resize(700, 230)
-        sizePolicy = QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.Fixed, QtWidgets.QSizePolicy.Expanding)
+        Dialog.resize(728, 231)
+        sizePolicy = QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.Expanding, QtWidgets.QSizePolicy.Expanding)
         sizePolicy.setHorizontalStretch(0)
         sizePolicy.setVerticalStretch(0)
         sizePolicy.setHeightForWidth(Dialog.sizePolicy().hasHeightForWidth())
         Dialog.setSizePolicy(sizePolicy)
-        Dialog.setMaximumSize(QtCore.QSize(700, 230))
+        Dialog.setMaximumSize(QtCore.QSize(16777215, 16777215))
         Dialog.setModal(True)
         self.gridLayout = QtWidgets.QGridLayout(Dialog)
         self.gridLayout.setObjectName("gridLayout")
         self.horizontalLayout = QtWidgets.QHBoxLayout()
         self.horizontalLayout.setObjectName("horizontalLayout")
         self.coverView = QtWidgets.QGraphicsView(Dialog)
-        sizePolicy = QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.Fixed, QtWidgets.QSizePolicy.Fixed)
-        sizePolicy.setHorizontalStretch(0)
-        sizePolicy.setVerticalStretch(0)
-        sizePolicy.setHeightForWidth(self.coverView.sizePolicy().hasHeightForWidth())
-        self.coverView.setSizePolicy(sizePolicy)
-        self.coverView.setMinimumSize(QtCore.QSize(140, 218))
-        self.coverView.setMaximumSize(QtCore.QSize(140, 218))
-        self.coverView.setBaseSize(QtCore.QSize(140, 200))
+        self.coverView.setMaximumSize(QtCore.QSize(165, 16777215))
+        self.coverView.setFrameShadow(QtWidgets.QFrame.Plain)
         self.coverView.setObjectName("coverView")
         self.horizontalLayout.addWidget(self.coverView)
         self.verticalLayout = QtWidgets.QVBoxLayout()
@@ -49,6 +43,31 @@ class Ui_Dialog(object):
         self.tagsLine.setMinimumSize(QtCore.QSize(0, 0))
         self.tagsLine.setObjectName("tagsLine")
         self.verticalLayout.addWidget(self.tagsLine)
+        self.horizontalLayout_2 = QtWidgets.QHBoxLayout()
+        self.horizontalLayout_2.setObjectName("horizontalLayout_2")
+        spacerItem = QtWidgets.QSpacerItem(40, 20, QtWidgets.QSizePolicy.Expanding, QtWidgets.QSizePolicy.Minimum)
+        self.horizontalLayout_2.addItem(spacerItem)
+        self.okButton = QtWidgets.QPushButton(Dialog)
+        self.okButton.setText("")
+        icon = QtGui.QIcon()
+        icon.addPixmap(QtGui.QPixmap(":/images/checkmark.svg"), QtGui.QIcon.Normal, QtGui.QIcon.Off)
+        self.okButton.setIcon(icon)
+        self.okButton.setIconSize(QtCore.QSize(24, 24))
+        self.okButton.setFlat(True)
+        self.okButton.setObjectName("okButton")
+        self.horizontalLayout_2.addWidget(self.okButton)
+        self.cancelButton = QtWidgets.QPushButton(Dialog)
+        self.cancelButton.setText("")
+        icon1 = QtGui.QIcon()
+        icon1.addPixmap(QtGui.QPixmap(":/images/error.svg"), QtGui.QIcon.Normal, QtGui.QIcon.Off)
+        self.cancelButton.setIcon(icon1)
+        self.cancelButton.setIconSize(QtCore.QSize(24, 24))
+        self.cancelButton.setFlat(True)
+        self.cancelButton.setObjectName("cancelButton")
+        self.horizontalLayout_2.addWidget(self.cancelButton)
+        spacerItem1 = QtWidgets.QSpacerItem(40, 20, QtWidgets.QSizePolicy.Expanding, QtWidgets.QSizePolicy.Minimum)
+        self.horizontalLayout_2.addItem(spacerItem1)
+        self.verticalLayout.addLayout(self.horizontalLayout_2)
         self.horizontalLayout.addLayout(self.verticalLayout)
         self.gridLayout.addLayout(self.horizontalLayout, 0, 0, 1, 1)
 
@@ -58,8 +77,14 @@ class Ui_Dialog(object):
     def retranslateUi(self, Dialog):
         _translate = QtCore.QCoreApplication.translate
         Dialog.setWindowTitle(_translate("Dialog", "Edit metadata"))
+        self.coverView.setToolTip(_translate("Dialog", "Cover (click to change)"))
+        self.titleLine.setToolTip(_translate("Dialog", "Title"))
         self.titleLine.setPlaceholderText(_translate("Dialog", "Title"))
+        self.authorLine.setToolTip(_translate("Dialog", "Author"))
         self.authorLine.setPlaceholderText(_translate("Dialog", "Author"))
+        self.yearLine.setToolTip(_translate("Dialog", "Year"))
         self.yearLine.setPlaceholderText(_translate("Dialog", "Year"))
+        self.tagsLine.setToolTip(_translate("Dialog", "Tags (comma separated)"))
         self.tagsLine.setPlaceholderText(_translate("Dialog", "Tags"))
-
+        self.okButton.setToolTip(_translate("Dialog", "OK"))
+        self.cancelButton.setToolTip(_translate("Dialog", "Cancel"))
