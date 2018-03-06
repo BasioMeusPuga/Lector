@@ -114,20 +114,20 @@ class MetadataUI(QtWidgets.QDialog, metadata.Ui_Dialog):
         book_item.setData(tags, QtCore.Qt.UserRole + 4)
         book_item.setToolTip(tooltip_string)
 
-        if self.cover_for_database:
-            self.parent.cover_loader(
-                book_item, self.cover_for_database)
-
-        self.parent.lib_ref.update_proxymodels()
-        self.hide()
-
         book_hash = book_item.data(QtCore.Qt.UserRole + 6)
         database_dict = {
             'Title': title,
             'Author': author,
             'Year': year,
-            'Tags': tags,
-            'CoverImage': self.cover_for_database}
+            'Tags': tags}
+
+        if self.cover_for_database:
+            database_dict['CoverImage'] = self.cover_for_database
+            self.parent.cover_loader(
+                book_item, self.cover_for_database)
+
+        self.parent.lib_ref.update_proxymodels()
+        self.hide()
 
         database.DatabaseFunctions(self.database_path).modify_metadata(
             database_dict, book_hash)

@@ -44,9 +44,10 @@ class Tab(QtWidgets.QWidget):
 
         self.metadata['last_accessed'] = QtCore.QDateTime().currentDateTime()
 
-        position = self.metadata['position']
-        if position:
-            current_chapter = position['current_chapter']
+        if self.metadata['position']:
+            if self.metadata['position']['is_read']:
+                self.generate_position(True)
+            current_chapter = self.metadata['position']['current_chapter']
         else:
             self.generate_position()
             current_chapter = 1
@@ -174,23 +175,31 @@ class Tab(QtWidgets.QWidget):
         if search_text:
             self.contentView.find(search_text)
 
-        text_cursor = self.contentView.textCursor()
-        text_cursor.clearSelection()
-        self.contentView.setTextCursor(text_cursor)
+            text_cursor = self.contentView.textCursor()
+            text_cursor.clearSelection()
+            self.contentView.setTextCursor(text_cursor)
 
         if switch_widgets:
             self.window().tabWidget.setCurrentWidget(previous_widget)
 
-    def generate_position(self):
-        total_chapters = len(self.metadata['content'].keys())
+    def generate_position(self, is_read=False):
         # TODO
         # Calculate lines to incorporate into progress
 
+        total_chapters = len(self.metadata['content'].keys())
+
+        current_chapter = 1
+        scroll_value = 0
+        if is_read:
+            current_chapter = total_chapters
+            scroll_value = 1
+
         self.metadata['position'] = {
-            'current_chapter': 1,
+            'current_chapter': current_chapter,
             'total_chapters': total_chapters,
-            'scroll_value': 0,
-            'last_visible_text': None}
+            'scroll_value': scroll_value,
+            'last_visible_text': None,
+            'is_read': is_read}
 
     def generate_keyboard_shortcuts(self):
         self.next_chapter = QtWidgets.QShortcut(
@@ -437,7 +446,7 @@ class PliantQGraphicsView(QtWidgets.QGraphicsView):
         self.image_pixmap.load(image_path)
         self.resizeEvent()
 
-    def resizeEvent(self, event=None):
+    def resizeEvent(self, *args):
         if not self.image_pixmap:
             return
 
@@ -497,7 +506,7 @@ class PliantQGraphicsView(QtWidgets.QGraphicsView):
                 scroll_increment = int((maximum - 0) / 2)
                 self.verticalScrollBar().setValue(vertical + scroll_increment)
 
-    def mouseMoveEvent(self, event):
+    def mouseMoveEvent(self, *args):
         self.setCursor(QtCore.Qt.ArrowCursor)
         self.parent.mouse_hide_timer.start(3000)
 
@@ -649,7 +658,11 @@ class LibraryDelegate(QtWidgets.QStyledItemDelegate):
 
         option = option.__class__(option)
         file_exists = index.data(QtCore.Qt.UserRole + 5)
-        position = index.data(QtCore.Qt.UserRole + 7)
+        metadata = index.data(QtCore.Qt.UserRole + 3)
+
+        position = metadata['position']
+        if position:
+            is_read = position['is_read']
 
         # The shadow pixmap currently is set to 420 x 600
         # Only draw the cover shadow in case the setting is enabled
@@ -675,8 +688,14 @@ class LibraryDelegate(QtWidgets.QStyledItemDelegate):
 
         QtWidgets.QStyledItemDelegate.paint(self, painter, option, index)
         if position:
-            current_chapter = position['current_chapter']
-            total_chapters = position['total_chapters']
+            if is_read:
+                current_chapter = total_chapters = 100
+            else:
+                try:
+                    current_chapter = position['current_chapter']
+                    total_chapters = position['total_chapters']
+                except KeyError:
+                    return
 
             read_icon = pie_chart.pixmapper(
                 current_chapter, total_chapters, self.temp_dir, 36)

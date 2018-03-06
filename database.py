@@ -185,10 +185,9 @@ class DatabaseFunctions:
         sql_command = 'UPDATE books SET '
         update_data = []
         for i in metadata_dict.items():
-            if i[1]:
-                sql_command += i[0] + ' = ?, '
-                bin_data = generate_binary(i[0], i[1])
-                update_data.append(bin_data)
+            sql_command += i[0] + ' = ?, '
+            bin_data = generate_binary(i[0], i[1])
+            update_data.append(bin_data)
 
         sql_command = sql_command[:-2]
         sql_command += ' WHERE Hash = ?'

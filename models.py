@@ -104,7 +104,8 @@ class TableProxyModel(QtCore.QSortFilterProxyModel):
                 return_pixmap = None
 
                 file_exists = item.data(QtCore.Qt.UserRole + 5)
-                position = item.data(QtCore.Qt.UserRole + 7)
+                metadata = item.data(QtCore.Qt.UserRole + 3)
+                position = metadata['position']
 
                 if not file_exists:
                     return_pixmap = pie_chart.pixmapper(

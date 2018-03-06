@@ -635,10 +635,12 @@ class MainUI(QtWidgets.QMainWindow, mainwindow.Ui_MainWindow):
 
         current_tab.metadata[
             'position']['current_chapter'] = event + 1
+        current_tab.metadata[
+            'position']['is_read'] = False
 
         if model_index:
             self.lib_ref.view_model.setData(
-                model_index, current_tab.metadata['position'], QtCore.Qt.UserRole + 7)
+                model_index, current_tab.metadata, QtCore.Qt.UserRole + 3)
 
         # Go on to change the value of the Table of Contents box
         current_tab.change_chapter_tocBox()
@@ -968,6 +970,7 @@ class MainUI(QtWidgets.QMainWindow, mainwindow.Ui_MainWindow):
         openAction = context_menu.addAction(
             QtGui.QIcon.fromTheme('view-readermode'), 'Start reading')
 
+        editAction = None
         if len(selected_indexes) == 1:
             editAction = context_menu.addAction(
                 QtGui.QIcon.fromTheme('edit-rename'), 'Edit')
@@ -1020,21 +1023,38 @@ class MainUI(QtWidgets.QMainWindow, mainwindow.Ui_MainWindow):
             self.delete_books(selected_indexes)
 
         if action == readAction or action == unreadAction:
-            # TODO
-            # This will take some doing
-            # Best idea: Have another field in the db that returns an "is read"
-            # Have that supersede all other considerations of position
-            # Use that to generate a position in the tab when the file is opened
-
-            # OR
-            # Simulate file opening and closure
-
             for i in selected_indexes:
-                metadata = self.lib_ref.view_model.data(i, QtCore.Qt.UserRole + 7)
-                metadata2 = self.lib_ref.view_model.data(i, QtCore.Qt.UserRole + 3)
-                print(metadata2['position'])
-                # self.lib_ref.view_model.setData(
-                #   model_index, current_tab.metadata['position'], QtCore.Qt.UserRole + 7)
+                metadata = self.lib_ref.view_model.data(i, QtCore.Qt.UserRole + 3)
+                book_hash = self.lib_ref.view_model.data(i, QtCore.Qt.UserRole + 6)
+                position = metadata['position']
+
+                if position:
+                    if action == readAction:
+                        position['is_read'] = True
+                        position['scroll_value'] = 1
+                    elif action == unreadAction:
+                        position['is_read'] = False
+                        position['current_chapter'] = 1
+                        position['scroll_value'] = 0
+                else:
+                    position = {}
+                    if action == readAction:
+                        position['is_read'] = True
+
+                metadata['position'] = position
+                self.lib_ref.view_model.setData(i, metadata, QtCore.Qt.UserRole + 3)
+
+                last_accessed_time = None
+                if action == readAction:
+                    last_accessed_time = QtCore.QDateTime().currentDateTime()
+                self.lib_ref.view_model.setData(i, last_accessed_time, QtCore.Qt.UserRole + 12)
+
+                database_dict = {
+                    'Position': position,
+                    'LastAccessed': last_accessed_time}
+
+                database.DatabaseFunctions(
+                    self.database_path).modify_metadata(database_dict, book_hash)
 
     def generate_library_filter_menu(self, directory_list=None):
         self.libraryFilterMenu.clear()

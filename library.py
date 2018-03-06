@@ -126,7 +126,7 @@ class Library:
             item.setData(tags, QtCore.Qt.UserRole + 4)
             item.setData(file_exists, QtCore.Qt.UserRole + 5)
             item.setData(i[8], QtCore.Qt.UserRole + 6)  # File hash
-            item.setData(position, QtCore.Qt.UserRole + 7)
+            item.setData(position, QtCore.Qt.UserRole + 30)
             item.setData(False, QtCore.Qt.UserRole + 8) # Is the cover being displayed?
             item.setData(date_added, QtCore.Qt.UserRole + 9)
             item.setData(last_accessed, QtCore.Qt.UserRole + 12)
