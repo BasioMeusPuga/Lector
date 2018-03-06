@@ -83,9 +83,18 @@ class Library:
             except TypeError:  # Because of datetime.datetime.now() above
                 date_added = i[3]
 
+            position_perc = None
             position = i[5]
             if position:
                 position = pickle.loads(position)
+                if position['is_read']:
+                    position_perc = 100
+                else:
+                    try:
+                        position_perc = (
+                            position['current_chapter'] * 100 / position['total_chapters'])
+                    except KeyError:
+                        position_perc = None
 
             file_exists = os.path.exists(path)
 
@@ -126,7 +135,7 @@ class Library:
             item.setData(tags, QtCore.Qt.UserRole + 4)
             item.setData(file_exists, QtCore.Qt.UserRole + 5)
             item.setData(i[8], QtCore.Qt.UserRole + 6)  # File hash
-            item.setData(position, QtCore.Qt.UserRole + 30)
+            item.setData(position_perc, QtCore.Qt.UserRole + 7)
             item.setData(False, QtCore.Qt.UserRole + 8) # Is the cover being displayed?
             item.setData(date_added, QtCore.Qt.UserRole + 9)
             item.setData(last_accessed, QtCore.Qt.UserRole + 12)

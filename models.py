@@ -77,6 +77,7 @@ class TableProxyModel(QtCore.QSortFilterProxyModel):
             1: QtCore.Qt.UserRole,      # Title
             2: QtCore.Qt.UserRole + 1,  # Author
             3: QtCore.Qt.UserRole + 2,  # Year
+            4: QtCore.Qt.UserRole + 7,  # Position percentage
             5: QtCore.Qt.UserRole + 4}  # Tags
         self.common_functions = ProxyModelsCommonFunctions(self)
 
@@ -106,14 +107,25 @@ class TableProxyModel(QtCore.QSortFilterProxyModel):
                 file_exists = item.data(QtCore.Qt.UserRole + 5)
                 metadata = item.data(QtCore.Qt.UserRole + 3)
                 position = metadata['position']
+                if position:
+                    is_read = position['is_read']
 
                 if not file_exists:
-                    return_pixmap = pie_chart.pixmapper(
+                    return pie_chart.pixmapper(
                         -1, None, None, QtCore.Qt.SizeHintRole + 10)
 
                 if position:
-                    current_chapter = position['current_chapter']
-                    total_chapters = position['total_chapters']
+                    if is_read:
+                        current_chapter = total_chapters = 100
+                    else:
+                        try:
+                            current_chapter = position['current_chapter']
+                            total_chapters = position['total_chapters']
+
+                            if current_chapter == 1:
+                                raise KeyError
+                        except KeyError:
+                            return
 
                     return_pixmap = pie_chart.pixmapper(
                         current_chapter, total_chapters, self.temp_dir,
@@ -139,9 +151,6 @@ class TableProxyModel(QtCore.QSortFilterProxyModel):
         return output
 
     def sort_table_columns(self, column):
-        if column == 3:
-            return
-
         sorting_order = self.sender().sortIndicatorOrder()
         self.sort(0, sorting_order)
         self.setSortRole(self.role_dictionary[column])

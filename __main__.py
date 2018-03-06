@@ -638,9 +638,20 @@ class MainUI(QtWidgets.QMainWindow, mainwindow.Ui_MainWindow):
         current_tab.metadata[
             'position']['is_read'] = False
 
+        # TODO
+        # This doesn't update correctly
+        # try:
+        #     position_perc = (
+        #         current_tab.metadata[
+        #             'current_chapter'] * 100 / current_tab.metadata['total_chapters'])
+        # except KeyError:
+        #     position_perc = None
+
         if model_index:
             self.lib_ref.view_model.setData(
                 model_index, current_tab.metadata, QtCore.Qt.UserRole + 3)
+            self.lib_ref.view_model.setData(
+                model_index, position_perc, QtCore.Qt.UserRole + 7)
 
         # Go on to change the value of the Table of Contents box
         current_tab.change_chapter_tocBox()
@@ -1042,12 +1053,17 @@ class MainUI(QtWidgets.QMainWindow, mainwindow.Ui_MainWindow):
                         position['is_read'] = True
 
                 metadata['position'] = position
-                self.lib_ref.view_model.setData(i, metadata, QtCore.Qt.UserRole + 3)
 
+                position_perc = None
                 last_accessed_time = None
                 if action == readAction:
                     last_accessed_time = QtCore.QDateTime().currentDateTime()
+                    position_perc = 100
+
+                self.lib_ref.view_model.setData(i, metadata, QtCore.Qt.UserRole + 3)
+                self.lib_ref.view_model.setData(i, position_perc, QtCore.Qt.UserRole + 7)
                 self.lib_ref.view_model.setData(i, last_accessed_time, QtCore.Qt.UserRole + 12)
+                self.lib_ref.update_proxymodels()
 
                 database_dict = {
                     'Position': position,
