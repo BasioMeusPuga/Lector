@@ -1,5 +1,6 @@
 <RCC>
   <qresource prefix="images">
+    <file>QMPlay2.svg</file>
     <file>color.svg</file>
     <file>blank.png</file>
     <file>gray-shadow.png</file>

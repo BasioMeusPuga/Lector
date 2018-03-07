@@ -29,19 +29,11 @@ class MetadataUI(QtWidgets.QDialog, metadata.Ui_Dialog):
         super(MetadataUI, self).__init__()
         self.setupUi(self)
 
-        self.parent = parent
         self.setWindowFlags(
             QtCore.Qt.Popup |
             QtCore.Qt.FramelessWindowHint)
 
-        self.database_path = self.parent.database_path
-
-        self.book_index = None
-        self.book_year = None
-        self.previous_position = None
-        self.cover_for_database = None
-
-        radius = 20.0
+        radius = 15
         path = QtGui.QPainterPath()
         path.addRoundedRect(QtCore.QRectF(self.rect()), radius, radius)
         mask = QtGui.QRegion(path.toFillPolygon().toPolygon())
@@ -55,8 +47,14 @@ class MetadataUI(QtWidgets.QDialog, metadata.Ui_Dialog):
         self.coverView.setStyleSheet(
             "QGraphicsView {{color: {0}; background-color: {1}}}".format(
                 foreground.name(), background.name()))
-        self.okButton.setStyleSheet(
-            "QToolButton {background-color: red}")
+
+        self.parent = parent
+        self.database_path = self.parent.database_path
+
+        self.book_index = None
+        self.book_year = None
+        self.previous_position = None
+        self.cover_for_database = None
 
         self.coverView.setHorizontalScrollBarPolicy(QtCore.Qt.ScrollBarAlwaysOff)
         self.coverView.setVerticalScrollBarPolicy(QtCore.Qt.ScrollBarAlwaysOff)

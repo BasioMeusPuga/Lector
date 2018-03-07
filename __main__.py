@@ -33,6 +33,7 @@ from settings import Settings
 
 from settingsdialog import SettingsUI
 from metadatadialog import MetadataUI
+from definitionsdialog import DefinitionsUI
 
 
 class MainUI(QtWidgets.QMainWindow, mainwindow.Ui_MainWindow):
@@ -72,6 +73,9 @@ class MainUI(QtWidgets.QMainWindow, mainwindow.Ui_MainWindow):
 
         # Initialize metadata dialog
         self.metadataDialog = MetadataUI(self)
+
+        # Initialize definition view dialog
+        self.definitionDialog = DefinitionsUI(self)
 
         # Statusbar widgets
         self.statusMessage.setObjectName('statusMessage')
@@ -388,8 +392,8 @@ class MainUI(QtWidgets.QMainWindow, mainwindow.Ui_MainWindow):
             self.tabWidget.widget(self.tabWidget.currentIndex()).add_bookmark()
 
     def test_function(self):
-        print('Caesar si viveret, ad remum dareris')
-        self.metadataDialog.show()
+        # print('Caesar si viveret, ad remum dareris')
+        self.definitionDialog.find_definition('draft')
 
     def resizeEvent(self, event=None):
         if event:
@@ -964,10 +968,6 @@ class MainUI(QtWidgets.QMainWindow, mainwindow.Ui_MainWindow):
             self.settingsDialog.hide()
 
     def generate_library_context_menu(self, position):
-        # TODO
-        # The library might have multiple items selected
-        # Make sure the context menu actions are carried out on each
-
         index = self.sender().indexAt(position)
         if not index.isValid():
             return
@@ -1142,6 +1142,7 @@ class MainUI(QtWidgets.QMainWindow, mainwindow.Ui_MainWindow):
         self.hide()
         self.metadataDialog.hide()
         self.settingsDialog.hide()
+        self.definitionDialog.hide()
         self.temp_dir.remove()
 
         self.settings['last_open_books'] = []

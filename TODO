@@ -47,13 +47,10 @@ TODO
             ✓ Navigation
             ✓ Editing: Name
             ✓ Deletion
+        ✓ Cache next and previous images
         Set context menu for definitions and the like
         Search document using QTextCursor?
         Comic view keyboard shortcuts
-        Comic view modes
-            Continuous paging
-            Double pages
-            Cache next and previous images
     Filetypes:
         ✓ cbz, cbr support
             ✓ Keep font settings enabled but only for background color
@@ -81,6 +78,9 @@ TODO
         txt, doc, chm, djvu, fb2 support
         Include icons for filetype emblems
         Drag and drop support for the library
+        Comic view modes
+            Continuous paging
+            Double pages
         Leave comic images on disk in case tab isn't closed and files are remembered
         Ignore a / the / numbers for sorting purposes
         ? Add only one file type if multiple are present
