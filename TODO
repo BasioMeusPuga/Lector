@@ -25,7 +25,6 @@ TODO
         ✓ Information dialog widget
         ✓ Allow editing of database data through the UI + for Bookmarks
         Set focus to newly added file
-        Change focus rectangle dimensions
     Reading:
         ✓ Drop down for TOC
         ✓ Override the keypress event of the textedit
@@ -54,10 +53,10 @@ TODO
         Comic view modes
             Continuous paging
             Double pages
+            Cache next and previous images
     Filetypes:
         ✓ cbz, cbr support
             ✓ Keep font settings enabled but only for background color
-            Cache next and previous images
         epub support
         mobi, azw support
     Other:
@@ -65,10 +64,12 @@ TODO
     Bugs:
         If there are files open and the database is deleted, TypeErrors result
         Cover culling does not occur if some other tab has initial focus
+        Exiting with Ctrl + Q does not save the cursor position INITIALLY
 
     Secondary:
         Annotations
         Graphical themes
+        Change focus rectangle dimensions
         Tab reordering
         Allow tabs to detach and form their own windows
         Goodreads API: Ratings, Read, Recommendations

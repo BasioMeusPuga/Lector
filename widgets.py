@@ -225,7 +225,7 @@ class Tab(QtWidgets.QWidget):
         self.exit_fs.activated.connect(self.exit_fullscreen)
 
         # TODO
-        # See why Ctrl + Q stop working on a non fullscreened contentView
+        # See why Ctrl + Q won't work on a non fullscreened contentView
         # widget in case the following is in code
 
         # self.exit_all = QtWidgets.QShortcut(
@@ -437,16 +437,69 @@ class PliantQGraphicsView(QtWidgets.QGraphicsView):
         self.common_functions = PliantWidgetsCommonFunctions(
             self, self.main_window)
         self.setMouseTracking(True)
+        self.image_cache = [None for _ in range(4)]
 
-    def loadImage(self, image_path):
+    def loadImage(self, current_image):
         # TODO
         # Cache 4 images
         # For single page view: 1 before, 2 after
         # For double page view: 1 before, 1 after
+        # Move caching to new thread
+        # Account for IndexErrors
         # Image panning with mouse
 
-        self.image_pixmap = QtGui.QPixmap()
-        self.image_pixmap.load(image_path)
+        content = self.parent.metadata['content']
+        image_paths = [i[1] for i in content.items()]
+
+        def generate_image_cache(current_image):
+            print('Generator hit', self.image_cache, '\n')
+            current_image_index = image_paths.index(current_image)
+
+            for i in (-1, 0, 1, 2):
+                try:
+                    this_path = image_paths[current_image_index + i]
+                    this_pixmap = QtGui.QPixmap()
+                    this_pixmap.load(this_path)
+                    self.image_cache[i + 1] = (this_path, this_pixmap)
+                except IndexError:
+                    self.image_cache[i + 1] = None
+
+        def refill_cache(remove_value):
+            remove_index = self.image_cache.index(remove_value)
+            refill_pixmap = QtGui.QPixmap()
+
+            if remove_index == 0:
+                self.image_cache.pop(3)
+                first_path = self.image_cache[0][0]
+                previous_path = image_paths[image_paths.index(first_path) - 1]
+                refill_pixmap.load(previous_path)
+                self.image_cache.insert(0, (previous_path, refill_pixmap))
+            else:
+                self.image_cache.remove(remove_value)
+                try:
+                    last_path = self.image_cache[2][0]
+                    next_path = image_paths[image_paths.index(last_path) + 1]
+                    refill_pixmap.load(next_path)
+                    self.image_cache.append((next_path, refill_pixmap))
+                except (IndexError, TypeError):
+                    self.image_cache.append(None)
+
+        def check_cache(current_image):
+            for i in self.image_cache:
+                if i:
+                    if i[0] == current_image:
+                        return_pixmap = i[1]
+                        refill_cache(i)
+                        return return_pixmap
+
+            # No return happened so the image isn't in the cache
+            generate_image_cache(current_image)
+
+        return_pixmap = None
+        while not return_pixmap:
+            return_pixmap = check_cache(current_image)
+
+        self.image_pixmap = return_pixmap
         self.resizeEvent()
 
     def resizeEvent(self, *args):

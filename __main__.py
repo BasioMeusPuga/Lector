@@ -229,7 +229,7 @@ class MainUI(QtWidgets.QMainWindow, mainwindow.Ui_MainWindow):
 
         # TODO
         # Maybe use this for readjusting the border of the focus rectangle
-        # in the listView
+        # in the listView. Maybe this is a job for QML?
 
         # self.listView.setStyleSheet(
         #     "QListView::item:selected { border-color:blue; border-style:outset;"
@@ -1165,7 +1165,8 @@ class MainUI(QtWidgets.QMainWindow, mainwindow.Ui_MainWindow):
                     self.settings['last_open_books'].append(tab_metadata['path'])
 
             Settings(self).save_settings()
-            self.thread = BackGroundTabUpdate(self.database_path, all_metadata)
+            self.thread = BackGroundTabUpdate(
+                self.database_path, all_metadata)
             self.thread.finished.connect(self.database_care)
             self.thread.start()
 
