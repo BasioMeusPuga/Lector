@@ -227,6 +227,14 @@ class MainUI(QtWidgets.QMainWindow, mainwindow.Ui_MainWindow):
             "QListView {{background-color: {0}}}".format(
                 self.settings['listview_background'].name()))
 
+        # TODO
+        # Maybe use this for readjusting the border of the focus rectangle
+        # in the listView
+
+        # self.listView.setStyleSheet(
+        #     "QListView::item:selected { border-color:blue; border-style:outset;"
+        #     "border-width:2px; color:black; }")
+
         # TableView
         self.tableView.doubleClicked.connect(self.library_doubleclick)
         self.tableView.horizontalHeader().setSectionResizeMode(
@@ -650,8 +658,8 @@ class MainUI(QtWidgets.QMainWindow, mainwindow.Ui_MainWindow):
         if model_index:
             self.lib_ref.view_model.setData(
                 model_index, current_tab.metadata, QtCore.Qt.UserRole + 3)
-            self.lib_ref.view_model.setData(
-                model_index, position_perc, QtCore.Qt.UserRole + 7)
+            # self.lib_ref.view_model.setData(
+            #     model_index, position_perc, QtCore.Qt.UserRole + 7)
 
         # Go on to change the value of the Table of Contents box
         current_tab.change_chapter_tocBox()

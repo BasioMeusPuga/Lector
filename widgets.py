@@ -168,16 +168,19 @@ class Tab(QtWidgets.QWidget):
         scroll_position = scroll_value * self.contentView.verticalScrollBar().maximum()
         self.contentView.verticalScrollBar().setValue(scroll_position * 1.1)
 
-        search_text = self.metadata['position']['last_visible_text']
-        if search_data:
-            search_text = search_data[1]
+        try:
+            search_text = self.metadata['position']['last_visible_text']
+            if search_data:
+                search_text = search_data[1]
 
-        if search_text:
-            self.contentView.find(search_text)
+            if search_text:
+                self.contentView.find(search_text)
 
-            text_cursor = self.contentView.textCursor()
-            text_cursor.clearSelection()
-            self.contentView.setTextCursor(text_cursor)
+                text_cursor = self.contentView.textCursor()
+                text_cursor.clearSelection()
+                self.contentView.setTextCursor(text_cursor)
+        except KeyError:
+            pass
 
         if switch_widgets:
             self.window().tabWidget.setCurrentWidget(previous_widget)

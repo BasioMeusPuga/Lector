@@ -23,7 +23,7 @@ TODO
         ✓ Table view
         ✓ Context menu: Cache, Read, Edit database, delete, Mark read/unread
         ✓ Information dialog widget
-        Allow editing of database data through the UI + for Bookmarks
+        ✓ Allow editing of database data through the UI + for Bookmarks
         Set focus to newly added file
         Change focus rectangle dimensions
     Reading:
@@ -69,18 +69,20 @@ TODO
     Secondary:
         Annotations
         Graphical themes
+        Tab reordering
+        Allow tabs to detach and form their own windows
         Goodreads API: Ratings, Read, Recommendations
         Get ISBN using python-isbnlib
         Pagination
         Use embedded fonts
         Scrolling: Smooth / By Line
-        ? Add only one file type if multiple are present
         Shift to logging instead of print statements
-        ? Plugin system for parsers
-        ? pdf support
-        ? Create emblem per filetype
         txt, doc, chm, djvu, fb2 support
         Include icons for filetype emblems
         Drag and drop support for the library
         Leave comic images on disk in case tab isn't closed and files are remembered
         Ignore a / the / numbers for sorting purposes
+        ? Add only one file type if multiple are present
+        ? Plugin system for parsers
+        ? pdf support
+        ? Create emblem per filetype

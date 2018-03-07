@@ -122,6 +122,8 @@ class TableProxyModel(QtCore.QSortFilterProxyModel):
                             current_chapter = position['current_chapter']
                             total_chapters = position['total_chapters']
 
+                            # TODO
+                            # See if there's any rationale for this
                             if current_chapter == 1:
                                 raise KeyError
                         except KeyError:
