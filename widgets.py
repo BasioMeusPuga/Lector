@@ -441,18 +441,14 @@ class PliantQGraphicsView(QtWidgets.QGraphicsView):
 
     def loadImage(self, current_image):
         # TODO
-        # Cache 4 images
-        # For single page view: 1 before, 2 after
         # For double page view: 1 before, 1 after
-        # Move caching to new thread
-        # Account for IndexErrors
         # Image panning with mouse
 
         content = self.parent.metadata['content']
         image_paths = [i[1] for i in content.items()]
 
         def generate_image_cache(current_image):
-            print('Generator hit', self.image_cache, '\n')
+            print('Building image cache')
             current_image_index = image_paths.index(current_image)
 
             for i in (-1, 0, 1, 2):
@@ -468,14 +464,15 @@ class PliantQGraphicsView(QtWidgets.QGraphicsView):
             remove_index = self.image_cache.index(remove_value)
             refill_pixmap = QtGui.QPixmap()
 
-            if remove_index == 0:
-                self.image_cache.pop(3)
+            if remove_index == 1:
                 first_path = self.image_cache[0][0]
+                self.image_cache.pop(3)
                 previous_path = image_paths[image_paths.index(first_path) - 1]
                 refill_pixmap.load(previous_path)
                 self.image_cache.insert(0, (previous_path, refill_pixmap))
             else:
-                self.image_cache.remove(remove_value)
+                self.image_cache[0] = self.image_cache[1]
+                self.image_cache.pop(1)
                 try:
                     last_path = self.image_cache[2][0]
                     next_path = image_paths[image_paths.index(last_path) + 1]

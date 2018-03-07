@@ -325,6 +325,9 @@ class LibraryToolBar(QtWidgets.QToolBar):
             QtGui.QIcon.fromTheme('add'), 'Add book', self)
         self.deleteButton = QtWidgets.QAction(
             QtGui.QIcon.fromTheme('remove'), 'Delete book', self)
+        self.colorButton = QtWidgets.QAction(
+            QtGui.QIcon.fromTheme('color-picker'), 'Library background color', self)
+        self.colorButton.setObjectName('libraryBackground')
         self.settingsButton = QtWidgets.QAction(
             QtGui.QIcon.fromTheme('settings'), 'Settings', self)
         self.settingsButton.setCheckable(True)
@@ -356,6 +359,7 @@ class LibraryToolBar(QtWidgets.QToolBar):
         self.addSeparator()
         self.addWidget(self.libraryFilterButton)
         self.addSeparator()
+        self.addAction(self.colorButton)
         self.addAction(self.settingsButton)
 
         # Filter

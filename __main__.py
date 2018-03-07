@@ -92,15 +92,6 @@ class MainUI(QtWidgets.QMainWindow, mainwindow.Ui_MainWindow):
         self.toolbarToggle.clicked.connect(self.toggle_toolbars)
         self.statusBar.addPermanentWidget(self.toolbarToggle)
 
-        # Statusbar - Library background
-        self.libraryBackground = QtWidgets.QToolButton()
-        self.libraryBackground.setIcon(QtGui.QIcon(':/images/color.svg'))
-        self.libraryBackground.setObjectName('libraryBackground')
-        self.libraryBackground.setToolTip('Change library background color')
-        self.libraryBackground.setAutoRaise(True)
-        self.libraryBackground.clicked.connect(self.get_color)
-        self.statusBar.addPermanentWidget(self.libraryBackground)
-
         # THIS IS TEMPORARY
         self.guiTest = QtWidgets.QToolButton()
         self.guiTest.setIcon(QtGui.QIcon.fromTheme('mail-thread-watch'))
@@ -130,6 +121,7 @@ class MainUI(QtWidgets.QMainWindow, mainwindow.Ui_MainWindow):
         self.libraryToolBar.deleteButton.triggered.connect(self.delete_books)
         self.libraryToolBar.coverViewButton.triggered.connect(self.switch_library_view)
         self.libraryToolBar.tableViewButton.triggered.connect(self.switch_library_view)
+        self.libraryToolBar.colorButton.triggered.connect(self.get_color)
         self.libraryToolBar.settingsButton.triggered.connect(self.show_settings)
         self.libraryToolBar.searchBar.textChanged.connect(self.lib_ref.update_proxymodels)
         self.libraryToolBar.sortingBox.activated.connect(self.lib_ref.update_proxymodels)
