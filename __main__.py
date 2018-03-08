@@ -392,8 +392,7 @@ class MainUI(QtWidgets.QMainWindow, mainwindow.Ui_MainWindow):
             self.tabWidget.widget(self.tabWidget.currentIndex()).add_bookmark()
 
     def test_function(self):
-        # print('Caesar si viveret, ad remum dareris')
-        self.definitionDialog.find_definition('draft')
+        print('Caesar si viveret, ad remum dareris')
 
     def resizeEvent(self, event=None):
         if event:

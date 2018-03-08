@@ -48,7 +48,7 @@ TODO
             ✓ Editing: Name
             ✓ Deletion
         ✓ Cache next and previous images
-        Set context menu for definitions and the like
+        ✓ Set context menu for definitions and the like
         Search document using QTextCursor?
         Comic view keyboard shortcuts
     Filetypes:

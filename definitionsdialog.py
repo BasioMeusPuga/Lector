@@ -17,7 +17,7 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 import requests
-from PyQt5 import QtWidgets, QtCore, QtGui
+from PyQt5 import QtWidgets, QtCore, QtGui, QtMultimedia
 
 from resources import definitions
 
@@ -56,6 +56,11 @@ class DefinitionsUI(QtWidgets.QDialog, definitions.Ui_Dialog):
         self.root_url += self.language + '/'
         self.define_url += self.language + '/'
 
+        self.pronunciation_mp3 = None
+
+        self.okButton.clicked.connect(self.hide)
+        self.pronounceButton.clicked.connect(self.play_pronunciation)
+
     def api_call(self, url, word):
         url = url + word.lower()
 
@@ -72,17 +77,27 @@ class DefinitionsUI(QtWidgets.QDialog, definitions.Ui_Dialog):
     def find_definition(self, word):
         word_root_json = self.api_call(self.root_url, word)
         if not word_root_json:
+            self.set_text(word, None, None, True)
             return
+
         word_root = word_root_json['results'][0]['lexicalEntries'][0]['inflectionOf'][0]['id']
+        self.pronounceButton.setToolTip(f'Pronounce "{word_root}"')
 
         definition_json = self.api_call(self.define_url, word_root)
+        if not definition_json:
+            return
 
         definitions = {}
         for i in definition_json['results'][0]['lexicalEntries']:
             category = i['lexicalCategory']
+
+            try:
+                self.pronunciation_mp3 = i['pronunciations'][0]['audioFile']
+            except KeyError:
+                self.pronounceButton.setEnabled(False)
+
             this_sense = i['entries'][0]['senses']
             for j in this_sense:
-
                 try:
                     this_definition = j['definitions'][0].capitalize()
                 except KeyError:
@@ -97,23 +112,38 @@ class DefinitionsUI(QtWidgets.QDialog, definitions.Ui_Dialog):
 
         self.set_text(word, word_root, definitions)
 
-    def set_text(self, word, word_root, definitions):
+    def set_text(self, word, word_root, definitions, nothing_found=False):
         html_string = ''
 
         # Word heading
         html_string += f'<h2><em><strong>{word}</strong></em></h2>\n'
 
-        # Word root
-        html_string += f'<p><em>Word root: <em>{word_root}</p>\n'
+        if nothing_found:
+            html_string += f'<p><em>No definitions found<em></p>\n'
+        else:
+            # Word root
+            html_string += f'<p><em>Word root: <em>{word_root}</p>\n'
 
-        for i in definitions.items():
-            category = i[0]
-            html_string += f'<p><strong>{category}</strong>:</p>\n<ol>\n'
+            # Definitions per category as an ordered list
+            for i in definitions.items():
+                category = i[0]
+                html_string += f'<p><strong>{category}</strong>:</p>\n<ol>\n'
 
-            for j in i[1]:
-                html_string += f'<li>{j}</li>\n'
+                for j in i[1]:
+                    html_string += f'<li>{j}</li>\n'
 
-            html_string += '</ol>\n'
+                html_string += '</ol>\n'
 
         self.definitionView.setHtml(html_string)
         self.show()
+
+    def play_pronunciation(self):
+        if not self.pronunciation_mp3:
+            return
+
+        media_content = QtMultimedia.QMediaContent(
+            QtCore.QUrl(self.pronunciation_mp3))
+
+        player = QtMultimedia.QMediaPlayer(self)
+        player.setMedia(media_content)
+        player.play()

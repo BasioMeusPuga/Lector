@@ -579,6 +579,9 @@ class PliantQTextBrowser(QtWidgets.QTextBrowser):
             self, self.main_window)
         self.verticalScrollBar().sliderMoved.connect(self.record_scroll_position)
         self.setMouseTracking(True)
+        self.setContextMenuPolicy(QtCore.Qt.CustomContextMenu)
+        self.customContextMenuRequested.connect(
+            self.generate_textbrowser_context_menu)
 
     def wheelEvent(self, event):
         self.record_scroll_position()
@@ -619,6 +622,28 @@ class PliantQTextBrowser(QtWidgets.QTextBrowser):
                     visible_text)
         else:
             self.parent.metadata['position']['last_visible_text'] = visible_text
+
+    def generate_textbrowser_context_menu(self, position):
+        selected_word = self.textCursor().selection()
+        selected_word = selected_word.toPlainText()
+
+        context_menu = QtWidgets.QMenu()
+
+        defineAction = 'Caesar si viveret, ad remum dareris'
+        if selected_word and selected_word != '':
+            selected_word = selected_word.split()[0]
+            defineAction = context_menu.addAction(
+                QtGui.QIcon.fromTheme('view-readermode'), f'Define "{selected_word}"')
+
+        searchAction = context_menu.addAction(
+            QtGui.QIcon.fromTheme('search'), 'Search')
+
+        action = context_menu.exec_(self.sender().mapToGlobal(position))
+
+        if action == defineAction:
+            self.window().definitionDialog.find_definition(selected_word)
+        if action == searchAction:
+            self.window().bookToolBar.searchBar.setFocus()
 
     def closeEvent(self, *args):
         self.main_window.closeEvent()
