@@ -41,13 +41,25 @@ class SettingsUI(QtWidgets.QDialog, settingswindow.Ui_Dialog):
         self.move(self.parent.settings['settings_dialog_position'])
 
         self.aboutBox.setVisible(False)
-        with open('resources/about.html') as about_html:
+        aboutfile_path = os.path.join('resources', 'about.html')
+        with open(aboutfile_path) as about_html:
             self.aboutBox.setHtml(about_html.read())
 
         self.paths = None
         self.thread = None
         self.filesystem_model = None
         self.tag_data_copy = None
+
+        languages = ['English', 'Spanish', 'Hindi']
+        self.languageBox.addItems(languages)
+        current_language = self.parent.settings['dictionary_language']
+        if current_language == 'en':
+            self.languageBox.setCurrentIndex(0)
+        elif current_language == 'es':
+            self.languageBox.setCurrentIndex(1)
+        else:
+            self.languageBox.setCurrentIndex(2)
+        self.languageBox.activated.connect(self.change_dictionary_language)
 
         self.okButton.setToolTip('Save changes and start library scan')
         self.okButton.clicked.connect(self.start_library_scan)
@@ -101,7 +113,8 @@ class SettingsUI(QtWidgets.QDialog, settingswindow.Ui_Dialog):
         # Check and see
 
         root_directory = QtCore.QDir().rootPath()
-        self.treeView.setRootIndex(self.filesystem_model.setRootPath(root_directory))
+        self.treeView.setRootIndex(
+            self.filesystem_model.setRootPath(root_directory))
 
         # Set the treeView and QFileSystemModel to its desired state
         selected_paths = [
@@ -229,6 +242,13 @@ class SettingsUI(QtWidgets.QDialog, settingswindow.Ui_Dialog):
         for i in [0, 4]:
             table_headers.append(self.treeView.columnWidth(i))
         self.parent.settings['settings_dialog_headers'] = table_headers
+
+    def change_dictionary_language(self, event):
+        language_dict = {
+            0: 'en',
+            1: 'es',
+            2: 'hi'}
+        self.parent.settings['dictionary_language'] = language_dict[self.languageBox.currentIndex()]
 
     def manage_checkboxes(self, event=None):
         sender = self.sender().objectName()

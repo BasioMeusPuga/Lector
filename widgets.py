@@ -410,7 +410,7 @@ class Tab(QtWidgets.QWidget):
             self.bookmark_model.removeRow(index.row())
 
     def hide_mouse(self):
-        self.contentView.setCursor(QtCore.Qt.BlankCursor)
+        self.contentView.viewport().setCursor(QtCore.Qt.BlankCursor)
 
     def sneaky_change(self):
         direction = -1
@@ -434,6 +434,7 @@ class PliantQGraphicsView(QtWidgets.QGraphicsView):
         self.ignore_wheel_event = False
         self.ignore_wheel_event_number = 0
         self.setDragMode(QtWidgets.QGraphicsView.ScrollHandDrag)
+        self.viewport().setCursor(QtCore.Qt.ArrowCursor)
         self.common_functions = PliantWidgetsCommonFunctions(
             self, self.main_window)
         self.setMouseTracking(True)
@@ -560,7 +561,7 @@ class PliantQGraphicsView(QtWidgets.QGraphicsView):
                 self.verticalScrollBar().setValue(vertical + scroll_increment)
 
     def mouseMoveEvent(self, *args):
-        self.setCursor(QtCore.Qt.ArrowCursor)
+        self.viewport().setCursor(QtCore.Qt.ArrowCursor)
         self.parent.mouse_hide_timer.start(3000)
 
     def closeEvent(self, *args):
@@ -582,6 +583,7 @@ class PliantQTextBrowser(QtWidgets.QTextBrowser):
         self.setContextMenuPolicy(QtCore.Qt.CustomContextMenu)
         self.customContextMenuRequested.connect(
             self.generate_textbrowser_context_menu)
+        self.viewport().setCursor(QtCore.Qt.IBeamCursor)
 
     def wheelEvent(self, event):
         self.record_scroll_position()
@@ -600,6 +602,8 @@ class PliantQTextBrowser(QtWidgets.QTextBrowser):
             QtWidgets.QTextEdit.keyPressEvent(self, event)
 
     def record_scroll_position(self, return_as_bookmark=False):
+        self.parent.metadata['position']['is_read'] = False
+
         vertical = self.verticalScrollBar().value()
         maximum = self.verticalScrollBar().maximum()
 
@@ -648,12 +652,10 @@ class PliantQTextBrowser(QtWidgets.QTextBrowser):
     def closeEvent(self, *args):
         self.main_window.closeEvent()
 
-    # def mouseMoveEvent(self, event):
-        # TODO
-        # This does not work as expected
-        # event.accept()
-        # self.setCursor(QtCore.Qt.ArrowCursor)
-        # self.parent.mouse_hide_timer.start(3000)
+    def mouseMoveEvent(self, event):
+        event.accept()
+        self.viewport().setCursor(QtCore.Qt.IBeamCursor)
+        self.parent.mouse_hide_timer.start(3000)
 
 
 class PliantWidgetsCommonFunctions():

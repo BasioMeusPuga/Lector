@@ -770,6 +770,7 @@ class MainUI(QtWidgets.QMainWindow, mainwindow.Ui_MainWindow):
 
         signal_sender = self.sender().objectName()
 
+        # Special cases that don't affect (comic)book display
         if signal_sender == 'libraryBackground':
             current_color = self.settings['listview_background']
             new_color = open_color_dialog(current_color)
@@ -777,6 +778,12 @@ class MainUI(QtWidgets.QMainWindow, mainwindow.Ui_MainWindow):
                 new_color.name()))
             self.settings['listview_background'] = new_color
             return
+
+        if signal_sender == 'dialogBackground':
+            current_color = self.settings['dialog_background']
+            new_color = open_color_dialog(current_color)
+            self.settings['dialog_background'] = new_color
+            return new_color
 
         profile_index = self.bookToolBar.profileBox.currentIndex()
         current_profile = self.bookToolBar.profileBox.itemData(

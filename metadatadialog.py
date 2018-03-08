@@ -33,20 +33,13 @@ class MetadataUI(QtWidgets.QDialog, metadata.Ui_Dialog):
             QtCore.Qt.Popup |
             QtCore.Qt.FramelessWindowHint)
 
+        self.parent = parent
+
         radius = 15
         path = QtGui.QPainterPath()
         path.addRoundedRect(QtCore.QRectF(self.rect()), radius, radius)
         mask = QtGui.QRegion(path.toFillPolygon().toPolygon())
         self.setMask(mask)
-
-        foreground = QtGui.QColor().fromRgb(230, 230, 230)
-        background = QtGui.QColor().fromRgb(0, 0, 0)
-        self.setStyleSheet(
-            "QDialog {{color: {0}; background-color: {1}}}".format(
-                foreground.name(), background.name()))
-        self.coverView.setStyleSheet(
-            "QGraphicsView {{color: {0}; background-color: {1}}}".format(
-                foreground.name(), background.name()))
 
         self.parent = parent
         self.database_path = self.parent.database_path
@@ -61,7 +54,7 @@ class MetadataUI(QtWidgets.QDialog, metadata.Ui_Dialog):
 
         self.okButton.clicked.connect(self.ok_pressed)
         self.cancelButton.clicked.connect(self.cancel_pressed)
-        self.colorButton.clicked.connect(self.color_background)
+        self.dialogBackground.clicked.connect(self.color_background)
 
         self.titleLine.returnPressed.connect(self.ok_pressed)
         self.authorLine.returnPressed.connect(self.ok_pressed)
@@ -148,8 +141,20 @@ class MetadataUI(QtWidgets.QDialog, metadata.Ui_Dialog):
 
         return QtCore.QPoint(display_x, display_y)
 
-    def color_background(self):
-        pass
+    def color_background(self, set_initial=False):
+        if set_initial:
+            background = self.parent.settings['dialog_background']
+        else:
+            self.previous_position = self.pos()
+            background = self.parent.get_color()
+
+        self.setStyleSheet(
+            "QDialog {{background-color: {0}}}".format(background.name()))
+        self.coverView.setStyleSheet(
+            "QGraphicsView {{background-color: {0}}}".format(background.name()))
+
+        if not set_initial:
+            self.show()
 
     def showEvent(self, event):
         if self.previous_position:
@@ -159,3 +164,4 @@ class MetadataUI(QtWidgets.QDialog, metadata.Ui_Dialog):
             self.move(display_position)
 
         self.titleLine.setFocus()
+        self.color_background(True)

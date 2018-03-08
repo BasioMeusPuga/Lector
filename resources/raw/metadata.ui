@@ -170,7 +170,7 @@
           </spacer>
          </item>
          <item>
-          <widget class="QPushButton" name="colorButton">
+          <widget class="QPushButton" name="dialogBackground">
            <property name="text">
             <string/>
            </property>

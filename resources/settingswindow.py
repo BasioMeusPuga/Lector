@@ -2,7 +2,7 @@
 
 # Form implementation generated from reading ui file 'raw/settings.ui'
 #
-# Created by: PyQt5 UI code generator 5.10
+# Created by: PyQt5 UI code generator 5.10.1
 #
 # WARNING! All changes made in this file will be lost!
 
@@ -11,7 +11,7 @@ from PyQt5 import QtCore, QtGui, QtWidgets
 class Ui_Dialog(object):
     def setupUi(self, Dialog):
         Dialog.setObjectName("Dialog")
-        Dialog.resize(929, 638)
+        Dialog.resize(1009, 658)
         self.gridLayout_3 = QtWidgets.QGridLayout(Dialog)
         self.gridLayout_3.setObjectName("gridLayout_3")
         self.verticalLayout_2 = QtWidgets.QVBoxLayout()
@@ -56,9 +56,21 @@ class Ui_Dialog(object):
         self.performCulling = QtWidgets.QCheckBox(self.groupBox)
         self.performCulling.setObjectName("performCulling")
         self.horizontalLayout.addWidget(self.performCulling)
-        self.checkBox = QtWidgets.QCheckBox(self.groupBox)
-        self.checkBox.setObjectName("checkBox")
-        self.horizontalLayout.addWidget(self.checkBox)
+        self.horizontalLayout_3 = QtWidgets.QHBoxLayout()
+        self.horizontalLayout_3.setObjectName("horizontalLayout_3")
+        self.languageLabel = QtWidgets.QLabel(self.groupBox)
+        sizePolicy = QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.Maximum, QtWidgets.QSizePolicy.Preferred)
+        sizePolicy.setHorizontalStretch(0)
+        sizePolicy.setVerticalStretch(0)
+        sizePolicy.setHeightForWidth(self.languageLabel.sizePolicy().hasHeightForWidth())
+        self.languageLabel.setSizePolicy(sizePolicy)
+        self.languageLabel.setAlignment(QtCore.Qt.AlignLeading|QtCore.Qt.AlignLeft|QtCore.Qt.AlignVCenter)
+        self.languageLabel.setObjectName("languageLabel")
+        self.horizontalLayout_3.addWidget(self.languageLabel)
+        self.languageBox = QtWidgets.QComboBox(self.groupBox)
+        self.languageBox.setObjectName("languageBox")
+        self.horizontalLayout_3.addWidget(self.languageBox)
+        self.horizontalLayout.addLayout(self.horizontalLayout_3)
         self.gridLayout.addLayout(self.horizontalLayout, 1, 0, 1, 1)
         self.verticalLayout_2.addWidget(self.groupBox)
         self.gridLayout_3.addLayout(self.verticalLayout_2, 0, 0, 1, 1)
@@ -90,7 +102,7 @@ class Ui_Dialog(object):
         self.coverShadows.setText(_translate("Dialog", "Cover shadows"))
         self.performCulling.setToolTip(_translate("Dialog", "Enabling reduces startup time and memory usage"))
         self.performCulling.setText(_translate("Dialog", "Load covers only when needed"))
-        self.checkBox.setText(_translate("Dialog", "OCPD"))
+        self.languageLabel.setText(_translate("Dialog", "Dictionary:"))
         self.okButton.setText(_translate("Dialog", "Scan Library"))
         self.cancelButton.setText(_translate("Dialog", "Close"))
         self.aboutButton.setText(_translate("Dialog", "About"))

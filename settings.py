@@ -96,6 +96,13 @@ class Settings:
             'rememberFiles', 'True').capitalize())
         self.parent.settings['perform_culling'] = literal_eval(self.settings.value(
             'performCulling', 'True').capitalize())
+        self.parent.settings['dictionary_language'] = self.settings.value(
+            'dictionaryLanguage', 'en')
+        self.settings.endGroup()
+
+        self.settings.beginGroup('dialogSettings')
+        self.parent.settings['dialog_background'] = self.settings.value(
+            'dialogBackground', QtGui.QColor().fromRgb(0, 0, 0))
         self.settings.endGroup()
 
     def save_settings(self):
@@ -157,4 +164,9 @@ class Settings:
         self.settings.setValue('autoTags', current_settings['auto_tags'])
         self.settings.setValue('scanLibraryAtStart', current_settings['scan_library'])
         self.settings.setValue('performCulling', current_settings['perform_culling'])
+        self.settings.setValue('dictionaryLanguage', current_settings['dictionary_language'])
+        self.settings.endGroup()
+
+        self.settings.beginGroup('dialogSettings')
+        self.settings.setValue('dialogBackground', current_settings['dialog_background'])
         self.settings.endGroup()

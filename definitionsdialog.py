@@ -27,6 +27,8 @@ class DefinitionsUI(QtWidgets.QDialog, definitions.Ui_Dialog):
         super(DefinitionsUI, self).__init__()
         self.setupUi(self)
 
+        self.parent = parent
+
         self.setWindowFlags(
             QtCore.Qt.Popup |
             QtCore.Qt.FramelessWindowHint)
@@ -37,24 +39,11 @@ class DefinitionsUI(QtWidgets.QDialog, definitions.Ui_Dialog):
         mask = QtGui.QRegion(path.toFillPolygon().toPolygon())
         self.setMask(mask)
 
-        foreground = QtGui.QColor().fromRgb(230, 230, 230)
-        background = QtGui.QColor().fromRgb(0, 0, 0)
-
-        self.setStyleSheet(
-            "QDialog {{background-color: {0}}}".format(background.name()))
-        self.definitionView.setStyleSheet(
-            "QTextBrowser {{color: {0}; background-color: {1}}}".format(
-                foreground.name(), background.name()))
-
         self.app_id = 'bb7a91f9'
         self.app_key = 'fefacdf6775c347b52e9efa2efe642ef'
-        self.language = 'en'
 
         self.root_url = 'https://od-api.oxforddictionaries.com:443/api/v1/inflections/'
         self.define_url = 'https://od-api.oxforddictionaries.com:443/api/v1/entries/'
-
-        self.root_url += self.language + '/'
-        self.define_url += self.language + '/'
 
         self.pronunciation_mp3 = None
 
@@ -62,7 +51,8 @@ class DefinitionsUI(QtWidgets.QDialog, definitions.Ui_Dialog):
         self.pronounceButton.clicked.connect(self.play_pronunciation)
 
     def api_call(self, url, word):
-        url = url + word.lower()
+        language = self.parent.settings['dictionary_language']
+        url = url + language + '/' + word.lower()
 
         r = requests.get(
             url,
@@ -119,7 +109,8 @@ class DefinitionsUI(QtWidgets.QDialog, definitions.Ui_Dialog):
         html_string += f'<h2><em><strong>{word}</strong></em></h2>\n'
 
         if nothing_found:
-            html_string += f'<p><em>No definitions found<em></p>\n'
+            language = self.parent.settings['dictionary_language'].upper()
+            html_string += f'<p><em>No definitions found in {language}<em></p>\n'
         else:
             # Word root
             html_string += f'<p><em>Word root: <em>{word_root}</p>\n'
@@ -137,6 +128,21 @@ class DefinitionsUI(QtWidgets.QDialog, definitions.Ui_Dialog):
         self.definitionView.setHtml(html_string)
         self.show()
 
+    def color_background(self, set_initial=False):
+        if set_initial:
+            background = self.parent.settings['dialog_background']
+        else:
+            self.previous_position = self.pos()
+            background = self.parent.get_color()
+
+        self.setStyleSheet(
+            "QDialog {{background-color: {0}}}".format(background.name()))
+        self.definitionView.setStyleSheet(
+            "QTextBrowser {{background-color: {0}}}".format(background.name()))
+
+        if not set_initial:
+            self.show()
+
     def play_pronunciation(self):
         if not self.pronunciation_mp3:
             return
@@ -147,3 +153,12 @@ class DefinitionsUI(QtWidgets.QDialog, definitions.Ui_Dialog):
         player = QtMultimedia.QMediaPlayer(self)
         player.setMedia(media_content)
         player.play()
+
+    def showEvent(self, event):
+        self.color_background(True)
+
+        size = self.size()
+        desktop_size = QtWidgets.QDesktopWidget().screenGeometry()
+        top = (desktop_size.height() / 2) - (size.height() / 2)
+        left = (desktop_size.width() / 2) - (size.width() / 2)
+        self.move(left, top)
