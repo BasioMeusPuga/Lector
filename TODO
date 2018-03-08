@@ -82,6 +82,7 @@ TODO
             Continuous paging
             Double pages
         Leave comic images on disk in case tab isn't closed and files are remembered
+        Give the comic view a 'Save image as...' option
         Ignore a / the / numbers for sorting purposes
         ? Add only one file type if multiple are present
         ? Plugin system for parsers

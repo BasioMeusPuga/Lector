@@ -26,7 +26,8 @@ import database
 
 from resources import mainwindow, resources
 from toolbars import LibraryToolBar, BookToolBar
-from widgets import Tab, LibraryDelegate
+from widgets import Tab
+from delegates import LibraryDelegate
 from threaded import BackGroundTabUpdate, BackGroundBookAddition, BackGroundBookDeletion
 from library import Library
 from settings import Settings
