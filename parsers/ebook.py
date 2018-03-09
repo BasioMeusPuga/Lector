@@ -19,6 +19,7 @@
 import os
 import re
 import sys
+import shutil
 import zipfile
 import collections
 from urllib.parse import unquote
@@ -32,6 +33,7 @@ class ParseEBook:
         # TODO
         # Maybe also include book description
         self.filename = filename
+        self.filename_copy = filename
         self.book = None
         self.temp_dir = temp_dir
         self.temp_dir_copy = temp_dir
@@ -54,14 +56,24 @@ class ParseEBook:
 
             new_filename_with_ext = os.path.splitext(
                 os.path.basename(self.filename))[0] + '.epub'
+
             self.filename = os.path.join(
                 self.temp_dir, 'mobi8', new_filename_with_ext)
+            if not os.path.exists(self.filename):
+                zip_dir = os.path.join(self.temp_dir, 'mobi7')
+                zip_file = os.path.join(
+                    self.temp_dir_copy, new_filename_with_ext)
+                self.filename = shutil.make_archive(zip_file, 'zip', zip_dir)
+
             self.temp_dir = self.temp_dir_copy
 
         try:
             self.book = ebooklib.epub.read_epub(self.filename)
-        except (KeyError, AttributeError, FileNotFoundError):
+        except (KeyError, AttributeError):
             print('Cannot parse ' + self.filename)
+            return
+        except FileNotFoundError:
+            print('Intermediate FNF: ' + self.filename_copy)
             return
 
     def get_title(self):
