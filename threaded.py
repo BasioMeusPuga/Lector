@@ -56,7 +56,8 @@ class BackGroundBookAddition(QtCore.QThread):
             self.file_list,
             'addition',
             self.database_path,
-            self.parent.settings['auto_tags'])
+            self.parent.settings['auto_tags'],
+            self.parent.temp_dir.path())
         parsed_books = books.initiate_threads()
         self.parent.lib_ref.generate_model('addition', parsed_books, False)
         if self.prune_required:

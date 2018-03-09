@@ -44,14 +44,16 @@ from PyQt5 import QtCore, QtGui
 
 import database
 
-from parsers.epub import ParseEPUB
+from parsers.ebook import ParseEBook
 from parsers.cbz import ParseCBZ
 from parsers.cbr import ParseCBR
 
 sorter = {
-    'epub': ParseEPUB,
+    'epub': ParseEBook,
+    'mobi': ParseEBook,
+    'azw': ParseEBook,
     'cbz': ParseCBZ,
-    'cbr': ParseCBR}
+    'cbr': ParseCBR,}
 
 available_parsers = [i for i in sorter]
 progressbar = None  # This is populated by __main__

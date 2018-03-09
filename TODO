@@ -54,8 +54,10 @@ TODO
     Filetypes:
         ✓ cbz, cbr support
             ✓ Keep font settings enabled but only for background color
+        ✓ mobi, azw support
+            Limit the extra files produced by KindleUnpack
+                Have them save to memory
         epub support
-        mobi, azw support
     Other:
         ✓ Define every widget in code
     Bugs:

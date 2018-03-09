@@ -18,23 +18,46 @@
 
 import os
 import re
+import sys
 import zipfile
 import collections
 from urllib.parse import unquote
 
 import ebooklib.epub
+import KindleUnpack.kindleunpack as KindleUnpack
 
 
-class ParseEPUB:
+class ParseEBook:
     def __init__(self, filename, temp_dir, file_md5):
         # TODO
         # Maybe also include book description
         self.filename = filename
         self.book = None
         self.temp_dir = temp_dir
+        self.temp_dir_copy = temp_dir
         self.file_md5 = file_md5
 
+        # This is a crazy lazy thing
+        # But it works for now
+
+        self.use_KindleUnpack = False
+        kindle_extensions = ['.mobi', '.azw', '.azw3', '.azw4', '.prc']
+        if os.path.splitext(self.filename)[1].lower() in kindle_extensions:
+            self.use_KindleUnpack = True
+            self.temp_dir = os.path.join(
+                self.temp_dir, os.path.basename(self.filename))
+
     def read_book(self):
+        if self.use_KindleUnpack:
+            with HidePrinting():
+                KindleUnpack.unpackBook(self.filename, self.temp_dir)
+
+            new_filename_with_ext = os.path.splitext(
+                os.path.basename(self.filename))[0] + '.epub'
+            self.filename = os.path.join(
+                self.temp_dir, 'mobi8', new_filename_with_ext)
+            self.temp_dir = self.temp_dir_copy
+
         try:
             self.book = ebooklib.epub.read_epub(self.filename)
         except (KeyError, AttributeError, FileNotFoundError):
@@ -162,3 +185,12 @@ class ParseEPUB:
             'images_only': False}
 
         return contents, file_settings
+
+
+class HidePrinting:
+    def __enter__(self):
+        self._original_stdout = sys.stdout
+        sys.stdout = None
+
+    def __exit__(self, exc_type, exc_val, exc_tb):
+        sys.stdout = self._original_stdout

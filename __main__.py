@@ -288,7 +288,8 @@ class MainUI(QtWidgets.QMainWindow, mainwindow.Ui_MainWindow):
                 file_list,
                 'addition',
                 self.database_path,
-                self.settings['auto_tags'])
+                self.settings['auto_tags'],
+                self.temp_dir.path())
 
             parsed_books = books.initiate_threads()
             database.DatabaseFunctions(self.database_path).add_to_database(parsed_books)
@@ -704,9 +705,12 @@ class MainUI(QtWidgets.QMainWindow, mainwindow.Ui_MainWindow):
 
             file_md5 = filename[1]
             if not file_md5:
-                with open(filename[0], 'rb') as current_book:
-                    first_bytes = current_book.read(1024 * 32)  # First 32KB of the file
-                    file_md5 = hashlib.md5(first_bytes).hexdigest()
+                try:
+                    with open(filename[0], 'rb') as current_book:
+                        first_bytes = current_book.read(1024 * 32)  # First 32KB of the file
+                        file_md5 = hashlib.md5(first_bytes).hexdigest()
+                except FileNotFoundError:
+                    return
 
             # Remove any already open files
             # Set focus to last file in case only one is open
