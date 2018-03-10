@@ -47,9 +47,10 @@ import database
 from parsers.ebook import ParseEBook
 from parsers.cbz import ParseCBZ
 from parsers.cbr import ParseCBR
+from parsers.epub import ParseEPUB
 
 sorter = {
-    'epub': ParseEBook,
+    'epub': ParseEPUB,
     'mobi': ParseEBook,
     'azw': ParseEBook,
     'cbz': ParseCBZ,

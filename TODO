@@ -58,6 +58,7 @@ TODO
             Limit the extra files produced by KindleUnpack
                 Have them save to memory
         epub support
+            Homegrown solution please
     Other:
         ✓ Define every widget in code
     Bugs:
