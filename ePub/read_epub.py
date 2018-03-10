@@ -33,11 +33,12 @@ class EPUB:
         self.zip_file = None
         self.book = {}
 
-    def read_book(self):
+    def read_epub(self):
         # This is the function that should error out in
         # case the module cannot process the file
         self.load_zip()
-        contents_path = self.get_file_path('content.opf')
+        contents_path = self.get_file_path(
+            None, True)
         self.generate_book_metadata(contents_path)
         self.parse_toc()
 
@@ -59,22 +60,47 @@ class EPUB:
         root = BeautifulSoup(this_xml, parser)
         return root
 
-    def get_file_path(self, filename):
+    def get_file_path(self, filename, is_content_file=False):
         # Use this to get the location of the content.opf file
         # And maybe some other file that has a more well formatted
-        # idea of the TOC
+
+        # We're going to all this trouble because there really is
+        # no going forward without a toc
+        if is_content_file:
+            container_location = self.get_file_path('container.xml')
+            xml = self.parse_xml(container_location, 'xml')
+
+            root_item = xml.find('rootfile')
+            if root_item:
+                return root_item.get('full-path')
+            else:
+                possible_filenames = ('content.opf', 'package.opf')
+                for i in possible_filenames:
+                    presumptive_location = self.get_file_path(i)
+                    if presumptive_location:
+                        return presumptive_location
+
         for i in self.zip_file.filelist:
-            if os.path.basename(i.filename) == filename:
+            if os.path.basename(i.filename) == os.path.basename(filename):
                 return i.filename
 
+    def read_from_zip(self, filename):
+        try:
+            file_data = self.zip_file.read(filename)
+            return file_data
+        except KeyError:
+            file_path_actual = self.get_file_path(filename)
+            return self.zip_file.read(file_path_actual)
+
+    #______________________________________________________
 
     def generate_book_metadata(self, contents_path):
+        # Parse metadata
         item_dict = {
             'title': 'dc:title',
             'author': 'dc:creator',
             'date': 'dc:date'}
 
-        # Parse metadata
         xml = self.parse_xml(contents_path, 'lxml')
 
         for i in item_dict.items():
@@ -96,39 +122,47 @@ class EPUB:
                     self.book['isbn'] = None
 
         # Get items
-        book_items = {}
+        self.book['content_dict'] = {}
         all_items = xml.find_all('item')
         for i in all_items:
             media_type = i.get('media-type')
 
             if media_type == 'application/xhtml+xml':
-                book_items[i.get('id')] = i.get('href')
+                self.book['content_dict'][i.get('id')] = i.get('href')
+
             if media_type == 'application/x-dtbncx+xml':
                 self.book['toc_file'] = i.get('href')
-            if i.get('id') == 'cover':
-                self.book['cover'] = self.zip_file.read(i.get('href'))
 
-        # Parse spine
+            # Cover image
+            # if i.get('id') == 'cover':
+            #     cover_href = i.get('href')
+            #     try:
+            #         self.book['cover'] = self.zip_file.read(cover_href)
+            #     except KeyError:
+            #         # The cover cannot be found according to the
+            #         # path specified in the content reference
+            #         self.book['cover'] = self.zip_file.read(
+            #             self.get_file_path(cover_href))
+
+        # Parse spine and arrange chapter paths acquired from the opf
+        # according to the order IN THE SPINE
         spine_items = xml.find_all('itemref')
         spine_order = []
         for i in spine_items:
             spine_order.append(i.get('idref'))
 
-        # book_order = []
-        # for i in spine_order:
-        #     try:
-        #         book_order.append(book_items[i])
-        #     except KeyError:
-        #         pass
-
-        # self.book['book_order'] = book_order
+        self.book['chapters_in_order'] = []
+        for i in spine_order:
+            chapter_path = self.book['content_dict'][i]
+            self.book['chapters_in_order'].append(chapter_path)
 
     def parse_toc(self):
         # Try to get chapter names from the toc
-        try:
-            toc_file = self.book['toc_file']
-        except KeyError:
-            toc_file = self.get_file_path('toc.ncx')
+        # This has no bearing on the actual order
+        # We're just using this to get chapter names
+
+        toc_file = self.book['toc_file']
+        toc_file = self.get_file_path(toc_file)
 
         xml = self.parse_xml(toc_file, 'xml')
         navpoints = xml.find_all('navPoint')
@@ -138,32 +172,22 @@ class EPUB:
             chapter_title = i.find('text').text
             chapter_source = i.find('content').get('src')
             chapter_source = chapter_source.split('#')[0]
-            self.book['navpoint_dict'][chapter_title] = chapter_source
-
-        # self.book['navpoint_dict'] = {}
-        # for i in self.book['book_order']:
-        #     try:
-        #         self.book['navpoint_dict'][i] = navpoint_dict[i]
-        #     except:
-        #         # TODO
-        #         # Create title
-        #         self.book['navpoint_dict'][i] = 'Unspecified'
-
-        # # Reverse the dict
-        # reverse_dict = {i[1]: i[0] for i in self.book['navpoint_dict'].items()}
-        # self.book['navpoint_dict'] = reverse_dict
+            self.book['navpoint_dict'][chapter_source] = chapter_title
 
     def parse_chapters(self):
-        for i in self.book['navpoint_dict'].items():
+        self.book['book_list'] = []
+        for i in self.book['chapters_in_order']:
+            chapter_data = self.read_from_zip(i).decode()
             try:
-                self.book['navpoint_dict'][i[0]] = self.zip_file.read(i[1]).decode()
+                self.book['book_list'].append(
+                    (self.book['navpoint_dict'][i], chapter_data))
             except KeyError:
-                print(i[1] + ' skipped')
-
+                self.book['book_list'].append(
+                    (os.path.splitext(i)[0], chapter_data))
 
 def main():
     book = EPUB(sys.argv[1])
-    book.read_book()
+    book.read_epub()
     book.parse_chapters()
 
 if __name__ == '__main__':

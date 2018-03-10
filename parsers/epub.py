@@ -35,9 +35,7 @@ class ParseEPUB:
 
     def read_book(self):
         self.book_ref = EPUB(self.filename)
-        contents_path = self.book_ref.get_file_path('content.opf')
-        self.book_ref.generate_book(contents_path)
-        self.book_ref.parse_toc()
+        self.book_ref.read_epub()
         self.book = self.book_ref.book
 
     def get_title(self):
@@ -68,7 +66,7 @@ class ParseEPUB:
         self.book_ref.parse_chapters()
         file_settings = {
             'images_only': False}
-        return self.book['navpoint_dict'], file_settings
+        return self.book['book_list'], file_settings
 
 class HidePrinting:
     def __enter__(self):
