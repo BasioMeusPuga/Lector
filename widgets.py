@@ -80,7 +80,7 @@ class Tab(QtWidgets.QWidget):
                 for j in i[2]:
                     file_extension = os.path.splitext(j)[1]
                     if file_extension == '.css':
-                        file_path = os.path.join(relative_path_root, j)
+                        file_path = os.path.join(i[0], j)
                         os.remove(file_path)
 
                 relative_paths.append(os.path.join(relative_path_root, i[0]))
