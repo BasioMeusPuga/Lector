@@ -26,10 +26,9 @@ import os
 import uuid
 from PyQt5 import QtWidgets, QtGui, QtCore
 
-from resources import pie_chart
-from models import BookmarkProxyModel
-from sorter import resize_image
-from delegates import BookmarkDelegate
+from lector.models import BookmarkProxyModel
+from lector.sorter import resize_image
+from lector.delegates import BookmarkDelegate
 
 
 class Tab(QtWidgets.QWidget):

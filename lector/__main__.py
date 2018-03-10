@@ -21,20 +21,19 @@ import sys
 import hashlib
 from PyQt5 import QtWidgets, QtGui, QtCore
 
-import sorter
-import database
+from lector import database
+from lector import sorter
+from lector.toolbars import LibraryToolBar, BookToolBar
+from lector.widgets import Tab
+from lector.delegates import LibraryDelegate
+from lector.threaded import BackGroundTabUpdate, BackGroundBookAddition, BackGroundBookDeletion
+from lector.library import Library
+from lector.settings import Settings
+from lector.settingsdialog import SettingsUI
+from lector.metadatadialog import MetadataUI
+from lector.definitionsdialog import DefinitionsUI
 
-from resources import mainwindow, resources
-from toolbars import LibraryToolBar, BookToolBar
-from widgets import Tab
-from delegates import LibraryDelegate
-from threaded import BackGroundTabUpdate, BackGroundBookAddition, BackGroundBookDeletion
-from library import Library
-from settings import Settings
-
-from settingsdialog import SettingsUI
-from metadatadialog import MetadataUI
-from definitionsdialog import DefinitionsUI
+from resources import mainwindow
 
 
 class MainUI(QtWidgets.QMainWindow, mainwindow.Ui_MainWindow):
