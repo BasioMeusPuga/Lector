@@ -8,7 +8,10 @@ Currently supports:
 * cbr / cbz
 
 ## Requirements
-Qt5, PyQt5, python-requests, python-beautifulsoup4
+* Qt5
+* PyQt5 
+* python-requests
+* python-beautifulsoup4
 
 ## Installation
 0. Install dependencies
