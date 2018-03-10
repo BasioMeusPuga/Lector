@@ -72,6 +72,17 @@ class Tab(QtWidgets.QWidget):
                 self.window().temp_dir.path(), self.metadata['hash'])
             relative_paths = []
             for i in os.walk(relative_path_root):
+
+                # TODO
+                # Rename the .css files to something else here and keep
+                # a record of them
+                # Currently, I'm just removing them for the sake of simplicity
+                for j in i[2]:
+                    file_extension = os.path.splitext(j)[1]
+                    if file_extension == '.css':
+                        file_path = os.path.join(relative_path_root, j)
+                        os.remove(file_path)
+
                 relative_paths.append(os.path.join(relative_path_root, i[0]))
             self.contentView.setSearchPaths(relative_paths)
 
@@ -283,13 +294,20 @@ class Tab(QtWidgets.QWidget):
             block_format.setLineHeight(
                 line_spacing, QtGui.QTextBlockFormat.ProportionalHeight)
 
+            block_format.setTextIndent(50)
+
             # Give options for alignment
             alignment_dict = {
                 'left': QtCore.Qt.AlignLeft,
                 'right': QtCore.Qt.AlignRight,
                 'center': QtCore.Qt.AlignCenter,
                 'justify': QtCore.Qt.AlignJustify}
-            block_format.setAlignment(alignment_dict[text_alignment])
+
+            current_index = self.window().bookToolBar.tocBox.currentIndex()
+            if current_index == 0:
+                block_format.setAlignment(QtCore.Qt.AlignVCenter | QtCore.Qt.AlignHCenter)
+            else:
+                block_format.setAlignment(alignment_dict[text_alignment])
 
             # Also for padding
             # Using setViewPortMargins for this disables scrolling in the margins

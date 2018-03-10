@@ -49,16 +49,17 @@ TODO
             ✓ Deletion
         ✓ Cache next and previous images
         ✓ Set context menu for definitions and the like
+        ✓ Paragraph indentation
         Search document using QTextCursor?
         Comic view keyboard shortcuts
     Filetypes:
+        ✓ epub support
+            ✓ Homegrown solution please
         ✓ cbz, cbr support
             ✓ Keep font settings enabled but only for background color
         ✓ mobi, azw support
             Limit the extra files produced by KindleUnpack
                 Have them save to memory
-        epub support
-            Homegrown solution please
     Other:
         ✓ Define every widget in code
     Bugs:
@@ -77,6 +78,7 @@ TODO
         Pagination
         Use embedded fonts
         Scrolling: Smooth / By Line
+        Spacebar should not cut off lines at the top
         Shift to logging instead of print statements
         txt, doc, chm, djvu, fb2 support
         Include icons for filetype emblems

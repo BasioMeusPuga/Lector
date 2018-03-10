@@ -17,7 +17,6 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 import os
-import sys
 import zipfile
 
 from ePub.read_epub import EPUB
@@ -63,7 +62,7 @@ class ParseEPUB:
         extract_path = os.path.join(self.temp_dir, self.file_md5)
         zipfile.ZipFile(self.filename).extractall(extract_path)
 
-        self.book_ref.parse_chapters()
+        self.book_ref.parse_chapters(temp_dir=self.temp_dir)
         file_settings = {
             'images_only': False}
         return self.book['book_list'], file_settings

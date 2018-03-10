@@ -218,8 +218,8 @@ class EPUB:
             chapter_source = unquote(chapter_source.split('#')[0])
             self.book['navpoint_dict'][chapter_source] = chapter_title
 
-    def parse_chapters(self, split_large_xml=False):
-        no_title_chapter = 1
+    def parse_chapters(self, temp_dir=None, split_large_xml=False):
+        no_title_chapter = 0
         self.book['book_list'] = []
         for i in self.book['chapters_in_order']:
             chapter_data = self.read_from_zip(i).decode()
@@ -233,6 +233,13 @@ class EPUB:
                     self.book['book_list'].append(
                         (fallback_title, chapter_data))
                 no_title_chapter += 1
+
+                cover_path = os.path.join(temp_dir, os.path.basename(self.filename)) + '- cover'
+                with open(cover_path, 'wb') as cover_temp:
+                    cover_temp.write(self.book['cover'])
+
+                self.book['book_list'][0] = (
+                    'Cover', f'<center><img src="{cover_path}" alt="Cover"></center>')
 
             else:
                 # https://stackoverflow.com/questions/14444732/how-to-split-a-html-page-to-multiple-pages-using-python-and-beautiful-soup

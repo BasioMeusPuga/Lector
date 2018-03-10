@@ -35,6 +35,7 @@ class ParseMOBI:
         self.filename = filename
         self.epub_filepath = None
         self.split_large_xml = False
+        self.temp_dir = temp_dir
         self.extract_dir = os.path.join(temp_dir, file_md5)
 
     def read_book(self):
@@ -82,7 +83,8 @@ class ParseMOBI:
         extract_path = os.path.join(self.extract_dir)
         zipfile.ZipFile(self.epub_filepath).extractall(extract_path)
 
-        self.book_ref.parse_chapters(self.split_large_xml)
+        self.book_ref.parse_chapters(
+            temp_dir=self.temp_dir, split_large_xml=self.split_large_xml)
         file_settings = {
             'images_only': False}
         return self.book['book_list'], file_settings
