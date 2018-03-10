@@ -44,15 +44,18 @@ from PyQt5 import QtCore, QtGui
 
 import database
 
-from parsers.ebook import ParseEBook
 from parsers.cbz import ParseCBZ
 from parsers.cbr import ParseCBR
 from parsers.epub import ParseEPUB
+from parsers.mobi import ParseMOBI
 
 sorter = {
     'epub': ParseEPUB,
-    'mobi': ParseEBook,
-    'azw': ParseEBook,
+    'mobi': ParseMOBI,
+    'azw': ParseMOBI,
+    'azw3': ParseMOBI,
+    'azw4': ParseMOBI,
+    'prc': ParseMOBI,
     'cbz': ParseCBZ,
     'cbr': ParseCBR,}
 

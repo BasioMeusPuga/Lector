@@ -57,7 +57,7 @@ class EPUB:
         try:
             this_xml = self.zip_file.read(filename).decode()
         except KeyError:
-            print('File not found in zip')
+            print(str(filename) + ' not found in zip')
             return
 
         root = BeautifulSoup(this_xml, parser)
@@ -73,8 +73,8 @@ class EPUB:
             container_location = self.get_file_path('container.xml')
             xml = self.parse_xml(container_location, 'xml')
 
-            root_item = xml.find('rootfile')
-            if root_item:
+            if xml:
+                root_item = xml.find('rootfile')
                 return root_item.get('full-path')
             else:
                 possible_filenames = ('content.opf', 'package.opf')
@@ -152,14 +152,14 @@ class EPUB:
             media_type = i.get('media-type')
             this_id = i.get('id')
 
-            if media_type == 'application/xhtml+xml':
+            if media_type == 'application/xhtml+xml' or media_type == 'text/html':
                 self.book['content_dict'][this_id] = i.get('href')
 
             if media_type == 'application/x-dtbncx+xml':
                 self.book['toc_file'] = i.get('href')
 
             # Cover image
-            if this_id.startswith('cover') and media_type.split('/')[0] == 'image':
+            if 'cover' in this_id and media_type.split('/')[0] == 'image':
                 cover_href = i.get('href')
                 try:
                     self.book['cover'] = self.zip_file.read(cover_href)
@@ -175,7 +175,7 @@ class EPUB:
             biggest_image_size = 0
             biggest_image = None
             for j in self.zip_file.filelist:
-                if os.path.splitext(j.filename)[1] in ['.jpg', '.png', '.gif']:
+                if os.path.splitext(j.filename)[1] in ['.jpg', '.jpeg', '.png', '.gif']:
                     if j.file_size > biggest_image_size:
                         biggest_image = j.filename
                         biggest_image_size = j.file_size
@@ -184,9 +184,6 @@ class EPUB:
                 self.book['cover'] = self.read_from_zip(biggest_image)
             else:
                 print('No cover found for: ' + self.filename)
-
-        with open('cover', 'wb') as this_cover:
-            this_cover.write(self.book['cover'])
 
         # Parse spine and arrange chapter paths acquired from the opf
         # according to the order IN THE SPINE
@@ -221,19 +218,47 @@ class EPUB:
             chapter_source = unquote(chapter_source.split('#')[0])
             self.book['navpoint_dict'][chapter_source] = chapter_title
 
-    def parse_chapters(self):
+    def parse_chapters(self, split_large_xml=False):
         no_title_chapter = 1
         self.book['book_list'] = []
         for i in self.book['chapters_in_order']:
             chapter_data = self.read_from_zip(i).decode()
-            try:
-                self.book['book_list'].append(
-                    (self.book['navpoint_dict'][i], chapter_data))
-            except KeyError:
-                fallback_title = str(no_title_chapter) + ': No Title'
-                self.book['book_list'].append(
-                    (fallback_title, chapter_data))
-            no_title_chapter += 1
+
+            if not split_large_xml:
+                try:
+                    self.book['book_list'].append(
+                        (self.book['navpoint_dict'][i], chapter_data))
+                except KeyError:
+                    fallback_title = str(no_title_chapter)
+                    self.book['book_list'].append(
+                        (fallback_title, chapter_data))
+                no_title_chapter += 1
+
+            else:
+                # https://stackoverflow.com/questions/14444732/how-to-split-a-html-page-to-multiple-pages-using-python-and-beautiful-soup
+                markup = BeautifulSoup(chapter_data, 'xml')
+                chapters = []
+                pagebreaks = markup.find_all('pagebreak')
+
+                def next_element(elem):
+                    while elem is not None:
+                        elem = elem.next_sibling
+                        if hasattr(elem, 'name'):
+                            return elem
+
+                for pbreak in pagebreaks:
+                    chapter = [str(pbreak)]
+                    elem = next_element(pbreak)
+                    while elem and elem.name != 'pagebreak':
+                        chapter.append(str(elem))
+                        elem = next_element(elem)
+                    chapters.append('\n'.join(chapter))
+
+                for this_chapter in chapters:
+                    fallback_title = str(no_title_chapter)
+                    self.book['book_list'].append(
+                        (fallback_title, this_chapter))
+                    no_title_chapter += 1
 
 def main():
     book = EPUB(sys.argv[1])

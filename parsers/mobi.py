@@ -16,25 +16,44 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
+# This module parses Amazon ebooks using KindleUnpack to first create an
+# epub that is then read the usual way
+
 import os
 import sys
+import shutil
 import zipfile
 
 from ePub.read_epub import EPUB
+import KindleUnpack.kindleunpack as KindleUnpack
 
 
-class ParseEPUB:
+class ParseMOBI:
     def __init__(self, filename, temp_dir, file_md5):
-        # TODO
-        # Maybe also include book description
         self.book_ref = None
         self.book = None
-        self.temp_dir = temp_dir
         self.filename = filename
-        self.file_md5 = file_md5
+        self.epub_filepath = None
+        self.split_large_xml = False
+        self.extract_dir = os.path.join(temp_dir, file_md5)
 
     def read_book(self):
-        self.book_ref = EPUB(self.filename)
+        with HidePrinting():
+            KindleUnpack.unpackBook(self.filename, self.extract_dir)
+
+        epub_filename = os.path.splitext(
+            os.path.basename(self.filename))[0] + '.epub'
+
+        self.epub_filepath = os.path.join(
+            self.extract_dir, 'mobi8', epub_filename)
+        if not os.path.exists(self.epub_filepath):
+            zip_dir = os.path.join(self.extract_dir, 'mobi7')
+            zip_file = os.path.join(
+                self.extract_dir, epub_filename)
+            self.epub_filepath = shutil.make_archive(zip_file, 'zip', zip_dir)
+            self.split_large_xml = True
+
+        self.book_ref = EPUB(self.epub_filepath)
         contents_found = self.book_ref.read_epub()
         if not contents_found:
             print('Cannot process: ' + self.filename)
@@ -60,10 +79,18 @@ class ParseEPUB:
         return self.book['tags']
 
     def get_contents(self):
-        extract_path = os.path.join(self.temp_dir, self.file_md5)
-        zipfile.ZipFile(self.filename).extractall(extract_path)
+        extract_path = os.path.join(self.extract_dir)
+        zipfile.ZipFile(self.epub_filepath).extractall(extract_path)
 
-        self.book_ref.parse_chapters()
+        self.book_ref.parse_chapters(self.split_large_xml)
         file_settings = {
             'images_only': False}
         return self.book['book_list'], file_settings
+
+class HidePrinting:
+    def __enter__(self):
+        self._original_stdout = sys.stdout
+        sys.stdout = None
+
+    def __exit__(self, exc_type, exc_val, exc_tb):
+        sys.stdout = self._original_stdout
