@@ -23,10 +23,11 @@ import os
 import copy
 from PyQt5 import QtWidgets, QtCore
 
-import database
+from lector import database
+from lector.models import MostExcellentFileSystemModel
+from lector.threaded import BackGroundBookSearch, BackGroundBookAddition
+
 from resources import settingswindow
-from models import MostExcellentFileSystemModel, FileSystemProxyModel
-from threaded import BackGroundBookSearch, BackGroundBookAddition
 
 
 class SettingsUI(QtWidgets.QDialog, settingswindow.Ui_Dialog):

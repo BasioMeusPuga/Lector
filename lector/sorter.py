@@ -42,7 +42,7 @@ import threading
 from multiprocessing import Pool, Manager
 from PyQt5 import QtCore, QtGui
 
-import database
+from lector import database
 
 from parsers.cbz import ParseCBZ
 from parsers.cbr import ParseCBR

@@ -21,8 +21,8 @@ import pathlib
 from multiprocessing.dummy import Pool
 from PyQt5 import QtCore
 
-import sorter
-import database
+from lector import sorter
+from lector import database
 
 
 class BackGroundTabUpdate(QtCore.QThread):
