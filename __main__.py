@@ -586,7 +586,7 @@ class MainUI(QtWidgets.QMainWindow, mainwindow.Ui_MainWindow):
             current_title = current_metadata['title']
             current_author = current_metadata['author']
             current_position = current_metadata['position']
-            current_toc = current_metadata['content'].keys()
+            current_toc = [i[0] for i in current_metadata['content']]
 
             self.bookToolBar.tocBox.blockSignals(True)
             self.bookToolBar.tocBox.clear()

@@ -53,8 +53,7 @@ class Tab(QtWidgets.QWidget):
             self.generate_position()
             current_chapter = 1
 
-        chapter_name = list(self.metadata['content'])[current_chapter - 1]
-        chapter_content = self.metadata['content'][chapter_name]
+        chapter_content = self.metadata['content'][current_chapter - 1][1]
 
         # The content display widget is, by default a QTextBrowser.
         # In case the incoming data is only images
@@ -190,7 +189,7 @@ class Tab(QtWidgets.QWidget):
         # TODO
         # Calculate lines to incorporate into progress
 
-        total_chapters = len(self.metadata['content'].keys())
+        total_chapters = len(self.metadata['content'])
 
         current_chapter = 1
         scroll_value = 0
@@ -250,8 +249,8 @@ class Tab(QtWidgets.QWidget):
         self.contentView.show()
 
     def change_chapter_tocBox(self):
-        chapter_name = self.window().bookToolBar.tocBox.currentText()
-        required_content = self.metadata['content'][chapter_name]
+        chapter_number = self.window().bookToolBar.tocBox.currentIndex()
+        required_content = self.metadata['content'][chapter_number][1]
 
         if self.are_we_doing_images_only:
             self.contentView.loadImage(required_content)
@@ -447,7 +446,7 @@ class PliantQGraphicsView(QtWidgets.QGraphicsView):
         # Image panning with mouse
 
         content = self.parent.metadata['content']
-        image_paths = [i[1] for i in content.items()]
+        image_paths = [i[1] for i in content]
 
         def generate_image_cache(current_image):
             print('Building image cache')

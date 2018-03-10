@@ -35,7 +35,10 @@ class ParseEPUB:
 
     def read_book(self):
         self.book_ref = EPUB(self.filename)
-        self.book_ref.read_epub()
+        contents_found = self.book_ref.read_epub()
+        if not contents_found:
+            print('Cannot process: ' + self.filename)
+            return
         self.book = self.book_ref.book
 
     def get_title(self):
@@ -45,19 +48,16 @@ class ParseEPUB:
         return self.book['author']
 
     def get_year(self):
-        return 9999
+        return self.book['year']
 
     def get_cover_image(self):
-        try:
-            return self.book['cover']
-        except KeyError:
-            return None
+        return self.book['cover']
 
     def get_isbn(self):
         return self.book['isbn']
 
     def get_tags(self):
-        return None
+        return self.book['tags']
 
     def get_contents(self):
         extract_path = os.path.join(self.temp_dir, self.file_md5)

@@ -75,8 +75,14 @@ class Library:
             author = i[1]
             year = i[2]
             path = i[4]
-            tags = i[7]
             last_accessed = i[9]
+
+            tags = i[7]
+            if isinstance(tags, list):  # When files are added for the first time
+                if tags:
+                    tags = ', '.join(str(this_tag) for this_tag in tags)
+                else:
+                    tags = None
 
             try:
                 date_added = pickle.loads(i[3])

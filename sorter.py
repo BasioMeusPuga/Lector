@@ -214,8 +214,8 @@ class BookSorter:
                 content = all_content[0]
                 images_only = all_content[1]['images_only']
 
-                if not content.keys():
-                    content['Invalid'] = 'Possible Parse Error'
+                if not content:
+                    content = [('Invalid', 'Something went horribly wrong')]
 
                 book_data = self.database_entry_for_book(file_md5)
                 position = book_data[0]

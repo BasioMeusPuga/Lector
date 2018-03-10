@@ -19,11 +19,8 @@
 import os
 import sys
 import zipfile
+from urllib.parse import unquote
 
-import pprint
-import inspect
-
-import bs4
 from bs4 import BeautifulSoup
 
 
@@ -39,8 +36,14 @@ class EPUB:
         self.load_zip()
         contents_path = self.get_file_path(
             None, True)
+
+        if not contents_path:
+            return False  # No opf was found so processing cannot continue
+
         self.generate_book_metadata(contents_path)
         self.parse_toc()
+
+        return True
 
     def load_zip(self):
         try:
@@ -84,65 +87,106 @@ class EPUB:
             if os.path.basename(i.filename) == os.path.basename(filename):
                 return i.filename
 
+        return None
+
     def read_from_zip(self, filename):
+        filename = unquote(filename)
         try:
             file_data = self.zip_file.read(filename)
             return file_data
         except KeyError:
             file_path_actual = self.get_file_path(filename)
-            return self.zip_file.read(file_path_actual)
+            if file_path_actual:
+                return self.zip_file.read(file_path_actual)
+            else:
+                print('ePub module can\'t find ' + filename)
 
     #______________________________________________________
 
     def generate_book_metadata(self, contents_path):
+        self.book['title'] = 'Unknown'
+        self.book['author'] = 'Unknown'
+        self.book['isbn'] = None
+        self.book['tags'] = None
+        self.book['cover'] = None
+        self.book['toc_file'] = 'toc.ncx'  # Overwritten if another one exists
+
+        # Parse XML
+        xml = self.parse_xml(contents_path, 'xml')
+
         # Parse metadata
         item_dict = {
-            'title': 'dc:title',
-            'author': 'dc:creator',
-            'date': 'dc:date'}
-
-        xml = self.parse_xml(contents_path, 'lxml')
+            'title': 'title',
+            'author': 'creator',
+            'year': 'date'}
 
         for i in item_dict.items():
             item = xml.find(i[1])
             if item:
                 self.book[i[0]] = item.text
 
-        # Get identifier
-        xml = self.parse_xml(contents_path, 'xml')
+        try:
+            self.book['year'] = int(self.book['year'][:4])
+        except (TypeError, KeyError, IndexError):
+            self.book['year'] = 9999
 
-        metadata_items = xml.find('metadata')
-        for i in metadata_items.children:
-            if isinstance(i, bs4.element.Tag):
-                try:
-                    if i.get('opf:scheme').lower() == 'isbn':
-                        self.book['isbn'] = i.text
-                        break
-                except AttributeError:
-                    self.book['isbn'] = None
+        # Get identifier
+        identifier_items = xml.find_all('identifier')
+        for i in identifier_items:
+            scheme = i.get('scheme')
+            try:
+                if scheme.lower() == 'isbn':
+                    self.book['isbn'] = i.text
+            except AttributeError:
+                self.book['isbn'] = None
+
+        # Tags
+        tag_items = xml.find_all('subject')
+        tag_list = [i.text for i in tag_items]
+        self.book['tags'] = tag_list
 
         # Get items
         self.book['content_dict'] = {}
         all_items = xml.find_all('item')
         for i in all_items:
             media_type = i.get('media-type')
+            this_id = i.get('id')
 
             if media_type == 'application/xhtml+xml':
-                self.book['content_dict'][i.get('id')] = i.get('href')
+                self.book['content_dict'][this_id] = i.get('href')
 
             if media_type == 'application/x-dtbncx+xml':
                 self.book['toc_file'] = i.get('href')
 
             # Cover image
-            # if i.get('id') == 'cover':
-            #     cover_href = i.get('href')
-            #     try:
-            #         self.book['cover'] = self.zip_file.read(cover_href)
-            #     except KeyError:
-            #         # The cover cannot be found according to the
-            #         # path specified in the content reference
-            #         self.book['cover'] = self.zip_file.read(
-            #             self.get_file_path(cover_href))
+            if this_id.startswith('cover') and media_type.split('/')[0] == 'image':
+                cover_href = i.get('href')
+                try:
+                    self.book['cover'] = self.zip_file.read(cover_href)
+                except KeyError:
+                    # The cover cannot be found according to the
+                    # path specified in the content reference
+                    self.book['cover'] = self.zip_file.read(
+                        self.get_file_path(cover_href))
+
+        if not self.book['cover']:
+            # If no cover is located the conventioanl way,
+            # we go looking for the largest image in the book
+            biggest_image_size = 0
+            biggest_image = None
+            for j in self.zip_file.filelist:
+                if os.path.splitext(j.filename)[1] in ['.jpg', '.png', '.gif']:
+                    if j.file_size > biggest_image_size:
+                        biggest_image = j.filename
+                        biggest_image_size = j.file_size
+
+            if biggest_image:
+                self.book['cover'] = self.read_from_zip(biggest_image)
+            else:
+                print('No cover found for: ' + self.filename)
+
+        with open('cover', 'wb') as this_cover:
+            this_cover.write(self.book['cover'])
 
         # Parse spine and arrange chapter paths acquired from the opf
         # according to the order IN THE SPINE
@@ -157,24 +201,28 @@ class EPUB:
             self.book['chapters_in_order'].append(chapter_path)
 
     def parse_toc(self):
-        # Try to get chapter names from the toc
         # This has no bearing on the actual order
         # We're just using this to get chapter names
+        self.book['navpoint_dict'] = {}
 
         toc_file = self.book['toc_file']
-        toc_file = self.get_file_path(toc_file)
+        if toc_file:
+            toc_file = self.get_file_path(toc_file)
 
         xml = self.parse_xml(toc_file, 'xml')
+        if not xml:
+            return
+
         navpoints = xml.find_all('navPoint')
 
-        self.book['navpoint_dict'] = {}
         for i in navpoints:
             chapter_title = i.find('text').text
             chapter_source = i.find('content').get('src')
-            chapter_source = chapter_source.split('#')[0]
+            chapter_source = unquote(chapter_source.split('#')[0])
             self.book['navpoint_dict'][chapter_source] = chapter_title
 
     def parse_chapters(self):
+        no_title_chapter = 1
         self.book['book_list'] = []
         for i in self.book['chapters_in_order']:
             chapter_data = self.read_from_zip(i).decode()
@@ -182,8 +230,10 @@ class EPUB:
                 self.book['book_list'].append(
                     (self.book['navpoint_dict'][i], chapter_data))
             except KeyError:
+                fallback_title = str(no_title_chapter) + ': No Title'
                 self.book['book_list'].append(
-                    (os.path.splitext(i)[0], chapter_data))
+                    (fallback_title, chapter_data))
+            no_title_chapter += 1
 
 def main():
     book = EPUB(sys.argv[1])

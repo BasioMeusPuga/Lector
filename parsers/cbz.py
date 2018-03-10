@@ -81,7 +81,7 @@ class ParseCBZ:
             'images_only': True}
 
         extract_path = os.path.join(self.temp_dir, self.file_md5)
-        contents = collections.OrderedDict()
+        contents = []
 
         # I'm currently choosing not to keep multiple files in memory
         self.book.extractall(extract_path)
@@ -104,6 +104,6 @@ class ParseCBZ:
             page_name = 'Page ' + str(count + 1)
             image_path = os.path.join(extract_path, i)
 
-            contents[page_name] = image_path
+            contents.append((page_name, image_path))
 
         return contents, file_settings

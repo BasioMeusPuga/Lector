@@ -97,8 +97,11 @@ class DatabaseFunctions:
             isbn = i[1]['isbn']
             tags = i[1]['tags']
             if tags:
-                # Is a tuple. Needs to be a string
-                tags = ', '.join([j for j in tags if j])
+                # Is a list. Needs to be a string
+                tags = ', '.join([str(j) for j in tags])
+            else:
+                # Is still a list. Needs to be None.
+                tags = None
 
             sql_command_add = (
                 "INSERT OR REPLACE INTO \
@@ -173,7 +176,6 @@ class DatabaseFunctions:
         return data
 
     def modify_metadata(self, metadata_dict, book_hash):
-
         def generate_binary(column, data):
             if column in ('Position', 'LastAccessed', 'Bookmarks'):
                 return sqlite3.Binary(pickle.dumps(data))
