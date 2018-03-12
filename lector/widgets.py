@@ -100,7 +100,7 @@ class Tab(QtWidgets.QWidget):
         self.contentView.setObjectName('contentView')
         self.contentView.verticalScrollBar().setSingleStep(7)
         self.contentView.setHorizontalScrollBarPolicy(
-            QtCore.Qt.ScrollBarAlwaysOff)
+            QtCore.Qt.ScrollBarAsNeeded)
 
         # See bookmark availability
         if not self.metadata['bookmarks']:

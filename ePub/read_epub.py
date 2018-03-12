@@ -127,7 +127,7 @@ class EPUB:
 
         try:
             self.book['year'] = int(self.book['year'][:4])
-        except (TypeError, KeyError, IndexError):
+        except (TypeError, KeyError, IndexError, ValueError):
             self.book['year'] = 9999
 
         # Get identifier
