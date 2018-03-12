@@ -7,16 +7,25 @@ Currently supports:
 * azw / azw3 / azw4
 * cbr / cbz
 
+pdf support is coming, along with support for a bunch of other formats. Please see the TODO for additional information.
+
 ## Requirements
-* Qt5
-* PyQt5 
-* python-requests
-* python-beautifulsoup4
+* Qt5 >= 5.10.1
+* Python >= 3.6
+* PyQt5 >= 5.10.1
+* python-requests >= 2.18.4
+* python-beautifulsoup4 >= 4.6.0
+
+Before filing issues, please see if you've installed at least the version mentioned above.
 
 ## Installation
-0. Install dependencies
+0. Install dependencies - I recommend using your package manager for this.
 1. Clone repository
-2. Launch with \_\_main\_\_.py
+2. Type the following in the root directory:
+
+        $ python setup.py build
+        # python setup.py install
+3. OR launch with lector/\_\_main\_\_.py
 
 ## Screenshots
 
