@@ -16,8 +16,6 @@ pdf support is coming, along with support for a bunch of other formats. Please s
 * python-requests >= 2.18.4
 * python-beautifulsoup4 >= 4.6.0
 
-Before filing issues, please see if you've installed at least the version mentioned above.
-
 ## Installation
 0. Install dependencies - I recommend using your package manager for this.
 1. Clone repository
@@ -25,7 +23,13 @@ Before filing issues, please see if you've installed at least the version mentio
 
         $ python setup.py build
         # python setup.py install
-3. OR launch with lector/\_\_main\_\_.py
+3. OR launch with `lector/__main__.py`
+
+## Reporting issues
+When reporting issues:
+
+* If you're having trouble with a book while the rest of the application / other books work, please link to a copy of the book itself.
+* If nothing is working, please make sure the requirements mentioned above are all installed, and are at least at the version mentioned.
 
 ## Screenshots
 
