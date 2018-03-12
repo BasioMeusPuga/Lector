@@ -4,6 +4,11 @@ from setuptools import setup, find_packages
 
 HERE = path.abspath(path.dirname(__file__))
 
+MAJOR_VERSION = '0'
+MINOR_VERSION = '1'
+MICRO_VERSION = '1'
+VERSION = "{}.{}.{}".format(MAJOR_VERSION, MINOR_VERSION, MICRO_VERSION)
+
 # Get the long description from the README file
 with codecs.open(path.join(HERE, 'README.md'), encoding='utf-8') as f:
     LONG_DESC = f.read()
@@ -18,9 +23,6 @@ DEV_DEPS = []
 setup(
     name='lector',
 
-    # https://pypi.python.org/pypi/setuptools_scm
-    use_scm_version=True,
-
     description='Qt-based ebook reader',
     long_description=LONG_DESC,
 
@@ -30,8 +32,8 @@ setup(
     author_email='disgruntled.mob@gmail.com',
 
     license='GPL v3.0',
+    version=VERSION,
 
-    # See https://pypi.python.org/pypi?%3Aaction=list_classifiers
     classifiers=[
         # How mature is this project? Common values are
         #   3 - Alpha
@@ -58,11 +60,9 @@ setup(
     # https://packaging.python.org/en/latest/requirements.html
     install_requires=INSTALL_DEPS,
 
-    setup_requires=['setuptools_scm'],
-
     python_requires='>=3.6, <4.0',
 
-    package_data={'lector': ['about.html', '*.png', '*.svg', '*.qrc']},
+    package_data={'': ['about.html']},
     include_package_data=True,
 
     # List additional groups of dependencies here (e.g. development
