@@ -33,7 +33,7 @@ from lector.settingsdialog import SettingsUI
 from lector.metadatadialog import MetadataUI
 from lector.definitionsdialog import DefinitionsUI
 
-from resources import mainwindow
+from resources import mainwindow, resources
 
 
 class MainUI(QtWidgets.QMainWindow, mainwindow.Ui_MainWindow):

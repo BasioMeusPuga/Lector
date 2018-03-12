@@ -42,7 +42,9 @@ class SettingsUI(QtWidgets.QDialog, settingswindow.Ui_Dialog):
         self.move(self.parent.settings['settings_dialog_position'])
 
         self.aboutBox.setVisible(False)
-        aboutfile_path = os.path.join('resources', 'about.html')
+        application_root = os.sep.join(
+            os.path.realpath(__file__).rsplit('/')[:-2])
+        aboutfile_path = os.path.join(application_root, 'resources', 'about.html')
         with open(aboutfile_path) as about_html:
             self.aboutBox.setHtml(about_html.read())
 
