@@ -234,13 +234,6 @@ class EPUB:
                         (fallback_title, chapter_data))
                 no_title_chapter += 1
 
-                cover_path = os.path.join(temp_dir, os.path.basename(self.filename)) + '- cover'
-                with open(cover_path, 'wb') as cover_temp:
-                    cover_temp.write(self.book['cover'])
-
-                self.book['book_list'][0] = (
-                    'Cover', f'<center><img src="{cover_path}" alt="Cover"></center>')
-
             else:
                 # https://stackoverflow.com/questions/14444732/how-to-split-a-html-page-to-multiple-pages-using-python-and-beautiful-soup
                 markup = BeautifulSoup(chapter_data, 'xml')
@@ -267,10 +260,10 @@ class EPUB:
                         (fallback_title, this_chapter))
                     no_title_chapter += 1
 
-def main():
-    book = EPUB(sys.argv[1])
-    book.read_epub()
-    book.parse_chapters()
+        cover_path = os.path.join(temp_dir, os.path.basename(self.filename)) + '- cover'
+        if self.book['cover']:
+            with open(cover_path, 'wb') as cover_temp:
+                cover_temp.write(self.book['cover'])
 
-if __name__ == '__main__':
-    main()
+            self.book['book_list'][0] = (
+                'Cover', f'<center><img src="{cover_path}" alt="Cover"></center>')

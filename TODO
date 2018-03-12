@@ -24,6 +24,7 @@ TODO
         ✓ Context menu: Cache, Read, Edit database, delete, Mark read/unread
         ✓ Information dialog widget
         ✓ Allow editing of database data through the UI + for Bookmarks
+        Include (action) icons with the applications
         Set focus to newly added file
     Reading:
         ✓ Drop down for TOC
@@ -68,6 +69,7 @@ TODO
         Exiting with Ctrl + Q does not save the cursor position INITIALLY
 
     Secondary:
+        pdf support
         Annotations
         Graphical themes
         Change focus rectangle dimensions
@@ -76,7 +78,7 @@ TODO
         Goodreads API: Ratings, Read, Recommendations
         Get ISBN using python-isbnlib
         Pagination
-        Use embedded fonts
+        Use embedded fonts + CSS
         Scrolling: Smooth / By Line
         Spacebar should not cut off lines at the top
         Shift to logging instead of print statements
@@ -91,5 +93,4 @@ TODO
         Ignore a / the / numbers for sorting purposes
         ? Add only one file type if multiple are present
         ? Plugin system for parsers
-        ? pdf support
         ? Create emblem per filetype
