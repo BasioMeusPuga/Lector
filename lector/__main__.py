@@ -195,6 +195,7 @@ class MainUI(QtWidgets.QMainWindow, mainwindow.Ui_MainWindow):
         # The library refresh button on the Library tab
         self.reloadLibrary.setIcon(QtGui.QIcon.fromTheme('reload'))
         self.reloadLibrary.setObjectName('reloadLibrary')
+        self.reloadLibrary.setToolTip('Scan library')
         self.reloadLibrary.setAutoRaise(True)
         self.reloadLibrary.clicked.connect(self.settingsDialog.start_library_scan)
 
@@ -363,6 +364,9 @@ class MainUI(QtWidgets.QMainWindow, mainwindow.Ui_MainWindow):
                 'books',
                 {'Hash': ''},
                 'LIKE')
+
+        if not all_covers_db:
+            return
 
         all_covers = {
             i[0]: i[1] for i in all_covers_db}

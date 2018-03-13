@@ -17,7 +17,6 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 import os
-import sys
 import zipfile
 from urllib.parse import unquote
 
@@ -57,7 +56,8 @@ class EPUB:
         try:
             this_xml = self.zip_file.read(filename).decode()
         except KeyError:
-            print(str(filename) + ' not found in zip')
+            short_filename = os.path.basename(self.filename)
+            print(f'{str(filename)} not found in {short_filename}')
             return
 
         root = BeautifulSoup(this_xml, parser)
@@ -170,7 +170,7 @@ class EPUB:
                         self.get_file_path(cover_href))
 
         if not self.book['cover']:
-            # If no cover is located the conventioanl way,
+            # If no cover is located the conventional way,
             # we go looking for the largest image in the book
             biggest_image_size = 0
             biggest_image = None

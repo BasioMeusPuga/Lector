@@ -67,6 +67,7 @@ TODO
         If there are files open and the database is deleted, TypeErrors result
         Cover culling does not occur if some other tab has initial focus
         Exiting with Ctrl + Q does not save the cursor position INITIALLY
+        Slider position change might be acting up too
 
     Secondary:
         pdf support

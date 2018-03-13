@@ -152,8 +152,11 @@ class Tab(QtWidgets.QWidget):
             self.metadata['hash'],
             1, QtCore.Qt.MatchExactly)
 
-        self.window().lib_ref.view_model.setData(
-            matching_item[0], self.metadata['last_accessed'], QtCore.Qt.UserRole + 12)
+        try:
+            self.window().lib_ref.view_model.setData(
+                matching_item[0], self.metadata['last_accessed'], QtCore.Qt.UserRole + 12)
+        except IndexError:  # The file has been deleted
+            pass
 
     def set_scroll_value(self, switch_widgets=True, search_data=None):
         # TODO
