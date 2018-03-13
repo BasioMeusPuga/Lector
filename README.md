@@ -23,7 +23,6 @@ pdf support is coming, along with support for a bunch of other formats. Please s
 
         $ python setup.py build
         # python setup.py install
-3. OR launch with `lector/__main__.py`
 
 ## Reporting issues
 When reporting issues:
