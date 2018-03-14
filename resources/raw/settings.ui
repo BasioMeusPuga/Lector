@@ -6,7 +6,7 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>1009</width>
+    <width>1216</width>
     <height>658</height>
    </rect>
   </property>
@@ -69,6 +69,29 @@
               </property>
              </widget>
             </item>
+            <item>
+             <layout class="QHBoxLayout" name="horizontalLayout_3">
+              <item>
+               <widget class="QLabel" name="languageLabel">
+                <property name="sizePolicy">
+                 <sizepolicy hsizetype="Maximum" vsizetype="Preferred">
+                  <horstretch>0</horstretch>
+                  <verstretch>0</verstretch>
+                 </sizepolicy>
+                </property>
+                <property name="text">
+                 <string>Dictionary:</string>
+                </property>
+                <property name="alignment">
+                 <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignVCenter</set>
+                </property>
+               </widget>
+              </item>
+              <item>
+               <widget class="QComboBox" name="languageBox"/>
+              </item>
+             </layout>
+            </item>
            </layout>
           </item>
          </layout>
@@ -93,25 +116,43 @@
            </widget>
           </item>
           <item>
-           <layout class="QHBoxLayout" name="horizontalLayout_3">
+           <widget class="QCheckBox" name="comicsRemain">
+            <property name="text">
+             <string>Leave comics on disc</string>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <layout class="QHBoxLayout" name="horizontalLayout_5">
             <item>
-             <widget class="QLabel" name="languageLabel">
-              <property name="sizePolicy">
-               <sizepolicy hsizetype="Maximum" vsizetype="Preferred">
-                <horstretch>0</horstretch>
-                <verstretch>0</verstretch>
-               </sizepolicy>
+             <widget class="QLabel" name="label">
+              <property name="toolTip">
+               <string>Restart to see changes</string>
               </property>
               <property name="text">
-               <string>Dictionary:</string>
-              </property>
-              <property name="alignment">
-               <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignVCenter</set>
+               <string>Icon theme: </string>
               </property>
              </widget>
             </item>
             <item>
-             <widget class="QComboBox" name="languageBox"/>
+             <widget class="QRadioButton" name="darkIconsRadio">
+              <property name="toolTip">
+               <string>Restart to see changes</string>
+              </property>
+              <property name="text">
+               <string>Dar&amp;k</string>
+              </property>
+             </widget>
+            </item>
+            <item>
+             <widget class="QRadioButton" name="lightIconsRadio">
+              <property name="toolTip">
+               <string>Restart to see changes</string>
+              </property>
+              <property name="text">
+               <string>&amp;Light</string>
+              </property>
+             </widget>
             </item>
            </layout>
           </item>

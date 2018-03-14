@@ -54,6 +54,7 @@ class Settings:
         self.parent.settings['main_window_headers'] = self.settings.value('tableHeaders', None)
         self.parent.settings['listview_background'] = self.settings.value(
             'listViewBackground', QtGui.QColor().fromRgb(76, 76, 76))
+        self.parent.settings['icon_theme'] = self.settings.value('iconTheme', 'DarkIcons')
         self.settings.endGroup()
 
         self.settings.beginGroup('runtimeVariables')
@@ -113,6 +114,7 @@ class Settings:
         self.settings.setValue('windowSize', self.parent.size())
         self.settings.setValue('windowPosition', self.parent.pos())
         self.settings.setValue('currentView', self.parent.stackedWidget.currentIndex())
+        self.settings.setValue('iconTheme', self.parent.settings['icon_theme'])
         self.settings.setValue(
             'listViewBackground', self.parent.settings['listview_background'])
 

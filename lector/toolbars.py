@@ -38,22 +38,24 @@ class BookToolBar(QtWidgets.QToolBar):
         self.setContextMenuPolicy(QtCore.Qt.PreventContextMenu)
         self.setObjectName("LibraryToolBar")
 
+        image_factory = self.window().QImageFactory
+
         # Buttons
         self.fontButton = QtWidgets.QAction(
-            QtGui.QIcon.fromTheme('gtk-select-font'),
+            image_factory.get_image('gtk-select-font'),
             'View settings', self)
         self.fullscreenButton = QtWidgets.QAction(
-            QtGui.QIcon.fromTheme('view-fullscreen'),
+            image_factory.get_image('view-fullscreen'),
             'Fullscreen', self)
         self.addBookmarkButton = QtWidgets.QAction(
-            QtGui.QIcon.fromTheme('bookmark-new'),
+            image_factory.get_image('bookmark-new'),
             'Add bookmark', self)
         self.bookmarkButton = QtWidgets.QAction(
-            QtGui.QIcon.fromTheme('bookmarks'),
+            image_factory.get_image('bookmarks'),
             'Bookmarks', self)
         self.bookmarkButton.setObjectName('bookmarkButton')
         self.resetProfile = QtWidgets.QAction(
-            QtGui.QIcon.fromTheme('view-refresh'),
+            image_factory.get_image('reload'),
             'Reset profile', self)
 
         # Add buttons
@@ -77,43 +79,43 @@ class BookToolBar(QtWidgets.QToolBar):
         self.fontSizeBox.setEditable(True)
 
         self.paddingUp = QtWidgets.QAction(
-            QtGui.QIcon.fromTheme('format-indent-less'),
+            image_factory.get_image('format-indent-less'),
             'Increase padding', self)
         self.paddingUp.setObjectName('paddingUp')
         self.paddingDown = QtWidgets.QAction(
-            QtGui.QIcon.fromTheme('format-indent-more'),
+            image_factory.get_image('format-indent-more'),
             'Decrease padding', self)
         self.paddingDown.setObjectName('paddingDown')
 
         self.lineSpacingUp = QtWidgets.QAction(
-            QtGui.QIcon.fromTheme('format-line-spacing-triple'),
+            image_factory.get_image('format-line-spacing-triple'),
             'Increase line spacing', self)
         self.lineSpacingUp.setObjectName('lineSpacingUp')
         self.lineSpacingDown = QtWidgets.QAction(
-            QtGui.QIcon.fromTheme('format-line-spacing-double'),
+            image_factory.get_image('format-line-spacing-double'),
             'Decrease line spacing', self)
         self.lineSpacingDown.setObjectName('lineSpacingDown')
 
         self.alignLeft = QtWidgets.QAction(
-            QtGui.QIcon.fromTheme('format-justify-left'),
+            image_factory.get_image('format-justify-left'),
             'Left align text', self)
         self.alignLeft.setObjectName('alignLeft')
         self.alignLeft.setCheckable(True)
 
         self.alignRight = QtWidgets.QAction(
-            QtGui.QIcon.fromTheme('format-justify-right'),
+            image_factory.get_image('format-justify-right'),
             'Right align text', self)
         self.alignRight.setObjectName('alignRight')
         self.alignRight.setCheckable(True)
 
         self.alignCenter = QtWidgets.QAction(
-            QtGui.QIcon.fromTheme('format-justify-center'),
+            image_factory.get_image('format-justify-center'),
             'Center align text', self)
         self.alignCenter.setObjectName('alignCenter')
         self.alignCenter.setCheckable(True)
 
         self.alignJustify = QtWidgets.QAction(
-            QtGui.QIcon.fromTheme('format-justify-fill'),
+            image_factory.get_image('format-justify-fill'),
             'Justify text', self)
         self.alignJustify.setObjectName('alignJustify')
         self.alignJustify.setCheckable(True)
@@ -184,26 +186,26 @@ class BookToolBar(QtWidgets.QToolBar):
 
         # Comic view modification
         self.zoomIn = QtWidgets.QAction(
-            QtGui.QIcon.fromTheme('zoom-in'),
+            image_factory.get_image('zoom-in'),
             'Zoom in', self)
         self.zoomIn.setObjectName('zoomIn')
         self.zoomOut = QtWidgets.QAction(
-            QtGui.QIcon.fromTheme('zoom-out'),
+            image_factory.get_image('zoom-out'),
             'Zoom Out', self)
         self.zoomOut.setObjectName('zoomOut')
 
         self.fitWidth = QtWidgets.QAction(
-            QtGui.QIcon.fromTheme('zoom-fit-width'),
+            image_factory.get_image('zoom-fit-width'),
             'Fit Width', self)
         self.fitWidth.setObjectName('fitWidth')
         self.fitWidth.setCheckable(True)
         self.bestFit = QtWidgets.QAction(
-            QtGui.QIcon.fromTheme('zoom-fit-best'),
+            image_factory.get_image('zoom-fit-best'),
             'Best Fit', self)
         self.bestFit.setObjectName('bestFit')
         self.bestFit.setCheckable(True)
         self.originalSize = QtWidgets.QAction(
-            QtGui.QIcon.fromTheme('zoom-original'),
+            image_factory.get_image('zoom-original'),
             'Original size', self)
         self.originalSize.setObjectName('originalSize')
         self.originalSize.setCheckable(True)
@@ -320,27 +322,29 @@ class LibraryToolBar(QtWidgets.QToolBar):
         self.setContextMenuPolicy(QtCore.Qt.PreventContextMenu)
         self.setObjectName("LibraryToolBar")
 
+        image_factory = self.window().QImageFactory
+
         # Buttons
         self.addButton = QtWidgets.QAction(
-            QtGui.QIcon.fromTheme('add'), 'Add book', self)
+            image_factory.get_image('add'), 'Add book', self)
         self.deleteButton = QtWidgets.QAction(
-            QtGui.QIcon.fromTheme('remove'), 'Delete book', self)
+            image_factory.get_image('remove'), 'Delete book', self)
         self.colorButton = QtWidgets.QAction(
-            QtGui.QIcon.fromTheme('color-picker'), 'Library background color', self)
+            image_factory.get_image('color-picker'), 'Library background color', self)
         self.colorButton.setObjectName('libraryBackground')
         self.settingsButton = QtWidgets.QAction(
-            QtGui.QIcon.fromTheme('settings'), 'Settings', self)
+            image_factory.get_image('settings'), 'Settings', self)
         self.settingsButton.setCheckable(True)
 
         self.coverViewButton = QtWidgets.QAction(
-            QtGui.QIcon.fromTheme('view-grid'), 'View as covers', self)
+            image_factory.get_image('view-grid'), 'View as covers', self)
         self.coverViewButton.setCheckable(True)
         self.tableViewButton = QtWidgets.QAction(
-            QtGui.QIcon.fromTheme('table'), 'View as table', self)
+            image_factory.get_image('table'), 'View as table', self)
         self.tableViewButton.setCheckable(True)
 
         self.libraryFilterButton = QtWidgets.QToolButton(self)
-        self.libraryFilterButton.setIcon(QtGui.QIcon.fromTheme('view-readermode'))
+        self.libraryFilterButton.setIcon(image_factory.get_image('view-readermode'))
         self.libraryFilterButton.setText('Filter library')
         self.libraryFilterButton.setToolTip('Filter library')
 

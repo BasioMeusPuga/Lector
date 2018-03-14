@@ -28,6 +28,7 @@ from lector.widgets import Tab
 from lector.delegates import LibraryDelegate
 from lector.threaded import BackGroundTabUpdate, BackGroundBookAddition, BackGroundBookDeletion
 from lector.library import Library
+from lector.guifunctions import QImageFactory
 from lector.settings import Settings
 from lector.settingsdialog import SettingsUI
 from lector.metadatadialog import MetadataUI
@@ -51,6 +52,13 @@ class MainUI(QtWidgets.QMainWindow, mainwindow.Ui_MainWindow):
         self.database_path = None
         self.active_library_filters = []
 
+        # Initialize application
+        Settings(self).read_settings()  # This should populate all variables that need
+                                        # to be remembered across sessions
+
+        # Initialize icon factory
+        self.QImageFactory = QImageFactory(self)
+
         # Initialize toolbars
         self.libraryToolBar = LibraryToolBar(self)
         self.bookToolBar = BookToolBar(self)
@@ -60,10 +68,6 @@ class MainUI(QtWidgets.QMainWindow, mainwindow.Ui_MainWindow):
         self.statusMessage = QtWidgets.QLabel()
         self.toolbarToggle = QtWidgets.QToolButton()
         self.reloadLibrary = QtWidgets.QToolButton()
-
-        # Initialize application
-        Settings(self).read_settings()  # This should populate all variables that need
-                                        # to be remembered across sessions
 
         # Create the database in case it doesn't exist
         database.DatabaseInit(self.database_path)
@@ -89,21 +93,12 @@ class MainUI(QtWidgets.QMainWindow, mainwindow.Ui_MainWindow):
         self.sorterProgress.setVisible(False)
 
         # Statusbar - Toolbar Visibility
-        self.toolbarToggle.setIcon(QtGui.QIcon.fromTheme('visibility'))
+        self.toolbarToggle.setIcon(self.QImageFactory.get_image('visibility'))
         self.toolbarToggle.setObjectName('toolbarToggle')
         self.toolbarToggle.setToolTip('Toggle toolbar')
         self.toolbarToggle.setAutoRaise(True)
         self.toolbarToggle.clicked.connect(self.toggle_toolbars)
         self.statusBar.addPermanentWidget(self.toolbarToggle)
-
-        # THIS IS TEMPORARY
-        self.guiTest = QtWidgets.QToolButton()
-        self.guiTest.setIcon(QtGui.QIcon.fromTheme('mail-thread-watch'))
-        self.guiTest.setObjectName('guiTest')
-        self.guiTest.setToolTip('Test Function')
-        self.guiTest.setAutoRaise(True)
-        self.guiTest.clicked.connect(self.test_function)
-        self.statusBar.addPermanentWidget(self.guiTest)
 
         # Application wide temporary directory
         self.temp_dir = QtCore.QTemporaryDir()
@@ -193,7 +188,7 @@ class MainUI(QtWidgets.QMainWindow, mainwindow.Ui_MainWindow):
         print('Available parsers: ' + self.available_parsers)
 
         # The library refresh button on the Library tab
-        self.reloadLibrary.setIcon(QtGui.QIcon.fromTheme('reload'))
+        self.reloadLibrary.setIcon(self.QImageFactory.get_image('reload'))
         self.reloadLibrary.setObjectName('reloadLibrary')
         self.reloadLibrary.setToolTip('Scan library')
         self.reloadLibrary.setAutoRaise(True)
@@ -993,19 +988,19 @@ class MainUI(QtWidgets.QMainWindow, mainwindow.Ui_MainWindow):
         context_menu = QtWidgets.QMenu()
 
         openAction = context_menu.addAction(
-            QtGui.QIcon.fromTheme('view-readermode'), 'Start reading')
+            self.QImageFactory.get_image('view-readermode'), 'Start reading')
 
         editAction = None
         if len(selected_indexes) == 1:
             editAction = context_menu.addAction(
-                QtGui.QIcon.fromTheme('edit-rename'), 'Edit')
+                self.QImageFactory.get_image('edit-rename'), 'Edit')
 
         deleteAction = context_menu.addAction(
-            QtGui.QIcon.fromTheme('trash-empty'), 'Delete')
+            self.QImageFactory.get_image('trash-empty'), 'Delete')
         readAction = context_menu.addAction(
-            QtGui.QIcon.fromTheme('vcs-normal'), 'Mark read')
+            QtGui.QIcon(':/images/checkmark.svg'), 'Mark read')
         unreadAction = context_menu.addAction(
-            QtGui.QIcon.fromTheme('emblem-unavailable'), 'Mark unread')
+            QtGui.QIcon(':/images/xmark.svg'), 'Mark unread')
 
         action = context_menu.exec_(self.sender().mapToGlobal(position))
 

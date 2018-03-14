@@ -69,6 +69,14 @@ class SettingsUI(QtWidgets.QDialog, settingswindow.Ui_Dialog):
         self.cancelButton.clicked.connect(self.cancel_pressed)
         self.aboutButton.clicked.connect(self.about_pressed)
 
+        # Radio buttons
+        if self.parent.settings['icon_theme'] == 'DarkIcons':
+            self.darkIconsRadio.setChecked(True)
+        else:
+            self.lightIconsRadio.setChecked(True)
+        self.darkIconsRadio.clicked.connect(self.change_icon_theme)
+        self.lightIconsRadio.clicked.connect(self.change_icon_theme)
+
         # Check boxes
         self.autoTags.setChecked(self.parent.settings['auto_tags'])
         self.coverShadows.setChecked(self.parent.settings['cover_shadows'])
@@ -81,6 +89,9 @@ class SettingsUI(QtWidgets.QDialog, settingswindow.Ui_Dialog):
         self.refreshLibrary.clicked.connect(self.manage_checkboxes)
         self.fileRemember.clicked.connect(self.manage_checkboxes)
         self.performCulling.clicked.connect(self.manage_checkboxes)
+
+        self.comicsRemain.setEnabled(False)
+        self.comicsRemain.setToolTip('Not implemented yet')
 
         # Generate the filesystem treeView
         self.generate_tree()
@@ -245,6 +256,12 @@ class SettingsUI(QtWidgets.QDialog, settingswindow.Ui_Dialog):
         for i in [0, 4]:
             table_headers.append(self.treeView.columnWidth(i))
         self.parent.settings['settings_dialog_headers'] = table_headers
+
+    def change_icon_theme(self):
+        if self.sender() == self.darkIconsRadio:
+            self.parent.settings['icon_theme'] = 'DarkIcons'
+        else:
+            self.parent.settings['icon_theme'] = 'LightIcons'
 
     def change_dictionary_language(self, event):
         language_dict = {

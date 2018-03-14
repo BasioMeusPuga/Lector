@@ -413,9 +413,9 @@ class Tab(QtWidgets.QWidget):
 
         bookmark_menu = QtWidgets.QMenu()
         editAction = bookmark_menu.addAction(
-            QtGui.QIcon.fromTheme('edit-rename'), 'Edit')
+            self.window().QImageFactory.get_image('edit-rename'), 'Edit')
         deleteAction = bookmark_menu.addAction(
-            QtGui.QIcon.fromTheme('trash-empty'), 'Delete')
+            self.window().QImageFactory.get_image('trash-empty'), 'Delete')
 
         action = bookmark_menu.exec_(self.dockListView.mapToGlobal(position))
 
@@ -657,10 +657,12 @@ class PliantQTextBrowser(QtWidgets.QTextBrowser):
         if selected_word and selected_word != '':
             selected_word = selected_word.split()[0]
             defineAction = context_menu.addAction(
-                QtGui.QIcon.fromTheme('view-readermode'), f'Define "{selected_word}"')
+                self.window().QImageFactory.get_image('view-readermode'),
+                f'Define "{selected_word}"')
 
         searchAction = context_menu.addAction(
-            QtGui.QIcon.fromTheme('search'), 'Search')
+            self.window().QImageFactory.get_image('search'),
+            'Search')
 
         action = context_menu.exec_(self.sender().mapToGlobal(position))
 
