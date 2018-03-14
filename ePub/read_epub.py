@@ -28,6 +28,7 @@ class EPUB:
         self.filename = filename
         self.zip_file = None
         self.book = {}
+        self.book['split_chapters'] = {}
 
     def read_epub(self):
         # This is the function that should error out in
@@ -215,26 +216,32 @@ class EPUB:
         for i in navpoints:
             chapter_title = i.find('text').text
             chapter_source = i.find('content').get('src')
-            chapter_source = unquote(chapter_source.split('#')[0])
-            self.book['navpoint_dict'][chapter_source] = chapter_title
+            chapter_source_file = unquote(chapter_source.split('#')[0])
+
+            if '#' in chapter_source:
+                try:
+                    self.book['split_chapters'][chapter_source_file].append(
+                        (chapter_source.split('#')[1], chapter_title))
+                except KeyError:
+                    self.book['split_chapters'][chapter_source_file] = []
+                    self.book['split_chapters'][chapter_source_file].append(
+                        (chapter_source.split('#')[1], chapter_title))
+
+            self.book['navpoint_dict'][chapter_source_file] = chapter_title
 
     def parse_chapters(self, temp_dir=None, split_large_xml=False):
         no_title_chapter = 0
         self.book['book_list'] = []
+
         for i in self.book['chapters_in_order']:
             chapter_data = self.read_from_zip(i).decode()
 
-            if not split_large_xml:
-                try:
-                    self.book['book_list'].append(
-                        (self.book['navpoint_dict'][i], chapter_data))
-                except KeyError:
-                    fallback_title = str(no_title_chapter)
-                    self.book['book_list'].append(
-                        (fallback_title, chapter_data))
-                no_title_chapter += 1
+            if i in self.book['split_chapters']:
+                split_chapters = get_split_content(
+                    chapter_data, self.book['split_chapters'][i])
+                self.book['book_list'].extend(split_chapters)
 
-            else:
+            elif split_large_xml:
                 # https://stackoverflow.com/questions/14444732/how-to-split-a-html-page-to-multiple-pages-using-python-and-beautiful-soup
                 markup = BeautifulSoup(chapter_data, 'xml')
                 chapters = []
@@ -259,6 +266,15 @@ class EPUB:
                     self.book['book_list'].append(
                         (fallback_title, this_chapter))
                     no_title_chapter += 1
+            else:
+                try:
+                    self.book['book_list'].append(
+                        (self.book['navpoint_dict'][i], chapter_data))
+                except KeyError:
+                    fallback_title = str(no_title_chapter)
+                    self.book['book_list'].append(
+                        (fallback_title, chapter_data))
+                no_title_chapter += 1
 
         cover_path = os.path.join(temp_dir, os.path.basename(self.filename)) + '- cover'
         if self.book['cover']:
@@ -267,3 +283,35 @@ class EPUB:
 
             self.book['book_list'][0] = (
                 'Cover', f'<center><img src="{cover_path}" alt="Cover"></center>')
+
+
+def get_split_content(chapter_data, split_by):
+    split_anchors = [i[0] for i in split_by]
+    chapter_titles = [i[1] for i in split_by]
+    return_list = []
+
+    xml = BeautifulSoup(chapter_data, 'lxml')
+    xml_string = xml.body.prettify()
+
+    for count, i in enumerate(split_anchors):
+        this_split = xml_string.split(i)
+        current_chapter = this_split[0]
+
+        bs_obj = BeautifulSoup(current_chapter, 'lxml')
+        # Since tags correspond to data following them, the first
+        # chunk will be ignored
+        # As will all empty chapters
+        if bs_obj.text == '\n' or bs_obj.text == '' or count == 0:
+            continue
+        bs_obj_string = str(bs_obj).replace('"&gt;', '', 1)
+
+        return_list.append(
+            (chapter_titles[count - 1], bs_obj_string))
+        xml_string = this_split[1]
+
+    bs_obj = BeautifulSoup(xml_string, 'lxml')
+    bs_obj_string = str(bs_obj).replace('"&gt;', '', 1)
+    return_list.append(
+        (chapter_titles[-1], bs_obj_string))
+
+    return return_list

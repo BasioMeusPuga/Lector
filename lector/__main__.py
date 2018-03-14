@@ -189,7 +189,6 @@ class MainUI(QtWidgets.QMainWindow, mainwindow.Ui_MainWindow):
 
         # The library refresh button on the Library tab
         self.reloadLibrary.setIcon(self.QImageFactory.get_image('reload'))
-        self.reloadLibrary.setIconSize(QtCore.QSize(22, 22))
         self.reloadLibrary.setObjectName('reloadLibrary')
         self.reloadLibrary.setToolTip('Scan library')
         self.reloadLibrary.setAutoRaise(True)
