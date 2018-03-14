@@ -236,7 +236,7 @@ class EPUB:
         for i in self.book['chapters_in_order']:
             chapter_data = self.read_from_zip(i).decode()
 
-            if i in self.book['split_chapters']:
+            if i in self.book['split_chapters'] and not split_large_xml:
                 split_chapters = get_split_content(
                     chapter_data, self.book['split_chapters'][i])
                 self.book['book_list'].extend(split_chapters)
