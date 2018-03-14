@@ -149,7 +149,9 @@ class BookSorter:
         # Do not allow addition in case the file
         # is already in the database and it remains at its original path
         if self.mode == 'addition' and file_md5 in self.hashes_and_paths:
-            if self.hashes_and_paths[file_md5] == filename:
+            if (self.hashes_and_paths[file_md5] == filename
+                    and os.path.exists(self.hashes_and_paths[file_md5])):
+                print(f'{os.path.basename(filename)} is already in database')
                 return
 
         file_extension = os.path.splitext(filename)[1][1:]
@@ -247,6 +249,9 @@ class BookSorter:
                 break
 
     def initiate_threads(self):
+        if not self.file_list:
+            return None
+
         def pool_creator():
             _pool = Pool(5)
             self.processed_books = _pool.map(

@@ -237,14 +237,6 @@ class Tab(QtWidgets.QWidget):
         self.exit_fs.setContext(QtCore.Qt.ApplicationShortcut)
         self.exit_fs.activated.connect(self.exit_fullscreen)
 
-        # TODO
-        # See why Ctrl + Q won't work on a non fullscreened contentView
-        # widget in case the following is in code
-
-        # self.exit_all = QtWidgets.QShortcut(
-        #     QtGui.QKeySequence('Ctrl+Q'), self.contentView)
-        # self.exit_all.activated.connect(self.sneaky_exit)
-
     def go_fullscreen(self):
         if self.contentView.windowState() == QtCore.Qt.WindowFullScreen:
             self.exit_fullscreen()

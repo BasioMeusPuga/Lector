@@ -189,6 +189,7 @@ class MainUI(QtWidgets.QMainWindow, mainwindow.Ui_MainWindow):
 
         # The library refresh button on the Library tab
         self.reloadLibrary.setIcon(self.QImageFactory.get_image('reload'))
+        self.reloadLibrary.setIconSize(QtCore.QSize(22, 22))
         self.reloadLibrary.setObjectName('reloadLibrary')
         self.reloadLibrary.setToolTip('Scan library')
         self.reloadLibrary.setAutoRaise(True)
@@ -287,6 +288,9 @@ class MainUI(QtWidgets.QMainWindow, mainwindow.Ui_MainWindow):
                 self.temp_dir.path())
 
             parsed_books = books.initiate_threads()
+            if not parsed_books:
+                return
+
             database.DatabaseFunctions(self.database_path).add_to_database(parsed_books)
             self.lib_ref.generate_model('addition', parsed_books, True)
 
