@@ -19,7 +19,15 @@
 import os
 import sys
 import hashlib
+import pathlib
 from PyQt5 import QtWidgets, QtGui, QtCore
+
+# This allows for the program to be launched from the
+# dir where it's been copied instead of needing to be
+# installed
+install_dir = os.path.realpath(__file__)
+install_dir = pathlib.Path(install_dir).parents[1]
+sys.path.append(str(install_dir))
 
 from lector import database
 from lector import sorter
