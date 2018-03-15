@@ -179,7 +179,7 @@ class Tab(QtWidgets.QWidget):
         # This avoids confusion with potentially duplicate phrases
         # And the found result is at the top of the window
         scroll_position = scroll_value * self.contentView.verticalScrollBar().maximum()
-        self.contentView.verticalScrollBar().setValue(scroll_position * 1.1)
+        self.contentView.verticalScrollBar().setValue(scroll_position * 1.02)
 
         try:
             search_text = self.metadata['position']['last_visible_text']
@@ -187,7 +187,17 @@ class Tab(QtWidgets.QWidget):
                 search_text = search_data[1]
 
             if search_text:
-                self.contentView.find(search_text)
+                find_backward = False
+
+                find_forward = self.contentView.find(search_text)
+                if not find_forward:
+                    find_backward = self.contentView.find(
+                        search_text, QtGui.QTextDocument.FindBackward)
+
+                if find_backward:
+                    current_scroll_position = self.contentView.verticalScrollBar().value()
+                    new_scroll_position = current_scroll_position * .98
+                    self.contentView.verticalScrollBar().setValue(new_scroll_position)
 
                 text_cursor = self.contentView.textCursor()
                 text_cursor.clearSelection()

@@ -264,12 +264,12 @@ class EPUB:
                 for this_chapter in chapters:
                     fallback_title = str(no_title_chapter)
                     self.book['book_list'].append(
-                        (fallback_title, this_chapter))
+                        (fallback_title, this_chapter + ('<br>' * 8)))
                     no_title_chapter += 1
             else:
                 try:
                     self.book['book_list'].append(
-                        (self.book['navpoint_dict'][i], chapter_data))
+                        (self.book['navpoint_dict'][i], chapter_data + ('<br>' * 8)))
                 except KeyError:
                     fallback_title = str(no_title_chapter)
                     self.book['book_list'].append(
@@ -303,14 +303,14 @@ def get_split_content(chapter_data, split_by):
         # As will all empty chapters
         if bs_obj.text == '\n' or bs_obj.text == '' or count == 0:
             continue
-        bs_obj_string = str(bs_obj).replace('"&gt;', '', 1)
+        bs_obj_string = str(bs_obj).replace('"&gt;', '', 1) + ('<br>' * 8)
 
         return_list.append(
             (chapter_titles[count - 1], bs_obj_string))
         xml_string = this_split[1]
 
     bs_obj = BeautifulSoup(xml_string, 'lxml')
-    bs_obj_string = str(bs_obj).replace('"&gt;', '', 1)
+    bs_obj_string = str(bs_obj).replace('"&gt;', '', 1) + ('<br>' * 8)
     return_list.append(
         (chapter_titles[-1], bs_obj_string))
 
