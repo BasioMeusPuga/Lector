@@ -17,6 +17,7 @@ pdf support is coming, along with support for a bunch of other formats. Please s
 * python-beautifulsoup4 >= 4.6.0
 
 ## Installation
+### Manual
 0. Install dependencies - I recommend using your package manager for this.
 1. Clone repository
 2. Type the following in the root directory:
@@ -24,6 +25,9 @@ pdf support is coming, along with support for a bunch of other formats. Please s
         $ python setup.py build
         # python setup.py install
 3. OR launch with `lector/__main__.py`
+
+### Available packages
+* [AUR](https://aur.archlinux.org/packages/lector-git/)
 
 ## Reporting issues
 When reporting issues:
@@ -56,3 +60,8 @@ When reporting issues:
 
 ### In program dictionary
 ![alt tag](https://i.imgur.com/Vh9xQUC.png)
+
+## Attributions
+* [KindleUnpack](https://github.com/kevinhendricks/KindleUnpack)
+* [rarfile](https://github.com/markokr/rarfile)
+* [Papirus icon theme](https://github.com/PapirusDevelopmentTeam/papirus-icon-theme)
