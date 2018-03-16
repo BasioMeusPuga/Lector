@@ -2,19 +2,26 @@
 Qt based ebook reader
 
 Currently supports:
+* pdf
 * epub
 * mobi
 * azw / azw3 / azw4
 * cbr / cbz
 
-pdf support is coming, along with support for a bunch of other formats. Please see the TODO for additional information.
+Support for a bunch of other formats is coming. Please see the TODO for additional information.
 
 ## Requirements
-* Qt5 >= 5.10.1
-* Python >= 3.6
-* PyQt5 >= 5.10.1
-* python-requests >= 2.18.4
-* python-beautifulsoup4 >= 4.6.0
+| Package | Version tested |
+| --- | --- |
+| Qt5 | 5.10.1 |
+| Python | 3.6 |
+| PyQt5 | 5.10.1 |
+| python-requests | 2.18.4 |
+| python-beautifulsoup4 | 4.6.0 |
+| poppler-qt5 | 0.61.1 |
+| python-poppler-qt5 | 0.24.2 |
+
+poppler-qt5 and python-poppler-qt5 are optional.
 
 ## Installation
 ### Manual
