@@ -119,7 +119,7 @@ class Settings:
             'listViewBackground', self.parent.settings['listview_background'])
 
         table_headers = []
-        for i in range(3):
+        for i in range(7):
             table_headers.append(self.parent.tableView.horizontalHeader().sectionSize(i))
         self.settings.setValue('tableHeaders', table_headers)
         self.settings.endGroup()

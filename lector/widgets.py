@@ -36,6 +36,7 @@ class Tab(QtWidgets.QWidget):
         super(Tab, self).__init__(parent)
         self.parent = parent
         self.metadata = metadata  # Save progress data into this dictionary
+        self.are_we_doing_images_only = self.metadata['images_only']
 
         self.masterLayout = QtWidgets.QHBoxLayout(self)
         self.horzLayout = QtWidgets.QSplitter(self)
@@ -59,8 +60,6 @@ class Tab(QtWidgets.QWidget):
         # such as in the case of comic book files,
         # we want a QGraphicsView widget doing all the heavy lifting
         # instead of a QTextBrowser
-        self.are_we_doing_images_only = self.metadata['images_only']
-
         if self.are_we_doing_images_only:  # Boolean
             self.contentView = PliantQGraphicsView(self.window(), self)
             self.contentView.loadImage(chapter_content)
@@ -209,9 +208,6 @@ class Tab(QtWidgets.QWidget):
             self.window().tabWidget.setCurrentWidget(previous_widget)
 
     def generate_position(self, is_read=False):
-        # TODO
-        # Calculate lines to incorporate into progress
-
         total_chapters = len(self.metadata['content'])
 
         current_chapter = 1
@@ -220,9 +216,30 @@ class Tab(QtWidgets.QWidget):
             current_chapter = total_chapters
             scroll_value = 1
 
+        # TODO
+        # Use this to generate position
+
+        # Generate block count @ time of first read
+        # Blocks are indexed from 0 up
+        blocks_per_chapter = []
+        total_blocks = 0
+
+        if not self.are_we_doing_images_only:
+            for i in self.metadata['content']:
+                chapter_html = i[1]
+
+                textDocument = QtGui.QTextDocument(None)
+                textDocument.setHtml(chapter_html)
+                block_count = textDocument.blockCount()
+
+                blocks_per_chapter.append(block_count)
+                total_blocks += block_count
+
         self.metadata['position'] = {
             'current_chapter': current_chapter,
             'total_chapters': total_chapters,
+            'blocks_per_chapter': blocks_per_chapter,
+            'total_blocks': total_blocks,
             'scroll_value': scroll_value,
             'last_visible_text': None,
             'is_read': is_read}

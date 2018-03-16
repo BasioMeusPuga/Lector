@@ -246,7 +246,7 @@ class MainUI(QtWidgets.QMainWindow, mainwindow.Ui_MainWindow):
         if self.settings['main_window_headers']:
             for count, i in enumerate(self.settings['main_window_headers']):
                 self.tableView.horizontalHeader().resizeSection(count, int(i))
-        self.tableView.horizontalHeader().resizeSection(4, 1)
+        self.tableView.horizontalHeader().resizeSection(5, 1)
         self.tableView.horizontalHeader().setStretchLastSection(True)
         self.tableView.horizontalHeader().sectionClicked.connect(
             self.lib_ref.table_proxy_model.sort_table_columns)

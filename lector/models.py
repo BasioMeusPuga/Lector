@@ -16,6 +16,7 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
+import pickle
 import pathlib
 
 from PyQt5 import QtCore, QtWidgets
@@ -68,7 +69,7 @@ class TableProxyModel(QtCore.QSortFilterProxyModel):
     def __init__(self, temp_dir, parent=None):
         super(TableProxyModel, self).__init__(parent)
         self.header_data = [
-            None, 'Title', 'Author', 'Year', '%', 'Tags']
+            None, 'Title', 'Author', 'Year', 'Last Read', '%', 'Tags']
         self.temp_dir = temp_dir
         self.filter_text = None
         self.active_library_filters = None
@@ -77,12 +78,13 @@ class TableProxyModel(QtCore.QSortFilterProxyModel):
             1: QtCore.Qt.UserRole,      # Title
             2: QtCore.Qt.UserRole + 1,  # Author
             3: QtCore.Qt.UserRole + 2,  # Year
-            4: QtCore.Qt.UserRole + 7,  # Position percentage
-            5: QtCore.Qt.UserRole + 4}  # Tags
+            4: QtCore.Qt.UserRole + 12, # Last read
+            5: QtCore.Qt.UserRole + 7,  # Position percentage
+            6: QtCore.Qt.UserRole + 4}  # Tags
         self.common_functions = ProxyModelsCommonFunctions(self)
 
     def columnCount(self, parent):
-        return 6
+        return 7
 
     def headerData(self, column, orientation, role):
         if role == QtCore.Qt.DisplayRole:
@@ -97,11 +99,12 @@ class TableProxyModel(QtCore.QSortFilterProxyModel):
         source_index = self.mapToSource(index)
         item = self.sourceModel().item(source_index.row(), 0)
 
-        if role == QtCore.Qt.TextAlignmentRole and index.column() == 3:
-            return QtCore.Qt.AlignHCenter
+        if role == QtCore.Qt.TextAlignmentRole:
+            if index.column() in (3, 4):
+                return QtCore.Qt.AlignHCenter
 
         if role == QtCore.Qt.DecorationRole:
-            if index.column() == 4:
+            if index.column() == 5:
                 return_pixmap = None
 
                 file_exists = item.data(QtCore.Qt.UserRole + 5)
@@ -136,11 +139,20 @@ class TableProxyModel(QtCore.QSortFilterProxyModel):
                 return return_pixmap
 
         elif role == QtCore.Qt.DisplayRole or role == QtCore.Qt.EditRole:
-            if index.column() in (0, 4):    # Cover and Status
+            if index.column() in (0, 5):    # Cover and Status
                 return QtCore.QVariant()
 
-            return item.data(self.role_dictionary[index.column()])
+            if index.column() == 4:
+                last_accessed_time = item.data(self.role_dictionary[index.column()])
+                if last_accessed_time:
+                    last_accessed = last_accessed_time
+                    if not isinstance(last_accessed_time, QtCore.QDateTime):
+                        last_accessed = pickle.loads(last_accessed_time)
+                    right_now = QtCore.QDateTime().currentDateTime()
+                    time_diff = last_accessed.msecsTo(right_now)
+                    return self.time_convert(time_diff // 1000)
 
+            return item.data(self.role_dictionary[index.column()])
         else:
             return QtCore.QVariant()
 
@@ -157,6 +169,20 @@ class TableProxyModel(QtCore.QSortFilterProxyModel):
         self.sort(0, sorting_order)
         self.setSortRole(self.role_dictionary[column])
 
+    def time_convert(self, seconds):
+        seconds = int(seconds)
+        m, s = divmod(seconds, 60)
+        h, m = divmod(m, 60)
+        d, h = divmod(h, 24)
+
+        if d > 0:
+            return f'{d}d'
+        if h > 0:
+            return f'{h}h'
+        if m > 0:
+            return f'{m}m'
+        else:
+            return '<1m'
 
 class ProxyModelsCommonFunctions:
     def __init__(self, parent_model):
