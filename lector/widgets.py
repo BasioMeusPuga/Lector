@@ -31,8 +31,9 @@ import popplerqt5
 from rarfile import rarfile
 
 from lector.models import BookmarkProxyModel
-from lector.sorter import resize_image
 from lector.delegates import BookmarkDelegate
+from lector.threaded import BackGroundCacheRefill
+from lector.sorter import resize_image
 
 
 class Tab(QtWidgets.QWidget):
@@ -137,6 +138,8 @@ class Tab(QtWidgets.QWidget):
         self.horzLayout.addWidget(self.contentView)
         self.horzLayout.addWidget(self.dockWidget)
         title = self.metadata['title']
+        if self.are_we_doing_images_only:
+            title = os.path.basename(title)
         self.parent.addTab(self, title)
 
         # Hide mouse cursor timer
@@ -480,6 +483,8 @@ class PliantQGraphicsView(QtWidgets.QGraphicsView):
         self.image_pixmap = None
         self.image_cache = [None for _ in range(4)]
 
+        self.thread = None
+
         self.filepath = filepath
         self.filetype = os.path.splitext(self.filepath)[1][1:]
 
@@ -538,25 +543,16 @@ class PliantQGraphicsView(QtWidgets.QGraphicsView):
                     self.image_cache[i + 1] = None
 
         def refill_cache(remove_value):
-            remove_index = self.image_cache.index(remove_value)
+            # Do NOT put a parent in here or the mother of all
+            # memory leaks will result
+            self.thread = BackGroundCacheRefill(
+                self.image_cache, remove_value,
+                self.filetype, self.book, all_pages)
+            self.thread.finished.connect(overwrite_cache)
+            self.thread.start()
 
-            if remove_index == 1:
-                first_path = self.image_cache[0][0]
-                self.image_cache.pop(3)
-                previous_page = all_pages[all_pages.index(first_path) - 1]
-                refill_pixmap = load_page(previous_page)
-                self.image_cache.insert(0, (previous_page, refill_pixmap))
-
-            else:
-                self.image_cache[0] = self.image_cache[1]
-                self.image_cache.pop(1)
-                try:
-                    last_page = self.image_cache[2][0]
-                    next_page = all_pages[all_pages.index(last_page) + 1]
-                    refill_pixmap = load_page(next_page)
-                    self.image_cache.append((next_page, refill_pixmap))
-                except (IndexError, TypeError):
-                    self.image_cache.append(None)
+        def overwrite_cache():
+            self.image_cache = self.thread.image_cache
 
         def check_cache(current_page):
             for i in self.image_cache:

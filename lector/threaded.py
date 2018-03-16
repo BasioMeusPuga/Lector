@@ -19,7 +19,7 @@
 import os
 import pathlib
 from multiprocessing.dummy import Pool
-from PyQt5 import QtCore
+from PyQt5 import QtCore, QtGui
 
 from lector import sorter
 from lector import database
@@ -119,3 +119,47 @@ class BackGroundBookSearch(QtCore.QThread):
 
         initiate_threads()
         print(len(self.valid_files), 'books found')
+
+
+class BackGroundCacheRefill(QtCore.QThread):
+    def __init__(self, image_cache, remove_value, filetype, book, all_pages, parent=None):
+        super(BackGroundCacheRefill, self).__init__(parent)
+
+        self.image_cache = image_cache
+        self.remove_value = remove_value
+        self.filetype = filetype
+        self.book = book
+        self.all_pages = all_pages
+
+    def run(self):
+        def load_page(current_page):
+            image_pixmap = QtGui.QPixmap()
+
+            if self.filetype in ('cbz', 'cbr'):
+                page_data = self.book.read(current_page)
+                image_pixmap.loadFromData(page_data)
+            elif self.filetype == 'pdf':
+                page_data = self.book.page(current_page)
+                page_qimage = page_data.renderToImage(350, 350)
+                image_pixmap.convertFromImage(page_qimage)
+            return image_pixmap
+
+        remove_index = self.image_cache.index(self.remove_value)
+
+        if remove_index == 1:
+            first_path = self.image_cache[0][0]
+            self.image_cache.pop(3)
+            previous_page = self.all_pages[self.all_pages.index(first_path) - 1]
+            refill_pixmap = load_page(previous_page)
+            self.image_cache.insert(0, (previous_page, refill_pixmap))
+
+        else:
+            self.image_cache[0] = self.image_cache[1]
+            self.image_cache.pop(1)
+            try:
+                last_page = self.image_cache[2][0]
+                next_page = self.all_pages[self.all_pages.index(last_page) + 1]
+                refill_pixmap = load_page(next_page)
+                self.image_cache.append((next_page, refill_pixmap))
+            except (IndexError, TypeError):
+                self.image_cache.append(None)
