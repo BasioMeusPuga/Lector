@@ -441,7 +441,8 @@ class Tab(QtWidgets.QWidget):
         deleteAction = bookmark_menu.addAction(
             self.window().QImageFactory.get_image('trash-empty'), 'Delete')
 
-        action = bookmark_menu.exec_(self.dockListView.mapToGlobal(position))
+        action = bookmark_menu.exec_(
+            self.dockListView.mapToGlobal(position))
 
         if action == editAction:
             self.dockListView.edit(index)
@@ -477,6 +478,7 @@ class PliantQGraphicsView(QtWidgets.QGraphicsView):
 
         self.qimage = None  # Will be needed to resize pdf
         self.image_pixmap = None
+        self.image_cache = [None for _ in range(4)]
 
         self.filepath = filepath
         self.filetype = os.path.splitext(self.filepath)[1][1:]
@@ -509,18 +511,69 @@ class PliantQGraphicsView(QtWidgets.QGraphicsView):
         # Threaded caching will still work here
         # Look at a commit where it's not been deleted
         # For double page view: 1 before, 1 after
+        all_pages = [i[1] for i in self.parent.metadata['content']]
 
-        self.image_pixmap = QtGui.QPixmap()
+        def load_page(current_page):
+            image_pixmap = QtGui.QPixmap()
 
-        if self.filetype in ('cbz', 'cbr'):
-            page_data = self.book.read(current_page)
-            self.image_pixmap.loadFromData(page_data)
+            if self.filetype in ('cbz', 'cbr'):
+                page_data = self.book.read(current_page)
+                image_pixmap.loadFromData(page_data)
+            elif self.filetype == 'pdf':
+                page_data = self.book.page(current_page)
+                page_qimage = page_data.renderToImage(350, 350)
+                image_pixmap.convertFromImage(page_qimage)
+            return image_pixmap
 
-        if self.filetype == 'pdf':
-            page_data = self.book.page(current_page)
-            page_qimage = page_data.renderToImage(350, 350)
-            self.image_pixmap.convertFromImage(page_qimage)
+        def generate_image_cache(current_page):
+            print('Building image cache')
+            current_page_index = all_pages.index(current_page)
 
+            for i in (-1, 0, 1, 2):
+                try:
+                    this_page = all_pages[current_page_index + i]
+                    this_pixmap = load_page(this_page)
+                    self.image_cache[i + 1] = (this_page, this_pixmap)
+                except IndexError:
+                    self.image_cache[i + 1] = None
+
+        def refill_cache(remove_value):
+            remove_index = self.image_cache.index(remove_value)
+
+            if remove_index == 1:
+                first_path = self.image_cache[0][0]
+                self.image_cache.pop(3)
+                previous_page = all_pages[all_pages.index(first_path) - 1]
+                refill_pixmap = load_page(previous_page)
+                self.image_cache.insert(0, (previous_page, refill_pixmap))
+
+            else:
+                self.image_cache[0] = self.image_cache[1]
+                self.image_cache.pop(1)
+                try:
+                    last_page = self.image_cache[2][0]
+                    next_page = all_pages[all_pages.index(last_page) + 1]
+                    refill_pixmap = load_page(next_page)
+                    self.image_cache.append((next_page, refill_pixmap))
+                except (IndexError, TypeError):
+                    self.image_cache.append(None)
+
+        def check_cache(current_page):
+            for i in self.image_cache:
+                if i:
+                    if i[0] == current_page:
+                        return_pixmap = i[1]
+                        refill_cache(i)
+                        return return_pixmap
+
+            # No return happened so the image isn't in the cache
+            generate_image_cache(current_page)
+
+        return_pixmap = None
+        while not return_pixmap:
+            return_pixmap = check_cache(current_page)
+
+        self.image_pixmap = return_pixmap
         self.resizeEvent()
 
     def resizeEvent(self, *args):
