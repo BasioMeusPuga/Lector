@@ -5,8 +5,8 @@ from setuptools import setup, find_packages
 HERE = path.abspath(path.dirname(__file__))
 
 MAJOR_VERSION = '0'
-MINOR_VERSION = '1'
-MICRO_VERSION = '2'
+MINOR_VERSION = '2'
+MICRO_VERSION = '0'
 VERSION = "{}.{}.{}".format(MAJOR_VERSION, MINOR_VERSION, MICRO_VERSION)
 
 # Get the long description from the README file
@@ -15,7 +15,8 @@ with codecs.open(path.join(HERE, 'README.md'), encoding='utf-8') as f:
 
 INSTALL_DEPS = ['PyQt5>=5.10.1',
                 'requests>=2.18.4',
-                'beautifulsoup4>=4.6.0']
+                'beautifulsoup4>=4.6.0',
+                'python-poppler-qt5>=0.24.2']
 TEST_DEPS = ['pytest',
              'unittest2']
 DEV_DEPS = []
@@ -46,7 +47,7 @@ setup(
     ],
 
     # What does your project relate to?
-    keywords='qt ebook epub kindle mobi',
+    keywords='qt ebook epub kindle mobi comic cbz cbr pdf',
 
     packages=find_packages(),
 

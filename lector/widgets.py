@@ -24,7 +24,11 @@
 
 import os
 import uuid
+import zipfile
 from PyQt5 import QtWidgets, QtGui, QtCore
+
+import popplerqt5
+from rarfile import rarfile
 
 from lector.models import BookmarkProxyModel
 from lector.sorter import resize_image
@@ -61,7 +65,8 @@ class Tab(QtWidgets.QWidget):
         # we want a QGraphicsView widget doing all the heavy lifting
         # instead of a QTextBrowser
         if self.are_we_doing_images_only:  # Boolean
-            self.contentView = PliantQGraphicsView(self.window(), self)
+            self.contentView = PliantQGraphicsView(
+                self.metadata['path'], self.window(), self)
             self.contentView.loadImage(chapter_content)
         else:
             self.contentView = PliantQTextBrowser(self.window(), self)
@@ -465,78 +470,57 @@ class Tab(QtWidgets.QWidget):
 
 
 class PliantQGraphicsView(QtWidgets.QGraphicsView):
-    def __init__(self, main_window, parent=None):
+    def __init__(self, filepath, main_window, parent=None):
         super(PliantQGraphicsView, self).__init__(parent)
         self.main_window = main_window
         self.parent = parent
+
+        self.qimage = None  # Will be needed to resize pdf
         self.image_pixmap = None
-        self.ignore_wheel_event = False
-        self.ignore_wheel_event_number = 0
-        self.setDragMode(QtWidgets.QGraphicsView.ScrollHandDrag)
-        self.viewport().setCursor(QtCore.Qt.ArrowCursor)
+
+        self.filepath = filepath
+        self.filetype = os.path.splitext(self.filepath)[1][1:]
+
+        if self.filetype == 'cbz':
+            self.book = zipfile.ZipFile(self.filepath)
+
+        elif self.filetype == 'cbr':
+            self.book = rarfile.RarFile(self.filepath)
+
+        elif self.filetype == 'pdf':
+            self.book = popplerqt5.Poppler.Document.load(self.filepath)
+            self.book.setRenderHint(
+                popplerqt5.Poppler.Document.Antialiasing
+                and popplerqt5.Poppler.Document.TextAntialiasing)
+
         self.common_functions = PliantWidgetsCommonFunctions(
             self, self.main_window)
-        self.setMouseTracking(True)
-        self.image_cache = [None for _ in range(4)]
 
-    def loadImage(self, current_image):
         # TODO
-        # For double page view: 1 before, 1 after
         # Image panning with mouse
+        self.ignore_wheel_event = False
+        self.ignore_wheel_event_number = 0
+        self.setMouseTracking(True)
+        self.setDragMode(QtWidgets.QGraphicsView.ScrollHandDrag)
+        self.viewport().setCursor(QtCore.Qt.ArrowCursor)
 
-        content = self.parent.metadata['content']
-        image_paths = [i[1] for i in content]
+    def loadImage(self, current_page):
+        # TODO
+        # Threaded caching will still work here
+        # Look at a commit where it's not been deleted
+        # For double page view: 1 before, 1 after
 
-        def generate_image_cache(current_image):
-            print('Building image cache')
-            current_image_index = image_paths.index(current_image)
+        self.image_pixmap = QtGui.QPixmap()
 
-            for i in (-1, 0, 1, 2):
-                try:
-                    this_path = image_paths[current_image_index + i]
-                    this_pixmap = QtGui.QPixmap()
-                    this_pixmap.load(this_path)
-                    self.image_cache[i + 1] = (this_path, this_pixmap)
-                except IndexError:
-                    self.image_cache[i + 1] = None
+        if self.filetype in ('cbz', 'cbr'):
+            page_data = self.book.read(current_page)
+            self.image_pixmap.loadFromData(page_data)
 
-        def refill_cache(remove_value):
-            remove_index = self.image_cache.index(remove_value)
-            refill_pixmap = QtGui.QPixmap()
+        if self.filetype == 'pdf':
+            page_data = self.book.page(current_page)
+            page_qimage = page_data.renderToImage(350, 350)
+            self.image_pixmap.convertFromImage(page_qimage)
 
-            if remove_index == 1:
-                first_path = self.image_cache[0][0]
-                self.image_cache.pop(3)
-                previous_path = image_paths[image_paths.index(first_path) - 1]
-                refill_pixmap.load(previous_path)
-                self.image_cache.insert(0, (previous_path, refill_pixmap))
-            else:
-                self.image_cache[0] = self.image_cache[1]
-                self.image_cache.pop(1)
-                try:
-                    last_path = self.image_cache[2][0]
-                    next_path = image_paths[image_paths.index(last_path) + 1]
-                    refill_pixmap.load(next_path)
-                    self.image_cache.append((next_path, refill_pixmap))
-                except (IndexError, TypeError):
-                    self.image_cache.append(None)
-
-        def check_cache(current_image):
-            for i in self.image_cache:
-                if i:
-                    if i[0] == current_image:
-                        return_pixmap = i[1]
-                        refill_cache(i)
-                        return return_pixmap
-
-            # No return happened so the image isn't in the cache
-            generate_image_cache(current_image)
-
-        return_pixmap = None
-        while not return_pixmap:
-            return_pixmap = check_cache(current_image)
-
-        self.image_pixmap = return_pixmap
         self.resizeEvent()
 
     def resizeEvent(self, *args):
