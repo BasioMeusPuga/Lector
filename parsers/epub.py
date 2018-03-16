@@ -28,9 +28,8 @@ class ParseEPUB:
         # Maybe also include book description
         self.book_ref = None
         self.book = None
-        self.temp_dir = temp_dir
         self.filename = filename
-        self.file_md5 = file_md5
+        self.extract_path = os.path.join(temp_dir, file_md5)
 
     def read_book(self):
         self.book_ref = EPUB(self.filename)
@@ -59,10 +58,9 @@ class ParseEPUB:
         return self.book['tags']
 
     def get_contents(self):
-        extract_path = os.path.join(self.temp_dir, self.file_md5)
-        zipfile.ZipFile(self.filename).extractall(extract_path)
+        zipfile.ZipFile(self.filename).extractall(self.extract_path)
 
-        self.book_ref.parse_chapters(temp_dir=self.temp_dir)
+        self.book_ref.parse_chapters(temp_dir=self.extract_path)
         file_settings = {
             'images_only': False}
         return self.book['book_list'], file_settings
