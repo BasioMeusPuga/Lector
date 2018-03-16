@@ -15,8 +15,7 @@ with codecs.open(path.join(HERE, 'README.md'), encoding='utf-8') as f:
 
 INSTALL_DEPS = ['PyQt5>=5.10.1',
                 'requests>=2.18.4',
-                'beautifulsoup4>=4.6.0',
-                'python-poppler-qt5>=0.24.2']
+                'beautifulsoup4>=4.6.0']
 TEST_DEPS = ['pytest',
              'unittest2']
 DEV_DEPS = []
@@ -72,6 +71,7 @@ setup(
     # $ pip install -e .[dev,test]
     extras_require={
         'dev': DEV_DEPS,
-        'test': TEST_DEPS
+        'test': TEST_DEPS,
+        'PDF':  ['python-poppler-qt5']
     },
 )
