@@ -99,6 +99,9 @@ class Settings:
             'performCulling', 'True').capitalize())
         self.parent.settings['dictionary_language'] = self.settings.value(
             'dictionaryLanguage', 'en')
+        self.parent.settings['caching_enabled'] = literal_eval(self.settings.value(
+            'cachingEnabled', 'True').capitalize())
+
         self.settings.endGroup()
 
         self.settings.beginGroup('dialogSettings')
@@ -167,6 +170,7 @@ class Settings:
         self.settings.setValue('scanLibraryAtStart', current_settings['scan_library'])
         self.settings.setValue('performCulling', current_settings['perform_culling'])
         self.settings.setValue('dictionaryLanguage', current_settings['dictionary_language'])
+        self.settings.setValue('cachingEnabled', current_settings['caching_enabled'])
         self.settings.endGroup()
 
         self.settings.beginGroup('dialogSettings')

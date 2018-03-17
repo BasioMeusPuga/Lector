@@ -116,9 +116,12 @@
            </widget>
           </item>
           <item>
-           <widget class="QCheckBox" name="comicsRemain">
+           <widget class="QCheckBox" name="cachingEnabled">
+            <property name="toolTip">
+             <string>Greatly reduces page transition time at the cost of more memory</string>
+            </property>
             <property name="text">
-             <string>Leave comics on disc</string>
+             <string>Cache comic / pdf pages</string>
             </property>
            </widget>
           </item>

@@ -83,15 +83,14 @@ class SettingsUI(QtWidgets.QDialog, settingswindow.Ui_Dialog):
         self.refreshLibrary.setChecked(self.parent.settings['scan_library'])
         self.fileRemember.setChecked(self.parent.settings['remember_files'])
         self.performCulling.setChecked(self.parent.settings['perform_culling'])
+        self.cachingEnabled.setChecked(self.parent.settings['caching_enabled'])
 
         self.autoTags.clicked.connect(self.manage_checkboxes)
         self.coverShadows.clicked.connect(self.manage_checkboxes)
         self.refreshLibrary.clicked.connect(self.manage_checkboxes)
         self.fileRemember.clicked.connect(self.manage_checkboxes)
         self.performCulling.clicked.connect(self.manage_checkboxes)
-
-        self.comicsRemain.setEnabled(False)
-        self.comicsRemain.setToolTip('Not implemented yet')
+        self.cachingEnabled.clicked.connect(self.manage_checkboxes)
 
         # Generate the filesystem treeView
         self.generate_tree()
@@ -278,7 +277,8 @@ class SettingsUI(QtWidgets.QDialog, settingswindow.Ui_Dialog):
             'autoTags': 'auto_tags',
             'refreshLibrary': 'scan_library',
             'fileRemember': 'remember_files',
-            'performCulling': 'perform_culling'}
+            'performCulling': 'perform_culling',
+            'cachingEnabled': 'caching_enabled',}
 
         self.parent.settings[sender_dict[sender]] = not self.parent.settings[sender_dict[sender]]
 

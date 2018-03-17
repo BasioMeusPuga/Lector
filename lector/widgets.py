@@ -27,7 +27,11 @@ import uuid
 import zipfile
 from PyQt5 import QtWidgets, QtGui, QtCore
 
-import popplerqt5
+try:
+    import popplerqt5
+except ImportError:
+    pass
+
 from rarfile import rarfile
 
 from lector.models import BookmarkProxyModel
@@ -513,8 +517,6 @@ class PliantQGraphicsView(QtWidgets.QGraphicsView):
 
     def loadImage(self, current_page):
         # TODO
-        # Threaded caching will still work here
-        # Look at a commit where it's not been deleted
         # For double page view: 1 before, 1 after
         all_pages = [i[1] for i in self.parent.metadata['content']]
 
@@ -565,9 +567,12 @@ class PliantQGraphicsView(QtWidgets.QGraphicsView):
             # No return happened so the image isn't in the cache
             generate_image_cache(current_page)
 
-        return_pixmap = None
-        while not return_pixmap:
-            return_pixmap = check_cache(current_page)
+        if self.window().settings['caching_enabled']:
+            return_pixmap = None
+            while not return_pixmap:
+                return_pixmap = check_cache(current_page)
+        else:
+            return_pixmap = load_page(current_page)
 
         self.image_pixmap = return_pixmap
         self.resizeEvent()

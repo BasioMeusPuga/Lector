@@ -13,8 +13,7 @@ VERSION = "{}.{}.{}".format(MAJOR_VERSION, MINOR_VERSION, MICRO_VERSION)
 with codecs.open(path.join(HERE, 'README.md'), encoding='utf-8') as f:
     LONG_DESC = f.read()
 
-INSTALL_DEPS = ['PyQt5',
-                'requests',
+INSTALL_DEPS = ['requests',
                 'beautifulsoup4']
 TEST_DEPS = ['pytest',
              'unittest2']
