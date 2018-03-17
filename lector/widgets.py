@@ -46,6 +46,7 @@ class Tab(QtWidgets.QWidget):
         self.parent = parent
         self.metadata = metadata  # Save progress data into this dictionary
         self.are_we_doing_images_only = self.metadata['images_only']
+        self.main_window = self.window()
 
         self.masterLayout = QtWidgets.QHBoxLayout(self)
         self.horzLayout = QtWidgets.QSplitter(self)
@@ -71,13 +72,13 @@ class Tab(QtWidgets.QWidget):
         # instead of a QTextBrowser
         if self.are_we_doing_images_only:  # Boolean
             self.contentView = PliantQGraphicsView(
-                self.metadata['path'], self.window(), self)
+                self.metadata['path'], self.main_window, self)
             self.contentView.loadImage(chapter_content)
         else:
-            self.contentView = PliantQTextBrowser(self.window(), self)
+            self.contentView = PliantQTextBrowser(self.main_window, self)
 
             relative_path_root = os.path.join(
-                self.window().temp_dir.path(), self.metadata['hash'])
+                self.main_window.temp_dir.path(), self.metadata['hash'])
             relative_paths = []
             for i in os.walk(relative_path_root):
 
@@ -156,15 +157,15 @@ class Tab(QtWidgets.QWidget):
     def update_last_accessed_time(self):
         self.metadata['last_accessed'] = QtCore.QDateTime().currentDateTime()
 
-        start_index = self.window().lib_ref.view_model.index(0, 0)
-        matching_item = self.window().lib_ref.view_model.match(
+        start_index = self.main_window.lib_ref.view_model.index(0, 0)
+        matching_item = self.main_window.lib_ref.view_model.match(
             start_index,
             QtCore.Qt.UserRole + 6,
             self.metadata['hash'],
             1, QtCore.Qt.MatchExactly)
 
         try:
-            self.window().lib_ref.view_model.setData(
+            self.main_window.lib_ref.view_model.setData(
                 matching_item[0], self.metadata['last_accessed'], QtCore.Qt.UserRole + 12)
         except IndexError:  # The file has been deleted
             pass
@@ -179,8 +180,8 @@ class Tab(QtWidgets.QWidget):
             return
 
         if switch_widgets:
-            previous_widget = self.window().tabWidget.currentWidget()
-            self.window().tabWidget.setCurrentWidget(self)
+            previous_widget = self.main_window.tabWidget.currentWidget()
+            self.main_window.tabWidget.setCurrentWidget(self)
 
         scroll_value = self.metadata['position']['scroll_value']
         if search_data:
@@ -217,7 +218,7 @@ class Tab(QtWidgets.QWidget):
             pass
 
         if switch_widgets:
-            self.window().tabWidget.setCurrentWidget(previous_widget)
+            self.main_window.tabWidget.setCurrentWidget(previous_widget)
 
     def generate_position(self, is_read=False):
         total_chapters = len(self.metadata['content'])
@@ -284,16 +285,16 @@ class Tab(QtWidgets.QWidget):
         self.contentView.setWindowFlags(QtCore.Qt.Window)
         self.contentView.setWindowState(QtCore.Qt.WindowFullScreen)
         self.contentView.show()
-        self.window().hide()
+        self.main_window.hide()
 
     def exit_fullscreen(self):
-        self.window().show()
+        self.main_window.show()
         self.contentView.setWindowFlags(QtCore.Qt.Widget)
         self.contentView.setWindowState(QtCore.Qt.WindowNoState)
         self.contentView.show()
 
     def change_chapter_tocBox(self):
-        chapter_number = self.window().bookToolBar.tocBox.currentIndex()
+        chapter_number = self.main_window.bookToolBar.tocBox.currentIndex()
         required_content = self.metadata['content'][chapter_number][1]
 
         if self.are_we_doing_images_only:
@@ -336,7 +337,7 @@ class Tab(QtWidgets.QWidget):
                 'center': QtCore.Qt.AlignCenter,
                 'justify': QtCore.Qt.AlignJustify}
 
-            current_index = self.window().bookToolBar.tocBox.currentIndex()
+            current_index = self.main_window.bookToolBar.tocBox.currentIndex()
             if current_index == 0:
                 block_format.setAlignment(QtCore.Qt.AlignVCenter | QtCore.Qt.AlignHCenter)
             else:
@@ -407,7 +408,7 @@ class Tab(QtWidgets.QWidget):
         chapter = self.proxy_model.data(index, QtCore.Qt.UserRole)
         search_data = self.proxy_model.data(index, QtCore.Qt.UserRole + 1)
 
-        self.window().bookToolBar.tocBox.setCurrentIndex(chapter - 1)
+        self.main_window.bookToolBar.tocBox.setCurrentIndex(chapter - 1)
         if not self.are_we_doing_images_only:
             self.set_scroll_value(False, search_data)
 
@@ -433,9 +434,9 @@ class Tab(QtWidgets.QWidget):
     def update_bookmark_proxy_model(self):
         self.proxy_model.invalidateFilter()
         self.proxy_model.setFilterParams(
-            self.window().bookToolBar.searchBar.text())
+            self.main_window.bookToolBar.searchBar.text())
         self.proxy_model.setFilterFixedString(
-            self.window().bookToolBar.searchBar.text())
+            self.main_window.bookToolBar.searchBar.text())
 
     def generate_bookmark_context_menu(self, position):
         index = self.dockListView.indexAt(position)
@@ -444,9 +445,9 @@ class Tab(QtWidgets.QWidget):
 
         bookmark_menu = QtWidgets.QMenu()
         editAction = bookmark_menu.addAction(
-            self.window().QImageFactory.get_image('edit-rename'), 'Edit')
+            self.main_window.QImageFactory.get_image('edit-rename'), 'Edit')
         deleteAction = bookmark_menu.addAction(
-            self.window().QImageFactory.get_image('trash-empty'), 'Delete')
+            self.main_window.QImageFactory.get_image('trash-empty'), 'Delete')
 
         action = bookmark_menu.exec_(
             self.dockListView.mapToGlobal(position))
@@ -474,7 +475,7 @@ class Tab(QtWidgets.QWidget):
 
     def sneaky_exit(self):
         self.contentView.hide()
-        self.window().closeEvent()
+        self.main_window.closeEvent()
 
 
 class PliantQGraphicsView(QtWidgets.QGraphicsView):
@@ -567,7 +568,7 @@ class PliantQGraphicsView(QtWidgets.QGraphicsView):
             # No return happened so the image isn't in the cache
             generate_image_cache(current_page)
 
-        if self.window().settings['caching_enabled']:
+        if self.main_window.settings['caching_enabled']:
             return_pixmap = None
             while not return_pixmap:
                 return_pixmap = check_cache(current_page)
@@ -626,6 +627,11 @@ class PliantQGraphicsView(QtWidgets.QGraphicsView):
     def keyPressEvent(self, event):
         # This function is sufficiently different to warrant
         # exclusion from the common functions class
+
+        # TODO
+        # Not working correctly
+        # Add other keys: Up and Down
+
         if event.key() == 32:  # Spacebar press
             vertical = self.verticalScrollBar().value()
             maximum = self.verticalScrollBar().maximum()
@@ -714,19 +720,19 @@ class PliantQTextBrowser(QtWidgets.QTextBrowser):
         if selected_word and selected_word != '':
             selected_word = selected_word.split()[0]
             defineAction = context_menu.addAction(
-                self.window().QImageFactory.get_image('view-readermode'),
+                self.main_window.QImageFactory.get_image('view-readermode'),
                 f'Define "{selected_word}"')
 
         searchAction = context_menu.addAction(
-            self.window().QImageFactory.get_image('search'),
+            self.main_window.QImageFactory.get_image('search'),
             'Search')
 
         action = context_menu.exec_(self.sender().mapToGlobal(position))
 
         if action == defineAction:
-            self.window().definitionDialog.find_definition(selected_word)
+            self.main_window.definitionDialog.find_definition(selected_word)
         if action == searchAction:
-            self.window().bookToolBar.searchBar.setFocus()
+            self.main_window.bookToolBar.searchBar.setFocus()
 
     def closeEvent(self, *args):
         self.main_window.closeEvent()
