@@ -49,7 +49,8 @@ class ParseCOMIC:
             return
 
     def get_title(self):
-        return self.book_extension[0]
+        title = os.path.basename(self.book_extension[0]).strip(' ')
+        return title
 
     def get_author(self):
         return None

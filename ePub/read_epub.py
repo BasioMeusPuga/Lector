@@ -105,7 +105,8 @@ class EPUB:
     #______________________________________________________
 
     def generate_book_metadata(self, contents_path):
-        self.book['title'] = 'Unknown'
+        self.book['title'] = os.path.splitext(
+            os.path.basename(self.filename))[0]
         self.book['author'] = 'Unknown'
         self.book['isbn'] = None
         self.book['tags'] = None
@@ -281,9 +282,11 @@ class EPUB:
             with open(cover_path, 'wb') as cover_temp:
                 cover_temp.write(self.book['cover'])
 
-            self.book['book_list'][0] = (
-                'Cover', f'<center><img src="{cover_path}" alt="Cover"></center>')
-
+            try:
+                self.book['book_list'][0] = (
+                    'Cover', f'<center><img src="{cover_path}" alt="Cover"></center>')
+            except IndexError:
+                pass
 
 def get_split_content(chapter_data, split_by):
     split_anchors = [i[0] for i in split_by]

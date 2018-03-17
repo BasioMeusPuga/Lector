@@ -1,5 +1,9 @@
 <RCC>
   <qresource prefix="images">
+    <file>DarkIcons/filesaveas.svg</file>
+    <file>LightIcons/filesaveas.svg</file>
+    <file>DarkIcons/search.svg</file>
+    <file>LightIcons/search.svg</file>
     <file>xmark.svg</file>
     <file>DarkIcons/add.svg</file>
     <file>DarkIcons/bookmark-new.svg</file>

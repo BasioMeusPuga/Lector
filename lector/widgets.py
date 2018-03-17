@@ -143,8 +143,6 @@ class Tab(QtWidgets.QWidget):
         self.horzLayout.addWidget(self.contentView)
         self.horzLayout.addWidget(self.dockWidget)
         title = self.metadata['title']
-        if self.are_we_doing_images_only:
-            title = os.path.basename(title)
         self.parent.addTab(self, title)
 
         # Hide mouse cursor timer
@@ -292,6 +290,9 @@ class Tab(QtWidgets.QWidget):
         self.contentView.setWindowFlags(QtCore.Qt.Widget)
         self.contentView.setWindowState(QtCore.Qt.WindowNoState)
         self.contentView.show()
+
+        # Hide the view modification buttons in case they're visible
+        self.main_window.bookToolBar.customize_view_off()
 
     def change_chapter_tocBox(self):
         chapter_number = self.main_window.bookToolBar.tocBox.currentIndex()
@@ -481,8 +482,8 @@ class Tab(QtWidgets.QWidget):
 class PliantQGraphicsView(QtWidgets.QGraphicsView):
     def __init__(self, filepath, main_window, parent=None):
         super(PliantQGraphicsView, self).__init__(parent)
-        self.main_window = main_window
         self.parent = parent
+        self.main_window = main_window
 
         self.qimage = None  # Will be needed to resize pdf
         self.image_pixmap = None
@@ -515,6 +516,10 @@ class PliantQGraphicsView(QtWidgets.QGraphicsView):
         self.setMouseTracking(True)
         self.setDragMode(QtWidgets.QGraphicsView.ScrollHandDrag)
         self.viewport().setCursor(QtCore.Qt.ArrowCursor)
+
+        self.setContextMenuPolicy(QtCore.Qt.CustomContextMenu)
+        self.customContextMenuRequested.connect(
+            self.generate_graphicsview_context_menu)
 
     def loadImage(self, current_page):
         # TODO
@@ -625,27 +630,97 @@ class PliantQGraphicsView(QtWidgets.QGraphicsView):
         self.common_functions.wheelEvent(event, True)
 
     def keyPressEvent(self, event):
-        # This function is sufficiently different to warrant
-        # exclusion from the common functions class
+        vertical = self.verticalScrollBar().value()
+        maximum = self.verticalScrollBar().maximum()
 
-        # TODO
-        # Not working correctly
-        # Add other keys: Up and Down
-
-        if event.key() == 32:  # Spacebar press
-            vertical = self.verticalScrollBar().value()
-            maximum = self.verticalScrollBar().maximum()
-
-            if vertical == maximum:
-                self.common_functions.change_chapter(1, True)
+        def scroller(increment, move_forward=True):
+            if move_forward:
+                if vertical == maximum:
+                    self.common_functions.change_chapter(1, True)
+                else:
+                    next_val = vertical + increment
+                    if next_val >= .95 * maximum:
+                        next_val = maximum
+                    self.verticalScrollBar().setValue(next_val)
             else:
-                # Increment by following value
-                scroll_increment = int((maximum - 0) / 2)
-                self.verticalScrollBar().setValue(vertical + scroll_increment)
+                if vertical == 0:
+                    self.common_functions.change_chapter(-1, False)
+                else:
+                    next_val = vertical - increment
+                    if next_val <= .05 * maximum:
+                        next_val = 0
+                    self.verticalScrollBar().setValue(next_val)
+
+        small_increment = maximum // 5
+        big_increment = maximum // 3
+
+        if event.key() == QtCore.Qt.Key_Up:
+            scroller(small_increment, False)
+        if event.key() == QtCore.Qt.Key_Down:
+            scroller(small_increment)
+        if event.key() == QtCore.Qt.Key_Space:
+            scroller(big_increment)
+
+        view_modification_keys = (
+            QtCore.Qt.Key_Plus, QtCore.Qt.Key_Minus, QtCore.Qt.Key_Equal,
+            QtCore.Qt.Key_B, QtCore.Qt.Key_W, QtCore.Qt.Key_O)
+        if event.key() in view_modification_keys:
+            self.main_window.modify_comic_view(event.key())
 
     def mouseMoveEvent(self, *args):
         self.viewport().setCursor(QtCore.Qt.ArrowCursor)
         self.parent.mouse_hide_timer.start(3000)
+
+    def generate_graphicsview_context_menu(self, position):
+        contextMenu = QtWidgets.QMenu()
+        viewSubMenu = contextMenu.addMenu('View')
+
+        saveAction = contextMenu.addAction(
+            self.main_window.QImageFactory.get_image('filesaveas'),
+            'Save page as...')
+
+        zoominAction = viewSubMenu.addAction(
+            self.main_window.QImageFactory.get_image('zoom-in'),
+            'Zoom in (+)')
+
+        zoomoutAction = viewSubMenu.addAction(
+            self.main_window.QImageFactory.get_image('zoom-out'),
+            'Zoom out (-)')
+
+        fitWidthAction = viewSubMenu.addAction(
+            self.main_window.QImageFactory.get_image('zoom-fit-width'),
+            'Fit width (W)')
+
+        bestFitAction = viewSubMenu.addAction(
+            self.main_window.QImageFactory.get_image('zoom-fit-best'),
+            'Best fit (B)')
+
+        originalSizeAction = viewSubMenu.addAction(
+            self.main_window.QImageFactory.get_image('zoom-original'),
+            'Original size (O)')
+
+        toggleAction = contextMenu.addAction(
+            self.main_window.QImageFactory.get_image('visibility'),
+            'Toggle distraction free mode')
+
+        action = contextMenu.exec_(self.sender().mapToGlobal(position))
+
+        if action == saveAction:
+            # TODO
+            # Save this page as an image
+            pass
+        if action == toggleAction:
+            self.main_window.toggle_distraction_free()
+
+        view_action_dict = {
+            zoominAction: QtCore.Qt.Key_Plus,
+            zoomoutAction: QtCore.Qt.Key_Minus,
+            fitWidthAction: QtCore.Qt.Key_W,
+            bestFitAction: QtCore.Qt.Key_B,
+            originalSizeAction: QtCore.Qt.Key_O}
+
+        if action in view_action_dict:
+            self.main_window.modify_comic_view(view_action_dict[action])
 
     def closeEvent(self, *args):
         # In case the program is closed when a contentView is fullscreened
@@ -727,12 +802,18 @@ class PliantQTextBrowser(QtWidgets.QTextBrowser):
             self.main_window.QImageFactory.get_image('search'),
             'Search')
 
+        toggleAction = context_menu.addAction(
+            self.main_window.QImageFactory.get_image('visibility'),
+            'Toggle distraction free mode')
+
         action = context_menu.exec_(self.sender().mapToGlobal(position))
 
         if action == defineAction:
             self.main_window.definitionDialog.find_definition(selected_word)
         if action == searchAction:
             self.main_window.bookToolBar.searchBar.setFocus()
+        if action == toggleAction:
+            self.main_window.toggle_distraction_free()
 
     def closeEvent(self, *args):
         self.main_window.closeEvent()

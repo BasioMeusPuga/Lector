@@ -1,4 +1,7 @@
 TODO
+    General:
+        Application icon
+        .desktop file
     Options:
         ✓ Automatic library management
             ✓ Recursive file addition
@@ -51,8 +54,9 @@ TODO
         ✓ Cache next and previous images
         ✓ Set context menu for definitions and the like
         ✓ Paragraph indentation
+        ✓ Comic view keyboard shortcuts
+        Comic view context menu
         Search document using QTextCursor?
-        Comic view keyboard shortcuts
     Filetypes:
         ✓ pdf support
             Parse TOC
@@ -90,9 +94,6 @@ TODO
         Comic view modes
             Continuous paging
             Double pages
-        Leave comic images on disk in case tab isn't closed and files are remembered
-        Give the comic view a 'Save image as...' option
         Ignore a / the / numbers for sorting purposes
         ? Add only one file type if multiple are present
-        ? Plugin system for parsers
         ? Create emblem per filetype

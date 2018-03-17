@@ -17,6 +17,7 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 import io
+import os
 from PyQt5 import QtCore
 from bs4 import BeautifulSoup
 
@@ -48,7 +49,7 @@ class ParsePDF:
             title = self.metadata.find('title').text
             return title.replace('\n', '')
         except AttributeError:
-            return 'Unknown'
+            return os.path.splitext(os.path.basename(self.filename))[0]
 
     def get_author(self):
         try:

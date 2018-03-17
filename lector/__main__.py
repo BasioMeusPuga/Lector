@@ -74,7 +74,7 @@ class MainUI(QtWidgets.QMainWindow, mainwindow.Ui_MainWindow):
         # Widget declarations
         self.libraryFilterMenu = QtWidgets.QMenu()
         self.statusMessage = QtWidgets.QLabel()
-        self.toolbarToggle = QtWidgets.QToolButton()
+        self.distractionFreeToggle = QtWidgets.QToolButton()
         self.reloadLibrary = QtWidgets.QToolButton()
 
         # Create the database in case it doesn't exist
@@ -100,13 +100,13 @@ class MainUI(QtWidgets.QMainWindow, mainwindow.Ui_MainWindow):
         self.statusBar.addWidget(self.sorterProgress)
         self.sorterProgress.setVisible(False)
 
-        # Statusbar - Toolbar Visibility
-        self.toolbarToggle.setIcon(self.QImageFactory.get_image('visibility'))
-        self.toolbarToggle.setObjectName('toolbarToggle')
-        self.toolbarToggle.setToolTip('Toggle toolbar')
-        self.toolbarToggle.setAutoRaise(True)
-        self.toolbarToggle.clicked.connect(self.toggle_toolbars)
-        self.statusBar.addPermanentWidget(self.toolbarToggle)
+        # Statusbar + Toolbar Visibility
+        self.distractionFreeToggle.setIcon(self.QImageFactory.get_image('visibility'))
+        self.distractionFreeToggle.setObjectName('distractionFreeToggle')
+        self.distractionFreeToggle.setToolTip('Toggle distraction free mode (Ctrl + D)')
+        self.distractionFreeToggle.setAutoRaise(True)
+        self.distractionFreeToggle.clicked.connect(self.toggle_distraction_free)
+        self.statusBar.addPermanentWidget(self.distractionFreeToggle)
 
         # Application wide temporary directory
         self.temp_dir = QtCore.QTemporaryDir()
@@ -121,7 +121,7 @@ class MainUI(QtWidgets.QMainWindow, mainwindow.Ui_MainWindow):
 
         # Toolbar display
         # Maybe make this a persistent option
-        self.settings['show_toolbars'] = True
+        self.settings['show_bars'] = True
 
         # Library toolbar
         self.libraryToolBar.addButton.triggered.connect(self.add_books)
@@ -254,13 +254,21 @@ class MainUI(QtWidgets.QMainWindow, mainwindow.Ui_MainWindow):
         self.tableView.customContextMenuRequested.connect(self.generate_library_context_menu)
 
         # Keyboard shortcuts
-        self.ksCloseTab = QtWidgets.QShortcut(QtGui.QKeySequence('Ctrl+W'), self)
-        self.ksCloseTab.setContext(QtCore.Qt.ApplicationShortcut)
-        self.ksCloseTab.activated.connect(self.tab_close)
+        self.ksDistractionFree = QtWidgets.QShortcut(QtGui.QKeySequence('Ctrl+D'), self)
+        self.ksDistractionFree.setContext(QtCore.Qt.ApplicationShortcut)
+        self.ksDistractionFree.activated.connect(self.toggle_distraction_free)
+
+        self.ksOpenFile = QtWidgets.QShortcut(QtGui.QKeySequence('Ctrl+O'), self)
+        self.ksOpenFile.setContext(QtCore.Qt.ApplicationShortcut)
+        self.ksOpenFile.activated.connect(self.add_books)
 
         self.ksExitAll = QtWidgets.QShortcut(QtGui.QKeySequence('Ctrl+Q'), self)
         self.ksExitAll.setContext(QtCore.Qt.ApplicationShortcut)
         self.ksExitAll.activated.connect(self.closeEvent)
+
+        self.ksCloseTab = QtWidgets.QShortcut(QtGui.QKeySequence('Ctrl+W'), self)
+        self.ksCloseTab.setContext(QtCore.Qt.ApplicationShortcut)
+        self.ksCloseTab.activated.connect(self.tab_close)
 
         self.listView.setFocus()
         self.open_books_at_startup()
@@ -402,9 +410,6 @@ class MainUI(QtWidgets.QMainWindow, mainwindow.Ui_MainWindow):
         if self.tabWidget.currentIndex() != 0:
             self.tabWidget.widget(self.tabWidget.currentIndex()).add_bookmark()
 
-    def test_function(self):
-        print('Caesar si viveret, ad remum dareris')
-
     def resizeEvent(self, event=None):
         if event:
             # This implies a vertical resize event only
@@ -447,7 +452,7 @@ class MainUI(QtWidgets.QMainWindow, mainwindow.Ui_MainWindow):
         # from the libary in case of a database refresh
 
         opened_files = QtWidgets.QFileDialog.getOpenFileNames(
-            self, 'Open file', self.settings['last_open_path'],
+            self, 'Add books to database', self.settings['last_open_path'],
             f'eBooks ({self.available_parsers})')
 
         if not opened_files[0]:
@@ -570,7 +575,7 @@ class MainUI(QtWidgets.QMainWindow, mainwindow.Ui_MainWindow):
 
             self.resizeEvent()
             self.start_culling_timer()
-            if self.settings['show_toolbars']:
+            if self.settings['show_bars']:
                 self.bookToolBar.hide()
                 self.libraryToolBar.show()
 
@@ -581,7 +586,7 @@ class MainUI(QtWidgets.QMainWindow, mainwindow.Ui_MainWindow):
                     str(self.lib_ref.item_proxy_model.rowCount()) + ' Books')
         else:
 
-            if self.settings['show_toolbars']:
+            if self.settings['show_bars']:
                 self.bookToolBar.show()
                 self.libraryToolBar.hide()
 
@@ -869,15 +874,19 @@ class MainUI(QtWidgets.QMainWindow, mainwindow.Ui_MainWindow):
             profile_index, current_profile, QtCore.Qt.UserRole)
         self.format_contentView()
 
-    def modify_comic_view(self):
-        signal_sender = self.sender().objectName()
+    def modify_comic_view(self, key_pressed=None):
+        if key_pressed:
+            signal_sender = None
+        else:
+            signal_sender = self.sender().objectName()
+
         current_tab = self.tabWidget.widget(self.tabWidget.currentIndex())
 
         self.bookToolBar.fitWidth.setChecked(False)
         self.bookToolBar.bestFit.setChecked(False)
         self.bookToolBar.originalSize.setChecked(False)
 
-        if signal_sender == 'zoomOut':
+        if signal_sender == 'zoomOut' or key_pressed == QtCore.Qt.Key_Minus:
             self.comic_profile['zoom_mode'] = 'manualZoom'
             self.comic_profile['padding'] += 50
 
@@ -885,7 +894,7 @@ class MainUI(QtWidgets.QMainWindow, mainwindow.Ui_MainWindow):
             if self.comic_profile['padding'] * 2 > current_tab.contentView.viewport().width():
                 self.comic_profile['padding'] -= 50
 
-        if signal_sender == 'zoomIn':
+        if signal_sender == 'zoomIn' or key_pressed in (QtCore.Qt.Key_Plus, QtCore.Qt.Key_Equal):
             self.comic_profile['zoom_mode'] = 'manualZoom'
             self.comic_profile['padding'] -= 50
 
@@ -893,18 +902,18 @@ class MainUI(QtWidgets.QMainWindow, mainwindow.Ui_MainWindow):
             if self.comic_profile['padding'] < 0:
                 self.comic_profile['padding'] = 0
 
-        if signal_sender == 'fitWidth':
+        if signal_sender == 'fitWidth' or key_pressed == QtCore.Qt.Key_W:
             self.comic_profile['zoom_mode'] = 'fitWidth'
             self.comic_profile['padding'] = 0
             self.bookToolBar.fitWidth.setChecked(True)
 
         # Padding in the following cases is decided by
         # the image pixmap loaded by the widget
-        if signal_sender == 'bestFit':
+        if signal_sender == 'bestFit' or key_pressed == QtCore.Qt.Key_B:
             self.comic_profile['zoom_mode'] = 'bestFit'
             self.bookToolBar.bestFit.setChecked(True)
 
-        if signal_sender == 'originalSize':
+        if signal_sender == 'originalSize' or key_pressed == QtCore.Qt.Key_O:
             self.comic_profile['zoom_mode'] = 'originalSize'
             self.bookToolBar.originalSize.setChecked(True)
 
@@ -914,7 +923,8 @@ class MainUI(QtWidgets.QMainWindow, mainwindow.Ui_MainWindow):
         # TODO
         # See what happens if a font isn't installed
 
-        current_tab = self.tabWidget.widget(self.tabWidget.currentIndex())
+        current_tab = self.tabWidget.widget(
+            self.tabWidget.currentIndex())
 
         try:
             current_metadata = current_tab.metadata
@@ -1144,8 +1154,13 @@ class MainUI(QtWidgets.QMainWindow, mainwindow.Ui_MainWindow):
 
         self.lib_ref.update_proxymodels()
 
-    def toggle_toolbars(self):
-        self.settings['show_toolbars'] = not self.settings['show_toolbars']
+    def toggle_distraction_free(self):
+        self.settings['show_bars'] = not self.settings['show_bars']
+
+        self.statusBar.setVisible(
+            not self.statusBar.isVisible())
+        self.tabWidget.tabBar().setVisible(
+            not self.tabWidget.tabBar().isVisible())
 
         current_tab = self.tabWidget.currentIndex()
         if current_tab == 0:
