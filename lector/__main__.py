@@ -50,6 +50,9 @@ class MainUI(QtWidgets.QMainWindow, mainwindow.Ui_MainWindow):
         super(MainUI, self).__init__()
         self.setupUi(self)
 
+        # Initialize translation function
+        self._translate = QtCore.QCoreApplication.translate
+
         # Empty variables that will be infested soon
         self.settings = {}
         self.thread = None  # Background Thread
@@ -103,7 +106,8 @@ class MainUI(QtWidgets.QMainWindow, mainwindow.Ui_MainWindow):
         # Statusbar + Toolbar Visibility
         self.distractionFreeToggle.setIcon(self.QImageFactory.get_image('visibility'))
         self.distractionFreeToggle.setObjectName('distractionFreeToggle')
-        self.distractionFreeToggle.setToolTip('Toggle distraction free mode (Ctrl + D)')
+        self.distractionFreeToggle.setToolTip(
+            self._translate('Main_UI', 'Toggle distraction free mode (Ctrl + D)'))
         self.distractionFreeToggle.setAutoRaise(True)
         self.distractionFreeToggle.clicked.connect(self.toggle_distraction_free)
         self.statusBar.addPermanentWidget(self.distractionFreeToggle)
@@ -198,7 +202,7 @@ class MainUI(QtWidgets.QMainWindow, mainwindow.Ui_MainWindow):
         # The library refresh button on the Library tab
         self.reloadLibrary.setIcon(self.QImageFactory.get_image('reload'))
         self.reloadLibrary.setObjectName('reloadLibrary')
-        self.reloadLibrary.setToolTip('Scan library')
+        self.reloadLibrary.setToolTip(self._translate('Main_UI', 'Scan library'))
         self.reloadLibrary.setAutoRaise(True)
         self.reloadLibrary.clicked.connect(self.settingsDialog.start_library_scan)
 
@@ -451,9 +455,11 @@ class MainUI(QtWidgets.QMainWindow, mainwindow.Ui_MainWindow):
         # If a file is added from here, it should not be removed
         # from the libary in case of a database refresh
 
+        dialog_prompt = self._translate('Main_UI', 'Add books to database')
+        ebooks_string = self._translate('Main_UI', 'eBooks')
         opened_files = QtWidgets.QFileDialog.getOpenFileNames(
-            self, 'Add books to database', self.settings['last_open_path'],
-            f'eBooks ({self.available_parsers})')
+            self, dialog_prompt, self.settings['last_open_path'],
+            f'{ebooks_string} ({self.available_parsers})')
 
         if not opened_files[0]:
             return
@@ -463,7 +469,7 @@ class MainUI(QtWidgets.QMainWindow, mainwindow.Ui_MainWindow):
 
         self.settings['last_open_path'] = os.path.dirname(opened_files[0][0])
         self.sorterProgress.setVisible(True)
-        self.statusMessage.setText('Adding books...')
+        self.statusMessage.setText(self._translate('Main_UI', 'Adding books...'))
         self.thread = BackGroundBookAddition(
             opened_files[0], self.database_path, False, self)
         self.thread.finished.connect(self.move_on)
@@ -527,9 +533,11 @@ class MainUI(QtWidgets.QMainWindow, mainwindow.Ui_MainWindow):
         # Generate a message box to confirm deletion
         selected_number = len(selected_indexes)
         confirm_deletion = QtWidgets.QMessageBox()
-        confirm_deletion.setText('Delete %d book(s)?' % selected_number)
+        deletion_prompt = self._translate(
+            'Main_UI', f'Delete {selected_number} book(s)?')
+        confirm_deletion.setText(deletion_prompt)
         confirm_deletion.setIcon(QtWidgets.QMessageBox.Question)
-        confirm_deletion.setWindowTitle('Confirm deletion')
+        confirm_deletion.setWindowTitle(self._translate('Main_UI', 'Confirm deletion'))
         confirm_deletion.setStandardButtons(
             QtWidgets.QMessageBox.Yes | QtWidgets.QMessageBox.No)
         confirm_deletion.buttonClicked.connect(ifcontinue)
@@ -539,7 +547,7 @@ class MainUI(QtWidgets.QMainWindow, mainwindow.Ui_MainWindow):
     def move_on(self):
         self.settingsDialog.okButton.setEnabled(True)
         self.settingsDialog.okButton.setToolTip(
-            'Save changes and start library scan')
+            self._translate('Main_UI', 'Save changes and start library scan'))
         self.reloadLibrary.setEnabled(True)
 
         self.sorterProgress.setVisible(False)
@@ -583,7 +591,8 @@ class MainUI(QtWidgets.QMainWindow, mainwindow.Ui_MainWindow):
                 # Making the proxy model available doesn't affect
                 # memory utilization at all. Bleh.
                 self.statusMessage.setText(
-                    str(self.lib_ref.item_proxy_model.rowCount()) + ' Books')
+                    str(self.lib_ref.item_proxy_model.rowCount()) +
+                    self._translate('Main_UI', ' Books'))
         else:
 
             if self.settings['show_bars']:
@@ -1009,19 +1018,24 @@ class MainUI(QtWidgets.QMainWindow, mainwindow.Ui_MainWindow):
         context_menu = QtWidgets.QMenu()
 
         openAction = context_menu.addAction(
-            self.QImageFactory.get_image('view-readermode'), 'Start reading')
+            self.QImageFactory.get_image('view-readermode'),
+            self._translate('Main_UI', 'Start reading'))
 
         editAction = None
         if len(selected_indexes) == 1:
             editAction = context_menu.addAction(
-                self.QImageFactory.get_image('edit-rename'), 'Edit')
+                self.QImageFactory.get_image('edit-rename'),
+                self._translate('Main_UI', 'Edit'))
 
         deleteAction = context_menu.addAction(
-            self.QImageFactory.get_image('trash-empty'), 'Delete')
+            self.QImageFactory.get_image('trash-empty'),
+            self._translate('Main_UI', 'Delete'))
         readAction = context_menu.addAction(
-            QtGui.QIcon(':/images/checkmark.svg'), 'Mark read')
+            QtGui.QIcon(':/images/checkmark.svg'),
+            self._translate('Main_UI', 'Mark read'))
         unreadAction = context_menu.addAction(
-            QtGui.QIcon(':/images/xmark.svg'), 'Mark unread')
+            QtGui.QIcon(':/images/xmark.svg'),
+            self._translate('Main_UI', 'Mark unread'))
 
         action = context_menu.exec_(self.sender().mapToGlobal(position))
 
@@ -1118,7 +1132,7 @@ class MainUI(QtWidgets.QMainWindow, mainwindow.Ui_MainWindow):
             checked = [i for i in directory_list if i[3] == QtCore.Qt.Checked]
             filter_list = list(map(generate_name, checked))
             filter_list.sort()
-            filter_list.append('Manually Added')
+            filter_list.append(self._translate('Main_UI', 'Manually Added'))
             filter_actions = [QtWidgets.QAction(i, self.libraryFilterMenu) for i in filter_list]
 
         filter_all = QtWidgets.QAction('All', self.libraryFilterMenu)
@@ -1211,6 +1225,14 @@ def main():
     app = QtWidgets.QApplication(sys.argv)
     app.setApplicationName('Lector')  # This is needed for QStandardPaths
                                       # and my own hubris
+
+    # Internationalization support
+    translator = QtCore.QTranslator()
+    translation_file = f':/translations/Lector_{QtCore.QLocale.system().name()}.qm'
+    print(f'Localization: {QtCore.QLocale.system().name()}')
+    translator.load(translation_file)
+    app.installTranslator(translator)
+
     form = MainUI()
     form.show()
     form.resizeEvent()

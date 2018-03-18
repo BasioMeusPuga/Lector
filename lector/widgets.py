@@ -43,6 +43,8 @@ from lector.sorter import resize_image
 class Tab(QtWidgets.QWidget):
     def __init__(self, metadata, parent=None):
         super(Tab, self).__init__(parent)
+        self._translate = QtCore.QCoreApplication.translate
+
         self.parent = parent
         self.metadata = metadata  # Save progress data into this dictionary
         self.are_we_doing_images_only = self.metadata['images_only']
@@ -118,7 +120,7 @@ class Tab(QtWidgets.QWidget):
 
         # Create the dock widget for context specific display
         self.dockWidget = PliantDockWidget(self)
-        self.dockWidget.setWindowTitle('Bookmarks')
+        self.dockWidget.setWindowTitle(self._translate('Tab', 'Bookmarks'))
         self.dockWidget.setFeatures(QtWidgets.QDockWidget.DockWidgetClosable)
         self.dockWidget.setFloating(False)
         self.dockWidget.hide()
@@ -373,7 +375,7 @@ class Tab(QtWidgets.QWidget):
         # Start dockListView.edit(index) when something new is added
 
         identifier = uuid.uuid4().hex[:10]
-        description = 'New bookmark'
+        description = self._translate('Tab', 'New bookmark')
 
         if self.are_we_doing_images_only:
             chapter = self.metadata['position']['current_chapter']
@@ -446,9 +448,11 @@ class Tab(QtWidgets.QWidget):
 
         bookmark_menu = QtWidgets.QMenu()
         editAction = bookmark_menu.addAction(
-            self.main_window.QImageFactory.get_image('edit-rename'), 'Edit')
+            self.main_window.QImageFactory.get_image('edit-rename'),
+            self._translate('Tab', 'Edit'))
         deleteAction = bookmark_menu.addAction(
-            self.main_window.QImageFactory.get_image('trash-empty'), 'Delete')
+            self.main_window.QImageFactory.get_image('trash-empty'),
+            self._translate('Tab', 'Delete'))
 
         action = bookmark_menu.exec_(
             self.dockListView.mapToGlobal(position))
@@ -482,6 +486,7 @@ class Tab(QtWidgets.QWidget):
 class PliantQGraphicsView(QtWidgets.QGraphicsView):
     def __init__(self, filepath, main_window, parent=None):
         super(PliantQGraphicsView, self).__init__(parent)
+        self._translate = QtCore.QCoreApplication.translate
         self.parent = parent
         self.main_window = main_window
 
@@ -677,31 +682,31 @@ class PliantQGraphicsView(QtWidgets.QGraphicsView):
 
         saveAction = contextMenu.addAction(
             self.main_window.QImageFactory.get_image('filesaveas'),
-            'Save page as...')
+            self._translate('PliantQGraphicsView', 'Save page as...'))
 
         zoominAction = viewSubMenu.addAction(
             self.main_window.QImageFactory.get_image('zoom-in'),
-            'Zoom in (+)')
+            self._translate('PliantQGraphicsView', 'Zoom in (+)'))
 
         zoomoutAction = viewSubMenu.addAction(
             self.main_window.QImageFactory.get_image('zoom-out'),
-            'Zoom out (-)')
+            self._translate('PliantQGraphicsView', 'Zoom out (-)'))
 
         fitWidthAction = viewSubMenu.addAction(
             self.main_window.QImageFactory.get_image('zoom-fit-width'),
-            'Fit width (W)')
+            self._translate('PliantQGraphicsView', 'Fit width (W)'))
 
         bestFitAction = viewSubMenu.addAction(
             self.main_window.QImageFactory.get_image('zoom-fit-best'),
-            'Best fit (B)')
+            self._translate('PliantQGraphicsView', 'Best fit (B)'))
 
         originalSizeAction = viewSubMenu.addAction(
             self.main_window.QImageFactory.get_image('zoom-original'),
-            'Original size (O)')
+            self._translate('PliantQGraphicsView', 'Original size (O)'))
 
         toggleAction = contextMenu.addAction(
             self.main_window.QImageFactory.get_image('visibility'),
-            'Toggle distraction free mode')
+            self._translate('PliantQGraphicsView', 'Toggle distraction free mode'))
 
         action = contextMenu.exec_(self.sender().mapToGlobal(position))
 
@@ -730,18 +735,23 @@ class PliantQGraphicsView(QtWidgets.QGraphicsView):
 class PliantQTextBrowser(QtWidgets.QTextBrowser):
     def __init__(self, main_window, parent=None):
         super(PliantQTextBrowser, self).__init__(parent)
-        self.main_window = main_window
+        self._translate = QtCore.QCoreApplication.translate
+
         self.parent = parent
-        self.ignore_wheel_event = False
-        self.ignore_wheel_event_number = 0
+        self.main_window = main_window
+
         self.common_functions = PliantWidgetsCommonFunctions(
             self, self.main_window)
-        self.verticalScrollBar().sliderMoved.connect(self.record_scroll_position)
-        self.setMouseTracking(True)
+
         self.setContextMenuPolicy(QtCore.Qt.CustomContextMenu)
         self.customContextMenuRequested.connect(
             self.generate_textbrowser_context_menu)
+
+        self.setMouseTracking(True)
         self.viewport().setCursor(QtCore.Qt.IBeamCursor)
+        self.verticalScrollBar().sliderMoved.connect(self.record_scroll_position)
+        self.ignore_wheel_event = False
+        self.ignore_wheel_event_number = 0
 
     def wheelEvent(self, event):
         self.record_scroll_position()
@@ -794,17 +804,18 @@ class PliantQTextBrowser(QtWidgets.QTextBrowser):
         defineAction = 'Caesar si viveret, ad remum dareris'
         if selected_word and selected_word != '':
             selected_word = selected_word.split()[0]
+            define_string = self._translate('PliantQTextBrowser', 'Define')
             defineAction = context_menu.addAction(
                 self.main_window.QImageFactory.get_image('view-readermode'),
-                f'Define "{selected_word}"')
+                f'{define_string} "{selected_word}"')
 
         searchAction = context_menu.addAction(
             self.main_window.QImageFactory.get_image('search'),
-            'Search')
+            self._translate('PliantQTextBrowser', 'Search'))
 
         toggleAction = context_menu.addAction(
             self.main_window.QImageFactory.get_image('visibility'),
-            'Toggle distraction free mode')
+            self._translate('PliantQTextBrowser', 'Toggle distraction free mode'))
 
         action = context_menu.exec_(self.sender().mapToGlobal(position))
 
@@ -877,7 +888,8 @@ class PliantWidgetsCommonFunctions():
 
         if (current_toc_index < max_toc_index and direction == 1) or (
                 current_toc_index > 0 and direction == -1):
-            self.main_window.bookToolBar.tocBox.setCurrentIndex(current_toc_index + direction)
+            self.main_window.bookToolBar.tocBox.setCurrentIndex(
+                current_toc_index + direction)
 
             # Set page position depending on if the chapter number is increasing or decreasing
             if direction == 1 or was_button_pressed:
@@ -906,14 +918,17 @@ class PliantQGraphicsScene(QtWidgets.QGraphicsScene):
     def __init__(self, parent=None):
         super(PliantQGraphicsScene, self).__init__(parent)
         self.parent = parent
+        self._translate = QtCore.QCoreApplication.translate
 
     def mouseReleaseEvent(self, event):
         self.parent.previous_position = self.parent.pos()
 
         image_files = '*.jpg *.png'
+        dialog_prompt = self._translate('PliantQGraphicsScene', 'Select new cover')
+        images_string = self._translate('PliantQGraphicsScene', 'Images')
         new_cover = QtWidgets.QFileDialog.getOpenFileName(
-            None, 'Select new cover', self.parent.parent.settings['last_open_path'],
-            f'Images ({image_files})')[0]
+            None, dialog_prompt, self.parent.parent.settings['last_open_path'],
+            f'{images_string} ({image_files})')[0]
 
         if not new_cover:
             self.parent.show()

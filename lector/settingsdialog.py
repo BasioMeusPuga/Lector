@@ -34,6 +34,7 @@ class SettingsUI(QtWidgets.QDialog, settingswindow.Ui_Dialog):
     def __init__(self, parent):
         super(SettingsUI, self).__init__()
         self.setupUi(self)
+        self._translate = QtCore.QCoreApplication.translate
 
         self.parent = parent
         self.database_path = self.parent.database_path
@@ -53,7 +54,11 @@ class SettingsUI(QtWidgets.QDialog, settingswindow.Ui_Dialog):
         self.filesystem_model = None
         self.tag_data_copy = None
 
-        languages = ['English', 'Spanish', 'Hindi']
+        english_string = self._translate('SettingsUI', 'English')
+        spanish_string = self._translate('SettingsUI', 'Spanish')
+        hindi_string = self._translate('SettingsUI', 'Hindi')
+        languages = [english_string, spanish_string, hindi_string]
+
         self.languageBox.addItems(languages)
         current_language = self.parent.settings['dictionary_language']
         if current_language == 'en':
@@ -64,7 +69,8 @@ class SettingsUI(QtWidgets.QDialog, settingswindow.Ui_Dialog):
             self.languageBox.setCurrentIndex(2)
         self.languageBox.activated.connect(self.change_dictionary_language)
 
-        self.okButton.setToolTip('Save changes and start library scan')
+        self.okButton.setToolTip(
+            self._translate('SettingsUI', 'Save changes and start library scan'))
         self.okButton.clicked.connect(self.start_library_scan)
         self.cancelButton.clicked.connect(self.cancel_pressed)
         self.aboutButton.clicked.connect(self.about_pressed)
@@ -206,10 +212,12 @@ class SettingsUI(QtWidgets.QDialog, settingswindow.Ui_Dialog):
         # Disallow rechecking until the first check completes
         self.okButton.setEnabled(False)
         self.parent.reloadLibrary.setEnabled(False)
-        self.okButton.setToolTip('Library scan in progress...')
+        self.okButton.setToolTip(
+            self._translate('SettingsUI', 'Library scan in progress...'))
 
         # Traverse directories looking for files
-        self.parent.statusMessage.setText('Checking library folders')
+        self.parent.statusMessage.setText(
+            self._translate('SettingsUI', 'Checking library folders'))
         self.thread = BackGroundBookSearch(data_pairs, self)
         self.thread.finished.connect(self.finished_iterating)
         self.thread.start()
@@ -222,7 +230,8 @@ class SettingsUI(QtWidgets.QDialog, settingswindow.Ui_Dialog):
 
         # Hey, messaging is important, okay?
         self.parent.sorterProgress.setVisible(True)
-        self.parent.statusMessage.setText('Parsing files')
+        self.parent.statusMessage.setText(
+            self._translate('SettingsUI', 'Parsing files'))
 
         # We now create a new thread to put those files into the database
         self.thread = BackGroundBookAddition(

@@ -27,7 +27,7 @@ class BookmarkProxyModel(QtCore.QSortFilterProxyModel):
     def __init__(self, parent=None):
         super(BookmarkProxyModel, self).__init__(parent)
         self.parent = parent
-        self.filter_string = None
+        self.filter_text = None
 
     def setFilterParams(self, filter_text):
         self.filter_text = filter_text
@@ -68,8 +68,18 @@ class ItemProxyModel(QtCore.QSortFilterProxyModel):
 class TableProxyModel(QtCore.QSortFilterProxyModel):
     def __init__(self, temp_dir, parent=None):
         super(TableProxyModel, self).__init__(parent)
+
+        self._translate = QtCore.QCoreApplication.translate
+
+        title_string = self._translate('TableProxyModel', 'Title')
+        author_string = self._translate('TableProxyModel', 'Author')
+        year_string = self._translate('TableProxyModel', 'Year')
+        lastread_string = self._translate('TableProxyModel', 'Last Read')
+        tags_string = self._translate('TableProxyModel', 'Tags')
         self.header_data = [
-            None, 'Title', 'Author', 'Year', 'Last Read', '%', 'Tags']
+            None, title_string, author_string,
+            year_string, lastread_string, '%', tags_string]
+
         self.temp_dir = temp_dir
         self.filter_text = None
         self.active_library_filters = None

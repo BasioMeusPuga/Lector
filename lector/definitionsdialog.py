@@ -26,8 +26,10 @@ class DefinitionsUI(QtWidgets.QDialog, definitions.Ui_Dialog):
     def __init__(self, parent):
         super(DefinitionsUI, self).__init__()
         self.setupUi(self)
+        self._translate = QtCore.QCoreApplication.translate
 
         self.parent = parent
+        self.previous_position = None
 
         self.setWindowFlags(
             QtCore.Qt.Popup |
@@ -109,8 +111,9 @@ class DefinitionsUI(QtWidgets.QDialog, definitions.Ui_Dialog):
         html_string += f'<h2><em><strong>{word}</strong></em></h2>\n'
 
         if nothing_found:
+            nope_string = self._translate('DefinitionsUI', 'No definitions found in')
             language = self.parent.settings['dictionary_language'].upper()
-            html_string += f'<p><em>No definitions found in {language}<em></p>\n'
+            html_string += f'<p><em>{nope_string} {language}<em></p>\n'
         else:
             # Word root
             html_string += f'<p><em>Word root: <em>{word_root}</p>\n'

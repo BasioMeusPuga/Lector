@@ -17,12 +17,13 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 
-from PyQt5 import QtWidgets, QtGui, QtCore
+from PyQt5 import QtWidgets, QtCore
 
 
 class BookToolBar(QtWidgets.QToolBar):
     def __init__(self, parent=None):
         super(BookToolBar, self).__init__(parent)
+        self._translate = QtCore.QCoreApplication.translate
 
         # Spacer
         spacer = QtWidgets.QWidget()
@@ -36,27 +37,32 @@ class BookToolBar(QtWidgets.QToolBar):
         self.setIconSize(QtCore.QSize(22, 22))
         self.setFloatable(False)
         self.setContextMenuPolicy(QtCore.Qt.PreventContextMenu)
-        self.setObjectName("LibraryToolBar")
+        self.setObjectName('LibraryToolBar')
 
         image_factory = self.window().QImageFactory
 
         # Buttons
         self.fontButton = QtWidgets.QAction(
             image_factory.get_image('gtk-select-font'),
-            'View settings', self)
+            self._translate('BookToolBar', 'View settings'),
+            self)
         self.fullscreenButton = QtWidgets.QAction(
             image_factory.get_image('view-fullscreen'),
-            'Fullscreen', self)
+            self._translate('BookToolBar', 'Fullscreen'),
+            self)
         self.addBookmarkButton = QtWidgets.QAction(
             image_factory.get_image('bookmark-new'),
-            'Add bookmark', self)
+            self._translate('BookToolBar', 'Add bookmark'),
+            self)
         self.bookmarkButton = QtWidgets.QAction(
             image_factory.get_image('bookmarks'),
-            'Bookmarks', self)
+            self._translate('BookToolBar', 'Bookmarks'),
+            self)
         self.bookmarkButton.setObjectName('bookmarkButton')
         self.resetProfile = QtWidgets.QAction(
             image_factory.get_image('reload'),
-            'Reset profile', self)
+            self._translate('BookToolBar', 'Reset profile'),
+            self)
 
         # Add buttons
         self.addAction(self.fontButton)
@@ -74,49 +80,57 @@ class BookToolBar(QtWidgets.QToolBar):
         font_sizes.extend(['56', '64', '72'])
         self.fontSizeBox = QtWidgets.QComboBox(self)
         self.fontSizeBox.setObjectName('fontSizeBox')
-        self.fontSizeBox.setToolTip('Font size')
+        self.fontSizeBox.setToolTip(self._translate('BookToolBar', 'Font size'))
         self.fontSizeBox.addItems(font_sizes)
         self.fontSizeBox.setEditable(True)
 
         self.paddingUp = QtWidgets.QAction(
             image_factory.get_image('format-indent-less'),
-            'Increase padding', self)
+            self._translate('BookToolBar', 'Increase padding'),
+            self)
         self.paddingUp.setObjectName('paddingUp')
         self.paddingDown = QtWidgets.QAction(
             image_factory.get_image('format-indent-more'),
-            'Decrease padding', self)
+            self._translate('BookToolBar', 'Decrease padding'),
+            self)
         self.paddingDown.setObjectName('paddingDown')
 
         self.lineSpacingUp = QtWidgets.QAction(
             image_factory.get_image('format-line-spacing-triple'),
-            'Increase line spacing', self)
+            self._translate('BookToolBar', 'Increase line spacing'),
+            self)
         self.lineSpacingUp.setObjectName('lineSpacingUp')
         self.lineSpacingDown = QtWidgets.QAction(
             image_factory.get_image('format-line-spacing-double'),
-            'Decrease line spacing', self)
+            self._translate('BookToolBar', 'Decrease line spacing'),
+            self)
         self.lineSpacingDown.setObjectName('lineSpacingDown')
 
         self.alignLeft = QtWidgets.QAction(
             image_factory.get_image('format-justify-left'),
-            'Left align text', self)
+            self._translate('BookToolBar', 'Left align text'),
+            self)
         self.alignLeft.setObjectName('alignLeft')
         self.alignLeft.setCheckable(True)
 
         self.alignRight = QtWidgets.QAction(
             image_factory.get_image('format-justify-right'),
-            'Right align text', self)
+            self._translate('BookToolBar', 'Right align text'),
+            self)
         self.alignRight.setObjectName('alignRight')
         self.alignRight.setCheckable(True)
 
         self.alignCenter = QtWidgets.QAction(
             image_factory.get_image('format-justify-center'),
-            'Center align text', self)
+            self._translate('BookToolBar', 'Center align text'),
+            self)
         self.alignCenter.setObjectName('alignCenter')
         self.alignCenter.setCheckable(True)
 
         self.alignJustify = QtWidgets.QAction(
             image_factory.get_image('format-justify-fill'),
-            'Justify text', self)
+            self._translate('BookToolBar', 'Justify text'),
+            self)
         self.alignJustify.setObjectName('alignJustify')
         self.alignJustify.setCheckable(True)
 
@@ -135,7 +149,7 @@ class BookToolBar(QtWidgets.QToolBar):
         self.colorBoxFG.setObjectName('fgColor')
         self.colorBoxFG.setToolTip('Text color')
         self.colorBoxBG = FixedPushButton(self)
-        self.colorBoxBG.setToolTip('Background color')
+        self.colorBoxBG.setToolTip(self._translate('BookToolBar', 'Background color'))
         self.colorBoxBG.setObjectName('bgColor')
 
         profiles = ['Profile 1', 'Profile 2', 'Profile 3']
@@ -187,31 +201,36 @@ class BookToolBar(QtWidgets.QToolBar):
         # Comic view modification
         self.zoomIn = QtWidgets.QAction(
             image_factory.get_image('zoom-in'),
-            'Zoom in', self)
+            self._translate('BookToolBar', 'Zoom in'),
+            self)
         self.zoomIn.setObjectName('zoomIn')
         self.zoomOut = QtWidgets.QAction(
             image_factory.get_image('zoom-out'),
-            'Zoom Out', self)
+            self._translate('BookToolBar', 'Zoom Out'),
+            self)
         self.zoomOut.setObjectName('zoomOut')
 
         self.fitWidth = QtWidgets.QAction(
             image_factory.get_image('zoom-fit-width'),
-            'Fit Width', self)
+            self._translate('BookToolBar', 'Fit Width'),
+            self)
         self.fitWidth.setObjectName('fitWidth')
         self.fitWidth.setCheckable(True)
         self.bestFit = QtWidgets.QAction(
             image_factory.get_image('zoom-fit-best'),
-            'Best Fit', self)
+            self._translate('BookToolBar', 'Best Fit'),
+            self)
         self.bestFit.setObjectName('bestFit')
         self.bestFit.setCheckable(True)
         self.originalSize = QtWidgets.QAction(
             image_factory.get_image('zoom-original'),
-            'Original size', self)
+            self._translate('BookToolBar', 'Original size'),
+            self)
         self.originalSize.setObjectName('originalSize')
         self.originalSize.setCheckable(True)
 
         self.comicBGColor = FixedPushButton(self)
-        self.comicBGColor.setToolTip('Background color')
+        self.comicBGColor.setToolTip(self._translate('BookToolBar', 'Background color'))
         self.comicBGColor.setObjectName('comicBGColor')
 
         self.comicSeparator1 = self.addSeparator()
@@ -239,7 +258,7 @@ class BookToolBar(QtWidgets.QToolBar):
         # Other booktoolbar widgets
         self.searchBar = FixedLineEdit(self)
         self.searchBar.setPlaceholderText(
-            'Search...')
+            self._translate('BookToolBar', 'Search...'))
         self.searchBar.setSizePolicy(sizePolicy)
         self.searchBar.setContentsMargins(10, 0, 0, 0)
         self.searchBar.setObjectName('searchBar')
@@ -247,7 +266,8 @@ class BookToolBar(QtWidgets.QToolBar):
         # Sorter
         self.tocBox = FixedComboBox(self)
         self.tocBox.setObjectName('sortingBox')
-        self.tocBox.setToolTip('Table of Contents')
+        self.tocBox.setToolTip(
+            self._translate('BookToolBar', 'Table of Contents'))
 
         # All of these will be put after the spacer
         # This means that the buttons in the left side of
@@ -311,6 +331,7 @@ class BookToolBar(QtWidgets.QToolBar):
 class LibraryToolBar(QtWidgets.QToolBar):
     def __init__(self, parent=None):
         super(LibraryToolBar, self).__init__(parent)
+        self._translate = QtCore.QCoreApplication.translate
 
         spacer = QtWidgets.QWidget()
         spacer.setSizePolicy(
@@ -326,27 +347,41 @@ class LibraryToolBar(QtWidgets.QToolBar):
 
         # Buttons
         self.addButton = QtWidgets.QAction(
-            image_factory.get_image('add'), 'Add book', self)
+            image_factory.get_image('add'),
+            self._translate('LibraryToolBar', 'Add book'),
+            self)
         self.deleteButton = QtWidgets.QAction(
-            image_factory.get_image('remove'), 'Delete book', self)
+            image_factory.get_image('remove'),
+            self._translate('LibraryToolBar', 'Delete book'),
+            self)
         self.colorButton = QtWidgets.QAction(
-            image_factory.get_image('color-picker'), 'Library background color', self)
+            image_factory.get_image('color-picker'),
+            self._translate('LibraryToolBar', 'Library background color'),
+            self)
         self.colorButton.setObjectName('libraryBackground')
         self.settingsButton = QtWidgets.QAction(
-            image_factory.get_image('settings'), 'Settings', self)
+            image_factory.get_image('settings'),
+            self._translate('LibraryToolBar', 'Settings'),
+            self)
         self.settingsButton.setCheckable(True)
 
         self.coverViewButton = QtWidgets.QAction(
-            image_factory.get_image('view-grid'), 'View as covers', self)
+            image_factory.get_image('view-grid'),
+            self._translate('LibraryToolBar', 'View as covers'),
+            self)
         self.coverViewButton.setCheckable(True)
         self.tableViewButton = QtWidgets.QAction(
-            image_factory.get_image('table'), 'View as table', self)
+            image_factory.get_image('table'),
+            self._translate('LibraryToolBar', 'View as table'),
+            self)
         self.tableViewButton.setCheckable(True)
 
         self.libraryFilterButton = QtWidgets.QToolButton(self)
         self.libraryFilterButton.setIcon(image_factory.get_image('view-readermode'))
-        self.libraryFilterButton.setText('Filter library')
-        self.libraryFilterButton.setToolTip('Filter library')
+        self.libraryFilterButton.setText(
+            self._translate('LibraryToolBar', 'Filter library'))
+        self.libraryFilterButton.setToolTip(
+            self._translate('LibraryToolBar', 'Filter library'))
 
         # Auto unchecks the other QToolButton in case of clicking
         self.viewButtons = QtWidgets.QActionGroup(self)
@@ -373,19 +408,26 @@ class LibraryToolBar(QtWidgets.QToolBar):
         self.searchBar = FixedLineEdit(self)
         self.searchBar.setClearButtonEnabled(True)
         self.searchBar.setPlaceholderText(
-            'Search for Title, Author, Tags...')
+            self._translate('LibraryToolBar', 'Search for Title, Author, Tags...'))
         self.searchBar.setSizePolicy(sizePolicy)
         self.searchBar.setContentsMargins(10, 0, 0, 0)
         self.searchBar.setObjectName('searchBar')
 
         # Sorter
-        sorting_choices = ['Title', 'Author', 'Year', 'Newest', 'Last read']
+        title_string = self._translate('TableProxyModel', 'Title')
+        author_string = self._translate('TableProxyModel', 'Author')
+        year_string = self._translate('TableProxyModel', 'Year')
+        newest_string = self._translate('TableProxyModel', 'Newest')
+        lastread_string = self._translate('TableProxyModel', 'Last Read')
+        sorting_choices = [
+            title_string, author_string, year_string, newest_string, lastread_string]
+
         self.sortingBox = FixedComboBox(self)
         self.sortingBox.addItems(sorting_choices)
         self.sortingBox.setObjectName('sortingBox')
         self.sortingBox.setSizePolicy(sizePolicy)
         self.sortingBox.setMinimumContentsLength(10)
-        self.sortingBox.setToolTip('Sort by')
+        self.sortingBox.setToolTip(self._translate('LibraryToolBar', 'Sort by'))
 
         # Add widgets
         self.addWidget(spacer)

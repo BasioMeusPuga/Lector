@@ -19,15 +19,16 @@
 from PyQt5 import QtWidgets, QtCore, QtGui
 
 from lector import database
+from lector.widgets import PliantQGraphicsScene
 
 from resources import metadata
-from lector.widgets import PliantQGraphicsScene
 
 
 class MetadataUI(QtWidgets.QDialog, metadata.Ui_Dialog):
     def __init__(self, parent):
         super(MetadataUI, self).__init__()
         self.setupUi(self)
+        self._translate = QtCore.QCoreApplication.translate
 
         self.setWindowFlags(
             QtCore.Qt.Popup |
@@ -97,7 +98,9 @@ class MetadataUI(QtWidgets.QDialog, metadata.Ui_Dialog):
         except ValueError:
             year = self.book_year
 
-        tooltip_string = title + '\nAuthor: ' + author + '\nYear: ' + str(year)
+        author_string = self._translate('MetadataUI', 'Author')
+        year_string = self._translate('MetadataUI', 'Year')
+        tooltip_string = f'{title} \n{author_string}: {author} \n{year_string}: {str(year)}'
 
         book_item.setData(title, QtCore.Qt.UserRole)
         book_item.setData(author, QtCore.Qt.UserRole + 1)

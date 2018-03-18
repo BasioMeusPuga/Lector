@@ -31,6 +31,7 @@ class Library:
         self.view_model = None
         self.item_proxy_model = None
         self.table_proxy_model = None
+        self._translate = QtCore.QCoreApplication.translate
 
     def generate_model(self, mode, parsed_books=None, is_database_ready=True):
         if mode == 'build':
@@ -117,7 +118,9 @@ class Library:
                 'last_accessed': last_accessed,
                 'file_exists': file_exists}
 
-            tooltip_string = title + '\nAuthor: ' + author + '\nYear: ' + str(year)
+            author_string = self._translate('Library', 'Author')
+            year_string = self._translate('Library', 'Year')
+            tooltip_string = f'{title} \n{author_string}: {author} \n{year_string}: {str(year)}'
 
             # Additional data can be set using an incrementing
             # QtCore.Qt.UserRole
@@ -251,7 +254,8 @@ class Library:
 
                     return directory_name, directory_tags
 
-            return 'manually added', None
+            added_string = self._translate('Library', 'manually added')
+            return added_string.lower(), None
 
         # Generate tags for the QStandardItemModel
         for i in range(self.view_model.rowCount()):
