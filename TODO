@@ -55,7 +55,8 @@ TODO
         ✓ Set context menu for definitions and the like
         ✓ Paragraph indentation
         ✓ Comic view keyboard shortcuts
-        Comic view context menu
+        ✓ Comic view context menu
+        Adjust key navigation according to viewport dimensions
         Search document using QTextCursor?
     Filetypes:
         ✓ pdf support

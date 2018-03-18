@@ -38,7 +38,7 @@ class EPUB:
             None, True)
 
         if not contents_path:
-            return False  # No opf was found so processing cannot continue
+            return False  # No (valid) opf was found so processing cannot continue
 
         self.generate_book_metadata(contents_path)
         self.parse_toc()
@@ -76,13 +76,17 @@ class EPUB:
 
             if xml:
                 root_item = xml.find('rootfile')
-                return root_item.get('full-path')
-            else:
-                possible_filenames = ('content.opf', 'package.opf')
-                for i in possible_filenames:
-                    presumptive_location = self.get_file_path(i)
-                    if presumptive_location:
-                        return presumptive_location
+                try:
+                    return root_item.get('full-path')
+                except AttributeError:
+                    print(f'ePub module: {self.filename} has a malformed container.xml')
+                    return None
+
+            possible_filenames = ('content.opf', 'package.opf')
+            for i in possible_filenames:
+                presumptive_location = self.get_file_path(i)
+                if presumptive_location:
+                    return presumptive_location
 
         for i in self.zip_file.filelist:
             if os.path.basename(i.filename) == os.path.basename(filename):

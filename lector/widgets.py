@@ -656,8 +656,8 @@ class PliantQGraphicsView(QtWidgets.QGraphicsView):
                         next_val = 0
                     self.verticalScrollBar().setValue(next_val)
 
-        small_increment = maximum // 5
-        big_increment = maximum // 3
+        small_increment = maximum // 4
+        big_increment = maximum // 2
 
         if event.key() == QtCore.Qt.Key_Up:
             scroller(small_increment, False)
@@ -711,9 +711,15 @@ class PliantQGraphicsView(QtWidgets.QGraphicsView):
         action = contextMenu.exec_(self.sender().mapToGlobal(position))
 
         if action == saveAction:
-            # TODO
-            # Save this page as an image
-            pass
+            dialog_prompt = self._translate('Main_UI', 'Save page as...')
+            extension_string = self._translate('Main_UI', 'Images')
+            save_file = QtWidgets.QFileDialog.getSaveFileName(
+                self, dialog_prompt, self.main_window.settings['last_open_path'],
+                f'{extension_string} (*.png *.jpg *.bmp)')
+
+            if save_file:
+                self.image_pixmap.save(save_file[0])
+
         if action == toggleAction:
             self.main_window.toggle_distraction_free()
 
