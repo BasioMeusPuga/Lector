@@ -36,11 +36,12 @@ poppler-qt5 and python-poppler-qt5 are optional.
 ### Available packages
 * [AUR](https://aur.archlinux.org/packages/lector-git/)
 
-## Reporting issues
-When reporting issues:
-
-* If you're having trouble with a book while the rest of the application / other books work, please link to a copy of the book itself.
-* If nothing is working, please make sure the requirements mentioned above are all installed, and are at least at the version mentioned.
+## Translations
+1. There are some (sample) `.ts` files in `resources/translations`. Pick any one of them, and open it in `Qt Linguist`.
+2. Pick the language you wish to translate to.
+3. Translate relevant strings.
+4. Resist the urge to include profanity.
+5. Send me the new file. Preferably as a pull request.
 
 ## Screenshots
 
@@ -67,6 +68,12 @@ When reporting issues:
 
 ### In program dictionary
 ![alt tag](https://i.imgur.com/Vh9xQUC.png)
+
+## Reporting issues
+When reporting issues:
+
+* If you're having trouble with a book while the rest of the application / other books work, please link to a copy of the book itself.
+* If nothing is working, please make sure the requirements mentioned above are all installed, and are at least at the version mentioned.
 
 ## Attributions
 * [KindleUnpack](https://github.com/kevinhendricks/KindleUnpack)
