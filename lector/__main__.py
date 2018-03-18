@@ -1228,10 +1228,14 @@ def main():
 
     # Internationalization support
     translator = QtCore.QTranslator()
-    translation_file = f':/translations/Lector_{QtCore.QLocale.system().name()}.qm'
-    print(f'Localization: {QtCore.QLocale.system().name()}')
-    translator.load(translation_file)
+    translations_found = translator.load(
+        QtCore.QLocale.system(), ':/translations/Lector_')
     app.installTranslator(translator)
+
+    translations_out_string = '(Translations found)'
+    if not translations_found:
+        translations_out_string = '(No translations found)'
+    print(f'Locale: {QtCore.QLocale.system().name()}', translations_out_string)
 
     form = MainUI()
     form.show()
