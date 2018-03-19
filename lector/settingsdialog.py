@@ -226,6 +226,7 @@ class SettingsUI(QtWidgets.QDialog, settingswindow.Ui_Dialog):
         # The books the search thread has found
         # are now in self.thread.valid_files
         if not self.thread.valid_files:
+            self.parent.move_on()
             return
 
         # Hey, messaging is important, okay?

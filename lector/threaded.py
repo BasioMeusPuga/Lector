@@ -89,7 +89,8 @@ class BackGroundBookSearch(QtCore.QThread):
 
         # Filter for checked directories
         self.valid_directories = [
-            [i[0], i[1], i[2]] for i in data_list if i[3] == QtCore.Qt.Checked]
+            [i[0], i[1], i[2]] for i in data_list if i[
+                3] == QtCore.Qt.Checked and os.path.exists(i[0])]
         self.unwanted_directories = [
             pathlib.Path(i[0]) for i in data_list if i[3] == QtCore.Qt.Unchecked]
 
@@ -117,8 +118,11 @@ class BackGroundBookSearch(QtCore.QThread):
             _pool.close()
             _pool.join()
 
-        initiate_threads()
-        print(len(self.valid_files), 'books found')
+        if self.valid_directories:
+            initiate_threads()
+            print(len(self.valid_files), 'books found')
+        else:
+            print('No valid directories')
 
 
 class BackGroundCacheRefill(QtCore.QThread):
