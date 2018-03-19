@@ -40,8 +40,10 @@ poppler-qt5 and python-poppler-qt5 are optional.
 1. There is a `SAMPLE.ts` file in `resources/translations`. Open it in `Qt Linguist`.
 2. Pick the language you wish to translate to.
 3. Translate relevant strings.
-4. Resist the urge to include profanity.
+4. Try to resist the urge to include profanity.
 5. Save the file as `Lector_<language>` and send it to me, preferably as a pull request.
+
+Oh, please keep the translations short. There's only so much space for UI elements.
 
 ## Screenshots
 
