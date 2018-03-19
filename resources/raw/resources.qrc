@@ -1,5 +1,7 @@
 <RCC>
   <qresource prefix="images">
+    <file>DarkIcons/tableofcontents.svg</file>
+    <file>LightIcons/tableofcontents.svg</file>
     <file>DarkIcons/filesaveas.svg</file>
     <file>LightIcons/filesaveas.svg</file>
     <file>DarkIcons/search.svg</file>

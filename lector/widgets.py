@@ -678,11 +678,17 @@ class PliantQGraphicsView(QtWidgets.QGraphicsView):
 
     def generate_graphicsview_context_menu(self, position):
         contextMenu = QtWidgets.QMenu()
-        viewSubMenu = contextMenu.addMenu('View')
 
         saveAction = contextMenu.addAction(
             self.main_window.QImageFactory.get_image('filesaveas'),
             self._translate('PliantQGraphicsView', 'Save page as...'))
+        toggleAction = contextMenu.addAction(
+            self.main_window.QImageFactory.get_image('visibility'),
+            self._translate('PliantQGraphicsView', 'Toggle distraction free mode'))
+
+        viewSubMenu = contextMenu.addMenu('View')
+        viewSubMenu.setIcon(
+            self.main_window.QImageFactory.get_image('mail-thread-watch'))
 
         zoominAction = viewSubMenu.addAction(
             self.main_window.QImageFactory.get_image('zoom-in'),
@@ -704,9 +710,17 @@ class PliantQGraphicsView(QtWidgets.QGraphicsView):
             self.main_window.QImageFactory.get_image('zoom-original'),
             self._translate('PliantQGraphicsView', 'Original size (O)'))
 
-        toggleAction = contextMenu.addAction(
-            self.main_window.QImageFactory.get_image('visibility'),
-            self._translate('PliantQGraphicsView', 'Toggle distraction free mode'))
+        if not self.main_window.settings['show_bars']:
+            tocSubMenu = contextMenu.addMenu(
+                self._translate('PliantQGraphicsView', 'Table of Contents'))
+            tocSubMenu.setIcon(
+                self.main_window.QImageFactory.get_image('tableofcontents'))
+
+            current_toc = [i[0] for i in self.parent.metadata['content']]
+            for count, i in enumerate(current_toc):
+                this_action = tocSubMenu.addAction(i)
+                this_action.setData(count)
+                this_action.triggered.connect(self.set_chapter)
 
         action = contextMenu.exec_(self.sender().mapToGlobal(position))
 
@@ -732,6 +746,9 @@ class PliantQGraphicsView(QtWidgets.QGraphicsView):
 
         if action in view_action_dict:
             self.main_window.modify_comic_view(view_action_dict[action])
+
+    def set_chapter(self):
+        self.common_functions.set_chapter(self.sender().data())
 
     def closeEvent(self, *args):
         # In case the program is closed when a contentView is fullscreened
@@ -805,25 +822,37 @@ class PliantQTextBrowser(QtWidgets.QTextBrowser):
         selected_word = self.textCursor().selection()
         selected_word = selected_word.toPlainText()
 
-        context_menu = QtWidgets.QMenu()
+        contextMenu = QtWidgets.QMenu()
 
         defineAction = 'Caesar si viveret, ad remum dareris'
         if selected_word and selected_word != '':
             selected_word = selected_word.split()[0]
             define_string = self._translate('PliantQTextBrowser', 'Define')
-            defineAction = context_menu.addAction(
+            defineAction = contextMenu.addAction(
                 self.main_window.QImageFactory.get_image('view-readermode'),
                 f'{define_string} "{selected_word}"')
 
-        searchAction = context_menu.addAction(
+        searchAction = contextMenu.addAction(
             self.main_window.QImageFactory.get_image('search'),
             self._translate('PliantQTextBrowser', 'Search'))
 
-        toggleAction = context_menu.addAction(
+        toggleAction = contextMenu.addAction(
             self.main_window.QImageFactory.get_image('visibility'),
             self._translate('PliantQTextBrowser', 'Toggle distraction free mode'))
 
-        action = context_menu.exec_(self.sender().mapToGlobal(position))
+        if not self.main_window.settings['show_bars']:
+            tocSubMenu = contextMenu.addMenu(
+                self._translate('PliantQTextBrowser', 'Table of Contents'))
+            tocSubMenu.setIcon(
+                self.main_window.QImageFactory.get_image('tableofcontents'))
+
+            current_toc = [i[0] for i in self.parent.metadata['content']]
+            for count, i in enumerate(current_toc):
+                this_action = tocSubMenu.addAction(i)
+                this_action.setData(count)
+                this_action.triggered.connect(self.set_chapter)
+
+        action = contextMenu.exec_(self.sender().mapToGlobal(position))
 
         if action == defineAction:
             self.main_window.definitionDialog.find_definition(selected_word)
@@ -831,6 +860,9 @@ class PliantQTextBrowser(QtWidgets.QTextBrowser):
             self.main_window.bookToolBar.searchBar.setFocus()
         if action == toggleAction:
             self.main_window.toggle_distraction_free()
+
+    def set_chapter(self):
+        self.common_functions.set_chapter(self.sender().data())
 
     def closeEvent(self, *args):
         self.main_window.closeEvent()
@@ -906,6 +938,10 @@ class PliantWidgetsCommonFunctions():
 
             if not was_button_pressed:
                 self.pw.ignore_wheel_event = True
+
+    def set_chapter(self, chapter_index):
+        self.main_window.bookToolBar.tocBox.setCurrentIndex(
+            chapter_index)
 
 
 class PliantDockWidget(QtWidgets.QDockWidget):

@@ -556,6 +556,9 @@ class MainUI(QtWidgets.QMainWindow, mainwindow.Ui_MainWindow):
         self.lib_ref.update_proxymodels()
         self.lib_ref.generate_library_tags()
 
+        self.statusMessage.setText(
+            str(self.lib_ref.item_proxy_model.rowCount()) + ' books')
+
         if not self.settings['perform_culling']:
             self.load_all_covers()
 
