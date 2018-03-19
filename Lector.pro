@@ -27,8 +27,5 @@ SOURCES += lector/__main__.py \
 		resources/metadata.py \
 		resources/mainwindow.py
 
-TRANSLATIONS += resources/translations/Lector_de.ts \
-		resources/translations/Lector_es.ts \
-		resources/translations/Lector_hi.ts \
-		resources/translations/Lector_jp.ts \
-		resources/translations/Lector_zn.ts
+TRANSLATIONS += resources/translations/Lector_es.ts \
+		resources/translations/SAMPLE.ts

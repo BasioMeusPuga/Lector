@@ -282,17 +282,17 @@
 <context>
     <name>Library</name>
     <message>
-        <location filename="../../lector/library.py" line="121"/>
+        <location filename="../../lector/library.py" line="124"/>
         <source>Author</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../lector/library.py" line="122"/>
+        <location filename="../../lector/library.py" line="125"/>
         <source>Year</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../lector/library.py" line="257"/>
+        <location filename="../../lector/library.py" line="260"/>
         <source>manually added</source>
         <translation type="unfinished"></translation>
     </message>
@@ -396,38 +396,48 @@
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../lector/__main__.py" line="593"/>
+        <location filename="../../lector/__main__.py" line="596"/>
         <source> Books</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../lector/__main__.py" line="1020"/>
+        <location filename="../../lector/__main__.py" line="1023"/>
         <source>Start reading</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../lector/__main__.py" line="1026"/>
+        <location filename="../../lector/__main__.py" line="1029"/>
         <source>Edit</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../lector/__main__.py" line="1030"/>
+        <location filename="../../lector/__main__.py" line="1033"/>
         <source>Delete</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../lector/__main__.py" line="1033"/>
+        <location filename="../../lector/__main__.py" line="1036"/>
         <source>Mark read</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../lector/__main__.py" line="1036"/>
+        <location filename="../../lector/__main__.py" line="1039"/>
         <source>Mark unread</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../lector/__main__.py" line="1135"/>
+        <location filename="../../lector/__main__.py" line="1138"/>
         <source>Manually Added</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../lector/widgets.py" line="719"/>
+        <source>Save page as...</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../lector/widgets.py" line="720"/>
+        <source>Images</source>
         <translation type="unfinished"></translation>
     </message>
 </context>
@@ -447,12 +457,12 @@
 <context>
     <name>PliantQGraphicsScene</name>
     <message>
-        <location filename="../../lector/widgets.py" line="927"/>
+        <location filename="../../lector/widgets.py" line="956"/>
         <source>Select new cover</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../lector/widgets.py" line="928"/>
+        <location filename="../../lector/widgets.py" line="957"/>
         <source>Images</source>
         <translation type="unfinished"></translation>
     </message>
@@ -460,37 +470,37 @@
 <context>
     <name>PliantQGraphicsView</name>
     <message>
-        <location filename="../../lector/widgets.py" line="683"/>
+        <location filename="../../lector/widgets.py" line="682"/>
         <source>Save page as...</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../lector/widgets.py" line="687"/>
+        <location filename="../../lector/widgets.py" line="693"/>
         <source>Zoom in (+)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../lector/widgets.py" line="691"/>
+        <location filename="../../lector/widgets.py" line="697"/>
         <source>Zoom out (-)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../lector/widgets.py" line="695"/>
+        <location filename="../../lector/widgets.py" line="701"/>
         <source>Fit width (W)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../lector/widgets.py" line="699"/>
+        <location filename="../../lector/widgets.py" line="705"/>
         <source>Best fit (B)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../lector/widgets.py" line="703"/>
+        <location filename="../../lector/widgets.py" line="709"/>
         <source>Original size (O)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../lector/widgets.py" line="707"/>
+        <location filename="../../lector/widgets.py" line="685"/>
         <source>Toggle distraction free mode</source>
         <translation type="unfinished"></translation>
     </message>
@@ -498,17 +508,17 @@
 <context>
     <name>PliantQTextBrowser</name>
     <message>
-        <location filename="../../lector/widgets.py" line="807"/>
+        <location filename="../../lector/widgets.py" line="818"/>
         <source>Define</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../lector/widgets.py" line="812"/>
+        <location filename="../../lector/widgets.py" line="823"/>
         <source>Search</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../lector/widgets.py" line="816"/>
+        <location filename="../../lector/widgets.py" line="827"/>
         <source>Toggle distraction free mode</source>
         <translation type="unfinished"></translation>
     </message>
@@ -546,7 +556,7 @@
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../lector/settingsdialog.py" line="233"/>
+        <location filename="../../lector/settingsdialog.py" line="234"/>
         <source>Parsing files</source>
         <translation type="unfinished"></translation>
     </message>
