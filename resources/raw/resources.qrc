@@ -75,5 +75,6 @@
   </qresource>
   <qresource prefix="translations">
     <file>translations_bin/Lector_es.qm</file>
+    <file>translations_bin/Lector_fr.qm</file>
   </qresource>
 </RCC>
