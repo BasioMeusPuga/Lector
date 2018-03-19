@@ -152,7 +152,9 @@ class BookSorter:
         if self.mode == 'addition' and file_md5 in self.hashes_and_paths:
             if (self.hashes_and_paths[file_md5] == filename
                     and os.path.exists(self.hashes_and_paths[file_md5])):
-                print(f'{os.path.basename(filename)} is already in database')
+
+                if not self.hashes_and_paths[file_md5] == filename:
+                    print(f'{os.path.basename(filename)} is already in database')
                 return
 
         file_extension = os.path.splitext(filename)[1][1:]

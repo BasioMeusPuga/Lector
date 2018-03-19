@@ -37,11 +37,11 @@ poppler-qt5 and python-poppler-qt5 are optional.
 * [AUR](https://aur.archlinux.org/packages/lector-git/)
 
 ## Translations
-1. There are some (sample) `.ts` files in `resources/translations`. Pick any one of them, and open it in `Qt Linguist`.
+1. There is a `SAMPLE.ts` file in `resources/translations`. Open it in `Qt Linguist`.
 2. Pick the language you wish to translate to.
 3. Translate relevant strings.
 4. Resist the urge to include profanity.
-5. Send me the new file. Preferably as a pull request.
+5. Save the file as `Lector_<language>` and send it to me, preferably as a pull request.
 
 ## Screenshots
 

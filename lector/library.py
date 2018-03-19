@@ -103,7 +103,10 @@ class Library:
                     except KeyError:
                         position_perc = None
 
-            file_exists = os.path.exists(path)
+            try:
+                file_exists = os.path.exists(path)
+            except UnicodeEncodeError:
+                print('Error with unicode encoding in the library module')
 
             all_metadata = {
                 'title': title,

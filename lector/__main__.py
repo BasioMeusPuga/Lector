@@ -1229,7 +1229,7 @@ def main():
     # Internationalization support
     translator = QtCore.QTranslator()
     translations_found = translator.load(
-        QtCore.QLocale.system(), ':/translations/Lector_')
+        QtCore.QLocale.system(), ':/translations/translations_bin/Lector_')
     app.installTranslator(translator)
 
     translations_out_string = '(Translations found)'

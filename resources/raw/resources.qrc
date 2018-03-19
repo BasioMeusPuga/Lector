@@ -71,4 +71,7 @@
     <file>checkmark.svg</file>
     <file>error.svg</file>
   </qresource>
+  <qresource prefix="translations">
+    <file>translations_bin/Lector_es.qm</file>
+  </qresource>
 </RCC>
