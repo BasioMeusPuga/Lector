@@ -255,7 +255,8 @@ class MainUI(QtWidgets.QMainWindow, mainwindow.Ui_MainWindow):
         self.tableView.horizontalHeader().sectionClicked.connect(
             self.lib_ref.table_proxy_model.sort_table_columns)
         self.tableView.setContextMenuPolicy(QtCore.Qt.CustomContextMenu)
-        self.tableView.customContextMenuRequested.connect(self.generate_library_context_menu)
+        self.tableView.customContextMenuRequested.connect(
+            self.generate_library_context_menu)
 
         # Keyboard shortcuts
         self.ksDistractionFree = QtWidgets.QShortcut(QtGui.QKeySequence('Ctrl+D'), self)
@@ -491,11 +492,6 @@ class MainUI(QtWidgets.QMainWindow, mainwindow.Ui_MainWindow):
         return selected_indexes
 
     def delete_books(self, selected_indexes=None):
-        # TODO
-        # ? Mirror selection
-        # Ask if library files are to be excluded from further scans
-        # Make a checkbox for this
-
         if not selected_indexes:
             # Get a list of QItemSelection objects
             # What we're interested in is the indexes()[0] in each of them
@@ -557,7 +553,8 @@ class MainUI(QtWidgets.QMainWindow, mainwindow.Ui_MainWindow):
         self.lib_ref.generate_library_tags()
 
         self.statusMessage.setText(
-            str(self.lib_ref.item_proxy_model.rowCount()) + ' books')
+            str(self.lib_ref.item_proxy_model.rowCount()) +
+            self._translate('Main_UI', ' books'))
 
         if not self.settings['perform_culling']:
             self.load_all_covers()

@@ -451,6 +451,10 @@ class FixedLineEdit(QtWidgets.QLineEdit):
     def sizeHint(self):
         return QtCore.QSize(400, 22)
 
+    def keyReleaseEvent(self, event):
+        if event.key() == QtCore.Qt.Key_Escape:
+            self.clear()
+
 
 class FixedPushButton(QtWidgets.QPushButton):
     def __init__(self, parent=None):

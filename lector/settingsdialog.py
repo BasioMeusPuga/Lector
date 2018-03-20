@@ -21,6 +21,7 @@
 
 import os
 import copy
+import pathlib
 from PyQt5 import QtWidgets, QtCore
 
 from lector import database
@@ -43,9 +44,9 @@ class SettingsUI(QtWidgets.QDialog, settingswindow.Ui_Dialog):
         self.move(self.parent.settings['settings_dialog_position'])
 
         self.aboutBox.setVisible(False)
-        application_root = os.sep.join(
-            os.path.realpath(__file__).rsplit('/')[:-2])
-        aboutfile_path = os.path.join(application_root, 'resources', 'about.html')
+        install_dir = os.path.realpath(__file__)
+        install_dir = pathlib.Path(install_dir).parents[1]
+        aboutfile_path = os.path.join(install_dir, 'resources', 'about.html')
         with open(aboutfile_path) as about_html:
             self.aboutBox.setHtml(about_html.read())
 

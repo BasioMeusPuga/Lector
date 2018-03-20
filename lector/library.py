@@ -77,6 +77,8 @@ class Library:
             year = i[2]
             path = i[4]
             last_accessed = i[9]
+            if last_accessed and not isinstance(last_accessed, QtCore.QDateTime):
+                last_accessed = pickle.loads(last_accessed)
 
             tags = i[7]
             if isinstance(tags, list):  # When files are added for the first time
@@ -168,7 +170,8 @@ class Library:
         self.parent.listView.setIconSize(s)
         self.parent.listView.setModel(self.item_proxy_model)
 
-        self.table_proxy_model = TableProxyModel(self.parent.temp_dir.path())
+        self.table_proxy_model = TableProxyModel(
+            self.parent.temp_dir.path(), self.parent.tableView.horizontalHeader())
         self.table_proxy_model.setSourceModel(self.view_model)
         self.table_proxy_model.setSortCaseSensitivity(False)
         self.parent.tableView.setModel(self.table_proxy_model)
@@ -186,6 +189,9 @@ class Library:
             self.parent.libraryToolBar.searchBar.text())
         # ^^^ This isn't needed, but it forces a model update every time the
         # text in the line edit changes. So I guess it is needed.
+        self.table_proxy_model.sort_table_columns(
+            self.parent.tableView.horizontalHeader().sortIndicatorSection())
+        self.table_proxy_model.sort_table_columns()
 
         # Item proxy model
         self.item_proxy_model.invalidateFilter()
@@ -197,7 +203,8 @@ class Library:
             self.parent.libraryToolBar.searchBar.text())
 
         self.parent.statusMessage.setText(
-            str(self.item_proxy_model.rowCount()) + ' books')
+            str(self.item_proxy_model.rowCount()) +
+            self._translate('Library', ' books'))
 
         # TODO
         # Allow sorting by type

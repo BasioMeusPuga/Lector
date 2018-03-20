@@ -282,19 +282,24 @@
 <context>
     <name>Library</name>
     <message>
-        <location filename="../../lector/library.py" line="124"/>
+        <location filename="../../lector/library.py" line="126"/>
         <source>Author</source>
         <translation>Auteur</translation>
     </message>
     <message>
-        <location filename="../../lector/library.py" line="125"/>
+        <location filename="../../lector/library.py" line="127"/>
         <source>Year</source>
         <translation>Année</translation>
     </message>
     <message>
-        <location filename="../../lector/library.py" line="260"/>
+        <location filename="../../lector/library.py" line="267"/>
         <source>manually added</source>
         <translation>manuellement ajouté</translation>
+    </message>
+    <message>
+        <location filename="../../lector/library.py" line="205"/>
+        <source> books</source>
+        <translation type="unfinished"></translation>
     </message>
 </context>
 <context>
@@ -371,62 +376,62 @@
         <translation>Analyser la bibliothèque</translation>
     </message>
     <message>
-        <location filename="../../lector/__main__.py" line="458"/>
+        <location filename="../../lector/__main__.py" line="459"/>
         <source>Add books to database</source>
         <translation>Ajouter des livres à la base de données</translation>
     </message>
     <message>
-        <location filename="../../lector/__main__.py" line="459"/>
+        <location filename="../../lector/__main__.py" line="460"/>
         <source>eBooks</source>
         <translation>eBooks</translation>
     </message>
     <message>
-        <location filename="../../lector/__main__.py" line="472"/>
+        <location filename="../../lector/__main__.py" line="473"/>
         <source>Adding books...</source>
         <translation>Ajout des livres…</translation>
     </message>
     <message>
-        <location filename="../../lector/__main__.py" line="540"/>
+        <location filename="../../lector/__main__.py" line="536"/>
         <source>Confirm deletion</source>
         <translation>Confirmez la suppression</translation>
     </message>
     <message>
-        <location filename="../../lector/__main__.py" line="549"/>
+        <location filename="../../lector/__main__.py" line="545"/>
         <source>Save changes and start library scan</source>
         <translation>Enregistrer les modifications et démarrer l&apos;analyse de la bibliothèque</translation>
     </message>
     <message>
-        <location filename="../../lector/__main__.py" line="596"/>
+        <location filename="../../lector/__main__.py" line="593"/>
         <source> Books</source>
         <translation> Livres</translation>
     </message>
     <message>
-        <location filename="../../lector/__main__.py" line="1023"/>
+        <location filename="../../lector/__main__.py" line="1020"/>
         <source>Start reading</source>
         <translation>Commencer à lire</translation>
     </message>
     <message>
-        <location filename="../../lector/__main__.py" line="1029"/>
+        <location filename="../../lector/__main__.py" line="1026"/>
         <source>Edit</source>
         <translation>Modifier</translation>
     </message>
     <message>
-        <location filename="../../lector/__main__.py" line="1033"/>
+        <location filename="../../lector/__main__.py" line="1030"/>
         <source>Delete</source>
         <translation>Supprimer</translation>
     </message>
     <message>
-        <location filename="../../lector/__main__.py" line="1036"/>
+        <location filename="../../lector/__main__.py" line="1033"/>
         <source>Mark read</source>
         <translation>Marquer comme lu</translation>
     </message>
     <message>
-        <location filename="../../lector/__main__.py" line="1039"/>
+        <location filename="../../lector/__main__.py" line="1036"/>
         <source>Mark unread</source>
         <translation>Marquer comme non-lu</translation>
     </message>
     <message>
-        <location filename="../../lector/__main__.py" line="1138"/>
+        <location filename="../../lector/__main__.py" line="1135"/>
         <source>Manually Added</source>
         <translation>Manuellement ajouté</translation>
     </message>
@@ -439,6 +444,11 @@
         <location filename="../../lector/widgets.py" line="720"/>
         <source>Images</source>
         <translation type="unfinished">Images</translation>
+    </message>
+    <message>
+        <location filename="../../lector/__main__.py" line="555"/>
+        <source> books</source>
+        <translation type="unfinished"></translation>
     </message>
 </context>
 <context>
@@ -526,37 +536,37 @@
 <context>
     <name>SettingsUI</name>
     <message>
-        <location filename="../../lector/settingsdialog.py" line="57"/>
+        <location filename="../../lector/settingsdialog.py" line="58"/>
         <source>English</source>
         <translation>Anglais</translation>
     </message>
     <message>
-        <location filename="../../lector/settingsdialog.py" line="58"/>
+        <location filename="../../lector/settingsdialog.py" line="59"/>
         <source>Spanish</source>
         <translation>Espagnol</translation>
     </message>
     <message>
-        <location filename="../../lector/settingsdialog.py" line="59"/>
+        <location filename="../../lector/settingsdialog.py" line="60"/>
         <source>Hindi</source>
         <translation>Hindi</translation>
     </message>
     <message>
-        <location filename="../../lector/settingsdialog.py" line="72"/>
+        <location filename="../../lector/settingsdialog.py" line="73"/>
         <source>Save changes and start library scan</source>
         <translation>Enregistrer les modifications et démarrer l&apos;analyse de la bibliothèque</translation>
     </message>
     <message>
-        <location filename="../../lector/settingsdialog.py" line="215"/>
+        <location filename="../../lector/settingsdialog.py" line="216"/>
         <source>Library scan in progress...</source>
         <translation>Analyse de la bibliothèque en cours…</translation>
     </message>
     <message>
-        <location filename="../../lector/settingsdialog.py" line="219"/>
+        <location filename="../../lector/settingsdialog.py" line="220"/>
         <source>Checking library folders</source>
         <translation>Vérification des dossiers de la bibliothèque</translation>
     </message>
     <message>
-        <location filename="../../lector/settingsdialog.py" line="234"/>
+        <location filename="../../lector/settingsdialog.py" line="235"/>
         <source>Parsing files</source>
         <translation>Lecture des fichiers</translation>
     </message>
@@ -607,7 +617,7 @@
         <translation>Lu pour la dernière fois</translation>
     </message>
     <message>
-        <location filename="../../lector/models.py" line="78"/>
+        <location filename="../../lector/models.py" line="77"/>
         <source>Tags</source>
         <translation>Étiquettes</translation>
     </message>

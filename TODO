@@ -72,10 +72,7 @@ TODO
     Other:
         ✓ Define every widget in code
     Bugs:
-        If there are files open and the database is deleted, TypeErrors result
-        Cover culling does not occur if some other tab has initial focus
-        Slider position change might be acting up too
-        Take metadata from the database when opening the file
+        Slider position change might be acting up
 
     Secondary:
         Annotations

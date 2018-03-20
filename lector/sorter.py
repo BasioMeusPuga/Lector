@@ -117,18 +117,22 @@ class BookSorter:
     def database_entry_for_book(self, file_hash):
         database_return = database.DatabaseFunctions(
             self.database_path).fetch_data(
-                ('Position', 'Bookmarks'),
+                ('Title', 'Author', 'Year', 'ISBN', 'Tags', 'Position', 'Bookmarks'),
                 'books',
                 {'Hash': file_hash},
                 'EQUALS')[0]
 
         book_data = []
-        for i in database_return:
-            # All of these values are pickled and stored
-            if i:
-                book_data.append(pickle.loads(i))
+
+        for count, i in enumerate(database_return):
+            if count in (5, 6):
+                if i:
+                    book_data.append(pickle.loads(i))
+                else:
+                    book_data.append(None)
             else:
-                book_data.append(None)
+                book_data.append(i)
+
         return book_data
 
     def read_book(self, filename):
@@ -170,37 +174,29 @@ class BookSorter:
         book_ref.read_book()
         if book_ref.book:
 
-            title = book_ref.get_title()
-
-            author = book_ref.get_author()
-            if not author:
-                author = 'Unknown'
-
-            try:
-                year = int(book_ref.get_year())
-            except (TypeError, ValueError):
-                year = 9999
-
-            isbn = book_ref.get_isbn()
-
-            tags = None
-            if self.auto_tags:
-                tags = book_ref.get_tags()
 
             this_book = {}
             this_book[file_md5] = {
-                'title': title,
-                'author': author,
-                'year': year,
-                'isbn': isbn,
                 'hash': file_md5,
-                'path': filename,
-                'tags': tags}
+                'path': filename}
 
             # Different modes require different values
             if self.mode == 'addition':
                 # Reduce the size of the incoming image
                 # if one is found
+                title = book_ref.get_title()
+
+                author = book_ref.get_author()
+                if not author:
+                    author = 'Unknown'
+
+                year = book_ref.get_year()
+
+                isbn = book_ref.get_isbn()
+
+                tags = None
+                if self.auto_tags:
+                    tags = book_ref.get_tags()
 
                 cover_image_raw = book_ref.get_cover_image()
                 if cover_image_raw:
@@ -226,13 +222,24 @@ class BookSorter:
                     content = [('Invalid', 'Something went horribly wrong')]
 
                 book_data = self.database_entry_for_book(file_md5)
-                position = book_data[0]
-                bookmarks = book_data[1]
+                title = book_data[0]
+                author = book_data[1]
+                year = book_data[2]
+                isbn = book_data[3]
+                tags = book_data[4]
+                position = book_data[5]
+                bookmarks = book_data[6]
 
                 this_book[file_md5]['position'] = position
                 this_book[file_md5]['bookmarks'] = bookmarks
                 this_book[file_md5]['content'] = content
                 this_book[file_md5]['images_only'] = images_only
+
+            this_book[file_md5]['title'] = title
+            this_book[file_md5]['author'] = author
+            this_book[file_md5]['year'] = year
+            this_book[file_md5]['isbn'] = isbn
+            this_book[file_md5]['tags'] = tags
 
             return this_book
 

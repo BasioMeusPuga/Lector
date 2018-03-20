@@ -16,7 +16,6 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-import pickle
 import pathlib
 
 from PyQt5 import QtCore, QtWidgets
@@ -66,9 +65,9 @@ class ItemProxyModel(QtCore.QSortFilterProxyModel):
 
 
 class TableProxyModel(QtCore.QSortFilterProxyModel):
-    def __init__(self, temp_dir, parent=None):
+    def __init__(self, temp_dir, tableViewHeader, parent=None):
         super(TableProxyModel, self).__init__(parent)
-
+        self.tableViewHeader = tableViewHeader
         self._translate = QtCore.QCoreApplication.translate
 
         title_string = self._translate('TableProxyModel', 'Title')
@@ -98,7 +97,11 @@ class TableProxyModel(QtCore.QSortFilterProxyModel):
 
     def headerData(self, column, orientation, role):
         if role == QtCore.Qt.DisplayRole:
-            return self.header_data[column]
+            try:
+                return self.header_data[column]
+            except IndexError:
+                print('Table proxy model: Can\'t find header for column', column)
+                return 'IndexError'
 
     def flags(self, index):
         # Tag editing will take place by way of a right click menu
@@ -153,11 +156,8 @@ class TableProxyModel(QtCore.QSortFilterProxyModel):
                 return QtCore.QVariant()
 
             if index.column() == 4:
-                last_accessed_time = item.data(self.role_dictionary[index.column()])
-                if last_accessed_time:
-                    last_accessed = last_accessed_time
-                    if not isinstance(last_accessed_time, QtCore.QDateTime):
-                        last_accessed = pickle.loads(last_accessed_time)
+                last_accessed = item.data(self.role_dictionary[index.column()])
+                if last_accessed:
                     right_now = QtCore.QDateTime().currentDateTime()
                     time_diff = last_accessed.msecsTo(right_now)
                     return self.time_convert(time_diff // 1000)
@@ -174,10 +174,13 @@ class TableProxyModel(QtCore.QSortFilterProxyModel):
         output = self.common_functions.filterAcceptsRow(row, parent)
         return output
 
-    def sort_table_columns(self, column):
-        sorting_order = self.sender().sortIndicatorOrder()
+    def sort_table_columns(self, column=None):
+        column = self.tableViewHeader.sortIndicatorSection()
+        sorting_order = self.tableViewHeader.sortIndicatorOrder()
+
         self.sort(0, sorting_order)
-        self.setSortRole(self.role_dictionary[column])
+        if column != 0:
+            self.setSortRole(self.role_dictionary[column])
 
     def time_convert(self, seconds):
         seconds = int(seconds)

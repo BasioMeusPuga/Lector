@@ -86,7 +86,7 @@ class MetadataUI(QtWidgets.QDialog, metadata.Ui_Dialog):
         graphics_scene.addPixmap(image_pixmap)
         self.coverView.setScene(graphics_scene)
 
-    def ok_pressed(self, event):
+    def ok_pressed(self, event=None):
         book_item = self.parent.lib_ref.view_model.item(self.book_index.row())
 
         title = self.titleLine.text()
@@ -126,7 +126,7 @@ class MetadataUI(QtWidgets.QDialog, metadata.Ui_Dialog):
         database.DatabaseFunctions(self.database_path).modify_metadata(
             database_dict, book_hash)
 
-    def cancel_pressed(self, event):
+    def cancel_pressed(self, event=None):
         self.hide()
 
     def generate_display_position(self, mouse_cursor_position):
