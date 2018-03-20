@@ -29,4 +29,5 @@ SOURCES += lector/__main__.py \
 
 TRANSLATIONS += resources/translations/Lector_es.ts \
 		resources/translations/Lector_fr.ts \
+		resources/translations/Lector_de.ts \
 		resources/translations/SAMPLE.ts

@@ -1,6 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!DOCTYPE TS>
-<TS version="2.1" language="de_AT">
+<!DOCTYPE TS><TS version="2.0" language="de_AT" sourcelanguage="">
 <context>
     <name>BookToolBar</name>
     <message>
