@@ -256,7 +256,7 @@ class Library:
                     if directory_name:
                         directory_name = directory_name.lower()
                     else:
-                        directory_name = path.rsplit('/')[-1].lower()
+                        directory_name = i.rsplit(os.sep)[-1].lower()
 
                     directory_tags = library_directories[i][1]
                     if directory_tags:
