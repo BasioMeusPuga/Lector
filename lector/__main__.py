@@ -275,6 +275,10 @@ class MainUI(QtWidgets.QMainWindow, mainwindow.Ui_MainWindow):
         self.ksCloseTab.setContext(QtCore.Qt.ApplicationShortcut)
         self.ksCloseTab.activated.connect(self.tab_close)
 
+        self.ksDeletePressed = QtWidgets.QShortcut(QtGui.QKeySequence('Delete'), self)
+        self.ksDeletePressed.setContext(QtCore.Qt.ApplicationShortcut)
+        self.ksDeletePressed.activated.connect(self.delete_pressed)
+
         self.listView.setFocus()
         self.open_books_at_startup()
 
@@ -451,11 +455,6 @@ class MainUI(QtWidgets.QMainWindow, mainwindow.Ui_MainWindow):
             return
 
     def add_books(self):
-        # TODO
-        # Remember file addition modality
-        # If a file is added from here, it should not be removed
-        # from the libary in case of a database refresh
-
         dialog_prompt = self._translate('Main_UI', 'Add books to database')
         ebooks_string = self._translate('Main_UI', 'eBooks')
         opened_files = QtWidgets.QFileDialog.getOpenFileNames(
@@ -539,6 +538,10 @@ class MainUI(QtWidgets.QMainWindow, mainwindow.Ui_MainWindow):
         confirm_deletion.buttonClicked.connect(ifcontinue)
         confirm_deletion.show()
         confirm_deletion.exec_()
+
+    def delete_pressed(self):
+        if self.tabWidget.currentIndex() == 0:
+            self.delete_books()
 
     def move_on(self):
         self.settingsDialog.okButton.setEnabled(True)

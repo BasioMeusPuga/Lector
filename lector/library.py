@@ -296,8 +296,6 @@ class Library:
         # All files in unselected directories will have to be removed
         # from both of the models
         # They will also have to be deleted from the library
-        # valid_paths = set(valid_paths)
-
         invalid_paths = []
         deletable_persistent_indexes = []
 
@@ -306,7 +304,11 @@ class Library:
 
             item_metadata = item.data(QtCore.Qt.UserRole + 3)
             book_path = item_metadata['path']
-            addition_mode = item_metadata['addition_mode']
+            try:
+                addition_mode = item_metadata['addition_mode']
+            except KeyError:
+                addition_mode = 'automatic'
+                print('Libary: Error setting addition mode for prune')
 
             if (book_path not in valid_paths and
                     (addition_mode != 'manual' or addition_mode is None)):

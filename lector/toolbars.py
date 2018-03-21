@@ -439,17 +439,22 @@ class LibraryToolBar(QtWidgets.QToolBar):
 class FixedComboBox(QtWidgets.QComboBox):
     def __init__(self, parent=None):
         super(FixedComboBox, self).__init__(parent)
+        screen_width = QtWidgets.QDesktopWidget().screenGeometry().width()
+        self.adjusted_size = screen_width // 4.8
 
     def sizeHint(self):
-        return QtCore.QSize(400, 22)
+        # This and the one below should adjust to screen size
+        return QtCore.QSize(self.adjusted_size, 22)
 
 
 class FixedLineEdit(QtWidgets.QLineEdit):
     def __init__(self, parent=None):
         super(FixedLineEdit, self).__init__(parent)
+        screen_width = QtWidgets.QDesktopWidget().screenGeometry().width()
+        self.adjusted_size = screen_width // 4.8
 
     def sizeHint(self):
-        return QtCore.QSize(400, 22)
+        return QtCore.QSize(self.adjusted_size, 22)
 
     def keyReleaseEvent(self, event):
         if event.key() == QtCore.Qt.Key_Escape:
