@@ -25,27 +25,68 @@ from PyQt5 import QtCore
 class DatabaseInit:
     def __init__(self, location_prefix):
         os.makedirs(location_prefix, exist_ok=True)
-        database_path = os.path.join(location_prefix, 'Lector.db')
+        self.database_path = os.path.join(location_prefix, 'Lector.db')
 
-        if not os.path.exists(database_path):
-            self.database = sqlite3.connect(database_path)
+        self.books_table_columns = {
+            'id': 'INTEGER PRIMARY KEY',
+            'Title': 'TEXT',
+            'Author': 'TEXT',
+            'Year': 'INTEGER',
+            'DateAdded': 'BLOB',
+            'Path': 'TEXT',
+            'Position': 'BLOB',
+            'ISBN': 'TEXT',
+            'Tags': 'TEXT',
+            'Hash': 'TEXT',
+            'LastAccessed': 'BLOB',
+            'Bookmarks': 'BLOB',
+            'CoverImage': 'BLOB',
+            'Addition': 'TEXT'}
+
+        self.directories_table_columns = {
+            'id': 'INTEGER PRIMARY KEY',
+            'Path': 'TEXT',
+            'Name': 'TEXT',
+            'Tags': 'TEXT',
+            'CheckState': 'INTEGER'}
+
+        if os.path.exists(self.database_path):
+            self.check_database()
+        else:
             self.create_database()
 
     def create_database(self):
-        # TODO
-        # Add separate columns for:
-        # addition mode
-        self.database.execute(
-            "CREATE TABLE books \
-            (id INTEGER PRIMARY KEY, Title TEXT, Author TEXT, Year INTEGER, DateAdded BLOB, \
-            Path TEXT, Position BLOB, ISBN TEXT, Tags TEXT, Hash TEXT, LastAccessed BLOB,\
-            Bookmarks BLOB, CoverImage BLOB)")
+        self.database = sqlite3.connect(self.database_path)
+
+        column_string = ', '.join(
+            [i[0] + ' ' + i[1] for i in self.books_table_columns.items()])
+        self.database.execute(f"CREATE TABLE books ({column_string})")
 
         # CheckState is the standard QtCore.Qt.Checked / Unchecked
-        self.database.execute(
-            "CREATE TABLE directories (id INTEGER PRIMARY KEY, Path TEXT, \
-            Name TEXT, Tags TEXT, CheckState INTEGER)")
+        column_string = ', '.join(
+            [i[0] + ' ' + i[1] for i in self.directories_table_columns.items()])
+        self.database.execute(f"CREATE TABLE directories ({column_string})")
+
         self.database.commit()
+        self.database.close()
+
+    def check_database(self):
+        self.database = sqlite3.connect(self.database_path)
+
+        database_return = self.database.execute("PRAGMA table_info(books)").fetchall()
+        database_columns = [i[1] for i in database_return]
+
+        # This allows for addition of a column without having to reform the database
+        commit_required = False
+        for i in self.books_table_columns.items():
+            if i[0] not in database_columns:
+                commit_required = True
+                print(f'Database: Adding column {i[0]}')
+                sql_command = f"ALTER TABLE books ADD COLUMN {i[0]} {i[1]}"
+                self.database.execute(sql_command)
+
+        if commit_required:
+            self.database.commit()
         self.database.close()
 
 
@@ -55,10 +96,6 @@ class DatabaseFunctions:
         self.database = sqlite3.connect(database_path)
 
     def set_library_paths(self, data_iterable):
-        # TODO
-        # INSERT OR REPLACE is not working
-        # So this is the old fashion kitchen sink approach
-
         self.database.execute("DELETE FROM directories")
 
         for i in data_iterable:
@@ -67,10 +104,13 @@ class DatabaseFunctions:
             tags = i[2]
             is_checked = i[3]
 
+            if not os.path.exists(path):
+                continue  # Remove invalid paths from the database
+
             sql_command = (
-                "INSERT OR REPLACE INTO directories (ID, Path, Name, Tags, CheckState)\
-                 VALUES ((SELECT ID FROM directories WHERE Path = ?), ?, ?, ?, ?)")
-            self.database.execute(sql_command, [path, path, name, tags, is_checked])
+                "INSERT INTO directories (Path, Name, Tags, CheckState)\
+                 VALUES (?, ?, ?, ?)")
+            self.database.execute(sql_command, [path, name, tags, is_checked])
 
         self.database.commit()
         self.database.close()
@@ -95,6 +135,7 @@ class DatabaseFunctions:
             path = i[1]['path']
             cover = i[1]['cover_image']
             isbn = i[1]['isbn']
+            addition_mode = i[1]['addition_mode']
             tags = i[1]['tags']
             if tags:
                 # Is a list. Needs to be a string
@@ -105,8 +146,9 @@ class DatabaseFunctions:
 
             sql_command_add = (
                 "INSERT OR REPLACE INTO \
-                books (Title, Author, Year, DateAdded, Path, ISBN, Tags, Hash, CoverImage) \
-                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)")
+                books (Title, Author, Year, DateAdded, Path, \
+                ISBN, Tags, Hash, CoverImage, Addition) \
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)")
 
             cover_insert = None
             if cover:
@@ -115,7 +157,8 @@ class DatabaseFunctions:
             self.database.execute(
                 sql_command_add,
                 [title, author, year, current_datetime_bin,
-                 path, isbn, tags, book_hash, cover_insert])
+                 path, isbn, tags, book_hash, cover_insert,
+                 addition_mode])
 
         self.database.commit()
         self.database.close()
@@ -208,9 +251,10 @@ class DatabaseFunctions:
         # target_data is an iterable
 
         if column_name == '*':
-            self.database.execute('DELETE FROM books')
+            self.database.execute(
+                "DELETE FROM books WHERE NOT Addition = 'manual'")
         else:
-            sql_command = f'DELETE FROM books WHERE {column_name} = ?'
+            sql_command = f"DELETE FROM books WHERE {column_name} = ?"
             for i in target_data:
                 self.database.execute(sql_command, (i,))
 

@@ -174,9 +174,6 @@ class SettingsUI(QtWidgets.QDialog, settingswindow.Ui_Dialog):
             self.treeView.hideColumn(i)
 
     def start_library_scan(self):
-        # TODO
-        # return in case the treeView is not edited
-
         self.hide()
 
         data_pairs = []
@@ -195,14 +192,12 @@ class SettingsUI(QtWidgets.QDialog, settingswindow.Ui_Dialog):
             except AttributeError:
                 pass
 
-            self.parent.lib_ref.view_model.clear()
-            self.parent.lib_ref.table_rows = []
-
-            # TODO
-            # Change this to no longer include files added manually
-
             database.DatabaseFunctions(
                 self.database_path).delete_from_database('*', '*')
+
+            self.parent.lib_ref.generate_model('build')
+            self.parent.lib_ref.generate_proxymodels()
+            self.parent.generate_library_filter_menu()
 
             return
 
@@ -237,7 +232,7 @@ class SettingsUI(QtWidgets.QDialog, settingswindow.Ui_Dialog):
 
         # We now create a new thread to put those files into the database
         self.thread = BackGroundBookAddition(
-            self.thread.valid_files, self.database_path, True, self.parent)
+            self.thread.valid_files, self.database_path, 'automatic', self.parent)
         self.thread.finished.connect(self.parent.move_on)
         self.thread.start()
 

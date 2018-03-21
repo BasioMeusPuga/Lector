@@ -44,29 +44,31 @@ class BackGroundTabUpdate(QtCore.QThread):
 
 
 class BackGroundBookAddition(QtCore.QThread):
-    def __init__(self, file_list, database_path, prune_required, parent=None):
+    def __init__(self, file_list, database_path, addition_mode, parent=None):
         super(BackGroundBookAddition, self).__init__(parent)
         self.file_list = file_list
         self.parent = parent
         self.database_path = database_path
-        self.prune_required = prune_required
+        self.addition_mode = addition_mode
+
+        self.prune_required = True
+        if self.addition_mode == 'manual':
+            self.prune_required = False
 
     def run(self):
         books = sorter.BookSorter(
             self.file_list,
-            'addition',
+            ('addition', self.addition_mode),
             self.database_path,
             self.parent.settings['auto_tags'],
             self.parent.temp_dir.path())
 
         parsed_books = books.initiate_threads()
-        if not parsed_books:
-            return
-
         self.parent.lib_ref.generate_model('addition', parsed_books, False)
+        database.DatabaseFunctions(self.database_path).add_to_database(parsed_books)
+
         if self.prune_required:
             self.parent.lib_ref.prune_models(self.file_list)
-        database.DatabaseFunctions(self.database_path).add_to_database(parsed_books)
 
 
 class BackGroundBookDeletion(QtCore.QThread):

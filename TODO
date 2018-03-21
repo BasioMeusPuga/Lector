@@ -73,8 +73,7 @@ TODO
         ✓ Define every widget in code
     Bugs:
         Slider position change might be acting up
-        Deleted directories should be removed from the database
-        There are still slashes in the code
+        Deselecting all directories in the settings dialog also filters out manually added books
 
     Secondary:
         Annotations

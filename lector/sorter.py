@@ -87,7 +87,8 @@ class BookSorter:
         self.file_list = [i for i in file_list if os.path.exists(i)]
         self.statistics = [0, (len(file_list))]
         self.hashes_and_paths = {}
-        self.mode = mode
+        self.work_mode = mode[0]
+        self.addition_mode = mode[1]
         self.database_path = database_path
         self.auto_tags = auto_tags
         self.temp_dir = temp_dir
@@ -98,7 +99,7 @@ class BookSorter:
         self.queue = Manager().Queue()
         self.processed_books = []
 
-        if self.mode == 'addition':
+        if self.work_mode == 'addition':
             progress_object_generator()
 
     def database_hashes(self):
@@ -153,7 +154,7 @@ class BookSorter:
 
         # Do not allow addition in case the file
         # is already in the database and it remains at its original path
-        if self.mode == 'addition' and file_md5 in self.hashes_and_paths:
+        if self.work_mode == 'addition' and file_md5 in self.hashes_and_paths:
             if (self.hashes_and_paths[file_md5] == filename
                     or os.path.exists(self.hashes_and_paths[file_md5])):
 
@@ -181,7 +182,7 @@ class BookSorter:
                 'path': filename}
 
             # Different modes require different values
-            if self.mode == 'addition':
+            if self.work_mode == 'addition':
                 # Reduce the size of the incoming image
                 # if one is found
                 title = book_ref.get_title()
@@ -205,8 +206,9 @@ class BookSorter:
                     cover_image = None
 
                 this_book[file_md5]['cover_image'] = cover_image
+                this_book[file_md5]['addition_mode'] = self.addition_mode
 
-            if self.mode == 'reading':
+            if self.work_mode == 'reading':
                 all_content = book_ref.get_contents()
 
                 # get_contents() returns a tuple. Index 1 is a collection of

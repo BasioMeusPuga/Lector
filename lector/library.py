@@ -41,7 +41,8 @@ class Library:
             books = database.DatabaseFunctions(
                 self.parent.database_path).fetch_data(
                     ('Title', 'Author', 'Year', 'DateAdded', 'Path',
-                     'Position', 'ISBN', 'Tags', 'Hash', 'LastAccessed'),
+                     'Position', 'ISBN', 'Tags', 'Hash', 'LastAccessed',
+                     'Addition'),
                     'books',
                     {'Title': ''},
                     'LIKE')
@@ -64,7 +65,7 @@ class Library:
 
                 books.append([
                     i[1]['title'], i[1]['author'], i[1]['year'], current_qdatetime,
-                    i[1]['path'], None, i[1]['isbn'], _tags, i[0], None])
+                    i[1]['path'], None, i[1]['isbn'], _tags, i[0], None, i[1]['addition_mode']])
 
         else:
             return
@@ -76,6 +77,8 @@ class Library:
             author = i[1]
             year = i[2]
             path = i[4]
+            addition_mode = i[10]
+
             last_accessed = i[9]
             if last_accessed and not isinstance(last_accessed, QtCore.QDateTime):
                 last_accessed = pickle.loads(last_accessed)
@@ -121,6 +124,7 @@ class Library:
                 'tags': tags,
                 'hash': i[8],
                 'last_accessed': last_accessed,
+                'addition_mode': addition_mode,
                 'file_exists': file_exists}
 
             author_string = self._translate('Library', 'Author')
@@ -240,11 +244,20 @@ class Library:
                 {'Path': ''},
                 'LIKE')
 
-        if not db_library_directories:  # Empty database / table
-            return
+        if db_library_directories:  # Empty database / table
+            library_directories = {
+                i[0]: (i[1], i[2]) for i in db_library_directories}
 
-        library_directories = {
-            i[0]: (i[1], i[2]) for i in db_library_directories}
+        else:
+            db_library_directories = database.DatabaseFunctions(
+                self.parent.database_path).fetch_data(
+                    ('Path',),
+                    'books',  # This checks the directories table NOT the book one
+                    {'Path': ''},
+                    'LIKE')
+
+            library_directories = {
+                i[0]: (None, None) for i in db_library_directories}
 
         def get_tags(all_metadata):
             path = os.path.dirname(all_metadata['path'])
@@ -264,6 +277,8 @@ class Library:
 
                     return directory_name, directory_tags
 
+            # A file is assigned a 'manually added' tag in case it isn't
+            # in any designated library directory
             added_string = self._translate('Library', 'manually added')
             return added_string.lower(), None
 
@@ -281,23 +296,22 @@ class Library:
         # All files in unselected directories will have to be removed
         # from both of the models
         # They will also have to be deleted from the library
-        valid_paths = set(valid_paths)
+        # valid_paths = set(valid_paths)
 
-        # Get all paths
-        all_paths = set()
-        for i in range(self.view_model.rowCount()):
-            item = self.view_model.item(i, 0)
-            item_metadata = item.data(QtCore.Qt.UserRole + 3)
-            book_path = item_metadata['path']
-            all_paths.add(book_path)
-
-        invalid_paths = all_paths - valid_paths
-
+        invalid_paths = []
         deletable_persistent_indexes = []
+
         for i in range(self.view_model.rowCount()):
             item = self.view_model.item(i)
-            path = item.data(QtCore.Qt.UserRole + 3)['path']
-            if path in invalid_paths:
+
+            item_metadata = item.data(QtCore.Qt.UserRole + 3)
+            book_path = item_metadata['path']
+            addition_mode = item_metadata['addition_mode']
+
+            if (book_path not in valid_paths and
+                    (addition_mode != 'manual' or addition_mode is None)):
+
+                invalid_paths.append(book_path)
                 deletable_persistent_indexes.append(
                     QtCore.QPersistentModelIndex(item.index()))
 

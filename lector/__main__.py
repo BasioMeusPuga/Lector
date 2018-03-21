@@ -302,7 +302,7 @@ class MainUI(QtWidgets.QMainWindow, mainwindow.Ui_MainWindow):
             file_list = [QtCore.QFileInfo(i).absoluteFilePath() for i in my_args]
             books = sorter.BookSorter(
                 file_list,
-                'addition',
+                ('addition', 'manual'),
                 self.database_path,
                 self.settings['auto_tags'],
                 self.temp_dir.path())
@@ -472,7 +472,7 @@ class MainUI(QtWidgets.QMainWindow, mainwindow.Ui_MainWindow):
         self.sorterProgress.setVisible(True)
         self.statusMessage.setText(self._translate('Main_UI', 'Adding books...'))
         self.thread = BackGroundBookAddition(
-            opened_files[0], self.database_path, False, self)
+            opened_files[0], self.database_path, 'manual', self)
         self.thread.finished.connect(self.move_on)
         self.thread.start()
 
@@ -756,7 +756,7 @@ class MainUI(QtWidgets.QMainWindow, mainwindow.Ui_MainWindow):
 
         contents = sorter.BookSorter(
             file_paths,
-            'reading',
+            ('reading', None),
             self.database_path,
             True,
             self.temp_dir.path()).initiate_threads()
@@ -1132,11 +1132,13 @@ class MainUI(QtWidgets.QMainWindow, mainwindow.Ui_MainWindow):
             checked = [i for i in directory_list if i[3] == QtCore.Qt.Checked]
             filter_list = list(map(generate_name, checked))
             filter_list.sort()
-            filter_list.append(self._translate('Main_UI', 'Manually Added'))
-            filter_actions = [QtWidgets.QAction(i, self.libraryFilterMenu) for i in filter_list]
+
+        filter_list.append(self._translate('Main_UI', 'Manually Added'))
+        filter_actions = [QtWidgets.QAction(i, self.libraryFilterMenu) for i in filter_list]
 
         filter_all = QtWidgets.QAction('All', self.libraryFilterMenu)
         filter_actions.append(filter_all)
+
         for i in filter_actions:
             i.setCheckable(True)
             i.setChecked(True)
@@ -1166,6 +1168,7 @@ class MainUI(QtWidgets.QMainWindow, mainwindow.Ui_MainWindow):
         else:
             self.libraryFilterMenu.actions()[-1].setChecked(True)
 
+        # print(self.active_library_filters)
         self.lib_ref.update_proxymodels()
 
     def toggle_distraction_free(self):
