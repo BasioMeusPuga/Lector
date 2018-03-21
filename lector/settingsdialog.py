@@ -91,6 +91,7 @@ class SettingsUI(QtWidgets.QDialog, settingswindow.Ui_Dialog):
         self.fileRemember.setChecked(self.parent.settings['remember_files'])
         self.performCulling.setChecked(self.parent.settings['perform_culling'])
         self.cachingEnabled.setChecked(self.parent.settings['caching_enabled'])
+        self.hideScrollBars.setChecked(self.parent.settings['hide_scrollbars'])
 
         self.autoTags.clicked.connect(self.manage_checkboxes)
         self.coverShadows.clicked.connect(self.manage_checkboxes)
@@ -98,6 +99,7 @@ class SettingsUI(QtWidgets.QDialog, settingswindow.Ui_Dialog):
         self.fileRemember.clicked.connect(self.manage_checkboxes)
         self.performCulling.clicked.connect(self.manage_checkboxes)
         self.cachingEnabled.clicked.connect(self.manage_checkboxes)
+        self.hideScrollBars.clicked.connect(self.manage_checkboxes)
 
         # Generate the filesystem treeView
         self.generate_tree()
@@ -284,7 +286,8 @@ class SettingsUI(QtWidgets.QDialog, settingswindow.Ui_Dialog):
             'refreshLibrary': 'scan_library',
             'fileRemember': 'remember_files',
             'performCulling': 'perform_culling',
-            'cachingEnabled': 'caching_enabled',}
+            'cachingEnabled': 'caching_enabled',
+            'hideScrollBars': 'hide_scrollbars'}
 
         self.parent.settings[sender_dict[sender]] = not self.parent.settings[sender_dict[sender]]
 

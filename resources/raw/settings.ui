@@ -63,34 +63,14 @@
              </widget>
             </item>
             <item>
-             <widget class="QCheckBox" name="autoTags">
+             <widget class="QCheckBox" name="performCulling">
+              <property name="toolTip">
+               <string>Enabling reduces startup time and memory usage</string>
+              </property>
               <property name="text">
-               <string>Generate tags from files</string>
+               <string>Load covers only when needed</string>
               </property>
              </widget>
-            </item>
-            <item>
-             <layout class="QHBoxLayout" name="horizontalLayout_3">
-              <item>
-               <widget class="QLabel" name="languageLabel">
-                <property name="sizePolicy">
-                 <sizepolicy hsizetype="Maximum" vsizetype="Preferred">
-                  <horstretch>0</horstretch>
-                  <verstretch>0</verstretch>
-                 </sizepolicy>
-                </property>
-                <property name="text">
-                 <string>Dictionary:</string>
-                </property>
-                <property name="alignment">
-                 <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignVCenter</set>
-                </property>
-               </widget>
-              </item>
-              <item>
-               <widget class="QComboBox" name="languageBox"/>
-              </item>
-             </layout>
             </item>
            </layout>
           </item>
@@ -106,12 +86,9 @@
            </widget>
           </item>
           <item>
-           <widget class="QCheckBox" name="performCulling">
-            <property name="toolTip">
-             <string>Enabling reduces startup time and memory usage</string>
-            </property>
+           <widget class="QCheckBox" name="autoTags">
             <property name="text">
-             <string>Load covers only when needed</string>
+             <string>Generate tags from files</string>
             </property>
            </widget>
           </item>
@@ -125,12 +102,50 @@
             </property>
            </widget>
           </item>
+         </layout>
+        </item>
+        <item row="2" column="0">
+         <layout class="QHBoxLayout" name="horizontalLayout_6">
+          <item>
+           <layout class="QHBoxLayout" name="horizontalLayout_3">
+            <item>
+             <widget class="QLabel" name="languageLabel">
+              <property name="sizePolicy">
+               <sizepolicy hsizetype="Maximum" vsizetype="Preferred">
+                <horstretch>0</horstretch>
+                <verstretch>0</verstretch>
+               </sizepolicy>
+              </property>
+              <property name="text">
+               <string>Dictionary:</string>
+              </property>
+              <property name="alignment">
+               <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignVCenter</set>
+              </property>
+             </widget>
+            </item>
+            <item>
+             <widget class="QComboBox" name="languageBox"/>
+            </item>
+           </layout>
+          </item>
+          <item>
+           <widget class="QCheckBox" name="hideScrollBars">
+            <property name="toolTip">
+             <string>Horizontal scrolling with Alt + Scroll
+Reopen book to see changes</string>
+            </property>
+            <property name="text">
+             <string>Hide scrollbars when reading</string>
+            </property>
+           </widget>
+          </item>
           <item>
            <layout class="QHBoxLayout" name="horizontalLayout_5">
             <item>
              <widget class="QLabel" name="label">
               <property name="toolTip">
-               <string>Restart to see changes</string>
+               <string>Restart application to see changes</string>
               </property>
               <property name="text">
                <string>Icon theme: </string>
@@ -140,7 +155,7 @@
             <item>
              <widget class="QRadioButton" name="darkIconsRadio">
               <property name="toolTip">
-               <string>Restart to see changes</string>
+               <string>Restart application to see changes</string>
               </property>
               <property name="text">
                <string>Dar&amp;k</string>
@@ -150,7 +165,7 @@
             <item>
              <widget class="QRadioButton" name="lightIconsRadio">
               <property name="toolTip">
-               <string>Restart to see changes</string>
+               <string>Restart application to see changes</string>
               </property>
               <property name="text">
                <string>&amp;Light</string>

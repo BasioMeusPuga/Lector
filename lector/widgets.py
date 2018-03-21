@@ -51,6 +51,7 @@ class Tab(QtWidgets.QWidget):
         self.main_window = self.window()
 
         self.masterLayout = QtWidgets.QHBoxLayout(self)
+        self.masterLayout.setContentsMargins(0, 0, 0, 0)
         self.horzLayout = QtWidgets.QSplitter(self)
         self.horzLayout.setOrientation(QtCore.Qt.Horizontal)
         self.masterLayout.addWidget(self.horzLayout)
@@ -111,8 +112,13 @@ class Tab(QtWidgets.QWidget):
         self.contentView.setFrameShape(QtWidgets.QFrame.NoFrame)
         self.contentView.setObjectName('contentView')
         self.contentView.verticalScrollBar().setSingleStep(7)
-        self.contentView.setHorizontalScrollBarPolicy(
-            QtCore.Qt.ScrollBarAsNeeded)
+
+        if self.main_window.settings['hide_scrollbars']:
+            self.contentView.setHorizontalScrollBarPolicy(QtCore.Qt.ScrollBarAlwaysOff)
+            self.contentView.setVerticalScrollBarPolicy(QtCore.Qt.ScrollBarAlwaysOff)
+        else:
+            self.contentView.setHorizontalScrollBarPolicy(QtCore.Qt.ScrollBarAsNeeded)
+            self.contentView.setVerticalScrollBarPolicy(QtCore.Qt.ScrollBarAsNeeded)
 
         # See bookmark availability
         if not self.metadata['bookmarks']:
@@ -295,6 +301,10 @@ class Tab(QtWidgets.QWidget):
 
         # Hide the view modification buttons in case they're visible
         self.main_window.bookToolBar.customize_view_off()
+
+        # Exit distraction free mode too
+        if not self.main_window.settings['show_bars']:
+            self.main_window.toggle_distraction_free()
 
     def change_chapter_tocBox(self):
         chapter_number = self.main_window.bookToolBar.tocBox.currentIndex()

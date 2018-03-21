@@ -50,6 +50,10 @@ class MainUI(QtWidgets.QMainWindow, mainwindow.Ui_MainWindow):
         super(MainUI, self).__init__()
         self.setupUi(self)
 
+        # Central Widget - Make borders disappear
+        self.centralWidget().layout().setContentsMargins(0, 0, 0, 0)
+        self.gridLayout_2.setContentsMargins(0, 0, 0, 0)
+
         # Initialize translation function
         self._translate = QtCore.QCoreApplication.translate
 
@@ -78,7 +82,8 @@ class MainUI(QtWidgets.QMainWindow, mainwindow.Ui_MainWindow):
         self.libraryFilterMenu = QtWidgets.QMenu()
         self.statusMessage = QtWidgets.QLabel()
         self.distractionFreeToggle = QtWidgets.QToolButton()
-        self.reloadLibrary = QtWidgets.QToolButton()
+        # self.reloadLibrary = QtWidgets.QToolButton()
+        self.reloadLibrary = QtWidgets.QPushButton()
 
         # Create the database in case it doesn't exist
         database.DatabaseInit(self.database_path)
@@ -200,10 +205,10 @@ class MainUI(QtWidgets.QMainWindow, mainwindow.Ui_MainWindow):
         print('Available parsers: ' + self.available_parsers)
 
         # The library refresh button on the Library tab
+        self.reloadLibrary.setFlat(True)
         self.reloadLibrary.setIcon(self.QImageFactory.get_image('reload'))
         self.reloadLibrary.setObjectName('reloadLibrary')
         self.reloadLibrary.setToolTip(self._translate('Main_UI', 'Scan library'))
-        self.reloadLibrary.setAutoRaise(True)
         self.reloadLibrary.clicked.connect(self.settingsDialog.start_library_scan)
 
         self.tabWidget.tabBar().setTabButton(
@@ -434,7 +439,7 @@ class MainUI(QtWidgets.QMainWindow, mainwindow.Ui_MainWindow):
         # First, calculate the number of images per row
         i = self.listView.viewport().width() / default_size
         rem = i - int(i)
-        if rem >= .11875 and rem <= .9999:
+        if rem >= .21875 and rem <= .9999:
             num_images = int(i)
         else:
             num_images = int(i) - 1
@@ -1171,7 +1176,6 @@ class MainUI(QtWidgets.QMainWindow, mainwindow.Ui_MainWindow):
         else:
             self.libraryFilterMenu.actions()[-1].setChecked(True)
 
-        # print(self.active_library_filters)
         self.lib_ref.update_proxymodels()
 
     def toggle_distraction_free(self):
@@ -1189,6 +1193,8 @@ class MainUI(QtWidgets.QMainWindow, mainwindow.Ui_MainWindow):
         else:
             self.bookToolBar.setVisible(
                 not self.bookToolBar.isVisible())
+
+        self.start_culling_timer()
 
     def closeEvent(self, event=None):
         if event:

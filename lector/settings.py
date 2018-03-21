@@ -101,7 +101,8 @@ class Settings:
             'dictionaryLanguage', 'en')
         self.parent.settings['caching_enabled'] = literal_eval(self.settings.value(
             'cachingEnabled', 'True').capitalize())
-
+        self.parent.settings['hide_scrollbars'] = literal_eval(self.settings.value(
+            'hideScrollBars', 'False').capitalize())
         self.settings.endGroup()
 
         self.settings.beginGroup('dialogSettings')
@@ -171,6 +172,7 @@ class Settings:
         self.settings.setValue('performCulling', current_settings['perform_culling'])
         self.settings.setValue('dictionaryLanguage', current_settings['dictionary_language'])
         self.settings.setValue('cachingEnabled', current_settings['caching_enabled'])
+        self.settings.setValue('hideScrollBars', current_settings['hide_scrollbars'])
         self.settings.endGroup()
 
         self.settings.beginGroup('dialogSettings')
