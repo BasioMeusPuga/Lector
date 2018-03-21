@@ -35,6 +35,7 @@ poppler-qt5 and python-poppler-qt5 are optional.
 
 ### Available packages
 * [AUR](https://aur.archlinux.org/packages/lector-git/)
+* [Gentoo (unofficial)](https://bitbucket.org/szymonsz/gen2-overlay/src/master/app-text/lector/)
 
 ## Translations
 1. There is a `SAMPLE.ts` file in `resources/translations`. Open it in `Qt Linguist`.
