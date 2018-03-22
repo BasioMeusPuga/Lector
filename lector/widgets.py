@@ -41,15 +41,16 @@ from lector.sorter import resize_image
 
 
 class Tab(QtWidgets.QWidget):
-    def __init__(self, metadata, parent=None):
+    def __init__(self, metadata, main_window, parent=None):
         super(Tab, self).__init__(parent)
         self._translate = QtCore.QCoreApplication.translate
 
-        self.parent = parent
+        self.setAttribute(QtCore.Qt.WA_DeleteOnClose)
+
+        self.main_window = main_window
         self.metadata = metadata  # Save progress data into this dictionary
         self.are_we_doing_images_only = self.metadata['images_only']
         self.is_fullscreen = False
-        self.main_window = self.window()
 
         self.masterLayout = QtWidgets.QHBoxLayout(self)
         self.masterLayout.setContentsMargins(0, 0, 0, 0)
@@ -152,7 +153,7 @@ class Tab(QtWidgets.QWidget):
         self.horzLayout.addWidget(self.contentView)
         self.horzLayout.addWidget(self.dockWidget)
         title = self.metadata['title']
-        self.parent.addTab(self, title)
+        self.main_window.tabWidget.addTab(self, title)
 
         # Hide mouse cursor timer
         self.mouse_hide_timer = QtCore.QTimer()

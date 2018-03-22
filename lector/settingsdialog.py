@@ -32,7 +32,7 @@ from resources import settingswindow
 
 
 class SettingsUI(QtWidgets.QDialog, settingswindow.Ui_Dialog):
-    def __init__(self, parent):
+    def __init__(self, parent=None):
         super(SettingsUI, self).__init__()
         self.setupUi(self)
         self._translate = QtCore.QCoreApplication.translate
@@ -216,7 +216,7 @@ class SettingsUI(QtWidgets.QDialog, settingswindow.Ui_Dialog):
         # Traverse directories looking for files
         self.parent.statusMessage.setText(
             self._translate('SettingsUI', 'Checking library folders'))
-        self.thread = BackGroundBookSearch(data_pairs, self)
+        self.thread = BackGroundBookSearch(data_pairs)
         self.thread.finished.connect(self.finished_iterating)
         self.thread.start()
 

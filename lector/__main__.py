@@ -17,6 +17,7 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 import os
+import gc
 import sys
 import hashlib
 import pathlib
@@ -526,7 +527,7 @@ class MainUI(QtWidgets.QMainWindow, mainwindow.Ui_MainWindow):
 
             # Update the database in the background
             self.thread = BackGroundBookDeletion(
-                delete_hashes, self.database_path, self)
+                delete_hashes, self.database_path)
             self.thread.finished.connect(self.move_on)
             self.thread.start()
 
@@ -647,7 +648,10 @@ class MainUI(QtWidgets.QMainWindow, mainwindow.Ui_MainWindow):
         self.thread.start()
 
         self.tabWidget.widget(tab_index).update_last_accessed_time()
-        self.tabWidget.removeTab(tab_index)
+
+        self.tabWidget.widget(tab_index).deleteLater()
+        self.tabWidget.widget(tab_index).setParent(None)
+        gc.collect()
 
     def set_toc_position(self, event=None):
         current_tab = self.tabWidget.widget(self.tabWidget.currentIndex())
@@ -773,7 +777,7 @@ class MainUI(QtWidgets.QMainWindow, mainwindow.Ui_MainWindow):
             # New tabs are created here
             # Initial position adjustment is carried out by the tab itself
             file_data = contents[i]
-            Tab(file_data, self.tabWidget)
+            Tab(file_data, self)
 
         if self.settings['last_open_tab'] == 'library':
             self.tabWidget.setCurrentIndex(0)

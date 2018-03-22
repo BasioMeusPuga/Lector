@@ -44,12 +44,12 @@ class BackGroundTabUpdate(QtCore.QThread):
 
 
 class BackGroundBookAddition(QtCore.QThread):
-    def __init__(self, file_list, database_path, addition_mode, parent=None):
+    def __init__(self, file_list, database_path, addition_mode, main_window, parent=None):
         super(BackGroundBookAddition, self).__init__(parent)
         self.file_list = file_list
-        self.parent = parent
         self.database_path = database_path
         self.addition_mode = addition_mode
+        self.main_window = main_window
 
         self.prune_required = True
         if self.addition_mode == 'manual':
@@ -60,21 +60,20 @@ class BackGroundBookAddition(QtCore.QThread):
             self.file_list,
             ('addition', self.addition_mode),
             self.database_path,
-            self.parent.settings['auto_tags'],
-            self.parent.temp_dir.path())
+            self.main_window.settings['auto_tags'],
+            self.main_window.temp_dir.path())
 
         parsed_books = books.initiate_threads()
-        self.parent.lib_ref.generate_model('addition', parsed_books, False)
+        self.main_window.lib_ref.generate_model('addition', parsed_books, False)
         database.DatabaseFunctions(self.database_path).add_to_database(parsed_books)
 
         if self.prune_required:
-            self.parent.lib_ref.prune_models(self.file_list)
+            self.main_window.lib_ref.prune_models(self.file_list)
 
 
 class BackGroundBookDeletion(QtCore.QThread):
     def __init__(self, hash_list, database_path, parent=None):
         super(BackGroundBookDeletion, self).__init__(parent)
-        self.parent = parent
         self.hash_list = hash_list
         self.database_path = database_path
 
@@ -86,7 +85,6 @@ class BackGroundBookDeletion(QtCore.QThread):
 class BackGroundBookSearch(QtCore.QThread):
     def __init__(self, data_list, parent=None):
         super(BackGroundBookSearch, self).__init__(parent)
-        self.parent = parent
         self.valid_files = []
 
         # Filter for checked directories
