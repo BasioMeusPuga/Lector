@@ -116,7 +116,7 @@
 <context>
     <name>DefinitionsUI</name>
     <message>
-        <location filename="../../lector/definitionsdialog.py" line="115"/>
+        <location filename="../../lector/definitionsdialog.py" line="117"/>
         <source>No definitions found in</source>
         <translation>Keine Definition gefunden in</translation>
     </message>
@@ -139,97 +139,97 @@
         <translation>Aussprache des Root-Wortes abspielen</translation>
     </message>
     <message>
-        <location filename="../settingswindow.py" line="111"/>
+        <location filename="../settingswindow.py" line="117"/>
         <source>Settings</source>
         <translation>Einstellungen</translation>
     </message>
     <message>
-        <location filename="../settingswindow.py" line="112"/>
+        <location filename="../settingswindow.py" line="118"/>
         <source>Library</source>
         <translation>Bibliothek</translation>
     </message>
     <message>
-        <location filename="../settingswindow.py" line="113"/>
+        <location filename="../settingswindow.py" line="119"/>
         <source>Switches</source>
         <translation>Schalter</translation>
     </message>
     <message>
-        <location filename="../settingswindow.py" line="114"/>
+        <location filename="../settingswindow.py" line="120"/>
         <source>Startup: Refresh library</source>
         <translation>Start: Bibliothek neu laden</translation>
     </message>
     <message>
-        <location filename="../settingswindow.py" line="115"/>
+        <location filename="../settingswindow.py" line="121"/>
         <source>Remember open files</source>
         <translation>Offen Dateien merken</translation>
     </message>
     <message>
-        <location filename="../settingswindow.py" line="116"/>
+        <location filename="../settingswindow.py" line="125"/>
         <source>Generate tags from files</source>
         <translation>Tags aus Dateien generieren</translation>
     </message>
     <message>
-        <location filename="../settingswindow.py" line="117"/>
+        <location filename="../settingswindow.py" line="128"/>
         <source>Dictionary:</source>
         <translation>Wörterbuch:</translation>
     </message>
     <message>
-        <location filename="../settingswindow.py" line="118"/>
+        <location filename="../settingswindow.py" line="124"/>
         <source>Cover shadows</source>
         <translation>Cover Schatten</translation>
     </message>
     <message>
-        <location filename="../settingswindow.py" line="119"/>
+        <location filename="../settingswindow.py" line="122"/>
         <source>Enabling reduces startup time and memory usage</source>
         <translation>Aktivierung verringert die benötigte Zeit zum Starten und die Speicher Nutzung</translation>
     </message>
     <message>
-        <location filename="../settingswindow.py" line="120"/>
+        <location filename="../settingswindow.py" line="123"/>
         <source>Load covers only when needed</source>
         <translation>Cover nur laden wenn benötigt</translation>
     </message>
     <message>
-        <location filename="../settingswindow.py" line="121"/>
+        <location filename="../settingswindow.py" line="126"/>
         <source>Greatly reduces page transition time at the cost of more memory</source>
         <translation>Drastische verkürzung der Seitenübergangszeit auf Kosten des Speichers</translation>
     </message>
     <message>
-        <location filename="../settingswindow.py" line="122"/>
+        <location filename="../settingswindow.py" line="127"/>
         <source>Cache comic / pdf pages</source>
         <translation>Comic / PDF Seiten zwischenspeichern</translation>
     </message>
     <message>
         <location filename="../settingswindow.py" line="127"/>
         <source>Restart to see changes</source>
-        <translation>Neustarten um Änderungen zu übernehmen</translation>
+        <translation type="obsolete">Neustarten um Änderungen zu übernehmen</translation>
     </message>
     <message>
-        <location filename="../settingswindow.py" line="124"/>
+        <location filename="../settingswindow.py" line="133"/>
         <source>Icon theme: </source>
         <translation>Symbol Thema:</translation>
     </message>
     <message>
-        <location filename="../settingswindow.py" line="126"/>
+        <location filename="../settingswindow.py" line="135"/>
         <source>Dar&amp;k</source>
         <translation>Dun&amp;kel</translation>
     </message>
     <message>
-        <location filename="../settingswindow.py" line="128"/>
+        <location filename="../settingswindow.py" line="137"/>
         <source>&amp;Light</source>
         <translation>He&amp;ll</translation>
     </message>
     <message>
-        <location filename="../settingswindow.py" line="129"/>
+        <location filename="../settingswindow.py" line="138"/>
         <source>Scan Library</source>
         <translation>Bibliothek scannen</translation>
     </message>
     <message>
-        <location filename="../settingswindow.py" line="130"/>
+        <location filename="../settingswindow.py" line="139"/>
         <source>Close</source>
         <translation>Schließen</translation>
     </message>
     <message>
-        <location filename="../settingswindow.py" line="131"/>
+        <location filename="../settingswindow.py" line="140"/>
         <source>About</source>
         <translation>Über</translation>
     </message>
@@ -278,26 +278,42 @@
         <source>Cancel</source>
         <translation>Abbrechen</translation>
     </message>
+    <message>
+        <location filename="../settingswindow.py" line="129"/>
+        <source>Horizontal scrolling with Alt + Scroll
+Reopen book to see changes</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../settingswindow.py" line="131"/>
+        <source>Hide scrollbars when reading</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../settingswindow.py" line="136"/>
+        <source>Restart application to see changes</source>
+        <translation type="unfinished"></translation>
+    </message>
 </context>
 <context>
     <name>Library</name>
     <message>
-        <location filename="../../lector/library.py" line="126"/>
+        <location filename="../../lector/library.py" line="130"/>
         <source>Author</source>
         <translation>Autor</translation>
     </message>
     <message>
-        <location filename="../../lector/library.py" line="127"/>
+        <location filename="../../lector/library.py" line="131"/>
         <source>Year</source>
         <translation>Jahr</translation>
     </message>
     <message>
-        <location filename="../../lector/library.py" line="267"/>
+        <location filename="../../lector/library.py" line="282"/>
         <source>manually added</source>
         <translation>Manuell hinzugefügt</translation>
     </message>
     <message>
-        <location filename="../../lector/library.py" line="205"/>
+        <location filename="../../lector/library.py" line="209"/>
         <source> books</source>
         <translation type="unfinished"></translation>
     </message>
@@ -366,87 +382,87 @@
 <context>
     <name>Main_UI</name>
     <message>
-        <location filename="../../lector/__main__.py" line="109"/>
+        <location filename="../../lector/__main__.py" line="114"/>
         <source>Toggle distraction free mode (Ctrl + D)</source>
         <translation>Ablenkungsfreien Modus ein-/ausschalten (Strg + D)</translation>
     </message>
     <message>
-        <location filename="../../lector/__main__.py" line="205"/>
+        <location filename="../../lector/__main__.py" line="211"/>
         <source>Scan library</source>
         <translation>Biblothek scannen </translation>
     </message>
     <message>
-        <location filename="../../lector/__main__.py" line="459"/>
+        <location filename="../../lector/__main__.py" line="463"/>
         <source>Add books to database</source>
         <translation>Bücher zur Datenbank hinzufügen</translation>
     </message>
     <message>
-        <location filename="../../lector/__main__.py" line="460"/>
+        <location filename="../../lector/__main__.py" line="464"/>
         <source>eBooks</source>
         <translation>eBooks</translation>
     </message>
     <message>
-        <location filename="../../lector/__main__.py" line="473"/>
+        <location filename="../../lector/__main__.py" line="477"/>
         <source>Adding books...</source>
         <translation>Bücher werden hinzugefügt...</translation>
     </message>
     <message>
-        <location filename="../../lector/__main__.py" line="536"/>
+        <location filename="../../lector/__main__.py" line="540"/>
         <source>Confirm deletion</source>
         <translation>Löschen bestätigen</translation>
     </message>
     <message>
-        <location filename="../../lector/__main__.py" line="545"/>
+        <location filename="../../lector/__main__.py" line="553"/>
         <source>Save changes and start library scan</source>
         <translation>Änderungen speichern &amp; Bibliotheksscan starten</translation>
     </message>
     <message>
-        <location filename="../../lector/__main__.py" line="593"/>
+        <location filename="../../lector/__main__.py" line="601"/>
         <source> Books</source>
         <translation>Bücher</translation>
     </message>
     <message>
-        <location filename="../../lector/__main__.py" line="1020"/>
+        <location filename="../../lector/__main__.py" line="1028"/>
         <source>Start reading</source>
         <translation>Lesen</translation>
     </message>
     <message>
-        <location filename="../../lector/__main__.py" line="1026"/>
+        <location filename="../../lector/__main__.py" line="1034"/>
         <source>Edit</source>
         <translation>Bearbeiten</translation>
     </message>
     <message>
-        <location filename="../../lector/__main__.py" line="1030"/>
+        <location filename="../../lector/__main__.py" line="1038"/>
         <source>Delete</source>
         <translation>Löschen</translation>
     </message>
     <message>
-        <location filename="../../lector/__main__.py" line="1033"/>
+        <location filename="../../lector/__main__.py" line="1041"/>
         <source>Mark read</source>
         <translation>Als gelesen kennzeichnen</translation>
     </message>
     <message>
-        <location filename="../../lector/__main__.py" line="1036"/>
+        <location filename="../../lector/__main__.py" line="1044"/>
         <source>Mark unread</source>
         <translation>Als ungelesen kennzeichnen</translation>
     </message>
     <message>
-        <location filename="../../lector/__main__.py" line="1135"/>
+        <location filename="../../lector/__main__.py" line="1144"/>
         <source>Manually Added</source>
         <translation>Manuell hinzugefügt</translation>
     </message>
     <message>
-        <location filename="../../lector/widgets.py" line="719"/>
+        <location filename="../../lector/widgets.py" line="747"/>
         <source>Save page as...</source>
         <translation>Seite speichern als...</translation>
     </message>
     <message>
-        <location filename="../../lector/widgets.py" line="720"/>
+        <location filename="../../lector/widgets.py" line="748"/>
         <source>Images</source>
         <translation>Bilder</translation>
     </message>
     <message>
-        <location filename="../../lector/__main__.py" line="555"/>
+        <location filename="../../lector/__main__.py" line="563"/>
         <source> books</source>
         <translation type="unfinished"></translation>
     </message>
@@ -467,12 +483,12 @@
 <context>
     <name>PliantQGraphicsScene</name>
     <message>
-        <location filename="../../lector/widgets.py" line="956"/>
+        <location filename="../../lector/widgets.py" line="1002"/>
         <source>Select new cover</source>
         <translation>Neues Cover auswählen</translation>
     </message>
     <message>
-        <location filename="../../lector/widgets.py" line="957"/>
+        <location filename="../../lector/widgets.py" line="1003"/>
         <source>Images</source>
         <translation>Bilder</translation>
     </message>
@@ -480,57 +496,87 @@
 <context>
     <name>PliantQGraphicsView</name>
     <message>
-        <location filename="../../lector/widgets.py" line="682"/>
+        <location filename="../../lector/widgets.py" line="695"/>
         <source>Save page as...</source>
         <translation>Seite speichern als...</translation>
     </message>
     <message>
-        <location filename="../../lector/widgets.py" line="693"/>
+        <location filename="../../lector/widgets.py" line="721"/>
         <source>Zoom in (+)</source>
         <translation>Vergrößern (+)</translation>
     </message>
     <message>
-        <location filename="../../lector/widgets.py" line="697"/>
+        <location filename="../../lector/widgets.py" line="725"/>
         <source>Zoom out (-)</source>
         <translation>Verkleinern (-)</translation>
     </message>
     <message>
-        <location filename="../../lector/widgets.py" line="701"/>
+        <location filename="../../lector/widgets.py" line="729"/>
         <source>Fit width (W)</source>
         <translation>An Fensterbreite anpassen</translation>
     </message>
     <message>
-        <location filename="../../lector/widgets.py" line="705"/>
+        <location filename="../../lector/widgets.py" line="733"/>
         <source>Best fit (B)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../lector/widgets.py" line="709"/>
+        <location filename="../../lector/widgets.py" line="737"/>
         <source>Original size (O)</source>
         <translation>Original Größe (O)</translation>
     </message>
     <message>
         <location filename="../../lector/widgets.py" line="685"/>
         <source>Toggle distraction free mode</source>
-        <translation>Ablenkungsfreien Modus ein-/ausschalten</translation>
+        <translation type="obsolete">Ablenkungsfreien Modus ein-/ausschalten</translation>
+    </message>
+    <message>
+        <location filename="../../lector/widgets.py" line="702"/>
+        <source>Exit fullscreen</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../lector/widgets.py" line="707"/>
+        <source>Distraction Free mode</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../lector/widgets.py" line="710"/>
+        <source>Exit Distraction Free mode</source>
+        <translation type="unfinished"></translation>
     </message>
 </context>
 <context>
     <name>PliantQTextBrowser</name>
     <message>
-        <location filename="../../lector/widgets.py" line="818"/>
+        <location filename="../../lector/widgets.py" line="848"/>
         <source>Define</source>
         <translation>Definieren</translation>
     </message>
     <message>
-        <location filename="../../lector/widgets.py" line="823"/>
+        <location filename="../../lector/widgets.py" line="853"/>
         <source>Search</source>
         <translation>Suchen</translation>
     </message>
     <message>
         <location filename="../../lector/widgets.py" line="827"/>
         <source>Toggle distraction free mode</source>
-        <translation>Ablenkungsfreien Modus ein-/ausschalten</translation>
+        <translation type="obsolete">Ablenkungsfreien Modus ein-/ausschalten</translation>
+    </message>
+    <message>
+        <location filename="../../lector/widgets.py" line="860"/>
+        <source>Exit fullscreen</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../lector/widgets.py" line="865"/>
+        <source>Distraction Free mode</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../lector/widgets.py" line="868"/>
+        <source>Exit Distraction Free mode</source>
+        <translation type="unfinished"></translation>
     </message>
 </context>
 <context>
@@ -556,17 +602,17 @@
         <translation>Änderungen speichern &amp; Bibliotheksscan starten</translation>
     </message>
     <message>
-        <location filename="../../lector/settingsdialog.py" line="216"/>
+        <location filename="../../lector/settingsdialog.py" line="213"/>
         <source>Library scan in progress...</source>
         <translation>Bibliotheksscan in Arbeit...</translation>
     </message>
     <message>
-        <location filename="../../lector/settingsdialog.py" line="220"/>
+        <location filename="../../lector/settingsdialog.py" line="217"/>
         <source>Checking library folders</source>
         <translation>Bibliotheksverzeichnisse werden überprüft</translation>
     </message>
     <message>
-        <location filename="../../lector/settingsdialog.py" line="235"/>
+        <location filename="../../lector/settingsdialog.py" line="232"/>
         <source>Parsing files</source>
         <translation>Dateien werden analysiert</translation>
     </message>
@@ -574,22 +620,22 @@
 <context>
     <name>Tab</name>
     <message>
-        <location filename="../../lector/widgets.py" line="123"/>
+        <location filename="../../lector/widgets.py" line="130"/>
         <source>Bookmarks</source>
         <translation>Lesezeichen</translation>
     </message>
     <message>
-        <location filename="../../lector/widgets.py" line="378"/>
+        <location filename="../../lector/widgets.py" line="391"/>
         <source>New bookmark</source>
         <translation>Lesezeichen hinzufügen</translation>
     </message>
     <message>
-        <location filename="../../lector/widgets.py" line="450"/>
+        <location filename="../../lector/widgets.py" line="463"/>
         <source>Edit</source>
         <translation>Bearbeiten</translation>
     </message>
     <message>
-        <location filename="../../lector/widgets.py" line="453"/>
+        <location filename="../../lector/widgets.py" line="466"/>
         <source>Delete</source>
         <translation>Löschen</translation>
     </message>

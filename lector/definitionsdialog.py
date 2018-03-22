@@ -41,6 +41,8 @@ class DefinitionsUI(QtWidgets.QDialog, definitions.Ui_Dialog):
         mask = QtGui.QRegion(path.toFillPolygon().toPolygon())
         self.setMask(mask)
 
+        self.definitionView.setVerticalScrollBarPolicy(QtCore.Qt.ScrollBarAlwaysOff)
+
         self.app_id = 'bb7a91f9'
         self.app_key = 'fefacdf6775c347b52e9efa2efe642ef'
 

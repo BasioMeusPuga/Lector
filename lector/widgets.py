@@ -48,6 +48,7 @@ class Tab(QtWidgets.QWidget):
         self.parent = parent
         self.metadata = metadata  # Save progress data into this dictionary
         self.are_we_doing_images_only = self.metadata['images_only']
+        self.is_fullscreen = False
         self.main_window = self.window()
 
         self.masterLayout = QtWidgets.QHBoxLayout(self)
@@ -264,24 +265,24 @@ class Tab(QtWidgets.QWidget):
             'is_read': is_read}
 
     def generate_keyboard_shortcuts(self):
-        self.next_chapter = QtWidgets.QShortcut(
+        self.ksNextChapter = QtWidgets.QShortcut(
             QtGui.QKeySequence('Right'), self.contentView)
-        self.next_chapter.setObjectName('nextChapter')
-        self.next_chapter.activated.connect(self.sneaky_change)
+        self.ksNextChapter.setObjectName('nextChapter')
+        self.ksNextChapter.activated.connect(self.sneaky_change)
 
-        self.prev_chapter = QtWidgets.QShortcut(
+        self.ksPrevChapter = QtWidgets.QShortcut(
             QtGui.QKeySequence('Left'), self.contentView)
-        self.prev_chapter.setObjectName('prevChapter')
-        self.prev_chapter.activated.connect(self.sneaky_change)
+        self.ksPrevChapter.setObjectName('prevChapter')
+        self.ksPrevChapter.activated.connect(self.sneaky_change)
 
-        self.go_fs = QtWidgets.QShortcut(
+        self.ksGoFullscreen = QtWidgets.QShortcut(
             QtGui.QKeySequence('F11'), self.contentView)
-        self.go_fs.activated.connect(self.go_fullscreen)
+        self.ksGoFullscreen.activated.connect(self.go_fullscreen)
 
-        self.exit_fs = QtWidgets.QShortcut(
+        self.ksExitFullscreen = QtWidgets.QShortcut(
             QtGui.QKeySequence('Escape'), self.contentView)
-        self.exit_fs.setContext(QtCore.Qt.ApplicationShortcut)
-        self.exit_fs.activated.connect(self.exit_fullscreen)
+        self.ksExitFullscreen.setContext(QtCore.Qt.ApplicationShortcut)
+        self.ksExitFullscreen.activated.connect(self.exit_fullscreen)
 
     def go_fullscreen(self):
         if self.contentView.windowState() == QtCore.Qt.WindowFullScreen:
@@ -292,12 +293,14 @@ class Tab(QtWidgets.QWidget):
         self.contentView.setWindowState(QtCore.Qt.WindowFullScreen)
         self.contentView.show()
         self.main_window.hide()
+        self.is_fullscreen = True
 
     def exit_fullscreen(self):
         self.main_window.show()
         self.contentView.setWindowFlags(QtCore.Qt.Widget)
         self.contentView.setWindowState(QtCore.Qt.WindowNoState)
         self.contentView.show()
+        self.is_fullscreen = False
 
         # Hide the view modification buttons in case they're visible
         self.main_window.bookToolBar.customize_view_off()
@@ -692,9 +695,24 @@ class PliantQGraphicsView(QtWidgets.QGraphicsView):
         saveAction = contextMenu.addAction(
             self.main_window.QImageFactory.get_image('filesaveas'),
             self._translate('PliantQGraphicsView', 'Save page as...'))
-        toggleAction = contextMenu.addAction(
-            self.main_window.QImageFactory.get_image('visibility'),
-            self._translate('PliantQGraphicsView', 'Toggle distraction free mode'))
+
+        fsToggleAction = None
+        dfToggleAction = None
+        if self.parent.is_fullscreen:
+            fsToggleAction = contextMenu.addAction(
+                self.main_window.QImageFactory.get_image('view-fullscreen'),
+                self._translate('PliantQGraphicsView', 'Exit fullscreen'))
+        else:
+            if self.main_window.settings['show_bars']:
+                distraction_free_prompt = self._translate(
+                    'PliantQGraphicsView', 'Distraction Free mode')
+            else:
+                distraction_free_prompt = self._translate(
+                    'PliantQGraphicsView', 'Exit Distraction Free mode')
+
+            dfToggleAction = contextMenu.addAction(
+                self.main_window.QImageFactory.get_image('visibility'),
+                distraction_free_prompt)
 
         viewSubMenu = contextMenu.addMenu('View')
         viewSubMenu.setIcon(
@@ -720,7 +738,7 @@ class PliantQGraphicsView(QtWidgets.QGraphicsView):
             self.main_window.QImageFactory.get_image('zoom-original'),
             self._translate('PliantQGraphicsView', 'Original size (O)'))
 
-        if not self.main_window.settings['show_bars']:
+        if not self.main_window.settings['show_bars'] or self.parent.is_fullscreen:
             self.common_functions.generate_combo_box_action(contextMenu)
 
         action = contextMenu.exec_(self.sender().mapToGlobal(position))
@@ -735,8 +753,10 @@ class PliantQGraphicsView(QtWidgets.QGraphicsView):
             if save_file:
                 self.image_pixmap.save(save_file[0])
 
-        if action == toggleAction:
+        if action == dfToggleAction:
             self.main_window.toggle_distraction_free()
+        if action == fsToggleAction:
+            self.parent.exit_fullscreen()
 
         view_action_dict = {
             zoominAction: QtCore.Qt.Key_Plus,
@@ -834,11 +854,25 @@ class PliantQTextBrowser(QtWidgets.QTextBrowser):
             self.main_window.QImageFactory.get_image('search'),
             self._translate('PliantQTextBrowser', 'Search'))
 
-        toggleAction = contextMenu.addAction(
-            self.main_window.QImageFactory.get_image('visibility'),
-            self._translate('PliantQTextBrowser', 'Toggle distraction free mode'))
+        fsToggleAction = None
+        dfToggleAction = None
+        if self.parent.is_fullscreen:
+            fsToggleAction = contextMenu.addAction(
+                self.main_window.QImageFactory.get_image('view-fullscreen'),
+                self._translate('PliantQTextBrowser', 'Exit fullscreen'))
+        else:
+            if self.main_window.settings['show_bars']:
+                distraction_free_prompt = self._translate(
+                    'PliantQTextBrowser', 'Distraction Free mode')
+            else:
+                distraction_free_prompt = self._translate(
+                    'PliantQTextBrowser', 'Exit Distraction Free mode')
 
-        if not self.main_window.settings['show_bars']:
+            dfToggleAction = contextMenu.addAction(
+                self.main_window.QImageFactory.get_image('visibility'),
+                distraction_free_prompt)
+
+        if not self.main_window.settings['show_bars'] or self.parent.is_fullscreen:
             self.common_functions.generate_combo_box_action(contextMenu)
 
         action = contextMenu.exec_(self.sender().mapToGlobal(position))
@@ -847,7 +881,9 @@ class PliantQTextBrowser(QtWidgets.QTextBrowser):
             self.main_window.definitionDialog.find_definition(selected_word)
         if action == searchAction:
             self.main_window.bookToolBar.searchBar.setFocus()
-        if action == toggleAction:
+        if action == fsToggleAction:
+            self.parent.exit_fullscreen()
+        if action == dfToggleAction:
             self.main_window.toggle_distraction_free()
 
     def closeEvent(self, *args):
