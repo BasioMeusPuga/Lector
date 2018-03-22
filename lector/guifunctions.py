@@ -17,7 +17,7 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 from PyQt5 import QtGui
-from resources import resources
+from lector.resources import resources
 
 
 class QImageFactory:

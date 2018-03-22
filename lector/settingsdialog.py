@@ -27,8 +27,7 @@ from PyQt5 import QtWidgets, QtCore
 from lector import database
 from lector.models import MostExcellentFileSystemModel
 from lector.threaded import BackGroundBookSearch, BackGroundBookAddition
-
-from resources import settingswindow
+from lector.resources import settingswindow
 
 
 class SettingsUI(QtWidgets.QDialog, settingswindow.Ui_Dialog):
@@ -46,7 +45,7 @@ class SettingsUI(QtWidgets.QDialog, settingswindow.Ui_Dialog):
         self.aboutBox.setVisible(False)
         install_dir = os.path.realpath(__file__)
         install_dir = pathlib.Path(install_dir).parents[1]
-        aboutfile_path = os.path.join(install_dir, 'resources', 'about.html')
+        aboutfile_path = os.path.join(install_dir, 'lector', 'resources', 'about.html')
         with open(aboutfile_path) as about_html:
             self.aboutBox.setHtml(about_html.read())
 

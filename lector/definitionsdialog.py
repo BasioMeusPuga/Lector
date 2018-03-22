@@ -18,8 +18,7 @@
 
 import requests
 from PyQt5 import QtWidgets, QtCore, QtGui, QtMultimedia
-
-from resources import definitions
+from lector.resources import definitions
 
 
 class DefinitionsUI(QtWidgets.QDialog, definitions.Ui_Dialog):

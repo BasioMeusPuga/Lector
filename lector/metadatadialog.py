@@ -20,8 +20,7 @@ from PyQt5 import QtWidgets, QtCore, QtGui
 
 from lector import database
 from lector.widgets import PliantQGraphicsScene
-
-from resources import metadata
+from lector.resources import metadata
 
 
 class MetadataUI(QtWidgets.QDialog, metadata.Ui_Dialog):

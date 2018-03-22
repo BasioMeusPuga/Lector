@@ -22,7 +22,7 @@
 import os
 import time
 import zipfile
-from rarfile import rarfile
+from lector.rarfile import rarfile
 
 
 class ParseCOMIC:

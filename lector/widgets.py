@@ -21,7 +21,6 @@
 # Double page, Continuous etc
 # Especially for comics
 
-
 import os
 import uuid
 import zipfile
@@ -32,7 +31,7 @@ try:
 except ImportError:
     pass
 
-from rarfile import rarfile
+from lector.rarfile import rarfile
 
 from lector.models import BookmarkProxyModel
 from lector.delegates import BookmarkDelegate

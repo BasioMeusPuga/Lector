@@ -1,5 +1,6 @@
 <RCC>
   <qresource prefix="images">
+    <file>Lector.png</file>
     <file>DarkIcons/tableofcontents.svg</file>
     <file>LightIcons/tableofcontents.svg</file>
     <file>DarkIcons/filesaveas.svg</file>

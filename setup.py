@@ -5,8 +5,8 @@ from setuptools import setup, find_packages
 HERE = path.abspath(path.dirname(__file__))
 
 MAJOR_VERSION = '0'
-MINOR_VERSION = '2'
-MICRO_VERSION = '1'
+MINOR_VERSION = '3'
+MICRO_VERSION = '0'
 VERSION = "{}.{}.{}".format(MAJOR_VERSION, MINOR_VERSION, MICRO_VERSION)
 
 # Get the long description from the README file
@@ -62,6 +62,10 @@ setup(
     python_requires='>=3.6, <4.0',
 
     package_data={'': ['about.html']},
+    data_files=[
+        ('share/icons/hicolor/scalable/apps', ['lector/resources/raw/Lector.png']),
+        ('share/applications', ['lector/resources/raw/lector.desktop'])
+        ],
     include_package_data=True,
 
     # List additional groups of dependencies here (e.g. development

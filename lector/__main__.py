@@ -43,13 +43,17 @@ from lector.settingsdialog import SettingsUI
 from lector.metadatadialog import MetadataUI
 from lector.definitionsdialog import DefinitionsUI
 
-from resources import mainwindow, resources
+from lector.resources import mainwindow, resources
 
 
 class MainUI(QtWidgets.QMainWindow, mainwindow.Ui_MainWindow):
     def __init__(self):
         super(MainUI, self).__init__()
         self.setupUi(self)
+
+        # Set window icon
+        self.setWindowIcon(
+            QtGui.QIcon(':/images/Lector.png'))
 
         # Central Widget - Make borders disappear
         self.centralWidget().layout().setContentsMargins(0, 0, 0, 0)

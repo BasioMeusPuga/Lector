@@ -44,10 +44,10 @@ from PyQt5 import QtCore, QtGui
 
 from lector import database
 
-from parsers.pdf import ParsePDF
-from parsers.epub import ParseEPUB
-from parsers.mobi import ParseMOBI
-from parsers.comicbooks import ParseCOMIC
+from lector.parsers.pdf import ParsePDF
+from lector.parsers.epub import ParseEPUB
+from lector.parsers.mobi import ParseMOBI
+from lector.parsers.comicbooks import ParseCOMIC
 
 sorter = {
     'pdf': ParsePDF,

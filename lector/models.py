@@ -19,7 +19,7 @@
 import pathlib
 
 from PyQt5 import QtCore, QtWidgets
-from resources import pie_chart
+from lector.resources import pie_chart
 
 
 class BookmarkProxyModel(QtCore.QSortFilterProxyModel):

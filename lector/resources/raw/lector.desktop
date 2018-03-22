@@ -1,0 +1,10 @@
+[Desktop Entry]
+Categories=Qt;KDE;Graphics;Viewer;
+Comment=A Qt based ebook reader
+Exec=lector %U
+GenericName=eBook Reader
+Icon=Lector
+MimeType=application/pdf;application/x-cbr;application/ereader;application/x-mobipocket-subscription;application/x-mobipocket-ebook;application/x-mobi8-ebook;application/epub+zip;application/x-cbz;
+Name=Lector
+Type=Application
+X-KDE-StartupNotify=false
