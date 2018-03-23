@@ -314,7 +314,8 @@ def get_split_content(chapter_data, split_by):
 
         return_list.append(
             (chapter_titles[count - 1], bs_obj_string))
-        xml_string = this_split[1]
+
+        xml_string = ''.join(this_split[1:])
 
     bs_obj = BeautifulSoup(xml_string, 'lxml')
     bs_obj_string = str(bs_obj).replace('"&gt;', '', 1) + ('<br/>' * 8)
