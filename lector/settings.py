@@ -2,6 +2,7 @@
 # Keep in mind that all integer / boolean settings are returned as strings
 
 import os
+
 from ast import literal_eval
 from PyQt5 import QtCore, QtGui
 

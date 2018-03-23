@@ -18,6 +18,7 @@
 
 import io
 import os
+
 from PyQt5 import QtCore
 from bs4 import BeautifulSoup
 
@@ -27,6 +28,7 @@ try:
 except ImportError:
     print('python-poppler-qt5 is not installed. Pdf files will not work.')
     proceed = False
+
 
 class ParsePDF:
     def __init__(self, filename, *args):

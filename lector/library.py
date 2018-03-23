@@ -19,7 +19,9 @@
 import os
 import pickle
 import pathlib
+
 from PyQt5 import QtGui, QtCore
+
 from lector import database
 from lector.models import TableProxyModel, ItemProxyModel
 

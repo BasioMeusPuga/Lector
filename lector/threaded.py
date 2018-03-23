@@ -18,6 +18,7 @@
 
 import os
 import pathlib
+
 from multiprocessing.dummy import Pool
 from PyQt5 import QtCore, QtGui
 

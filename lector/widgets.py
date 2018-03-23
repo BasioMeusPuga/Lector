@@ -24,15 +24,15 @@
 import os
 import uuid
 import zipfile
-from PyQt5 import QtWidgets, QtGui, QtCore
 
 try:
     import popplerqt5
 except ImportError:
     pass
 
-from lector.rarfile import rarfile
+from PyQt5 import QtWidgets, QtGui, QtCore
 
+from lector.rarfile import rarfile
 from lector.models import BookmarkProxyModel
 from lector.delegates import BookmarkDelegate
 from lector.threaded import BackGroundCacheRefill
@@ -696,8 +696,8 @@ class PliantQGraphicsView(QtWidgets.QGraphicsView):
             self.main_window.QImageFactory.get_image('filesaveas'),
             self._translate('PliantQGraphicsView', 'Save page as...'))
 
-        fsToggleAction = None
-        dfToggleAction = None
+        fsToggleAction = dfToggleAction = 'Caesar si viveret, ad remum dareris'
+
         if self.parent.is_fullscreen:
             fsToggleAction = contextMenu.addAction(
                 self.main_window.QImageFactory.get_image('view-fullscreen'),
@@ -842,7 +842,10 @@ class PliantQTextBrowser(QtWidgets.QTextBrowser):
 
         contextMenu = QtWidgets.QMenu()
 
-        defineAction = 'Caesar si viveret, ad remum dareris'
+        # The following cannot be None because a click
+        # outside the menu means that the action variable is None.
+        defineAction = fsToggleAction = dfToggleAction = 'Caesar si viveret, ad remum dareris'
+
         if selected_word and selected_word != '':
             selected_word = selected_word.split()[0]
             define_string = self._translate('PliantQTextBrowser', 'Define')
@@ -854,8 +857,6 @@ class PliantQTextBrowser(QtWidgets.QTextBrowser):
             self.main_window.QImageFactory.get_image('search'),
             self._translate('PliantQTextBrowser', 'Search'))
 
-        fsToggleAction = None
-        dfToggleAction = None
         if self.parent.is_fullscreen:
             fsToggleAction = contextMenu.addAction(
                 self.main_window.QImageFactory.get_image('view-fullscreen'),

@@ -18,7 +18,9 @@
 
 import json
 import urllib.request
+
 from PyQt5 import QtWidgets, QtCore, QtGui, QtMultimedia
+
 from lector.resources import definitions
 
 

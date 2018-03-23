@@ -39,9 +39,9 @@ import time
 import pickle
 import hashlib
 import threading
+
 from multiprocessing import Pool, Manager
 from PyQt5 import QtCore, QtGui
-
 from lector import database
 
 from lector.parsers.pdf import ParsePDF

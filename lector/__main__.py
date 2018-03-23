@@ -21,7 +21,6 @@ import gc
 import sys
 import hashlib
 import pathlib
-from PyQt5 import QtWidgets, QtGui, QtCore
 
 # This allows for the program to be launched from the
 # dir where it's been copied instead of needing to be
@@ -29,6 +28,8 @@ from PyQt5 import QtWidgets, QtGui, QtCore
 install_dir = os.path.realpath(__file__)
 install_dir = pathlib.Path(install_dir).parents[1]
 sys.path.append(str(install_dir))
+
+from PyQt5 import QtWidgets, QtGui, QtCore
 
 from lector import database
 from lector import sorter
@@ -42,7 +43,6 @@ from lector.settings import Settings
 from lector.settingsdialog import SettingsUI
 from lector.metadatadialog import MetadataUI
 from lector.definitionsdialog import DefinitionsUI
-
 from lector.resources import mainwindow, resources
 
 

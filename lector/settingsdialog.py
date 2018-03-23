@@ -22,6 +22,7 @@
 import os
 import copy
 import pathlib
+
 from PyQt5 import QtWidgets, QtCore, QtGui
 
 from lector import database
