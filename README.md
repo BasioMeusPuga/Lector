@@ -16,7 +16,6 @@ Support for a bunch of other formats is coming. Please see the TODO for addition
 | Qt5 | 5.10.1 |
 | Python | 3.6 |
 | PyQt5 | 5.10.1 |
-| python-requests | 2.18.4 |
 | python-beautifulsoup4 | 4.6.0 |
 | poppler-qt5 | 0.61.1 |
 | python-poppler-qt5 | 0.24.2 |
@@ -44,7 +43,7 @@ poppler-qt5 and python-poppler-qt5 are optional.
 4. Try to resist the urge to include profanity.
 5. Save the file as `Lector_<language>` and send it to me, preferably as a pull request.
 
-Oh, please keep the translations short. There's only so much space for UI elements.
+Please keep the translations short. There's only so much space for UI elements.
 
 ## Screenshots
 
