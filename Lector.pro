@@ -22,12 +22,12 @@ SOURCES += lector/__main__.py \
 		lector/library.py \
 		lector/toolbars.py \
 		lector/settingsdialog.py \
-		resources/definitions.py \
-		resources/settingswindow.py \
-		resources/metadata.py \
-		resources/mainwindow.py
+		lector/resources/definitions.py \
+		lector/resources/settingswindow.py \
+		lector/resources/metadata.py \
+		lector/resources/mainwindow.py
 
-TRANSLATIONS += resources/translations/Lector_es.ts \
-		resources/translations/Lector_fr.ts \
-		resources/translations/Lector_de.ts \
-		resources/translations/SAMPLE.ts
+TRANSLATIONS += lector/resources/translations/Lector_es.ts \
+		lector/resources/translations/Lector_fr.ts \
+		lector/resources/translations/Lector_de.ts \
+		lector/resources/translations/SAMPLE.ts
