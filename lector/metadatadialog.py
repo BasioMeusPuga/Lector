@@ -116,7 +116,7 @@ class MetadataUI(QtWidgets.QDialog, metadata.Ui_Dialog):
 
         if self.cover_for_database:
             database_dict['CoverImage'] = self.cover_for_database
-            self.parent.cover_loader(
+            self.parent.cover_functions.cover_loader(
                 book_item, self.cover_for_database)
 
         self.parent.lib_ref.update_proxymodels()

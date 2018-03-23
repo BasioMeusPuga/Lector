@@ -163,7 +163,7 @@ class Library:
         # The is_database_ready boolean is required when a new thread sends
         # books here for model generation.
         if not self.parent.settings['perform_culling'] and is_database_ready:
-            self.parent.load_all_covers()
+            self.parent.cover_functions.load_all_covers()
 
     def generate_proxymodels(self):
         self.item_proxy_model = ItemProxyModel()

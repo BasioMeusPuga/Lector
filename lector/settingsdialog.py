@@ -309,4 +309,4 @@ class SettingsUI(QtWidgets.QDialog, settingswindow.Ui_Dialog):
         self.parent.settings[sender_dict[sender]] = not self.parent.settings[sender_dict[sender]]
 
         if not self.performCulling.isChecked():
-            self.parent.load_all_covers()
+            self.parent.cover_functions.load_all_covers()

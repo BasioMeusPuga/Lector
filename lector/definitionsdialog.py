@@ -72,7 +72,6 @@ class DefinitionsUI(QtWidgets.QDialog, definitions.Ui_Dialog):
 
     def find_definition(self, word):
         word_root_json = self.api_call(self.root_url, word)
-        print(word_root_json)
         if not word_root_json:
             self.set_text(word, None, None, True)
             return
