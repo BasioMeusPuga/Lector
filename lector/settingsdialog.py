@@ -22,7 +22,7 @@
 import os
 import copy
 import pathlib
-from PyQt5 import QtWidgets, QtCore
+from PyQt5 import QtWidgets, QtCore, QtGui
 
 from lector import database
 from lector.models import MostExcellentFileSystemModel
@@ -42,7 +42,6 @@ class SettingsUI(QtWidgets.QDialog, settingswindow.Ui_Dialog):
         self.resize(self.parent.settings['settings_dialog_size'])
         self.move(self.parent.settings['settings_dialog_position'])
 
-        self.aboutBox.setVisible(False)
         install_dir = os.path.realpath(__file__)
         install_dir = pathlib.Path(install_dir).parents[1]
         aboutfile_path = os.path.join(install_dir, 'lector', 'resources', 'about.html')
@@ -73,7 +72,6 @@ class SettingsUI(QtWidgets.QDialog, settingswindow.Ui_Dialog):
             self._translate('SettingsUI', 'Save changes and start library scan'))
         self.okButton.clicked.connect(self.start_library_scan)
         self.cancelButton.clicked.connect(self.cancel_pressed)
-        self.aboutButton.clicked.connect(self.about_pressed)
 
         # Radio buttons
         if self.parent.settings['icon_theme'] == 'DarkIcons':
@@ -99,6 +97,21 @@ class SettingsUI(QtWidgets.QDialog, settingswindow.Ui_Dialog):
         self.performCulling.clicked.connect(self.manage_checkboxes)
         self.cachingEnabled.clicked.connect(self.manage_checkboxes)
         self.hideScrollBars.clicked.connect(self.manage_checkboxes)
+
+        # Generate the QStandardItemModel for the listView
+        self.listModel = QtGui.QStandardItemModel()
+
+        library_string = self._translate('SettingsUI', 'Library')
+        switches_string = self._translate('SettingsUI', 'Switches')
+        about_string = self._translate('SettingsUI', 'About')
+        list_options = [library_string, switches_string, about_string]
+
+        for i in list_options:
+            item = QtGui.QStandardItem()
+            item.setText(i)
+            self.listModel.appendRow(item)
+        self.listView.setModel(self.listModel)
+        self.listView.clicked.connect(self.page_switch)
 
         # Generate the filesystem treeView
         self.generate_tree()
@@ -237,6 +250,13 @@ class SettingsUI(QtWidgets.QDialog, settingswindow.Ui_Dialog):
         self.thread.finished.connect(self.parent.move_on)
         self.thread.start()
 
+    def page_switch(self, index):
+        self.stackedWidget.setCurrentIndex(index.row())
+        if index.row() == 0:
+            self.okButton.setVisible(True)
+        else:
+            self.okButton.setVisible(False)
+
     def cancel_pressed(self):
         self.filesystem_model.tag_data = copy.deepcopy(self.tag_data_copy)
         self.hide()
@@ -251,8 +271,6 @@ class SettingsUI(QtWidgets.QDialog, settingswindow.Ui_Dialog):
 
     def no_more_settings(self):
         self.parent.libraryToolBar.settingsButton.setChecked(False)
-        self.aboutBox.hide()
-        self.treeView.show()
         self.resizeEvent()
 
     def resizeEvent(self, event=None):
@@ -292,7 +310,3 @@ class SettingsUI(QtWidgets.QDialog, settingswindow.Ui_Dialog):
 
         if not self.performCulling.isChecked():
             self.parent.load_all_covers()
-
-    def about_pressed(self):
-        self.treeView.setVisible(not self.treeView.isVisible())
-        self.aboutBox.setVisible(not self.aboutBox.isVisible())

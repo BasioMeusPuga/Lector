@@ -890,9 +890,9 @@ class PliantQTextBrowser(QtWidgets.QTextBrowser):
         self.main_window.closeEvent()
 
     def mouseMoveEvent(self, event):
-        event.accept()
         self.viewport().setCursor(QtCore.Qt.IBeamCursor)
         self.parent.mouse_hide_timer.start(3000)
+        QtWidgets.QTextBrowser.mouseMoveEvent(self, event)
 
 
 class PliantWidgetsCommonFunctions():

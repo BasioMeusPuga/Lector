@@ -16,7 +16,8 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-import requests
+import json
+import urllib.request
 from PyQt5 import QtWidgets, QtCore, QtGui, QtMultimedia
 from lector.resources import definitions
 
@@ -57,18 +58,21 @@ class DefinitionsUI(QtWidgets.QDialog, definitions.Ui_Dialog):
         language = self.parent.settings['dictionary_language']
         url = url + language + '/' + word.lower()
 
-        r = requests.get(
-            url,
-            headers={'app_id': self.app_id, 'app_key': self.app_key})
+        req = urllib.request.Request(url)
+        req.add_header('app_id', self.app_id)
+        req.add_header('app_key', self.app_key)
 
-        if r.status_code != 200:
-            print('A firm nope on the dictionary finding thing')
+        try:
+            response = urllib.request.urlopen(req)
+            if response.getcode() == 200:
+                return_json = json.loads(response.read())
+                return return_json
+        except urllib.error.HTTPError:
             return None
-
-        return r.json()
 
     def find_definition(self, word):
         word_root_json = self.api_call(self.root_url, word)
+        print(word_root_json)
         if not word_root_json:
             self.set_text(word, None, None, True)
             return
@@ -78,6 +82,7 @@ class DefinitionsUI(QtWidgets.QDialog, definitions.Ui_Dialog):
 
         definition_json = self.api_call(self.define_url, word_root)
         if not definition_json:
+            self.set_text(word, None, None, True)
             return
 
         definitions = {}
