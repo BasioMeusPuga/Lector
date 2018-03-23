@@ -53,7 +53,7 @@ class Settings:
         self.parent.settings['current_view'] = int(self.settings.value('currentView', 0))
         self.parent.settings['main_window_headers'] = self.settings.value('tableHeaders', None)
         self.parent.settings['listview_background'] = self.settings.value(
-            'listViewBackground', QtGui.QColor().fromRgb(76, 76, 76))
+            'listViewBackground', QtGui.QColor().fromRgb(33, 33, 33))
         self.parent.settings['icon_theme'] = self.settings.value('iconTheme', 'DarkIcons')
         self.settings.endGroup()
 

@@ -251,12 +251,14 @@ class Library:
             db_library_directories = database.DatabaseFunctions(
                 self.parent.database_path).fetch_data(
                     ('Path',),
-                    'books',  # This checks the directories table NOT the book one
+                    'books', # THIS CHECKS THE BOOKS TABLE
                     {'Path': ''},
                     'LIKE')
 
-            library_directories = {
-                i[0]: (None, None) for i in db_library_directories}
+            library_directories = None
+            if db_library_directories:
+                library_directories = {
+                    i[0]: (None, None) for i in db_library_directories}
 
         def get_tags(all_metadata):
             path = os.path.dirname(all_metadata['path'])
@@ -282,6 +284,7 @@ class Library:
             return added_string.lower(), None
 
         # Generate tags for the QStandardItemModel
+        # This isn't triggered for an empty view model
         for i in range(self.view_model.rowCount()):
             this_item = self.view_model.item(i, 0)
             all_metadata = this_item.data(QtCore.Qt.UserRole + 3)
