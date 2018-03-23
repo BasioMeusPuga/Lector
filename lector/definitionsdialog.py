@@ -53,6 +53,7 @@ class DefinitionsUI(QtWidgets.QDialog, definitions.Ui_Dialog):
 
         self.okButton.clicked.connect(self.hide)
         self.pronounceButton.clicked.connect(self.play_pronunciation)
+        self.dialogBackground.clicked.connect(self.color_background)
 
     def api_call(self, url, word):
         language = self.parent.settings['dictionary_language']
@@ -141,7 +142,8 @@ class DefinitionsUI(QtWidgets.QDialog, definitions.Ui_Dialog):
             background = self.parent.settings['dialog_background']
         else:
             self.previous_position = self.pos()
-            background = self.parent.get_color()
+            self.parent.get_color()
+            background = self.parent.settings['dialog_background']
 
         self.setStyleSheet(
             "QDialog {{background-color: {0}}}".format(background.name()))

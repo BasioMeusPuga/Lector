@@ -37,7 +37,7 @@ from lector.widgets import Tab
 from lector.delegates import LibraryDelegate
 from lector.threaded import BackGroundTabUpdate, BackGroundBookAddition, BackGroundBookDeletion
 from lector.library import Library
-from lector.guifunctions import QImageFactory, CoverLoadingAndCulling
+from lector.guifunctions import QImageFactory, CoverLoadingAndCulling, ViewProfileModification
 from lector.settings import Settings
 from lector.settingsdialog import SettingsUI
 from lector.metadatadialog import MetadataUI
@@ -87,8 +87,14 @@ class MainUI(QtWidgets.QMainWindow, mainwindow.Ui_MainWindow):
         self.libraryFilterMenu = QtWidgets.QMenu()
         self.statusMessage = QtWidgets.QLabel()
         self.distractionFreeToggle = QtWidgets.QToolButton()
-        # self.reloadLibrary = QtWidgets.QToolButton()
         self.reloadLibrary = QtWidgets.QPushButton()
+
+        # Reference variables
+        self.alignment_dict = {
+            'left': self.bookToolBar.alignLeft,
+            'right': self.bookToolBar.alignRight,
+            'center': self.bookToolBar.alignCenter,
+            'justify': self.bookToolBar.alignJustify}
 
         # Create the database in case it doesn't exist
         database.DatabaseInit(self.database_path)
@@ -137,6 +143,9 @@ class MainUI(QtWidgets.QMainWindow, mainwindow.Ui_MainWindow):
         self.culling_timer.setSingleShot(True)
         self.culling_timer.timeout.connect(self.cover_functions.cull_covers)
 
+        # Initialize profile modification functions
+        self.profile_functions = ViewProfileModification(self)
+
         # Toolbar display
         # Maybe make this a persistent option
         self.settings['show_bars'] = True
@@ -165,7 +174,8 @@ class MainUI(QtWidgets.QMainWindow, mainwindow.Ui_MainWindow):
 
         for count, i in enumerate(self.display_profiles):
             self.bookToolBar.profileBox.setItemData(count, i, QtCore.Qt.UserRole)
-        self.bookToolBar.profileBox.currentIndexChanged.connect(self.format_contentView)
+        self.bookToolBar.profileBox.currentIndexChanged.connect(
+            self.profile_functions.format_contentView)
         self.bookToolBar.profileBox.setCurrentIndex(self.current_profile_index)
 
         self.bookToolBar.fontBox.currentFontChanged.connect(self.modify_font)
@@ -174,13 +184,8 @@ class MainUI(QtWidgets.QMainWindow, mainwindow.Ui_MainWindow):
         self.bookToolBar.lineSpacingDown.triggered.connect(self.modify_font)
         self.bookToolBar.paddingUp.triggered.connect(self.modify_font)
         self.bookToolBar.paddingDown.triggered.connect(self.modify_font)
-        self.bookToolBar.resetProfile.triggered.connect(self.reset_profile)
-
-        self.alignment_dict = {
-            'left': self.bookToolBar.alignLeft,
-            'right': self.bookToolBar.alignRight,
-            'center': self.bookToolBar.alignCenter,
-            'justify': self.bookToolBar.alignJustify}
+        self.bookToolBar.resetProfile.triggered.connect(
+            self.profile_functions.reset_profile)
 
         profile_index = self.bookToolBar.profileBox.currentIndex()
         current_profile = self.bookToolBar.profileBox.itemData(
@@ -550,7 +555,7 @@ class MainUI(QtWidgets.QMainWindow, mainwindow.Ui_MainWindow):
                     current_tab.set_scroll_value(False)
             self.bookToolBar.tocBox.blockSignals(False)
 
-            self.format_contentView()
+            self.profile_functions.format_contentView()
 
             self.statusMessage.setText(
                 current_author + ' - ' + current_title)
@@ -615,7 +620,7 @@ class MainUI(QtWidgets.QMainWindow, mainwindow.Ui_MainWindow):
 
         # Go on to change the value of the Table of Contents box
         current_tab.change_chapter_tocBox()
-        self.format_contentView()
+        self.profile_functions.format_contentView()
 
     def set_fullscreen(self):
         current_tab = self.tabWidget.currentIndex()
@@ -681,7 +686,7 @@ class MainUI(QtWidgets.QMainWindow, mainwindow.Ui_MainWindow):
             return
 
         def finishing_touches():
-            self.format_contentView()
+            self.profile_functions.format_contentView()
             self.start_culling_timer()
 
         print('Attempting to open: ' + ', '.join(file_paths))
@@ -719,224 +724,33 @@ class MainUI(QtWidgets.QMainWindow, mainwindow.Ui_MainWindow):
     # TODO
     # def dropEvent
 
+    def show_settings(self):
+        if not self.settingsDialog.isVisible():
+            self.settingsDialog.show()
+        else:
+            self.settingsDialog.hide()
+
+    #____________________________________________
+    # The contentView modification functions are in the guifunctions
+    # module. self.profile_functions is the reference here.
+
     def get_color(self):
-        def open_color_dialog(current_color):
-            color_dialog = QtWidgets.QColorDialog()
-            new_color = color_dialog.getColor(current_color)
-            if new_color.isValid():  # Returned in case cancel is pressed
-                return new_color
-            else:
-                return current_color
-
-        signal_sender = self.sender().objectName()
-
-        # Special cases that don't affect (comic)book display
-        if signal_sender == 'libraryBackground':
-            current_color = self.settings['listview_background']
-            new_color = open_color_dialog(current_color)
-            self.listView.setStyleSheet("QListView {{background-color: {0}}}".format(
-                new_color.name()))
-            self.settings['listview_background'] = new_color
-            return
-
-        if signal_sender == 'dialogBackground':
-            current_color = self.settings['dialog_background']
-            new_color = open_color_dialog(current_color)
-            self.settings['dialog_background'] = new_color
-            return new_color
-
-        profile_index = self.bookToolBar.profileBox.currentIndex()
-        current_profile = self.bookToolBar.profileBox.itemData(
-            profile_index, QtCore.Qt.UserRole)
-
-        # Retain current values on opening a new dialog
-        if signal_sender == 'fgColor':
-            current_color = current_profile['foreground']
-            new_color = open_color_dialog(current_color)
-            self.bookToolBar.colorBoxFG.setStyleSheet(
-                'background-color: %s' % new_color.name())
-            current_profile['foreground'] = new_color
-
-        elif signal_sender == 'bgColor':
-            current_color = current_profile['background']
-            new_color = open_color_dialog(current_color)
-            self.bookToolBar.colorBoxBG.setStyleSheet(
-                'background-color: %s' % new_color.name())
-            current_profile['background'] = new_color
-
-        elif signal_sender == 'comicBGColor':
-            current_color = self.comic_profile['background']
-            new_color = open_color_dialog(current_color)
-            self.bookToolBar.comicBGColor.setStyleSheet(
-                'background-color: %s' % new_color.name())
-            self.comic_profile['background'] = new_color
-
-        self.bookToolBar.profileBox.setItemData(
-            profile_index, current_profile, QtCore.Qt.UserRole)
-        self.format_contentView()
+        self.profile_functions.get_color(
+            self.sender().objectName())
 
     def modify_font(self):
-        signal_sender = self.sender().objectName()
-        profile_index = self.bookToolBar.profileBox.currentIndex()
-        current_profile = self.bookToolBar.profileBox.itemData(
-            profile_index, QtCore.Qt.UserRole)
-
-        if signal_sender == 'fontBox':
-            current_profile['font'] = self.bookToolBar.fontBox.currentFont().family()
-
-        if signal_sender == 'fontSizeBox':
-            old_size = current_profile['font_size']
-            new_size = self.bookToolBar.fontSizeBox.itemText(
-                self.bookToolBar.fontSizeBox.currentIndex())
-            if new_size.isdigit():
-                current_profile['font_size'] = new_size
-            else:
-                current_profile['font_size'] = old_size
-
-        if signal_sender == 'lineSpacingUp' and current_profile['line_spacing'] < 200:
-            current_profile['line_spacing'] += 5
-        if signal_sender == 'lineSpacingDown' and current_profile['line_spacing'] > 90:
-            current_profile['line_spacing'] -= 5
-
-        if signal_sender == 'paddingUp':
-            current_profile['padding'] += 5
-        if signal_sender == 'paddingDown':
-            current_profile['padding'] -= 5
-
-        alignment_dict = {
-            'alignLeft': 'left',
-            'alignRight': 'right',
-            'alignCenter': 'center',
-            'alignJustify': 'justify'}
-        if signal_sender in alignment_dict:
-            current_profile['text_alignment'] = alignment_dict[signal_sender]
-
-        self.bookToolBar.profileBox.setItemData(
-            profile_index, current_profile, QtCore.Qt.UserRole)
-        self.format_contentView()
+        self.profile_functions.modify_font(
+            self.sender().objectName())
 
     def modify_comic_view(self, key_pressed=None):
         if key_pressed:
             signal_sender = None
         else:
             signal_sender = self.sender().objectName()
+        self.profile_functions.modify_comic_view(
+            signal_sender, key_pressed)
 
-        current_tab = self.tabWidget.widget(self.tabWidget.currentIndex())
-
-        self.bookToolBar.fitWidth.setChecked(False)
-        self.bookToolBar.bestFit.setChecked(False)
-        self.bookToolBar.originalSize.setChecked(False)
-
-        if signal_sender == 'zoomOut' or key_pressed == QtCore.Qt.Key_Minus:
-            self.comic_profile['zoom_mode'] = 'manualZoom'
-            self.comic_profile['padding'] += 50
-
-            # This prevents infinite zoom out
-            if self.comic_profile['padding'] * 2 > current_tab.contentView.viewport().width():
-                self.comic_profile['padding'] -= 50
-
-        if signal_sender == 'zoomIn' or key_pressed in (QtCore.Qt.Key_Plus, QtCore.Qt.Key_Equal):
-            self.comic_profile['zoom_mode'] = 'manualZoom'
-            self.comic_profile['padding'] -= 50
-
-            # This prevents infinite zoom in
-            if self.comic_profile['padding'] < 0:
-                self.comic_profile['padding'] = 0
-
-        if signal_sender == 'fitWidth' or key_pressed == QtCore.Qt.Key_W:
-            self.comic_profile['zoom_mode'] = 'fitWidth'
-            self.comic_profile['padding'] = 0
-            self.bookToolBar.fitWidth.setChecked(True)
-
-        # Padding in the following cases is decided by
-        # the image pixmap loaded by the widget
-        if signal_sender == 'bestFit' or key_pressed == QtCore.Qt.Key_B:
-            self.comic_profile['zoom_mode'] = 'bestFit'
-            self.bookToolBar.bestFit.setChecked(True)
-
-        if signal_sender == 'originalSize' or key_pressed == QtCore.Qt.Key_O:
-            self.comic_profile['zoom_mode'] = 'originalSize'
-            self.bookToolBar.originalSize.setChecked(True)
-
-        self.format_contentView()
-
-    def format_contentView(self):
-        # TODO
-        # See what happens if a font isn't installed
-
-        current_tab = self.tabWidget.widget(
-            self.tabWidget.currentIndex())
-
-        try:
-            current_metadata = current_tab.metadata
-        except AttributeError:
-            return
-
-        if current_metadata['images_only']:
-            background = self.comic_profile['background']
-            padding = self.comic_profile['padding']
-            zoom_mode = self.comic_profile['zoom_mode']
-
-            if zoom_mode == 'fitWidth':
-                self.bookToolBar.fitWidth.setChecked(True)
-            if zoom_mode == 'bestFit':
-                self.bookToolBar.bestFit.setChecked(True)
-            if zoom_mode == 'originalSize':
-                self.bookToolBar.originalSize.setChecked(True)
-
-            self.bookToolBar.comicBGColor.setStyleSheet(
-                'background-color: %s' % background.name())
-
-            current_tab.format_view(
-                None, None, None, background, padding, None, None)
-
-        else:
-            profile_index = self.bookToolBar.profileBox.currentIndex()
-            current_profile = self.bookToolBar.profileBox.itemData(
-                profile_index, QtCore.Qt.UserRole)
-
-            font = current_profile['font']
-            foreground = current_profile['foreground']
-            background = current_profile['background']
-            padding = current_profile['padding']
-            font_size = current_profile['font_size']
-            line_spacing = current_profile['line_spacing']
-            text_alignment = current_profile['text_alignment']
-
-            # Change toolbar widgets to match new settings
-            self.bookToolBar.fontBox.blockSignals(True)
-            self.bookToolBar.fontSizeBox.blockSignals(True)
-            self.bookToolBar.fontBox.setCurrentText(font)
-            current_index = self.bookToolBar.fontSizeBox.findText(
-                str(font_size), QtCore.Qt.MatchExactly)
-            self.bookToolBar.fontSizeBox.setCurrentIndex(current_index)
-            self.bookToolBar.fontBox.blockSignals(False)
-            self.bookToolBar.fontSizeBox.blockSignals(False)
-
-            self.alignment_dict[current_profile['text_alignment']].setChecked(True)
-
-            self.bookToolBar.colorBoxFG.setStyleSheet(
-                'background-color: %s' % foreground.name())
-            self.bookToolBar.colorBoxBG.setStyleSheet(
-                'background-color: %s' % background.name())
-
-            current_tab.format_view(
-                font, font_size, foreground,
-                background, padding, line_spacing,
-                text_alignment)
-
-    def reset_profile(self):
-        current_profile_index = self.bookToolBar.profileBox.currentIndex()
-        current_profile_default = Settings(self).default_profiles[current_profile_index]
-        self.bookToolBar.profileBox.setItemData(
-            current_profile_index, current_profile_default, QtCore.Qt.UserRole)
-        self.format_contentView()
-
-    def show_settings(self):
-        if not self.settingsDialog.isVisible():
-            self.settingsDialog.show()
-        else:
-            self.settingsDialog.hide()
+    #____________________________________________
 
     def generate_library_context_menu(self, position):
         index = self.sender().indexAt(position)

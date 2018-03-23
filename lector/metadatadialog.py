@@ -148,7 +148,8 @@ class MetadataUI(QtWidgets.QDialog, metadata.Ui_Dialog):
             background = self.parent.settings['dialog_background']
         else:
             self.previous_position = self.pos()
-            background = self.parent.get_color()
+            self.parent.get_color()
+            background = self.parent.settings['dialog_background']
 
         self.setStyleSheet(
             "QDialog {{background-color: {0}}}".format(background.name()))
