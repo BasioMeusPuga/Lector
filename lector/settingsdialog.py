@@ -35,6 +35,7 @@ class SettingsUI(QtWidgets.QDialog, settingswindow.Ui_Dialog):
     def __init__(self, parent=None):
         super(SettingsUI, self).__init__()
         self.setupUi(self)
+        self.verticalLayout_4.setContentsMargins(0, 0, 0, 0)
         self._translate = QtCore.QCoreApplication.translate
 
         self.parent = parent
@@ -90,6 +91,7 @@ class SettingsUI(QtWidgets.QDialog, settingswindow.Ui_Dialog):
         self.performCulling.setChecked(self.parent.settings['perform_culling'])
         self.cachingEnabled.setChecked(self.parent.settings['caching_enabled'])
         self.hideScrollBars.setChecked(self.parent.settings['hide_scrollbars'])
+        self.scrollSpeedSlider.setValue(self.parent.settings['scroll_speed'])
 
         self.autoTags.clicked.connect(self.manage_checkboxes)
         self.coverShadows.clicked.connect(self.manage_checkboxes)
@@ -98,6 +100,7 @@ class SettingsUI(QtWidgets.QDialog, settingswindow.Ui_Dialog):
         self.performCulling.clicked.connect(self.manage_checkboxes)
         self.cachingEnabled.clicked.connect(self.manage_checkboxes)
         self.hideScrollBars.clicked.connect(self.manage_checkboxes)
+        self.scrollSpeedSlider.valueChanged.connect(self.change_scroll_speed)
 
         # Generate the QStandardItemModel for the listView
         self.listModel = QtGui.QStandardItemModel()
@@ -131,7 +134,7 @@ class SettingsUI(QtWidgets.QDialog, settingswindow.Ui_Dialog):
         self.parent.generate_library_filter_menu(paths)
         directory_data = {}
         if not paths:
-            print('Database returned no paths for settings...')
+            print('Database: No paths for settings...')
         else:
             # Convert to the dictionary format that is
             # to be fed into the QFileSystemModel
@@ -296,6 +299,9 @@ class SettingsUI(QtWidgets.QDialog, settingswindow.Ui_Dialog):
             1: 'es',
             2: 'hi'}
         self.parent.settings['dictionary_language'] = language_dict[self.languageBox.currentIndex()]
+
+    def change_scroll_speed(self, event):
+        self.parent.settings['scroll_speed'] = self.scrollSpeedSlider.value()
 
     def manage_checkboxes(self, event=None):
         sender = self.sender().objectName()

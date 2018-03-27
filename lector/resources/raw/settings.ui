@@ -182,7 +182,7 @@ Reopen book to see changes</string>
                        </sizepolicy>
                       </property>
                       <property name="text">
-                       <string>Dictionary language:</string>
+                       <string>Dictionary language</string>
                       </property>
                       <property name="alignment">
                        <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignVCenter</set>
@@ -191,6 +191,42 @@ Reopen book to see changes</string>
                     </item>
                     <item>
                      <widget class="QComboBox" name="languageBox"/>
+                    </item>
+                   </layout>
+                  </item>
+                  <item>
+                   <layout class="QHBoxLayout" name="horizontalLayout">
+                    <item>
+                     <widget class="QLabel" name="scrollSpeedLabel">
+                      <property name="sizePolicy">
+                       <sizepolicy hsizetype="Maximum" vsizetype="Preferred">
+                        <horstretch>0</horstretch>
+                        <verstretch>0</verstretch>
+                       </sizepolicy>
+                      </property>
+                      <property name="text">
+                       <string>Scroll speed</string>
+                      </property>
+                     </widget>
+                    </item>
+                    <item>
+                     <widget class="QSlider" name="scrollSpeedSlider">
+                      <property name="sizePolicy">
+                       <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
+                        <horstretch>0</horstretch>
+                        <verstretch>0</verstretch>
+                       </sizepolicy>
+                      </property>
+                      <property name="minimum">
+                       <number>3</number>
+                      </property>
+                      <property name="maximum">
+                       <number>15</number>
+                      </property>
+                      <property name="orientation">
+                       <enum>Qt::Horizontal</enum>
+                      </property>
+                     </widget>
                     </item>
                    </layout>
                   </item>

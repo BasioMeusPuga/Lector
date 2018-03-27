@@ -114,7 +114,8 @@ class Tab(QtWidgets.QWidget):
         # the graphics view
         self.contentView.setFrameShape(QtWidgets.QFrame.NoFrame)
         self.contentView.setObjectName('contentView')
-        self.contentView.verticalScrollBar().setSingleStep(7)
+        self.contentView.verticalScrollBar().setSingleStep(
+            self.main_window.settings['scroll_speed'])
 
         if self.main_window.settings['hide_scrollbars']:
             self.contentView.setHorizontalScrollBarPolicy(QtCore.Qt.ScrollBarAlwaysOff)
@@ -193,10 +194,13 @@ class Tab(QtWidgets.QWidget):
                 search_text = search_data[1]
 
             if search_text:
+                # textCursor() RETURNS a copy of the textcursor
                 cursor = self.contentView.textCursor()
                 cursor.movePosition(QtGui.QTextCursor.Start, QtGui.QTextCursor.KeepAnchor)
                 self.contentView.setTextCursor(cursor)
 
+                # This is needed so that search results are always at the top
+                # of the window
                 self.contentView.verticalScrollBar().setValue(
                     self.contentView.verticalScrollBar().maximum())
 

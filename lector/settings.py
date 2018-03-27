@@ -104,6 +104,7 @@ class Settings:
             'cachingEnabled', 'True').capitalize())
         self.parent.settings['hide_scrollbars'] = literal_eval(self.settings.value(
             'hideScrollBars', 'False').capitalize())
+        self.parent.settings['scroll_speed'] = int(self.settings.value('scrollSpeed', 7))
         self.settings.endGroup()
 
         self.settings.beginGroup('dialogSettings')
@@ -174,6 +175,7 @@ class Settings:
         self.settings.setValue('dictionaryLanguage', current_settings['dictionary_language'])
         self.settings.setValue('cachingEnabled', current_settings['caching_enabled'])
         self.settings.setValue('hideScrollBars', current_settings['hide_scrollbars'])
+        self.settings.setValue('scrollSpeed', current_settings['scroll_speed'])
         self.settings.endGroup()
 
         self.settings.beginGroup('dialogSettings')
