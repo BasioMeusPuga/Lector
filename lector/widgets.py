@@ -55,9 +55,6 @@ class Tab(QtWidgets.QWidget):
 
         self.masterLayout = QtWidgets.QHBoxLayout(self)
         self.masterLayout.setContentsMargins(0, 0, 0, 0)
-        self.horzLayout = QtWidgets.QSplitter(self)
-        self.horzLayout.setOrientation(QtCore.Qt.Horizontal)
-        self.masterLayout.addWidget(self.horzLayout)
 
         self.metadata['last_accessed'] = QtCore.QDateTime().currentDateTime()
 
@@ -129,16 +126,15 @@ class Tab(QtWidgets.QWidget):
             self.metadata['bookmarks'] = {}
 
         # Create the dock widget for context specific display
-        self.dockWidget = PliantDockWidget(self)
+        self.dockWidget = PliantDockWidget(self.main_window, self.contentView)
         self.dockWidget.setWindowTitle(self._translate('Tab', 'Bookmarks'))
         self.dockWidget.setFeatures(QtWidgets.QDockWidget.DockWidgetClosable)
-        self.dockWidget.setFloating(False)
         self.dockWidget.hide()
 
         self.dockListView = QtWidgets.QListView(self.dockWidget)
         self.dockListView.setResizeMode(QtWidgets.QListWidget.Adjust)
         self.dockListView.setMaximumWidth(350)
-        self.dockListView.setItemDelegate(BookmarkDelegate(self.dockListView))
+        self.dockListView.setItemDelegate(BookmarkDelegate(self.main_window, self.dockListView))
         self.dockListView.setUniformItemSizes(True)
         self.dockListView.setContextMenuPolicy(QtCore.Qt.CustomContextMenu)
         self.dockListView.customContextMenuRequested.connect(
@@ -152,8 +148,11 @@ class Tab(QtWidgets.QWidget):
 
         self.generate_keyboard_shortcuts()
 
-        self.horzLayout.addWidget(self.contentView)
-        self.horzLayout.addWidget(self.dockWidget)
+        self.masterLayout.addWidget(self.contentView)
+        self.masterLayout.addWidget(self.dockWidget)
+        self.dockWidget.setFloating(True)
+        self.dockWidget.setWindowOpacity(.95)
+
         title = self.metadata['title']
         self.main_window.tabWidget.addTab(self, title)
 
@@ -193,23 +192,22 @@ class Tab(QtWidgets.QWidget):
             if search_data:
                 search_text = search_data[1]
 
-            if search_text:
-                # textCursor() RETURNS a copy of the textcursor
-                cursor = self.contentView.textCursor()
-                cursor.movePosition(QtGui.QTextCursor.Start, QtGui.QTextCursor.KeepAnchor)
-                self.contentView.setTextCursor(cursor)
+            # textCursor() RETURNS a copy of the textcursor
+            cursor = self.contentView.textCursor()
+            cursor.movePosition(QtGui.QTextCursor.Start, QtGui.QTextCursor.KeepAnchor)
+            self.contentView.setTextCursor(cursor)
 
-                # This is needed so that search results are always at the top
-                # of the window
-                self.contentView.verticalScrollBar().setValue(
-                    self.contentView.verticalScrollBar().maximum())
+            # This is needed so that search results are always at the top
+            # of the window
+            self.contentView.verticalScrollBar().setValue(
+                self.contentView.verticalScrollBar().maximum())
 
-                # find_forward is a new cursor object that must replace
-                # the existing text cursor
-                find_forward = self.contentView.document().find(search_text)
-                find_forward.clearSelection()
-                self.contentView.setTextCursor(find_forward)
-                self.contentView.ensureCursorVisible()
+            # find_forward is a new cursor object that must replace
+            # the existing text cursor
+            find_forward = self.contentView.document().find(search_text)
+            find_forward.clearSelection()
+            self.contentView.setTextCursor(find_forward)
+            self.contentView.ensureCursorVisible()
 
         except KeyError:
             pass
@@ -274,6 +272,10 @@ class Tab(QtWidgets.QWidget):
         self.ksExitFullscreen.setContext(QtCore.Qt.ApplicationShortcut)
         self.ksExitFullscreen.activated.connect(self.exit_fullscreen)
 
+        self.ksToggleBookMarks = QtWidgets.QShortcut(
+            QtGui.QKeySequence('Ctrl+B'), self.contentView)
+        self.ksToggleBookMarks.activated.connect(self.toggle_bookmarks)
+
     def go_fullscreen(self):
         if self.contentView.windowState() == QtCore.Qt.WindowFullScreen:
             self.exit_fullscreen()
@@ -293,6 +295,10 @@ class Tab(QtWidgets.QWidget):
         self.is_fullscreen = True
 
     def exit_fullscreen(self):
+        if self.dockWidget.isVisible():
+            self.dockWidget.setVisible(False)
+            return
+
         if not self.are_we_doing_images_only:
             self.contentView.record_scroll_position()
 
@@ -741,7 +747,12 @@ class PliantQGraphicsView(QtWidgets.QGraphicsView):
             self.main_window.QImageFactory.get_image('zoom-original'),
             self._translate('PliantQGraphicsView', 'Original size (O)'))
 
+        bookmarksToggleAction = 'Latin quote 2. Electric Boogaloo.'
         if not self.main_window.settings['show_bars'] or self.parent.is_fullscreen:
+            bookmarksToggleAction = contextMenu.addAction(
+                self.main_window.QImageFactory.get_image('bookmarks'),
+                self._translate('PliantQGraphicsView', 'Bookmarks'))
+
             self.common_functions.generate_combo_box_action(contextMenu)
 
         action = contextMenu.exec_(self.sender().mapToGlobal(position))
@@ -756,6 +767,8 @@ class PliantQGraphicsView(QtWidgets.QGraphicsView):
             if save_file:
                 self.image_pixmap.save(save_file[0])
 
+        if action == bookmarksToggleAction:
+            self.parent.toggle_bookmarks()
         if action == dfToggleAction:
             self.main_window.toggle_distraction_free()
         if action == fsToggleAction:
@@ -876,7 +889,12 @@ class PliantQTextBrowser(QtWidgets.QTextBrowser):
                 self.main_window.QImageFactory.get_image('visibility'),
                 distraction_free_prompt)
 
+        bookmarksToggleAction = 'Latin quote 2. Electric Boogaloo.'
         if not self.main_window.settings['show_bars'] or self.parent.is_fullscreen:
+            bookmarksToggleAction = contextMenu.addAction(
+                self.main_window.QImageFactory.get_image('bookmarks'),
+                self._translate('PliantQTextBrowser', 'Bookmarks'))
+
             self.common_functions.generate_combo_box_action(contextMenu)
 
         action = contextMenu.exec_(self.sender().mapToGlobal(position))
@@ -885,6 +903,8 @@ class PliantQTextBrowser(QtWidgets.QTextBrowser):
             self.main_window.definitionDialog.find_definition(selected_word)
         if action == searchAction:
             self.main_window.bookToolBar.searchBar.setFocus()
+        if action == bookmarksToggleAction:
+            self.parent.toggle_bookmarks()
         if action == fsToggleAction:
             self.parent.exit_fullscreen()
         if action == dfToggleAction:
@@ -982,15 +1002,28 @@ class PliantWidgetsCommonFunctions():
 
 
 class PliantDockWidget(QtWidgets.QDockWidget):
-    def __init__(self, parent=None):
-        super(PliantDockWidget, self).__init__(parent)
-        self.parent = parent
+    def __init__(self, main_window, contentView, parent=None):
+        super(PliantDockWidget, self).__init__()
+        self.main_window = main_window
+        self.contentView = contentView
 
     def showEvent(self, event):
-        self.parent.window().bookToolBar.bookmarkButton.setChecked(True)
+        viewport_height = self.contentView.viewport().size().height()
+        viewport_topRight = self.contentView.mapToGlobal(
+            self.contentView.viewport().rect().topRight())
+
+        desktop_size = QtWidgets.QDesktopWidget().screenGeometry()
+        dock_width = desktop_size.width() // 5.5
+
+        dock_x = viewport_topRight.x() - dock_width + 1
+        dock_y = viewport_topRight.y() + (viewport_height * .10)
+        dock_height = viewport_height * .80
+
+        self.setGeometry(dock_x, dock_y, dock_width, dock_height)
+        self.main_window.bookToolBar.bookmarkButton.setChecked(True)
 
     def hideEvent(self, event):
-        self.parent.window().bookToolBar.bookmarkButton.setChecked(False)
+        self.main_window.bookToolBar.bookmarkButton.setChecked(False)
 
 
 class PliantQGraphicsScene(QtWidgets.QGraphicsScene):

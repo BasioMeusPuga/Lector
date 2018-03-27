@@ -83,8 +83,9 @@ class LibraryDelegate(QtWidgets.QStyledItemDelegate):
 
 
 class BookmarkDelegate(QtWidgets.QStyledItemDelegate):
-    def __init__(self, parent=None):
-        super(BookmarkDelegate, self).__init__(parent)
+    def __init__(self, main_window, parent=None):
+        super(BookmarkDelegate, self).__init__()
+        self.main_window = main_window
         self.parent = parent
 
     def sizeHint(self, *args):
@@ -98,7 +99,7 @@ class BookmarkDelegate(QtWidgets.QStyledItemDelegate):
         option = option.__class__(option)
 
         chapter_index = index.data(QtCore.Qt.UserRole)
-        chapter_name = self.parent.window().bookToolBar.tocBox.itemText(chapter_index - 1)
+        chapter_name = self.main_window.bookToolBar.tocBox.itemText(chapter_index - 1)
         if len(chapter_name) > 25:
             chapter_name = chapter_name[:25] + '...'
 

@@ -513,6 +513,10 @@ class MainUI(QtWidgets.QMainWindow, mainwindow.Ui_MainWindow):
 
         self.current_tab = self.tabWidget.currentIndex()
 
+        # Hide bookmark widgets
+        for i in range(1, self.tabWidget.count()):
+            self.tabWidget.widget(i).dockWidget.setVisible(False)
+
         if self.tabWidget.currentIndex() == 0:
 
             self.resizeEvent()
@@ -631,10 +635,6 @@ class MainUI(QtWidgets.QMainWindow, mainwindow.Ui_MainWindow):
         sender = self.sender().objectName()
         current_tab = self.tabWidget.currentIndex()
         current_tab_widget = self.tabWidget.widget(current_tab)
-
-        # TODO
-        # Extend this to other context related functions
-        # Make this fullscreenable
 
         if sender == 'bookmarkButton':
             current_tab_widget.toggle_bookmarks()

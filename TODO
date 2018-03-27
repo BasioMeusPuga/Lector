@@ -1,8 +1,8 @@
 TODO
     General:
         ✓ Internationalization
-        Application icon
-        .desktop file
+        ✓ Application icon
+        ✓ .desktop file
     Options:
         ✓ Automatic library management
             ✓ Recursive file addition
@@ -57,9 +57,9 @@ TODO
         ✓ Paragraph indentation
         ✓ Comic view keyboard shortcuts
         ✓ Comic view context menu
-        Make the bookmark dock float over the reading area
+        ✓ Make the bookmark dock float over the reading area
         Adjust key navigation according to viewport dimensions
-        Search document using QTextCursor?
+        Search document using QTextCursor
     Filetypes:
         ✓ pdf support
             Parse TOC
@@ -74,6 +74,9 @@ TODO
         ✓ Define every widget in code
     Bugs:
         Deselecting all directories in the settings dialog also filters out manually added books
+        Scrollbar set to maximum value for cover pages with large cover images
+        Only one tab has its scroll position set when opening multiple books @ startup
+            It's the one that has focus when application starts and ends
 
     Secondary:
         Annotations

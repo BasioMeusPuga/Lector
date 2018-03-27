@@ -47,7 +47,7 @@ class BookToolBar(QtWidgets.QToolBar):
             self)
         self.fullscreenButton = QtWidgets.QAction(
             image_factory.get_image('view-fullscreen'),
-            self._translate('BookToolBar', 'Fullscreen'),
+            self._translate('BookToolBar', 'Fullscreen (F11)'),
             self)
         self.addBookmarkButton = QtWidgets.QAction(
             image_factory.get_image('bookmark-new'),
@@ -55,7 +55,7 @@ class BookToolBar(QtWidgets.QToolBar):
             self)
         self.bookmarkButton = QtWidgets.QAction(
             image_factory.get_image('bookmarks'),
-            self._translate('BookToolBar', 'Bookmarks'),
+            self._translate('BookToolBar', 'Bookmarks (Ctrl + B)'),
             self)
         self.bookmarkButton.setObjectName('bookmarkButton')
         self.resetProfile = QtWidgets.QAction(
@@ -317,6 +317,7 @@ class BookToolBar(QtWidgets.QToolBar):
             i.setVisible(False)
 
     def customize_view_off(self):
+        self.fontButton.setChecked(False)
         for i in self.fontActions:
             i.setVisible(False)
 
