@@ -57,6 +57,7 @@ TODO
         ✓ Paragraph indentation
         ✓ Comic view keyboard shortcuts
         ✓ Comic view context menu
+        Make the bookmark dock float over the reading area
         Adjust key navigation according to viewport dimensions
         Search document using QTextCursor?
     Filetypes:
@@ -72,7 +73,6 @@ TODO
     Other:
         ✓ Define every widget in code
     Bugs:
-        Slider position change might be acting up
         Deselecting all directories in the settings dialog also filters out manually added books
 
     Secondary:

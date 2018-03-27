@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>1022</width>
-    <height>513</height>
+    <width>1088</width>
+    <height>612</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -89,13 +89,6 @@
                 <item>
                  <layout class="QHBoxLayout" name="horizontalLayout_9">
                   <item>
-                   <widget class="QCheckBox" name="autoTags">
-                    <property name="text">
-                     <string>Generate tags from files</string>
-                    </property>
-                   </widget>
-                  </item>
-                  <item>
                    <layout class="QHBoxLayout" name="horizontalLayout_7">
                     <item>
                      <widget class="QLabel" name="label">
@@ -128,6 +121,13 @@
                      </widget>
                     </item>
                    </layout>
+                  </item>
+                  <item>
+                   <widget class="QCheckBox" name="autoTags">
+                    <property name="text">
+                     <string>Generate tags from files</string>
+                    </property>
+                   </widget>
                   </item>
                  </layout>
                 </item>
@@ -215,6 +215,27 @@ Reopen book to see changes</string>
             </size>
            </property>
           </spacer>
+         </item>
+        </layout>
+       </widget>
+       <widget class="QWidget" name="annotationsPage">
+        <layout class="QGridLayout" name="gridLayout_7">
+         <item row="0" column="0">
+          <widget class="QTabWidget" name="tabWidget">
+           <property name="currentIndex">
+            <number>0</number>
+           </property>
+           <widget class="QWidget" name="textTab">
+            <attribute name="title">
+             <string>Text</string>
+            </attribute>
+           </widget>
+           <widget class="QWidget" name="imageTab">
+            <attribute name="title">
+             <string>Comic/PDF</string>
+            </attribute>
+           </widget>
+          </widget>
          </item>
         </layout>
        </widget>

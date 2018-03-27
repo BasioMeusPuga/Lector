@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-# Form implementation generated from reading ui file 'raw/settings2.ui'
+# Form implementation generated from reading ui file 'raw/settings.ui'
 #
 # Created by: PyQt5 UI code generator 5.10.1
 #
@@ -11,7 +11,7 @@ from PyQt5 import QtCore, QtGui, QtWidgets
 class Ui_Dialog(object):
     def setupUi(self, Dialog):
         Dialog.setObjectName("Dialog")
-        Dialog.resize(1022, 513)
+        Dialog.resize(1088, 612)
         self.gridLayout = QtWidgets.QGridLayout(Dialog)
         self.gridLayout.setObjectName("gridLayout")
         self.listView = QtWidgets.QListView(Dialog)
@@ -66,9 +66,6 @@ class Ui_Dialog(object):
         self.verticalLayout_2.addLayout(self.horizontalLayout_3)
         self.horizontalLayout_9 = QtWidgets.QHBoxLayout()
         self.horizontalLayout_9.setObjectName("horizontalLayout_9")
-        self.autoTags = QtWidgets.QCheckBox(self.groupBox)
-        self.autoTags.setObjectName("autoTags")
-        self.horizontalLayout_9.addWidget(self.autoTags)
         self.horizontalLayout_7 = QtWidgets.QHBoxLayout()
         self.horizontalLayout_7.setObjectName("horizontalLayout_7")
         self.label = QtWidgets.QLabel(self.groupBox)
@@ -81,6 +78,9 @@ class Ui_Dialog(object):
         self.lightIconsRadio.setObjectName("lightIconsRadio")
         self.horizontalLayout_7.addWidget(self.lightIconsRadio)
         self.horizontalLayout_9.addLayout(self.horizontalLayout_7)
+        self.autoTags = QtWidgets.QCheckBox(self.groupBox)
+        self.autoTags.setObjectName("autoTags")
+        self.horizontalLayout_9.addWidget(self.autoTags)
         self.verticalLayout_2.addLayout(self.horizontalLayout_9)
         self.gridLayout_4.addLayout(self.verticalLayout_2, 0, 0, 1, 1)
         self.verticalLayout.addWidget(self.groupBox)
@@ -123,6 +123,20 @@ class Ui_Dialog(object):
         spacerItem = QtWidgets.QSpacerItem(20, 40, QtWidgets.QSizePolicy.Minimum, QtWidgets.QSizePolicy.Expanding)
         self.gridLayout_2.addItem(spacerItem, 1, 0, 1, 1)
         self.stackedWidget.addWidget(self.switchPage)
+        self.annotationsPage = QtWidgets.QWidget()
+        self.annotationsPage.setObjectName("annotationsPage")
+        self.gridLayout_7 = QtWidgets.QGridLayout(self.annotationsPage)
+        self.gridLayout_7.setObjectName("gridLayout_7")
+        self.tabWidget = QtWidgets.QTabWidget(self.annotationsPage)
+        self.tabWidget.setObjectName("tabWidget")
+        self.textTab = QtWidgets.QWidget()
+        self.textTab.setObjectName("textTab")
+        self.tabWidget.addTab(self.textTab, "")
+        self.imageTab = QtWidgets.QWidget()
+        self.imageTab.setObjectName("imageTab")
+        self.tabWidget.addTab(self.imageTab, "")
+        self.gridLayout_7.addWidget(self.tabWidget, 0, 0, 1, 1)
+        self.stackedWidget.addWidget(self.annotationsPage)
         self.aboutPage = QtWidgets.QWidget()
         self.aboutPage.setObjectName("aboutPage")
         self.gridLayout_6 = QtWidgets.QGridLayout(self.aboutPage)
@@ -148,6 +162,7 @@ class Ui_Dialog(object):
         self.gridLayout.addLayout(self.verticalLayout_4, 0, 1, 1, 1)
 
         self.retranslateUi(Dialog)
+        self.tabWidget.setCurrentIndex(0)
         QtCore.QMetaObject.connectSlotsByName(Dialog)
 
     def retranslateUi(self, Dialog):
@@ -159,13 +174,13 @@ class Ui_Dialog(object):
         self.coverShadows.setText(_translate("Dialog", "Cover shadows"))
         self.performCulling.setToolTip(_translate("Dialog", "Enabling reduces startup time and memory usage"))
         self.performCulling.setText(_translate("Dialog", "Load covers only when needed"))
-        self.autoTags.setText(_translate("Dialog", "Generate tags from files"))
         self.label.setToolTip(_translate("Dialog", "Restart application to see changes"))
         self.label.setText(_translate("Dialog", "Icon theme: "))
         self.darkIconsRadio.setToolTip(_translate("Dialog", "Restart application to see changes"))
         self.darkIconsRadio.setText(_translate("Dialog", "&Dark"))
         self.lightIconsRadio.setToolTip(_translate("Dialog", "Restart application to see changes"))
         self.lightIconsRadio.setText(_translate("Dialog", "L&ight"))
+        self.autoTags.setText(_translate("Dialog", "Generate tags from files"))
         self.groupBox_2.setTitle(_translate("Dialog", "Reading"))
         self.hideScrollBars.setToolTip(_translate("Dialog", "Horizontal scrolling with Alt + Scroll\n"
 "Reopen book to see changes"))
@@ -173,6 +188,8 @@ class Ui_Dialog(object):
         self.cachingEnabled.setToolTip(_translate("Dialog", "Greatly reduces page transition time at the cost of more memory"))
         self.cachingEnabled.setText(_translate("Dialog", "Cache comic / pdf pages"))
         self.languageLabel.setText(_translate("Dialog", "Dictionary language:"))
+        self.tabWidget.setTabText(self.tabWidget.indexOf(self.textTab), _translate("Dialog", "Text"))
+        self.tabWidget.setTabText(self.tabWidget.indexOf(self.imageTab), _translate("Dialog", "Comic/PDF"))
         self.okButton.setText(_translate("Dialog", "Scan Library"))
         self.cancelButton.setText(_translate("Dialog", "Close"))
 

@@ -104,8 +104,10 @@ class SettingsUI(QtWidgets.QDialog, settingswindow.Ui_Dialog):
 
         library_string = self._translate('SettingsUI', 'Library')
         switches_string = self._translate('SettingsUI', 'Switches')
+        annotations_string = self._translate('SettingsUI', 'Annotations')
         about_string = self._translate('SettingsUI', 'About')
-        list_options = [library_string, switches_string, about_string]
+        list_options = [
+            library_string, switches_string, annotations_string, about_string]
 
         for i in list_options:
             item = QtGui.QStandardItem()

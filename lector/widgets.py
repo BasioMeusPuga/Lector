@@ -20,6 +20,8 @@
 # Reading modes
 # Double page, Continuous etc
 # Especially for comics
+# Remove variables that have anything to do with scroll position
+
 
 import os
 import uuid
@@ -103,10 +105,10 @@ class Tab(QtWidgets.QWidget):
             self.contentView.setHtml(chapter_content)
             self.contentView.setReadOnly(True)
 
-            tempHiddenButton = QtWidgets.QToolButton(self)
-            tempHiddenButton.setVisible(False)
-            tempHiddenButton.clicked.connect(self.set_scroll_value)
-            tempHiddenButton.animateClick(100)
+            self.hiddenButton = QtWidgets.QToolButton(self)
+            self.hiddenButton.setVisible(False)
+            self.hiddenButton.clicked.connect(self.set_scroll_value)
+            self.hiddenButton.animateClick(50)
 
         # The following are common to both the text browser and
         # the graphics view
@@ -178,11 +180,6 @@ class Tab(QtWidgets.QWidget):
             pass
 
     def set_scroll_value(self, switch_widgets=True, search_data=None):
-        # TODO
-        # Bookmark navigation does not work in case 2 entries in the same
-        # chapter are clicked successively
-        # It plain refuses to work other times
-
         if self.sender().objectName() == 'tabWidget':
             return
 
@@ -190,37 +187,26 @@ class Tab(QtWidgets.QWidget):
             previous_widget = self.main_window.tabWidget.currentWidget()
             self.main_window.tabWidget.setCurrentWidget(self)
 
-        scroll_value = self.metadata['position']['scroll_value']
-        if search_data:
-            scroll_value = search_data[0]
-
-        # Scroll a little ahead
-        # This avoids confusion with potentially duplicate phrases
-        # And the found result is at the top of the window
-        scroll_position = scroll_value * self.contentView.verticalScrollBar().maximum()
-        self.contentView.verticalScrollBar().setValue(scroll_position * 1.02)
-
         try:
             search_text = self.metadata['position']['last_visible_text']
             if search_data:
                 search_text = search_data[1]
 
             if search_text:
-                find_backward = False
+                cursor = self.contentView.textCursor()
+                cursor.movePosition(QtGui.QTextCursor.Start, QtGui.QTextCursor.KeepAnchor)
+                self.contentView.setTextCursor(cursor)
 
-                find_forward = self.contentView.find(search_text)
-                if not find_forward:
-                    find_backward = self.contentView.find(
-                        search_text, QtGui.QTextDocument.FindBackward)
+                self.contentView.verticalScrollBar().setValue(
+                    self.contentView.verticalScrollBar().maximum())
 
-                if find_backward:
-                    current_scroll_position = self.contentView.verticalScrollBar().value()
-                    new_scroll_position = current_scroll_position * .98
-                    self.contentView.verticalScrollBar().setValue(new_scroll_position)
+                # find_forward is a new cursor object that must replace
+                # the existing text cursor
+                find_forward = self.contentView.document().find(search_text)
+                find_forward.clearSelection()
+                self.contentView.setTextCursor(find_forward)
+                self.contentView.ensureCursorVisible()
 
-                text_cursor = self.contentView.textCursor()
-                text_cursor.clearSelection()
-                self.contentView.setTextCursor(text_cursor)
         except KeyError:
             pass
 
@@ -289,18 +275,31 @@ class Tab(QtWidgets.QWidget):
             self.exit_fullscreen()
             return
 
+        if not self.are_we_doing_images_only:
+            self.contentView.record_scroll_position()
+
         self.contentView.setWindowFlags(QtCore.Qt.Window)
         self.contentView.setWindowState(QtCore.Qt.WindowFullScreen)
         self.contentView.show()
         self.main_window.hide()
+
+        if not self.are_we_doing_images_only:
+            self.hiddenButton.animateClick(100)
+
         self.is_fullscreen = True
 
     def exit_fullscreen(self):
+        if not self.are_we_doing_images_only:
+            self.contentView.record_scroll_position()
+
         self.main_window.show()
         self.contentView.setWindowFlags(QtCore.Qt.Widget)
         self.contentView.setWindowState(QtCore.Qt.WindowNoState)
         self.contentView.show()
         self.is_fullscreen = False
+
+        if not self.are_we_doing_images_only:
+            self.hiddenButton.animateClick(100)
 
         # Hide the view modification buttons in case they're visible
         self.main_window.bookToolBar.customize_view_off()
