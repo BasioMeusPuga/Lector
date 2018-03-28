@@ -48,6 +48,7 @@ class Tab(QtWidgets.QWidget):
 
         self.setAttribute(QtCore.Qt.WA_DeleteOnClose)
 
+        self.first_run = True
         self.main_window = main_window
         self.metadata = metadata  # Save progress data into this dictionary
         self.are_we_doing_images_only = self.metadata['images_only']
@@ -180,8 +181,12 @@ class Tab(QtWidgets.QWidget):
             pass
 
     def set_scroll_value(self, switch_widgets=True, search_data=None):
-        if self.sender().objectName() == 'tabWidget':
+        if self.sender().objectName() == 'tabWidget' and self.first_run:
             return
+        self.first_run = False
+        # ^^^ I have NO IDEA why this is needed or how it works
+        # but scroll positioning does NOT work without the return
+        # Enabling it somehow makes document formatting not work either
 
         if switch_widgets:
             previous_widget = self.main_window.tabWidget.currentWidget()
@@ -815,16 +820,27 @@ class PliantQTextBrowser(QtWidgets.QTextBrowser):
         self.common_functions.wheelEvent(event, False)
 
     def keyPressEvent(self, event):
-        if event.key() == 32:
-            self.record_scroll_position()
-
+        QtWidgets.QTextEdit.keyPressEvent(self, event)
+        if event.key() == QtCore.Qt.Key_Space:
             if self.verticalScrollBar().value() == self.verticalScrollBar().maximum():
                 self.common_functions.change_chapter(1, True)
             else:
-                QtWidgets.QTextEdit.keyPressEvent(self, event)
+                self.set_top_line_cleanly()
 
-        else:
-            QtWidgets.QTextEdit.keyPressEvent(self, event)
+    def set_top_line_cleanly(self):
+        # TODO
+        # This can't find the next line sometimes despite having
+        # a valid search text to look up
+        # It could have something to do with textCursor position
+
+        self.record_scroll_position()
+
+        search_text = self.parent.metadata['position']['last_visible_text']
+        new_cursor = self.document().find(search_text)
+        if not new_cursor.isNull():
+            new_cursor.clearSelection()
+            self.setTextCursor(new_cursor)
+            self.ensureCursorVisible()
 
     def record_scroll_position(self, return_as_bookmark=False):
         self.parent.metadata['position']['is_read'] = False

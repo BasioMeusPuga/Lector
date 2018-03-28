@@ -556,7 +556,7 @@ class MainUI(QtWidgets.QMainWindow, mainwindow.Ui_MainWindow):
                 self.bookToolBar.tocBox.setCurrentIndex(
                     current_position['current_chapter'] - 1)
                 if not current_metadata['images_only']:
-                    current_tab.set_scroll_value(False)
+                    current_tab.set_scroll_value(True)
             self.bookToolBar.tocBox.blockSignals(False)
 
             self.profile_functions.format_contentView()

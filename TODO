@@ -74,9 +74,6 @@ TODO
         ✓ Define every widget in code
     Bugs:
         Deselecting all directories in the settings dialog also filters out manually added books
-        Scrollbar set to maximum value for cover pages with large cover images
-        Only one tab has its scroll position set when opening multiple books @ startup
-            It's the one that has focus when application starts and ends
 
     Secondary:
         Annotations
