@@ -158,8 +158,6 @@ class Tab(QtWidgets.QWidget):
         title = self.metadata['title']
         self.main_window.tabWidget.addTab(self, title)
 
-        # TODO
-        # Show cover image as tooltip text
         this_tab_index = self.main_window.tabWidget.indexOf(self)
         cover_icon = QtGui.QPixmap()
         cover_icon.loadFromData(self.metadata['cover'])
@@ -170,6 +168,10 @@ class Tab(QtWidgets.QWidget):
         self.mouse_hide_timer = QtCore.QTimer()
         self.mouse_hide_timer.setSingleShot(True)
         self.mouse_hide_timer.timeout.connect(self.hide_mouse)
+
+        # Hide the tab bar in case distraction free mode is active
+        if not self.main_window.settings['show_bars']:
+            self.main_window.tabWidget.tabBar().setVisible(False)
 
         self.contentView.setFocus()
 

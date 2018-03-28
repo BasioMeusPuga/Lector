@@ -227,7 +227,7 @@ class SettingsUI(QtWidgets.QDialog, settingswindow.Ui_Dialog):
 
         # Disallow rechecking until the first check completes
         self.okButton.setEnabled(False)
-        self.parent.reloadLibrary.setEnabled(False)
+        self.parent.libraryToolBar.reloadLibraryButton.setEnabled(False)
         self.okButton.setToolTip(
             self._translate('SettingsUI', 'Library scan in progress...'))
 
@@ -246,6 +246,7 @@ class SettingsUI(QtWidgets.QDialog, settingswindow.Ui_Dialog):
             return
 
         # Hey, messaging is important, okay?
+        self.parent.statusBar.setVisible(True)
         self.parent.sorterProgress.setVisible(True)
         self.parent.statusMessage.setText(
             self._translate('SettingsUI', 'Parsing files'))

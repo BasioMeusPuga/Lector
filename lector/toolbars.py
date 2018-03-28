@@ -45,10 +45,6 @@ class BookToolBar(QtWidgets.QToolBar):
             image_factory.get_image('gtk-select-font'),
             self._translate('BookToolBar', 'View settings'),
             self)
-        self.fullscreenButton = QtWidgets.QAction(
-            image_factory.get_image('view-fullscreen'),
-            self._translate('BookToolBar', 'Fullscreen (F11)'),
-            self)
         self.addBookmarkButton = QtWidgets.QAction(
             image_factory.get_image('bookmark-new'),
             self._translate('BookToolBar', 'Add bookmark'),
@@ -58,6 +54,14 @@ class BookToolBar(QtWidgets.QToolBar):
             self._translate('BookToolBar', 'Bookmarks (Ctrl + B)'),
             self)
         self.bookmarkButton.setObjectName('bookmarkButton')
+        self.distractionFreeButton = QtWidgets.QAction(
+            image_factory.get_image('visibility'),
+            self._translate('Main_BookToolBarUI', 'Toggle distraction free mode (Ctrl + D)'),
+            self)
+        self.fullscreenButton = QtWidgets.QAction(
+            image_factory.get_image('view-fullscreen'),
+            self._translate('BookToolBar', 'Fullscreen (F11)'),
+            self)
         self.resetProfile = QtWidgets.QAction(
             image_factory.get_image('reload'),
             self._translate('BookToolBar', 'Reset profile'),
@@ -72,6 +76,7 @@ class BookToolBar(QtWidgets.QToolBar):
         self.addAction(self.bookmarkButton)
         self.bookmarkButton.setCheckable(True)
         self.addSeparator()
+        self.addAction(self.distractionFreeButton)
         self.addAction(self.fullscreenButton)
 
         # Font modification
@@ -279,6 +284,7 @@ class BookToolBar(QtWidgets.QToolBar):
         self.bookActions = [
             self.addBookmarkButton,
             self.bookmarkButton,
+            self.distractionFreeButton,
             self.fullscreenButton,
             self.tocBoxAction,
             self.searchBarAction]

@@ -87,7 +87,6 @@ class MainUI(QtWidgets.QMainWindow, mainwindow.Ui_MainWindow):
         self.libraryFilterMenu = QtWidgets.QMenu()
         self.statusMessage = QtWidgets.QLabel()
         self.distractionFreeToggle = QtWidgets.QToolButton()
-        self.reloadLibrary = QtWidgets.QPushButton()
 
         # Reference variables
         self.alignment_dict = {
@@ -108,6 +107,9 @@ class MainUI(QtWidgets.QMainWindow, mainwindow.Ui_MainWindow):
         # Initialize definition view dialog
         self.definitionDialog = DefinitionsUI(self)
 
+        # Make the statusbar invisible by default
+        self.statusBar.setVisible(False)
+
         # Statusbar widgets
         self.statusMessage.setObjectName('statusMessage')
         self.statusBar.addPermanentWidget(self.statusMessage)
@@ -118,15 +120,6 @@ class MainUI(QtWidgets.QMainWindow, mainwindow.Ui_MainWindow):
                                                   # connected to setValue
         self.statusBar.addWidget(self.sorterProgress)
         self.sorterProgress.setVisible(False)
-
-        # Statusbar + Toolbar Visibility
-        self.distractionFreeToggle.setIcon(self.QImageFactory.get_image('visibility'))
-        self.distractionFreeToggle.setObjectName('distractionFreeToggle')
-        self.distractionFreeToggle.setToolTip(
-            self._translate('Main_UI', 'Toggle distraction free mode (Ctrl + D)'))
-        self.distractionFreeToggle.setAutoRaise(True)
-        self.distractionFreeToggle.clicked.connect(self.toggle_distraction_free)
-        self.statusBar.addPermanentWidget(self.distractionFreeToggle)
 
         # Application wide temporary directory
         self.temp_dir = QtCore.QTemporaryDir()
@@ -162,6 +155,7 @@ class MainUI(QtWidgets.QMainWindow, mainwindow.Ui_MainWindow):
         self.libraryToolBar.searchBar.textChanged.connect(self.lib_ref.update_proxymodels)
         self.libraryToolBar.sortingBox.activated.connect(self.lib_ref.update_proxymodels)
         self.libraryToolBar.libraryFilterButton.setPopupMode(QtWidgets.QToolButton.InstantPopup)
+        self.libraryToolBar.searchBar.textChanged.connect(self.statusbar_visibility)
         self.addToolBar(self.libraryToolBar)
 
         if self.settings['current_view'] == 0:
@@ -172,6 +166,7 @@ class MainUI(QtWidgets.QMainWindow, mainwindow.Ui_MainWindow):
         # Book toolbar
         self.bookToolBar.addBookmarkButton.triggered.connect(self.add_bookmark)
         self.bookToolBar.bookmarkButton.triggered.connect(self.toggle_dock_widget)
+        self.bookToolBar.distractionFreeButton.triggered.connect(self.toggle_distraction_free)
         self.bookToolBar.fullscreenButton.triggered.connect(self.set_fullscreen)
 
         for count, i in enumerate(self.display_profiles):
@@ -242,6 +237,7 @@ class MainUI(QtWidgets.QMainWindow, mainwindow.Ui_MainWindow):
         self.listView.setContextMenuPolicy(QtCore.Qt.CustomContextMenu)
         self.listView.customContextMenuRequested.connect(self.generate_library_context_menu)
         self.listView.verticalScrollBar().valueChanged.connect(self.start_culling_timer)
+        self.listView.setVerticalScrollBarPolicy(QtCore.Qt.ScrollBarAsNeeded)
 
         self.listView.setStyleSheet(
             "QListView {{background-color: {0}}}".format(
@@ -396,6 +392,7 @@ class MainUI(QtWidgets.QMainWindow, mainwindow.Ui_MainWindow):
         self.reloadLibrary.setEnabled(False)
 
         self.settings['last_open_path'] = os.path.dirname(opened_files[0][0])
+        self.statusBar.setVisible(True)
         self.sorterProgress.setVisible(True)
         self.statusMessage.setText(self._translate('Main_UI', 'Adding books...'))
         self.thread = BackGroundBookAddition(
@@ -475,10 +472,13 @@ class MainUI(QtWidgets.QMainWindow, mainwindow.Ui_MainWindow):
         self.settingsDialog.okButton.setEnabled(True)
         self.settingsDialog.okButton.setToolTip(
             self._translate('Main_UI', 'Save changes and start library scan'))
-        self.reloadLibrary.setEnabled(True)
+        self.libraryToolBar.reloadLibraryButton.setEnabled(True)
 
         self.sorterProgress.setVisible(False)
         self.sorterProgress.setValue(0)
+
+        if self.libraryToolBar.searchBar.text() == '':
+            self.statusBar.setVisible(False)
 
         self.lib_ref.update_proxymodels()
         self.lib_ref.generate_library_tags()
@@ -721,6 +721,13 @@ class MainUI(QtWidgets.QMainWindow, mainwindow.Ui_MainWindow):
     # TODO
     # def dropEvent
 
+    def statusbar_visibility(self):
+        if self.sender() == self.libraryToolBar.searchBar:
+            if self.libraryToolBar.searchBar.text() == '':
+                self.statusBar.setVisible(False)
+            else:
+                self.statusBar.setVisible(True)
+
     def show_settings(self):
         if not self.settingsDialog.isVisible():
             self.settingsDialog.show()
@@ -916,10 +923,9 @@ class MainUI(QtWidgets.QMainWindow, mainwindow.Ui_MainWindow):
     def toggle_distraction_free(self):
         self.settings['show_bars'] = not self.settings['show_bars']
 
-        self.statusBar.setVisible(
-            not self.statusBar.isVisible())
-        self.tabWidget.tabBar().setVisible(
-            not self.tabWidget.tabBar().isVisible())
+        if self.tabWidget.count() > 1:
+            self.tabWidget.tabBar().setVisible(
+                self.settings['show_bars'])
 
         current_tab = self.tabWidget.currentIndex()
         if current_tab == 0:
