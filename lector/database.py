@@ -42,7 +42,8 @@ class DatabaseInit:
             'LastAccessed': 'BLOB',
             'Bookmarks': 'BLOB',
             'CoverImage': 'BLOB',
-            'Addition': 'TEXT'}
+            'Addition': 'TEXT',
+            'Annotations': 'BLOB'}
 
         self.directories_table_columns = {
             'id': 'INTEGER PRIMARY KEY',
@@ -82,7 +83,7 @@ class DatabaseInit:
         for i in self.books_table_columns.items():
             if i[0] not in database_columns:
                 commit_required = True
-                print(f'Database: Adding column {i[0]}')
+                print(f'Database: Adding column "{i[0]}"')
                 sql_command = f"ALTER TABLE books ADD COLUMN {i[0]} {i[1]}"
                 self.database.execute(sql_command)
 

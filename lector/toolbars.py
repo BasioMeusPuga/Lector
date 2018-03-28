@@ -376,6 +376,11 @@ class LibraryToolBar(QtWidgets.QToolBar):
             self)
         self.tableViewButton.setCheckable(True)
 
+        self.reloadLibraryButton = QtWidgets.QAction(
+            image_factory.get_image('reload'),
+            self._translate('LibraryToolBar', 'Scan Library'),
+            self)
+
         self.libraryFilterButton = QtWidgets.QToolButton(self)
         self.libraryFilterButton.setIcon(image_factory.get_image('view-readermode'))
         self.libraryFilterButton.setText(
@@ -396,6 +401,7 @@ class LibraryToolBar(QtWidgets.QToolBar):
         self.addAction(self.coverViewButton)
         self.addAction(self.tableViewButton)
         self.addSeparator()
+        self.addAction(self.reloadLibraryButton)
         self.addWidget(self.libraryFilterButton)
         self.addSeparator()
         self.addAction(self.colorButton)

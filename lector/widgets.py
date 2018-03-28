@@ -105,7 +105,7 @@ class Tab(QtWidgets.QWidget):
 
             self.hiddenButton = QtWidgets.QToolButton(self)
             self.hiddenButton.setVisible(False)
-            self.hiddenButton.clicked.connect(self.set_scroll_value)
+            self.hiddenButton.clicked.connect(self.set_cursor_position)
             self.hiddenButton.animateClick(50)
 
         # The following are common to both the text browser and
@@ -135,7 +135,8 @@ class Tab(QtWidgets.QWidget):
         self.dockListView = QtWidgets.QListView(self.dockWidget)
         self.dockListView.setResizeMode(QtWidgets.QListWidget.Adjust)
         self.dockListView.setMaximumWidth(350)
-        self.dockListView.setItemDelegate(BookmarkDelegate(self.main_window, self.dockListView))
+        self.dockListView.setItemDelegate(
+            BookmarkDelegate(self.main_window, self.dockListView))
         self.dockListView.setUniformItemSizes(True)
         self.dockListView.setContextMenuPolicy(QtCore.Qt.CustomContextMenu)
         self.dockListView.customContextMenuRequested.connect(
@@ -156,6 +157,14 @@ class Tab(QtWidgets.QWidget):
 
         title = self.metadata['title']
         self.main_window.tabWidget.addTab(self, title)
+
+        # TODO
+        # Show cover image as tooltip text
+        this_tab_index = self.main_window.tabWidget.indexOf(self)
+        cover_icon = QtGui.QPixmap()
+        cover_icon.loadFromData(self.metadata['cover'])
+        self.main_window.tabWidget.setTabIcon(
+            this_tab_index, QtGui.QIcon(cover_icon))
 
         # Hide mouse cursor timer
         self.mouse_hide_timer = QtCore.QTimer()
@@ -180,38 +189,38 @@ class Tab(QtWidgets.QWidget):
         except IndexError:  # The file has been deleted
             pass
 
-    def set_scroll_value(self, switch_widgets=True, search_data=None):
-        if self.sender().objectName() == 'tabWidget' and self.first_run:
-            return
-        self.first_run = False
-        # ^^^ I have NO IDEA why this is needed or how it works
-        # but scroll positioning does NOT work without the return
-        # Enabling it somehow makes document formatting not work either
+    def set_cursor_position(self, switch_widgets=True, search_data=None):
+        # if self.sender().objectName() == 'tabWidget' and self.first_run:
+        #     return
+        # self.first_run = False
+        # ^^^ I have NO IDEA why this might be needed or how it works
 
         if switch_widgets:
             previous_widget = self.main_window.tabWidget.currentWidget()
             self.main_window.tabWidget.setCurrentWidget(self)
 
         try:
-            search_text = self.metadata['position']['last_visible_text']
+            required_position = self.metadata['position']['cursor_position']
             if search_data:
-                search_text = search_data[1]
+                required_position = search_data[1]
 
-            # textCursor() RETURNS a copy of the textcursor
-            cursor = self.contentView.textCursor()
-            cursor.movePosition(QtGui.QTextCursor.Start, QtGui.QTextCursor.KeepAnchor)
-            self.contentView.setTextCursor(cursor)
+                # TODO
+                # Remove this at the time when a library rebuild is
+                # finally required
+                # Bookmarks will have to be regenerated in the meantime
+                if isinstance(required_position, str):
+                    return
 
-            # This is needed so that search results are always at the top
-            # of the window
+            # This is needed so that the line we want is
+            # always at the top of the window
             self.contentView.verticalScrollBar().setValue(
                 self.contentView.verticalScrollBar().maximum())
 
-            # find_forward is a new cursor object that must replace
-            # the existing text cursor
-            find_forward = self.contentView.document().find(search_text)
-            find_forward.clearSelection()
-            self.contentView.setTextCursor(find_forward)
+            # textCursor() RETURNS a copy of the textcursor
+            cursor = self.contentView.textCursor()
+            cursor.setPosition(
+                required_position, QtGui.QTextCursor.MoveAnchor)
+            self.contentView.setTextCursor(cursor)
             self.contentView.ensureCursorVisible()
 
         except KeyError:
@@ -254,8 +263,8 @@ class Tab(QtWidgets.QWidget):
             'blocks_per_chapter': blocks_per_chapter,
             'total_blocks': total_blocks,
             'scroll_value': scroll_value,
-            'last_visible_text': None,
-            'is_read': is_read}
+            'is_read': is_read,
+            'cursor_position': 0}
 
     def generate_keyboard_shortcuts(self):
         self.ksNextChapter = QtWidgets.QShortcut(
@@ -322,6 +331,8 @@ class Tab(QtWidgets.QWidget):
         # Exit distraction free mode too
         if not self.main_window.settings['show_bars']:
             self.main_window.toggle_distraction_free()
+
+        self.contentView.setFocus()
 
     def change_chapter_tocBox(self):
         chapter_number = self.main_window.bookToolBar.tocBox.currentIndex()
@@ -440,7 +451,7 @@ class Tab(QtWidgets.QWidget):
 
         self.main_window.bookToolBar.tocBox.setCurrentIndex(chapter - 1)
         if not self.are_we_doing_images_only:
-            self.set_scroll_value(False, search_data)
+            self.set_cursor_position(False, search_data)
 
     def generate_bookmark_model(self):
         # TODO
@@ -811,7 +822,8 @@ class PliantQTextBrowser(QtWidgets.QTextBrowser):
 
         self.setMouseTracking(True)
         self.viewport().setCursor(QtCore.Qt.IBeamCursor)
-        self.verticalScrollBar().sliderMoved.connect(self.record_scroll_position)
+        self.verticalScrollBar().sliderMoved.connect(
+            self.record_scroll_position)
         self.ignore_wheel_event = False
         self.ignore_wheel_event_number = 0
 
@@ -828,19 +840,12 @@ class PliantQTextBrowser(QtWidgets.QTextBrowser):
                 self.set_top_line_cleanly()
 
     def set_top_line_cleanly(self):
-        # TODO
-        # This can't find the next line sometimes despite having
-        # a valid search text to look up
-        # It could have something to do with textCursor position
-
-        self.record_scroll_position()
-
-        search_text = self.parent.metadata['position']['last_visible_text']
-        new_cursor = self.document().find(search_text)
-        if not new_cursor.isNull():
-            new_cursor.clearSelection()
-            self.setTextCursor(new_cursor)
-            self.ensureCursorVisible()
+        # Find the cursor position of the top line and move to it
+        find_cursor = self.cursorForPosition(QtCore.QPoint(0, 0))
+        find_cursor.movePosition(
+            find_cursor.position(), QtGui.QTextCursor.KeepAnchor)
+        self.setTextCursor(find_cursor)
+        self.ensureCursorVisible()
 
     def record_scroll_position(self, return_as_bookmark=False):
         self.parent.metadata['position']['is_read'] = False
@@ -853,20 +858,14 @@ class PliantQTextBrowser(QtWidgets.QTextBrowser):
             self.parent.metadata['position']['scroll_value'] = (vertical / maximum)
 
         cursor = self.cursorForPosition(QtCore.QPoint(0, 0))
-        bottom_right = QtCore.QPoint(self.viewport().width() - 1, self.viewport().height())
-        bottom_right_cursor = self.cursorForPosition(bottom_right).position()
-        cursor.setPosition(bottom_right_cursor, QtGui.QTextCursor.KeepAnchor)
-        visible_text = cursor.selectedText()
-
-        if len(visible_text) > 50:
-            visible_text = visible_text[:51]
+        cursor_position = cursor.position()
 
         if return_as_bookmark:
             return (self.parent.metadata['position']['current_chapter'],
                     self.parent.metadata['position']['scroll_value'],
-                    visible_text)
+                    cursor_position)
         else:
-            self.parent.metadata['position']['last_visible_text'] = visible_text
+            self.parent.metadata['position']['cursor_position'] = cursor_position
 
     def generate_textbrowser_context_menu(self, position):
         selected_word = self.textCursor().selection()

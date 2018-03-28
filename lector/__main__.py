@@ -155,6 +155,8 @@ class MainUI(QtWidgets.QMainWindow, mainwindow.Ui_MainWindow):
         self.libraryToolBar.deleteButton.triggered.connect(self.delete_books)
         self.libraryToolBar.coverViewButton.triggered.connect(self.switch_library_view)
         self.libraryToolBar.tableViewButton.triggered.connect(self.switch_library_view)
+        self.libraryToolBar.reloadLibraryButton.triggered.connect(
+            self.settingsDialog.start_library_scan)
         self.libraryToolBar.colorButton.triggered.connect(self.get_color)
         self.libraryToolBar.settingsButton.triggered.connect(self.show_settings)
         self.libraryToolBar.searchBar.textChanged.connect(self.lib_ref.update_proxymodels)
@@ -218,16 +220,11 @@ class MainUI(QtWidgets.QMainWindow, mainwindow.Ui_MainWindow):
         self.available_parsers = '*.' + ' *.'.join(sorter.available_parsers)
         print('Available parsers: ' + self.available_parsers)
 
-        # The library refresh button on the Library tab
-        self.reloadLibrary.setFlat(True)
-        self.reloadLibrary.setIcon(self.QImageFactory.get_image('reload'))
-        self.reloadLibrary.setObjectName('reloadLibrary')
-        self.reloadLibrary.setToolTip(self._translate('Main_UI', 'Scan library'))
-        self.reloadLibrary.clicked.connect(self.settingsDialog.start_library_scan)
-
+        # The Library tab gets no button
         self.tabWidget.tabBar().setTabButton(
-            0, QtWidgets.QTabBar.RightSide, self.reloadLibrary)
+            0, QtWidgets.QTabBar.RightSide, None)
         self.tabWidget.tabCloseRequested.connect(self.tab_close)
+        self.tabWidget.setTabBarAutoHide(True)
 
         # Init display models
         self.lib_ref.generate_model('build')
@@ -556,7 +553,7 @@ class MainUI(QtWidgets.QMainWindow, mainwindow.Ui_MainWindow):
                 self.bookToolBar.tocBox.setCurrentIndex(
                     current_position['current_chapter'] - 1)
                 if not current_metadata['images_only']:
-                    current_tab.set_scroll_value(True)
+                    current_tab.set_cursor_position()
             self.bookToolBar.tocBox.blockSignals(False)
 
             self.profile_functions.format_contentView()

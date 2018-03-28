@@ -118,7 +118,7 @@ class BookSorter:
     def database_entry_for_book(self, file_hash):
         database_return = database.DatabaseFunctions(
             self.database_path).fetch_data(
-                ('Title', 'Author', 'Year', 'ISBN', 'Tags', 'Position', 'Bookmarks'),
+                ('Title', 'Author', 'Year', 'ISBN', 'Tags', 'Position', 'Bookmarks', 'CoverImage'),
                 'books',
                 {'Hash': file_hash},
                 'EQUALS')[0]
@@ -231,11 +231,13 @@ class BookSorter:
                 tags = book_data[4]
                 position = book_data[5]
                 bookmarks = book_data[6]
+                cover = book_data[7]
 
                 this_book[file_md5]['position'] = position
                 this_book[file_md5]['bookmarks'] = bookmarks
                 this_book[file_md5]['content'] = content
                 this_book[file_md5]['images_only'] = images_only
+                this_book[file_md5]['cover'] = cover
 
             this_book[file_md5]['title'] = title
             this_book[file_md5]['author'] = author
