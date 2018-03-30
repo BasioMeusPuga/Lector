@@ -71,6 +71,7 @@ class MainUI(QtWidgets.QMainWindow, mainwindow.Ui_MainWindow):
         self.comic_profile = {}
         self.database_path = None
         self.active_library_filters = []
+        self.active_bookmark_docks = []
 
         # Initialize application
         Settings(self).read_settings()  # This should populate all variables that need
@@ -86,7 +87,6 @@ class MainUI(QtWidgets.QMainWindow, mainwindow.Ui_MainWindow):
         # Widget declarations
         self.libraryFilterMenu = QtWidgets.QMenu()
         self.statusMessage = QtWidgets.QLabel()
-        self.distractionFreeToggle = QtWidgets.QToolButton()
 
         # Reference variables
         self.alignment_dict = {
@@ -389,7 +389,7 @@ class MainUI(QtWidgets.QMainWindow, mainwindow.Ui_MainWindow):
             return
 
         self.settingsDialog.okButton.setEnabled(False)
-        self.reloadLibrary.setEnabled(False)
+        self.libraryToolBar.reloadLibraryButton.setEnabled(False)
 
         self.settings['last_open_path'] = os.path.dirname(opened_files[0][0])
         self.statusBar.setVisible(True)
@@ -946,6 +946,8 @@ class MainUI(QtWidgets.QMainWindow, mainwindow.Ui_MainWindow):
         self.settingsDialog.hide()
         self.definitionDialog.hide()
         self.temp_dir.remove()
+        for i in self.active_bookmark_docks:
+            i.setVisible(False)
 
         self.settings['last_open_books'] = []
         if self.tabWidget.count() > 1:

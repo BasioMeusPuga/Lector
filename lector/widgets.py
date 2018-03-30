@@ -1038,9 +1038,11 @@ class PliantDockWidget(QtWidgets.QDockWidget):
 
         self.setGeometry(dock_x, dock_y, dock_width, dock_height)
         self.main_window.bookToolBar.bookmarkButton.setChecked(True)
+        self.main_window.active_bookmark_docks.append(self)
 
     def hideEvent(self, event):
         self.main_window.bookToolBar.bookmarkButton.setChecked(False)
+        self.main_window.active_bookmark_docks.remove(self)
 
 
 class PliantQGraphicsScene(QtWidgets.QGraphicsScene):

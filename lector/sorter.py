@@ -175,7 +175,6 @@ class BookSorter:
         book_ref.read_book()
         if book_ref.book:
 
-
             this_book = {}
             this_book[file_md5] = {
                 'hash': file_md5,
