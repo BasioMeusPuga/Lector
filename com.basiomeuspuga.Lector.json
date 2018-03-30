@@ -1,0 +1,110 @@
+{
+	"app-id":"com.basiomeuspuga.Lector",
+	"runtime":"org.kde.Platform",
+	"runtime-version":"5.10",
+	"sdk":"org.kde.Sdk",
+	"command":"lector",
+	"rename-icon":"Lector",
+	"rename-desktop-file":"lector.desktop",
+	"rename-appdata-file":"lector.appdata.xml",
+	"finish-args":[
+		"--filesystem=host",
+		"--socket=x11",
+		"--socket=wayland",
+		"--device=dri",
+		"--share=ipc",
+		"--share=network"
+	],
+	"build-options":{
+		"cflags":"-O2",
+		"cxxflags":"-O2"
+	},
+	"modules":[
+		{
+            "name": "python",
+            "sources": [
+                {
+                    "type": "archive",
+                    "url": "https://www.python.org/ftp/python/3.6.4/Python-3.6.4.tar.xz",
+                    "sha256": "159b932bf56aeaa76fd66e7420522d8c8853d486b8567c459b84fe2ed13bcaba"
+                }
+            ]
+        },
+		  {
+            "name": "pyqt5",
+            "buildsystem": "simple",
+            "build-commands": [
+                "pip3 install --prefix=/app PyQt5-5.10.1-5.10.1-cp35.cp36.cp37.cp38-abi3-manylinux1_x86_64.whl"
+			],
+			"modules":[
+				{
+					"name":"sip",
+					"sources":[
+						{
+							"type":"file",
+							"url":"https://pypi.python.org/packages/8a/ea/d317ce5696dda4df7c156cd60447cda22833b38106c98250eae1451f03ec/sip-4.19.8-cp36-cp36m-manylinux1_x86_64.whl",
+							"sha256":"cf98150a99e43fda7ae22abe655b6f202e491d6291486548daa56cb15a2fcf85"
+						}
+					],
+					"buildsystem":"simple",
+					"build-commands":[
+						"pip3 install --prefix=/app sip-4.19.8-cp36-cp36m-manylinux1_x86_64.whl"
+					]
+				}
+			],
+            "sources": [
+                {
+                    "type": "file",
+                    "url": "https://pypi.python.org/packages/e4/15/4e2e49f64884edbab6f833c6fd3add24d7938f2429aec1f2883e645d4d8f/PyQt5-5.10.1-5.10.1-cp35.cp36.cp37.cp38-abi3-manylinux1_x86_64.whl",
+                    "sha256": "1e652910bd1ffd23a3a48c510ecad23a57a853ed26b782cd54b16658e6f271ac"
+                }
+            ]
+        },
+		{
+			"name":"beautifulsoup",
+			"buildsystem":"simple",
+			"sources":[
+				{
+					"type":"archive",
+					"url":"https://pypi.python.org/packages/fa/8d/1d14391fdaed5abada4e0f63543fef49b8331a34ca60c88bd521bcf7f782/beautifulsoup4-4.6.0.tar.gz",
+					"sha256":"808b6ac932dccb0a4126558f7dfdcf41710dd44a4ef497a0bb59a77f9f078e89"
+				}
+			],
+			"build-commands":[
+				"python3 setup.py build",
+				"python3 setup.py install --prefix=/app"
+			]
+		},
+        {
+            "name": "lxml",
+            "buildsystem": "simple",
+            "build-commands": [
+                "pip3 install --prefix=/app lxml-4.2.1-cp36-cp36m-manylinux1_x86_64.whl"
+            ],
+            "sources": [
+                {
+                    "type": "file",
+                    "url": "https://pypi.python.org/packages/a7/b9/ccf46cea0f698b40bca2a9c1a44039c336fe1988b82de4f7353be7a8396a/lxml-4.2.1-cp36-cp36m-manylinux1_x86_64.whl",
+                    "sha256": "0e3cd94c95d30ba9ca3cff40e9b2a14e1a10a4fd8131105b86c6b61648f57e4b"
+                }
+            ]
+        },
+		{
+			"name":"lector",
+			"buildsystem":"simple",
+			"ensure-writable":[
+				"/lib/python*/site-packages/easy-install.pth"
+			],
+			"sources":[
+				{
+					"type":"git",
+					"url":"https://github.com/BasioMeusPuga/Lector.git"
+				}
+			],
+			"build-commands":[
+				"python3 setup.py build",
+				"python3 setup.py install --prefix=/app"
+			]
+		}
+	]
+}
