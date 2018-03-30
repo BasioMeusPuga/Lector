@@ -119,6 +119,22 @@ class SettingsUI(QtWidgets.QDialog, settingswindow.Ui_Dialog):
         self.listView.setModel(self.listModel)
         self.listView.clicked.connect(self.page_switch)
 
+        # Generate annotation settings
+        self.annotations_list = []
+        self.generate_annotations()
+
+        # Init colors
+        self.default_stylesheet = self.foregroundCheck.styleSheet()
+        self.foreground = QtGui.QColor.fromRgb(0, 0, 0)
+        self.highlight = QtGui.QColor.fromRgb(255, 255, 255)
+
+        # Connect annotation related checkboxes
+        self.foregroundCheck.clicked.connect(self.format_checkboxes)
+        self.highlightCheck.clicked.connect(self.format_checkboxes)
+        self.boldCheck.clicked.connect(self.format_checkboxes)
+        self.italicCheck.clicked.connect(self.format_checkboxes)
+        self.underlineCheck.clicked.connect(self.format_checkboxes)
+
         # Generate the filesystem treeView
         self.generate_tree()
 
@@ -273,6 +289,7 @@ class SettingsUI(QtWidgets.QDialog, settingswindow.Ui_Dialog):
         event.accept()
 
     def showEvent(self, event):
+        self.format_preview()
         self.tag_data_copy = copy.deepcopy(self.filesystem_model.tag_data)
         event.accept()
 
@@ -320,3 +337,121 @@ class SettingsUI(QtWidgets.QDialog, settingswindow.Ui_Dialog):
 
         if not self.performCulling.isChecked():
             self.parent.cover_functions.load_all_covers()
+
+    def generate_annotations(self):
+        annotations_model = QtGui.QStandardItemModel()
+        items_list = ['Sample annotation']
+
+        for i in items_list:
+            # TODO
+            # Set annotation types to user roles
+
+            item = QtGui.QStandardItem()
+            item.setText(i)
+            annotations_model.appendRow(item)
+
+        self.annotationsList.setModel(annotations_model)
+
+    def format_preview(self):
+        self.previewView.setText('Vidistine nuper imagines moventes bonas?')
+        profile_index = self.parent.bookToolBar.profileBox.currentIndex()
+        current_profile = self.parent.bookToolBar.profileBox.itemData(
+            profile_index, QtCore.Qt.UserRole)
+
+        if not current_profile:
+            return
+
+        font = current_profile['font']
+        self.foreground = current_profile['foreground']
+        background = current_profile['background']
+        font_size = current_profile['font_size']
+
+        self.previewView.setStyleSheet(
+            "QTextEdit {{font-family: {0}; font-size: {1}px; color: {2}; background-color: {3}}}".format(
+                font, font_size, self.foreground.name(), background.name()))
+
+        block_format = QtGui.QTextBlockFormat()
+        block_format.setAlignment(QtCore.Qt.AlignVCenter | QtCore.Qt.AlignHCenter)
+
+        cursor = self.previewView.textCursor()
+        while True:
+            old_position = cursor.position()
+            cursor.mergeBlockFormat(block_format)
+            cursor.movePosition(QtGui.QTextCursor.NextBlock, 0, 1)
+            new_position = cursor.position()
+            if old_position == new_position:
+                break
+
+    def update_preview(self):
+        cursor = self.previewView.textCursor()
+        cursor.setPosition(0)
+        cursor.movePosition(QtGui.QTextCursor.End, QtGui.QTextCursor.KeepAnchor)
+
+        # TODO
+        # Other kinds of text markup
+        previewCharFormat = QtGui.QTextCharFormat()
+
+        if self.foregroundCheck.isChecked():
+            previewCharFormat.setForeground(self.foreground)
+
+        highlight = QtCore.Qt.transparent
+        if self.highlightCheck.isChecked():
+            highlight = self.highlight
+        previewCharFormat.setBackground(highlight)
+
+        font_weight = QtGui.QFont.Normal
+        if self.boldCheck.isChecked():
+            font_weight = QtGui.QFont.Bold
+        previewCharFormat.setFontWeight(font_weight)
+
+        font_italic = False
+        if self.italicCheck.isChecked():
+            font_italic = True
+        previewCharFormat.setFontItalic(font_italic)
+
+        font_underline = False
+        if self.underlineCheck.isChecked():
+            font_underline = True
+        previewCharFormat.setFontUnderline(font_underline)
+
+        previewCharFormat.setFontStyleStrategy(
+            QtGui.QFont.PreferAntialias)
+
+        cursor.setCharFormat(previewCharFormat)
+        cursor.clearSelection()
+        self.previewView.setTextCursor(cursor)
+
+    def format_checkboxes(self):
+        sender = self.sender()
+        if not sender.isChecked():
+            sender.setStyleSheet(self.default_stylesheet)
+            self.update_preview()
+            return
+
+        if sender == self.foregroundCheck:
+            new_color = self.get_color(self.foreground)
+            self.foregroundCheck.setStyleSheet(
+                "QCheckBox {{color: {0}; border: none;}}".format(new_color.name()))
+            self.foreground = new_color
+
+        if sender == self.highlightCheck:
+            new_color = self.get_color(self.highlight)
+            self.highlightCheck.setStyleSheet(
+                "QCheckBox {{background-color: {0}}}".format(new_color.name()))
+            self.highlight = new_color
+
+        # TODO
+        # See if QCheckboxes support this
+        if sender == self.boldCheck:
+            self.boldCheck.setStyleSheet(
+                "QCheckBox {{font-weight: bold;}}")
+
+        self.update_preview()
+
+    def get_color(self, current_color):
+        color_dialog = QtWidgets.QColorDialog()
+        new_color = color_dialog.getColor(current_color)
+        if new_color.isValid():  # Returned in case cancel is pressed
+            return new_color
+        else:
+            return current_color
