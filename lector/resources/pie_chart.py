@@ -94,25 +94,24 @@ def generate_pie(progress_percent, temp_dir=None):
         return lSvg
 
 
-def pixmapper(current_chapter, total_chapters, temp_dir, size):
+def pixmapper(progress, total, temp_dir, size):
     # A current_chapter of -1 implies the files does not exist
     # A chapter number == Total chapters implies the file is unread
     return_pixmap = None
 
-    if current_chapter == -1:
+    if progress == -1:
         return_pixmap = QtGui.QIcon(':/images/error.svg').pixmap(size)
         return return_pixmap
 
-    if current_chapter == total_chapters:
+    if progress >= .95 * total:  # Consider book read @ 95% progress
         return_pixmap = QtGui.QIcon(':/images/checkmark.svg').pixmap(size)
     else:
 
         # TODO
         # See if saving the svg to disk can be avoided
-        # Shift to lines to track progress
         # Maybe make the alignment a little more uniform across emblems
 
-        progress_percent = int(current_chapter * 100 / total_chapters)
+        progress_percent = int(progress * 100 / total)
         generate_pie(progress_percent, temp_dir)
         svg_path = os.path.join(temp_dir, 'lector_progress.svg')
         return_pixmap = QtGui.QIcon(svg_path).pixmap(size - 4)  ## The -4 looks more proportional

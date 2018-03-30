@@ -122,6 +122,8 @@ class TableProxyModel(QtCore.QSortFilterProxyModel):
 
                 file_exists = item.data(QtCore.Qt.UserRole + 5)
                 metadata = item.data(QtCore.Qt.UserRole + 3)
+                progress_perc = item.data(QtCore.Qt.UserRole + 7)
+
                 position = metadata['position']
                 if position:
                     is_read = position['is_read']
@@ -132,27 +134,29 @@ class TableProxyModel(QtCore.QSortFilterProxyModel):
 
                 if position:
                     if is_read:
-                        current_chapter = total_chapters = 100
+                        progress = total = -2
                     else:
                         try:
-                            current_chapter = position['current_chapter']
-                            total_chapters = position['total_chapters']
+                            progress = position['current_block']
+                            total = position['total_blocks']
 
-                            # TODO
-                            # See if there's any rationale for this
-                            if current_chapter == 1:
+                            if progress == total == 0:
                                 raise KeyError
                         except KeyError:
-                            return
+                            try:
+                                progress = position['current_chapter']
+                                total = position['total_chapters']
+                            except KeyError:
+                                return
 
                     return_pixmap = pie_chart.pixmapper(
-                        current_chapter, total_chapters, self.temp_dir,
+                        progress, total, self.temp_dir,
                         QtCore.Qt.SizeHintRole + 10)
 
                 return return_pixmap
 
         elif role == QtCore.Qt.DisplayRole or role == QtCore.Qt.EditRole:
-            if index.column() in (0, 5):    # Cover and Status
+            if index.column() in (0, 5):  # Cover and Status
                 return QtCore.QVariant()
 
             if index.column() == 4:

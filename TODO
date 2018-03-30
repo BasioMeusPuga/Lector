@@ -2,7 +2,7 @@ TODO
     General:
         ✓ Internationalization
         ✓ Application icon
-        ✓ .desktop file
+        ✓ .desktop file        
     Options:
         ✓ Automatic library management
             ✓ Recursive file addition
@@ -59,7 +59,10 @@ TODO
         ✓ Comic view context menu
         ✓ Make the bookmark dock float over the reading area
         ✓ Spacebar should not cut off lines at the top
-        Track open bookmark windows so they can be closed quickly at exit
+        ✓ Track open bookmark windows so they can be closed quickly at exit
+        Annotations
+            Text
+            Image
         Adjust key navigation according to viewport dimensions
         Search document using QTextCursor
     Filetypes:
@@ -76,14 +79,13 @@ TODO
         ✓ Define every widget in code
     Bugs:
         Deselecting all directories in the settings dialog also filters out manually added books
-        Only one tab has its scroll position set when opening multiple books @ startup
-            It's the one that has focus when application starts and ends
+        PDF year
 
     Secondary:
-        Annotations
         Graphical themes
         Change focus rectangle dimensions
         Tab reordering
+        Universal Ctrl + Tab
         Allow tabs to detach and form their own windows
         Goodreads API: Ratings, Read, Recommendations
         Get ISBN using python-isbnlib

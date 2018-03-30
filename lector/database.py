@@ -53,7 +53,7 @@ class DatabaseInit:
             'CheckState': 'INTEGER'}
 
         if os.path.exists(self.database_path):
-            self.check_database()
+            self.check_columns()
         else:
             self.create_database()
 
@@ -72,7 +72,7 @@ class DatabaseInit:
         self.database.commit()
         self.database.close()
 
-    def check_database(self):
+    def check_columns(self):
         self.database = sqlite3.connect(self.database_path)
 
         database_return = self.database.execute("PRAGMA table_info(books)").fetchall()
@@ -89,7 +89,6 @@ class DatabaseInit:
 
         if commit_required:
             self.database.commit()
-        self.database.close()
 
 
 class DatabaseFunctions:

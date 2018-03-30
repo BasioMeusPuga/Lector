@@ -20,7 +20,6 @@
 # Reading modes
 # Double page, Continuous etc
 # Especially for comics
-# Remove variables that have anything to do with scroll position
 
 
 import os
@@ -191,57 +190,34 @@ class Tab(QtWidgets.QWidget):
         except IndexError:  # The file has been deleted
             pass
 
-    def set_cursor_position(self, switch_widgets=True, search_data=None):
-        # if self.sender().objectName() == 'tabWidget' and self.first_run:
-        #     return
-        # self.first_run = False
-        # ^^^ I have NO IDEA why this might be needed or how it works
-
-        if switch_widgets:
-            previous_widget = self.main_window.tabWidget.currentWidget()
-            self.main_window.tabWidget.setCurrentWidget(self)
-
+    def set_cursor_position(self, cursor_position=None):
         try:
             required_position = self.metadata['position']['cursor_position']
-            if search_data:
-                required_position = search_data[1]
-
-                # TODO
-                # Remove this at the time when a library rebuild is
-                # finally required
-                # Bookmarks will have to be regenerated in the meantime
-                if isinstance(required_position, str):
-                    return
-
-            # This is needed so that the line we want is
-            # always at the top of the window
-            self.contentView.verticalScrollBar().setValue(
-                self.contentView.verticalScrollBar().maximum())
-
-            # textCursor() RETURNS a copy of the textcursor
-            cursor = self.contentView.textCursor()
-            cursor.setPosition(
-                required_position, QtGui.QTextCursor.MoveAnchor)
-            self.contentView.setTextCursor(cursor)
-            self.contentView.ensureCursorVisible()
-
         except KeyError:
-            pass
+            print(f'Database: Cursor position error. Recommend retry.')
+            return
 
-        if switch_widgets:
-            self.main_window.tabWidget.setCurrentWidget(previous_widget)
+        if cursor_position:
+            required_position = cursor_position
+
+        # This is needed so that the line we want is
+        # always at the top of the window
+        self.contentView.verticalScrollBar().setValue(
+            self.contentView.verticalScrollBar().maximum())
+
+        # textCursor() RETURNS a copy of the textcursor
+        cursor = self.contentView.textCursor()
+        cursor.setPosition(
+            required_position, QtGui.QTextCursor.MoveAnchor)
+        self.contentView.setTextCursor(cursor)
+        self.contentView.ensureCursorVisible()
 
     def generate_position(self, is_read=False):
         total_chapters = len(self.metadata['content'])
 
         current_chapter = 1
-        scroll_value = 0
         if is_read:
             current_chapter = total_chapters
-            scroll_value = 1
-
-        # TODO
-        # Use this to generate position
 
         # Generate block count @ time of first read
         # Blocks are indexed from 0 up
@@ -264,8 +240,8 @@ class Tab(QtWidgets.QWidget):
             'total_chapters': total_chapters,
             'blocks_per_chapter': blocks_per_chapter,
             'total_blocks': total_blocks,
-            'scroll_value': scroll_value,
             'is_read': is_read,
+            'current_block': 0,
             'cursor_position': 0}
 
     def generate_keyboard_shortcuts(self):
@@ -298,7 +274,7 @@ class Tab(QtWidgets.QWidget):
             return
 
         if not self.are_we_doing_images_only:
-            self.contentView.record_scroll_position()
+            self.contentView.record_position()
 
         self.contentView.setWindowFlags(QtCore.Qt.Window)
         self.contentView.setWindowState(QtCore.Qt.WindowFullScreen)
@@ -316,7 +292,7 @@ class Tab(QtWidgets.QWidget):
             return
 
         if not self.are_we_doing_images_only:
-            self.contentView.record_scroll_position()
+            self.contentView.record_position()
 
         self.main_window.show()
         self.contentView.setWindowFlags(QtCore.Qt.Widget)
@@ -419,26 +395,25 @@ class Tab(QtWidgets.QWidget):
 
         if self.are_we_doing_images_only:
             chapter = self.metadata['position']['current_chapter']
-            search_data = (0, None)
+            cursor_position = 0
         else:
-            chapter, scroll_position, visible_text = self.contentView.record_scroll_position(True)
-            search_data = (scroll_position, visible_text)
+            chapter, cursor_position = self.contentView.record_position(True)
 
         self.metadata['bookmarks'][identifier] = {
             'chapter': chapter,
-            'search_data': search_data,
+            'cursor_position': cursor_position,
             'description': description}
 
         self.add_bookmark_to_model(
-            description, chapter, search_data, identifier)
+            description, chapter, cursor_position, identifier)
         self.dockWidget.setVisible(True)
 
-    def add_bookmark_to_model(self, description, chapter, search_data, identifier):
+    def add_bookmark_to_model(self, description, chapter, cursor_position, identifier):
         bookmark = QtGui.QStandardItem()
         bookmark.setData(description, QtCore.Qt.DisplayRole)
 
         bookmark.setData(chapter, QtCore.Qt.UserRole)
-        bookmark.setData(search_data, QtCore.Qt.UserRole + 1)
+        bookmark.setData(cursor_position, QtCore.Qt.UserRole + 1)
         bookmark.setData(identifier, QtCore.Qt.UserRole + 2)
 
         self.bookmark_model.appendRow(bookmark)
@@ -449,22 +424,30 @@ class Tab(QtWidgets.QWidget):
             return
 
         chapter = self.proxy_model.data(index, QtCore.Qt.UserRole)
-        search_data = self.proxy_model.data(index, QtCore.Qt.UserRole + 1)
+        cursor_position = self.proxy_model.data(index, QtCore.Qt.UserRole + 1)
 
         self.main_window.bookToolBar.tocBox.setCurrentIndex(chapter - 1)
         if not self.are_we_doing_images_only:
-            self.set_cursor_position(False, search_data)
+            self.set_cursor_position(cursor_position)
 
     def generate_bookmark_model(self):
         # TODO
         # Sorting is not working correctly
 
-        for i in self.metadata['bookmarks'].items():
-            self.add_bookmark_to_model(
-                i[1]['description'],
-                i[1]['chapter'],
-                i[1]['search_data'],
-                i[0])
+        try:
+            for i in self.metadata['bookmarks'].items():
+                self.add_bookmark_to_model(
+                    i[1]['description'],
+                    i[1]['chapter'],
+                    i[1]['cursor_position'],
+                    i[0])
+        except KeyError:
+            title = self.metadata['title']
+
+            # TODO
+            # Delete the bookmarks entry for this file
+            print(f'Database: Bookmark error for {title}. Recommend delete entry.')
+            return
 
         self.generate_bookmark_proxy_model()
 
@@ -579,7 +562,7 @@ class PliantQGraphicsView(QtWidgets.QGraphicsView):
                 image_pixmap.loadFromData(page_data)
             elif self.filetype == 'pdf':
                 page_data = self.book.page(current_page)
-                page_qimage = page_data.renderToImage(350, 350)
+                page_qimage = page_data.renderToImage(400, 400)  # TODO Maybe this needs a setting?
                 image_pixmap.convertFromImage(page_qimage)
             return image_pixmap
 
@@ -672,7 +655,7 @@ class PliantQGraphicsView(QtWidgets.QGraphicsView):
         self.show()
 
     def wheelEvent(self, event):
-        self.common_functions.wheelEvent(event, True)
+        self.common_functions.wheelEvent(event)
 
     def keyPressEvent(self, event):
         vertical = self.verticalScrollBar().value()
@@ -711,6 +694,10 @@ class PliantQGraphicsView(QtWidgets.QGraphicsView):
             QtCore.Qt.Key_B, QtCore.Qt.Key_W, QtCore.Qt.Key_O)
         if event.key() in view_modification_keys:
             self.main_window.modify_comic_view(event.key())
+
+    def record_position(self):
+        self.parent.metadata['position']['is_read'] = False
+        self.common_functions.update_model()
 
     def mouseMoveEvent(self, *args):
         self.viewport().setCursor(QtCore.Qt.ArrowCursor)
@@ -825,13 +812,13 @@ class PliantQTextBrowser(QtWidgets.QTextBrowser):
         self.setMouseTracking(True)
         self.viewport().setCursor(QtCore.Qt.IBeamCursor)
         self.verticalScrollBar().sliderMoved.connect(
-            self.record_scroll_position)
+            self.record_position)
         self.ignore_wheel_event = False
         self.ignore_wheel_event_number = 0
 
     def wheelEvent(self, event):
-        self.record_scroll_position()
-        self.common_functions.wheelEvent(event, False)
+        self.record_position()
+        self.common_functions.wheelEvent(event)
 
     def keyPressEvent(self, event):
         QtWidgets.QTextEdit.keyPressEvent(self, event)
@@ -840,6 +827,7 @@ class PliantQTextBrowser(QtWidgets.QTextBrowser):
                 self.common_functions.change_chapter(1, True)
             else:
                 self.set_top_line_cleanly()
+        self.record_position()
 
     def set_top_line_cleanly(self):
         # Find the cursor position of the top line and move to it
@@ -849,22 +837,27 @@ class PliantQTextBrowser(QtWidgets.QTextBrowser):
         self.setTextCursor(find_cursor)
         self.ensureCursorVisible()
 
-    def record_scroll_position(self, return_as_bookmark=False):
+    def record_position(self, return_as_bookmark=False):
         self.parent.metadata['position']['is_read'] = False
-
-        vertical = self.verticalScrollBar().value()
-        maximum = self.verticalScrollBar().maximum()
-
-        self.parent.metadata['position']['scroll_value'] = 1
-        if maximum != 0:
-            self.parent.metadata['position']['scroll_value'] = (vertical / maximum)
 
         cursor = self.cursorForPosition(QtCore.QPoint(0, 0))
         cursor_position = cursor.position()
 
+        # Current block for progress measurement
+        current_block = cursor.block().blockNumber()
+        current_chapter = self.parent.metadata['position']['current_chapter']
+
+        blocks_per_chapter = self.parent.metadata['position']['blocks_per_chapter']
+        block_sum = sum(blocks_per_chapter[:(current_chapter - 1)])
+        block_sum += current_block
+
+        # This 'current_block' refers to the number of
+        # blocks in the book upto this one
+        self.parent.metadata['position']['current_block'] = block_sum
+        self.common_functions.update_model()
+
         if return_as_bookmark:
             return (self.parent.metadata['position']['current_chapter'],
-                    self.parent.metadata['position']['scroll_value'],
                     cursor_position)
         else:
             self.parent.metadata['position']['cursor_position'] = cursor_position
@@ -936,14 +929,15 @@ class PliantQTextBrowser(QtWidgets.QTextBrowser):
         QtWidgets.QTextBrowser.mouseMoveEvent(self, event)
 
 
-class PliantWidgetsCommonFunctions():
+class PliantWidgetsCommonFunctions:
     def __init__(self, parent_widget, main_window):
         self.pw = parent_widget
         self.main_window = main_window
+        self.are_we_doing_images_only = self.pw.parent.are_we_doing_images_only
 
-    def wheelEvent(self, event, are_we_doing_images_only):
+    def wheelEvent(self, event):
         ignore_events = 20
-        if are_we_doing_images_only:
+        if self.are_we_doing_images_only:
             ignore_events = 10
 
         if self.pw.ignore_wheel_event:
@@ -953,7 +947,7 @@ class PliantWidgetsCommonFunctions():
                 self.pw.ignore_wheel_event_number = 0
             return
 
-        if are_we_doing_images_only:
+        if self.are_we_doing_images_only:
             QtWidgets.QGraphicsView.wheelEvent(self.pw, event)
         else:
             QtWidgets.QTextBrowser.wheelEvent(self.pw, event)
@@ -1001,6 +995,40 @@ class PliantWidgetsCommonFunctions():
 
             if not was_button_pressed:
                 self.pw.ignore_wheel_event = True
+
+            if not self.are_we_doing_images_only:
+                self.pw.record_position()
+
+    def update_model(self):
+        # We're updating the underlying model to have real-time
+        # updates on the read status
+
+        # Set a baseline model index in case the item gets deleted
+        # E.g It's open in a tab and deleted from the library
+        model_index = None
+        start_index = self.main_window.lib_ref.view_model.index(0, 0)
+
+        # Find index of the model item that corresponds to the tab
+        model_index = self.main_window.lib_ref.view_model.match(
+            start_index,
+            QtCore.Qt.UserRole + 6,
+            self.pw.parent.metadata['hash'],
+            1, QtCore.Qt.MatchExactly)
+
+        if self.are_we_doing_images_only:
+            position_percentage = (self.pw.parent.metadata['position']['current_chapter'] /
+                                   self.pw.parent.metadata['position']['total_chapters'])
+        else:
+            position_percentage = (self.pw.parent.metadata['position']['current_block'] /
+                                   self.pw.parent.metadata['position']['total_blocks'])
+
+        # Update book metadata and position percentage
+        if model_index:
+            self.main_window.lib_ref.view_model.setData(
+                model_index[0], self.pw.parent.metadata, QtCore.Qt.UserRole + 3)
+
+            self.main_window.lib_ref.view_model.setData(
+                model_index[0], position_percentage, QtCore.Qt.UserRole + 7)
 
     def generate_combo_box_action(self, contextMenu):
         contextMenu.addSeparator()

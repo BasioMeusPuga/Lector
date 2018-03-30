@@ -63,8 +63,8 @@ class ParsePDF:
     def get_year(self):
         try:
             year = self.metadata.find('MetadataDate').text
-            return year.replace('\n', '')
-        except AttributeError:
+            return int(year.replace('\n', '')[:4])
+        except (AttributeError, ValueError):
             return 9999
 
     def get_cover_image(self):

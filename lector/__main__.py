@@ -553,7 +553,7 @@ class MainUI(QtWidgets.QMainWindow, mainwindow.Ui_MainWindow):
                 self.bookToolBar.tocBox.setCurrentIndex(
                     current_position['current_chapter'] - 1)
                 if not current_metadata['images_only']:
-                    current_tab.set_cursor_position()
+                    current_tab.hiddenButton.animateClick(25)
             self.bookToolBar.tocBox.blockSignals(False)
 
             self.profile_functions.format_contentView()
@@ -582,45 +582,15 @@ class MainUI(QtWidgets.QMainWindow, mainwindow.Ui_MainWindow):
     def set_toc_position(self, event=None):
         current_tab = self.tabWidget.widget(self.tabWidget.currentIndex())
 
-        # We're updating the underlying model to have real-time
-        # updates on the read status
-
-        # Set a baseline model index in case the item gets deleted
-        # E.g It's open in a tab and deleted from the library
-        model_index = None
-        start_index = self.lib_ref.view_model.index(0, 0)
-        # Find index of the model item that corresponds to the tab
-        matching_item = self.lib_ref.view_model.match(
-            start_index,
-            QtCore.Qt.UserRole + 6,
-            current_tab.metadata['hash'],
-            1, QtCore.Qt.MatchExactly)
-        if matching_item:
-            model_row = matching_item[0].row()
-            model_index = self.lib_ref.view_model.index(model_row, 0)
-
         current_tab.metadata[
             'position']['current_chapter'] = event + 1
         current_tab.metadata[
             'position']['is_read'] = False
 
-        # TODO
-        # This doesn't update correctly
-        # try:
-        #     position_perc = (
-        #         current_tab.metadata[
-        #             'current_chapter'] * 100 / current_tab.metadata['total_chapters'])
-        # except KeyError:
-        #     position_perc = None
-
-        if model_index:
-            self.lib_ref.view_model.setData(
-                model_index, current_tab.metadata, QtCore.Qt.UserRole + 3)
-            # self.lib_ref.view_model.setData(
-            #     model_index, position_perc, QtCore.Qt.UserRole + 7)
-
         # Go on to change the value of the Table of Contents box
         current_tab.change_chapter_tocBox()
+        current_tab.contentView.record_position()
+
         self.profile_functions.format_contentView()
 
     def set_fullscreen(self):

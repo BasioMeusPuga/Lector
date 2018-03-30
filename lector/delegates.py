@@ -33,6 +33,7 @@ class LibraryDelegate(QtWidgets.QStyledItemDelegate):
             # painter.fillRect(option.rect, QtGui.QColor().fromRgb(255, 0, 0, 20))
 
         option = option.__class__(option)
+        title = index.data(QtCore.Qt.UserRole)
         file_exists = index.data(QtCore.Qt.UserRole + 5)
         metadata = index.data(QtCore.Qt.UserRole + 3)
 
@@ -65,21 +66,28 @@ class LibraryDelegate(QtWidgets.QStyledItemDelegate):
         QtWidgets.QStyledItemDelegate.paint(self, painter, option, index)
         if position:
             if is_read:
-                current_chapter = total_chapters = 100
+                progress = total = -1
             else:
                 try:
-                    current_chapter = position['current_chapter']
-                    total_chapters = position['total_chapters']
+                    progress = position['current_block']
+                    total = position['total_blocks']
+                    if progress == total == 0:
+                        raise KeyError
                 except KeyError:
-                    return
+                    # For comics and older database entries
+                    # It looks ugly but leave it like this
+                    try:
+                        progress = position['current_chapter']
+                        total = position['total_chapters']
+                    except KeyError:
+                        return
 
             read_icon = pie_chart.pixmapper(
-                current_chapter, total_chapters, self.temp_dir, 36)
+                progress, total, self.temp_dir, 36)
 
             x_draw = option.rect.bottomRight().x() - 30
             y_draw = option.rect.bottomRight().y() - 35
-            if current_chapter != 1:
-                painter.drawPixmap(x_draw, y_draw, read_icon)
+            painter.drawPixmap(x_draw, y_draw, read_icon)
 
 
 class BookmarkDelegate(QtWidgets.QStyledItemDelegate):
