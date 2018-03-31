@@ -6,7 +6,7 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>1088</width>
+    <width>1119</width>
     <height>612</height>
    </rect>
   </property>
@@ -48,6 +48,74 @@
               <item row="0" column="0">
                <layout class="QVBoxLayout" name="verticalLayout_2">
                 <item>
+                 <layout class="QHBoxLayout" name="horizontalLayout_13">
+                  <item>
+                   <layout class="QHBoxLayout" name="horizontalLayout_14">
+                    <item>
+                     <widget class="QLabel" name="readAtLabel">
+                      <property name="sizePolicy">
+                       <sizepolicy hsizetype="Maximum" vsizetype="Preferred">
+                        <horstretch>0</horstretch>
+                        <verstretch>0</verstretch>
+                       </sizepolicy>
+                      </property>
+                      <property name="text">
+                       <string>Consider book read at percent</string>
+                      </property>
+                      <property name="alignment">
+                       <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignVCenter</set>
+                      </property>
+                     </widget>
+                    </item>
+                    <item>
+                     <widget class="QSpinBox" name="readAtPercent">
+                      <property name="minimum">
+                       <number>90</number>
+                      </property>
+                      <property name="value">
+                       <number>95</number>
+                      </property>
+                     </widget>
+                    </item>
+                   </layout>
+                  </item>
+                  <item>
+                   <layout class="QHBoxLayout" name="horizontalLayout_7">
+                    <item>
+                     <widget class="QLabel" name="label">
+                      <property name="toolTip">
+                       <string>Restart application to see changes</string>
+                      </property>
+                      <property name="text">
+                       <string>Icon theme: </string>
+                      </property>
+                     </widget>
+                    </item>
+                    <item>
+                     <widget class="QRadioButton" name="darkIconsRadio">
+                      <property name="toolTip">
+                       <string>Restart application to see changes</string>
+                      </property>
+                      <property name="text">
+                       <string>&amp;Dark</string>
+                      </property>
+                     </widget>
+                    </item>
+                    <item>
+                     <widget class="QRadioButton" name="lightIconsRadio">
+                      <property name="toolTip">
+                       <string>Restart application to see changes</string>
+                      </property>
+                      <property name="text">
+                       <string>L&amp;ight</string>
+                      </property>
+                     </widget>
+                    </item>
+                   </layout>
+                  </item>
+                 </layout>
+                </item>
+                <item>
                  <layout class="QHBoxLayout" name="horizontalLayout_4">
                   <item>
                    <widget class="QCheckBox" name="refreshLibrary">
@@ -88,40 +156,6 @@
                 </item>
                 <item>
                  <layout class="QHBoxLayout" name="horizontalLayout_9">
-                  <item>
-                   <layout class="QHBoxLayout" name="horizontalLayout_7">
-                    <item>
-                     <widget class="QLabel" name="label">
-                      <property name="toolTip">
-                       <string>Restart application to see changes</string>
-                      </property>
-                      <property name="text">
-                       <string>Icon theme: </string>
-                      </property>
-                     </widget>
-                    </item>
-                    <item>
-                     <widget class="QRadioButton" name="darkIconsRadio">
-                      <property name="toolTip">
-                       <string>Restart application to see changes</string>
-                      </property>
-                      <property name="text">
-                       <string>&amp;Dark</string>
-                      </property>
-                     </widget>
-                    </item>
-                    <item>
-                     <widget class="QRadioButton" name="lightIconsRadio">
-                      <property name="toolTip">
-                       <string>Restart application to see changes</string>
-                      </property>
-                      <property name="text">
-                       <string>L&amp;ight</string>
-                      </property>
-                     </widget>
-                    </item>
-                   </layout>
-                  </item>
                   <item>
                    <widget class="QCheckBox" name="autoTags">
                     <property name="text">

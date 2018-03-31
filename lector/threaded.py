@@ -130,6 +130,10 @@ class BackGroundCacheRefill(QtCore.QThread):
     def __init__(self, image_cache, remove_value, filetype, book, all_pages, parent=None):
         super(BackGroundCacheRefill, self).__init__(parent)
 
+        # TODO
+        # Return with only the first image in case of a cache miss
+        # Rebuilding the entire n image cache takes considerably longer
+
         self.image_cache = image_cache
         self.remove_value = remove_value
         self.filetype = filetype

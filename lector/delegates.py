@@ -33,13 +33,8 @@ class LibraryDelegate(QtWidgets.QStyledItemDelegate):
             # painter.fillRect(option.rect, QtGui.QColor().fromRgb(255, 0, 0, 20))
 
         option = option.__class__(option)
-        title = index.data(QtCore.Qt.UserRole)
         file_exists = index.data(QtCore.Qt.UserRole + 5)
-        metadata = index.data(QtCore.Qt.UserRole + 3)
-
-        position = metadata['position']
-        if position:
-            is_read = position['is_read']
+        position_percent = index.data(QtCore.Qt.UserRole + 7)
 
         # The shadow pixmap currently is set to 420 x 600
         # Only draw the cover shadow in case the setting is enabled
@@ -64,26 +59,10 @@ class LibraryDelegate(QtWidgets.QStyledItemDelegate):
             return
 
         QtWidgets.QStyledItemDelegate.paint(self, painter, option, index)
-        if position:
-            if is_read:
-                progress = total = -1
-            else:
-                try:
-                    progress = position['current_block']
-                    total = position['total_blocks']
-                    if progress == total == 0:
-                        raise KeyError
-                except KeyError:
-                    # For comics and older database entries
-                    # It looks ugly but leave it like this
-                    try:
-                        progress = position['current_chapter']
-                        total = position['total_chapters']
-                    except KeyError:
-                        return
 
+        if position_percent:
             read_icon = pie_chart.pixmapper(
-                progress, total, self.temp_dir, 36)
+                position_percent, self.temp_dir, self.parent.settings['consider_read_at'], 36)
 
             x_draw = option.rect.bottomRight().x() - 30
             y_draw = option.rect.bottomRight().y() - 35

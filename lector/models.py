@@ -65,9 +65,10 @@ class ItemProxyModel(QtCore.QSortFilterProxyModel):
 
 
 class TableProxyModel(QtCore.QSortFilterProxyModel):
-    def __init__(self, temp_dir, tableViewHeader, parent=None):
+    def __init__(self, temp_dir, tableViewHeader, consider_read_at, parent=None):
         super(TableProxyModel, self).__init__(parent)
         self.tableViewHeader = tableViewHeader
+        self.consider_read_at = consider_read_at
         self._translate = QtCore.QCoreApplication.translate
 
         title_string = self._translate('TableProxyModel', 'Title')
@@ -101,6 +102,7 @@ class TableProxyModel(QtCore.QSortFilterProxyModel):
                 return self.header_data[column]
             except IndexError:
                 print('Table proxy model: Can\'t find header for column', column)
+                # The column will be called IndexError. Not a typo.
                 return 'IndexError'
 
     def flags(self, index):
@@ -121,36 +123,16 @@ class TableProxyModel(QtCore.QSortFilterProxyModel):
                 return_pixmap = None
 
                 file_exists = item.data(QtCore.Qt.UserRole + 5)
-                metadata = item.data(QtCore.Qt.UserRole + 3)
-                progress_perc = item.data(QtCore.Qt.UserRole + 7)
-
-                position = metadata['position']
-                if position:
-                    is_read = position['is_read']
+                position_percent = item.data(QtCore.Qt.UserRole + 7)
 
                 if not file_exists:
                     return pie_chart.pixmapper(
                         -1, None, None, QtCore.Qt.SizeHintRole + 10)
 
-                if position:
-                    if is_read:
-                        progress = total = -2
-                    else:
-                        try:
-                            progress = position['current_block']
-                            total = position['total_blocks']
-
-                            if progress == total == 0:
-                                raise KeyError
-                        except KeyError:
-                            try:
-                                progress = position['current_chapter']
-                                total = position['total_chapters']
-                            except KeyError:
-                                return
-
+                if position_percent:
                     return_pixmap = pie_chart.pixmapper(
-                        progress, total, self.temp_dir,
+                        position_percent, self.temp_dir,
+                        self.consider_read_at,
                         QtCore.Qt.SizeHintRole + 10)
 
                 return return_pixmap
@@ -218,12 +200,17 @@ class ProxyModelsCommonFunctions:
         title = model.data(this_index, QtCore.Qt.UserRole)
         author = model.data(this_index, QtCore.Qt.UserRole + 1)
         tags = model.data(this_index, QtCore.Qt.UserRole + 4)
+        progress = model.data(this_index, QtCore.Qt.UserRole + 7)
         directory_name = model.data(this_index, QtCore.Qt.UserRole + 10)
         directory_tags = model.data(this_index, QtCore.Qt.UserRole + 11)
         last_accessed = model.data(this_index, QtCore.Qt.UserRole + 12)
 
         # Hide untouched files when sorting by last accessed
         if self.parent_model.sorting_box_position == 4 and not last_accessed:
+            return False
+
+        # Hide untouched files when sorting by progress
+        if self.parent_model.sorting_box_position == 5 and not progress:
             return False
 
         if self.parent_model.active_library_filters:

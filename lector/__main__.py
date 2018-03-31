@@ -262,8 +262,8 @@ class MainUI(QtWidgets.QMainWindow, mainwindow.Ui_MainWindow):
         if self.settings['main_window_headers']:
             for count, i in enumerate(self.settings['main_window_headers']):
                 self.tableView.horizontalHeader().resizeSection(count, int(i))
-        self.tableView.horizontalHeader().resizeSection(5, 1)
-        self.tableView.horizontalHeader().setStretchLastSection(True)
+        self.tableView.horizontalHeader().resizeSection(5, 30)
+        self.tableView.horizontalHeader().setStretchLastSection(False)
         self.tableView.horizontalHeader().sectionClicked.connect(
             self.lib_ref.table_proxy_model.sort_table_columns)
         self.tableView.setContextMenuPolicy(QtCore.Qt.CustomContextMenu)
@@ -822,7 +822,7 @@ class MainUI(QtWidgets.QMainWindow, mainwindow.Ui_MainWindow):
                 last_accessed_time = None
                 if action == readAction:
                     last_accessed_time = QtCore.QDateTime().currentDateTime()
-                    position_perc = 100
+                    position_perc = 1
 
                 self.lib_ref.view_model.setData(i, metadata, QtCore.Qt.UserRole + 3)
                 self.lib_ref.view_model.setData(i, position_perc, QtCore.Qt.UserRole + 7)
@@ -916,8 +916,11 @@ class MainUI(QtWidgets.QMainWindow, mainwindow.Ui_MainWindow):
         self.settingsDialog.hide()
         self.definitionDialog.hide()
         self.temp_dir.remove()
-        for i in self.active_bookmark_docks:
-            i.setVisible(False)
+        for this_dock in self.active_bookmark_docks:
+            try:
+                this_dock.setVisible(False)
+            except RuntimeError:
+                pass
 
         self.settings['last_open_books'] = []
         if self.tabWidget.count() > 1:

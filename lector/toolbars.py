@@ -426,13 +426,15 @@ class LibraryToolBar(QtWidgets.QToolBar):
         self.searchBar.setObjectName('searchBar')
 
         # Sorter
-        title_string = self._translate('TableProxyModel', 'Title')
-        author_string = self._translate('TableProxyModel', 'Author')
-        year_string = self._translate('TableProxyModel', 'Year')
-        newest_string = self._translate('TableProxyModel', 'Newest')
-        lastread_string = self._translate('TableProxyModel', 'Last Read')
+        title_string = self._translate('LibraryToolBar', 'Title')
+        author_string = self._translate('LibraryToolBar', 'Author')
+        year_string = self._translate('LibraryToolBar', 'Year')
+        newest_string = self._translate('LibraryToolBar', 'Newest')
+        lastread_string = self._translate('LibraryToolBar', 'Last Read')
+        progress_string = self._translate('LibraryToolBar', 'Progress')
         sorting_choices = [
-            title_string, author_string, year_string, newest_string, lastread_string]
+            title_string, author_string, year_string,
+            newest_string, lastread_string, progress_string]
 
         self.sortingBox = FixedComboBox(self)
         self.sortingBox.addItems(sorting_choices)

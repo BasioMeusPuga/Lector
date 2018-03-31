@@ -92,6 +92,7 @@ class SettingsUI(QtWidgets.QDialog, settingswindow.Ui_Dialog):
         self.cachingEnabled.setChecked(self.parent.settings['caching_enabled'])
         self.hideScrollBars.setChecked(self.parent.settings['hide_scrollbars'])
         self.scrollSpeedSlider.setValue(self.parent.settings['scroll_speed'])
+        self.readAtPercent.setValue(self.parent.settings['consider_read_at'])
 
         self.autoTags.clicked.connect(self.manage_checkboxes)
         self.coverShadows.clicked.connect(self.manage_checkboxes)
@@ -101,6 +102,7 @@ class SettingsUI(QtWidgets.QDialog, settingswindow.Ui_Dialog):
         self.cachingEnabled.clicked.connect(self.manage_checkboxes)
         self.hideScrollBars.clicked.connect(self.manage_checkboxes)
         self.scrollSpeedSlider.valueChanged.connect(self.change_scroll_speed)
+        self.readAtPercent.valueChanged.connect(self.change_read_at)
 
         # Generate the QStandardItemModel for the listView
         self.listModel = QtGui.QStandardItemModel()
@@ -318,8 +320,11 @@ class SettingsUI(QtWidgets.QDialog, settingswindow.Ui_Dialog):
             2: 'hi'}
         self.parent.settings['dictionary_language'] = language_dict[self.languageBox.currentIndex()]
 
-    def change_scroll_speed(self, event):
+    def change_scroll_speed(self, event=None):
         self.parent.settings['scroll_speed'] = self.scrollSpeedSlider.value()
+
+    def change_read_at(self, event=None):
+        self.parent.settings['consider_read_at'] = self.readAtPercent.value()
 
     def manage_checkboxes(self, event=None):
         sender = self.sender().objectName()

@@ -101,18 +101,22 @@ class Library:
             if position:
                 position = pickle.loads(position)
                 if position['is_read']:
-                    position_perc = 100
+                    position_perc = 1
                 else:
                     try:
                         position_perc = (
-                            position['current_chapter'] * 100 / position['total_chapters'])
-                    except KeyError:
-                        position_perc = None
+                            position['current_block'] / position['total_blocks'])
+                    except (KeyError, ZeroDivisionError):
+                        try:
+                            position_perc = (
+                                position['current_chapter'] / position['total_chapters'])
+                        except KeyError:
+                            position_perc = None
 
             try:
                 file_exists = os.path.exists(path)
             except UnicodeEncodeError:
-                print('Error with unicode encoding in the library module')
+                print('Library: Unicode encoding error')
 
             all_metadata = {
                 'title': title,
@@ -176,7 +180,9 @@ class Library:
         self.parent.listView.setModel(self.item_proxy_model)
 
         self.table_proxy_model = TableProxyModel(
-            self.parent.temp_dir.path(), self.parent.tableView.horizontalHeader())
+            self.parent.temp_dir.path(),
+            self.parent.tableView.horizontalHeader(),
+            self.parent.settings['consider_read_at'])
         self.table_proxy_model.setSourceModel(self.view_model)
         self.table_proxy_model.setSortCaseSensitivity(False)
         self.parent.tableView.setModel(self.table_proxy_model)
@@ -223,7 +229,8 @@ class Library:
             1: 1,
             2: 2,
             3: 9,
-            4: 12}
+            4: 12,
+            5: 7}
 
         # Sorting according to roles and the drop down in the library toolbar
         self.item_proxy_model.setSortRole(
@@ -231,7 +238,7 @@ class Library:
 
         # This can be expanded to other fields by appending to the list
         sort_order = QtCore.Qt.AscendingOrder
-        if self.parent.libraryToolBar.sortingBox.currentIndex() in [3, 4]:
+        if self.parent.libraryToolBar.sortingBox.currentIndex() in [3, 4, 5]:
             sort_order = QtCore.Qt.DescendingOrder
 
         self.item_proxy_model.sort(0, sort_order)

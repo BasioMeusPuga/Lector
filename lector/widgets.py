@@ -1022,11 +1022,8 @@ class PliantWidgetsCommonFunctions:
             position_percentage = (self.pw.parent.metadata['position']['current_block'] /
                                    self.pw.parent.metadata['position']['total_blocks'])
 
-        # Update book metadata and position percentage
+        # Update position percentage
         if model_index:
-            self.main_window.lib_ref.view_model.setData(
-                model_index[0], self.pw.parent.metadata, QtCore.Qt.UserRole + 3)
-
             self.main_window.lib_ref.view_model.setData(
                 model_index[0], position_percentage, QtCore.Qt.UserRole + 7)
 
