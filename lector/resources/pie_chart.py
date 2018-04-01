@@ -105,7 +105,7 @@ def pixmapper(position_percent, temp_dir, consider_read_at, size):
         return_pixmap = QtGui.QIcon(':/images/error.svg').pixmap(size)
         return return_pixmap
 
-    if position_percent >= consider_read_at:  # Consider book read @ 95% progress
+    if position_percent >= consider_read_at:  # Consider book read @ this progress
         return_pixmap = QtGui.QIcon(':/images/checkmark.svg').pixmap(size)
     else:
 
