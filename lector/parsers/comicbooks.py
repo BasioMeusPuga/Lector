@@ -54,7 +54,7 @@ class ParseCOMIC:
         return title
 
     def get_author(self):
-        return None
+        return 'Unknown'
 
     def get_year(self):
         creation_time = time.ctime(os.path.getctime(self.filename))

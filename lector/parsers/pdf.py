@@ -22,12 +22,7 @@ import os
 from PyQt5 import QtCore
 from bs4 import BeautifulSoup
 
-proceed = True
-try:
-    import popplerqt5
-except ImportError:
-    print('python-poppler-qt5 is not installed. Pdf files will not work.')
-    proceed = False
+import popplerqt5
 
 
 class ParsePDF:
@@ -37,9 +32,6 @@ class ParsePDF:
         self.metadata = None
 
     def read_book(self):
-        if not proceed:
-            return
-
         self.book = popplerqt5.Poppler.Document.load(self.filename)
         if not self.book:
             return

@@ -17,7 +17,7 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 # INSTRUCTIONS
-# Every parser is supposed to have the following methods, even if they return None:
+# Every parser is supposed to have the following methods. None returns are not allowed.
 # read_book()
 # get_title()
 # get_author()
@@ -40,17 +40,20 @@ import pickle
 import hashlib
 import threading
 
-from multiprocessing import Pool, Manager
+# The multiprocessing module does not work correctly on Windows
+if os.uname().sysname == 'Windows':
+    from multiprocessing.dummy import Pool, Manager
+else:
+    from multiprocessing import Pool, Manager
+
 from PyQt5 import QtCore, QtGui
 from lector import database
 
-from lector.parsers.pdf import ParsePDF
 from lector.parsers.epub import ParseEPUB
 from lector.parsers.mobi import ParseMOBI
 from lector.parsers.comicbooks import ParseCOMIC
 
 sorter = {
-    'pdf': ParsePDF,
     'epub': ParseEPUB,
     'mobi': ParseMOBI,
     'azw': ParseMOBI,
@@ -59,6 +62,13 @@ sorter = {
     'prc': ParseMOBI,
     'cbz': ParseCOMIC,
     'cbr': ParseCOMIC}
+
+# The following imports are for optional dependencies
+try:
+    from lector.parsers.pdf import ParsePDF
+    sorter['pdf'] = ParsePDF
+except ImportError:
+    print('python-poppler-qt5 is not installed. Pdf files will not work.')
 
 available_parsers = [i for i in sorter]
 progressbar = None  # This is populated by __main__
@@ -185,13 +195,8 @@ class BookSorter:
                 # Reduce the size of the incoming image
                 # if one is found
                 title = book_ref.get_title()
-
                 author = book_ref.get_author()
-                if not author:
-                    author = 'Unknown'
-
                 year = book_ref.get_year()
-
                 isbn = book_ref.get_isbn()
 
                 tags = None
@@ -213,8 +218,7 @@ class BookSorter:
                 # get_contents() returns a tuple. Index 1 is a collection of
                 # special settings that depend on the kind of data being parsed.
                 # Currently, this includes:
-                # Only images included      images_only     BOOL    Specify only paths to images
-                #                                                   File will not be cached on exit
+                # Only images included      images_only     BOOL    Book contains only images
 
                 content = all_content[0]
                 images_only = all_content[1]['images_only']
