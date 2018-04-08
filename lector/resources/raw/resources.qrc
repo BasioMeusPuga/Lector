@@ -1,5 +1,9 @@
 <RCC>
   <qresource prefix="images">
+    <file>DarkIcons/arrow-down.svg</file>
+    <file>DarkIcons/arrow-up.svg</file>
+    <file>LightIcons/arrow-down.svg</file>
+    <file>LightIcons/arrow-up.svg</file>
     <file>Lector.png</file>
     <file>DarkIcons/tableofcontents.svg</file>
     <file>LightIcons/tableofcontents.svg</file>

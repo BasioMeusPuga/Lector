@@ -22,6 +22,9 @@
        <verstretch>0</verstretch>
       </sizepolicy>
      </property>
+     <property name="editTriggers">
+      <set>QAbstractItemView::NoEditTriggers</set>
+     </property>
     </widget>
    </item>
    <item row="0" column="1">
@@ -339,8 +342,11 @@ Reopen book to see changes</string>
                        <height>16777215</height>
                       </size>
                      </property>
+                     <property name="toolTip">
+                      <string>New</string>
+                     </property>
                      <property name="text">
-                      <string>+</string>
+                      <string/>
                      </property>
                     </widget>
                    </item>
@@ -364,8 +370,39 @@ Reopen book to see changes</string>
                        <height>16777215</height>
                       </size>
                      </property>
+                     <property name="toolTip">
+                      <string>Delete</string>
+                     </property>
                      <property name="text">
-                      <string>-</string>
+                      <string/>
+                     </property>
+                    </widget>
+                   </item>
+                   <item>
+                    <widget class="QPushButton" name="editAnnotation">
+                     <property name="sizePolicy">
+                      <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
+                       <horstretch>0</horstretch>
+                       <verstretch>0</verstretch>
+                      </sizepolicy>
+                     </property>
+                     <property name="minimumSize">
+                      <size>
+                       <width>30</width>
+                       <height>0</height>
+                      </size>
+                     </property>
+                     <property name="maximumSize">
+                      <size>
+                       <width>45</width>
+                       <height>16777215</height>
+                      </size>
+                     </property>
+                     <property name="toolTip">
+                      <string>Edit</string>
+                     </property>
+                     <property name="text">
+                      <string/>
                      </property>
                     </widget>
                    </item>
@@ -389,8 +426,11 @@ Reopen book to see changes</string>
                        <height>16777215</height>
                       </size>
                      </property>
+                     <property name="toolTip">
+                      <string>Move Up</string>
+                     </property>
                      <property name="text">
-                      <string>⬆</string>
+                      <string/>
                      </property>
                     </widget>
                    </item>
@@ -414,8 +454,11 @@ Reopen book to see changes</string>
                        <height>16777215</height>
                       </size>
                      </property>
+                     <property name="toolTip">
+                      <string>Move Down</string>
+                     </property>
                      <property name="text">
-                      <string>⬇</string>
+                      <string/>
                      </property>
                     </widget>
                    </item>
@@ -435,72 +478,17 @@ Reopen book to see changes</string>
                   </layout>
                  </item>
                  <item>
-                  <widget class="QListView" name="annotationsList"/>
-                 </item>
-                 <item>
-                  <layout class="QVBoxLayout" name="verticalLayout_8">
-                   <item>
-                    <spacer name="verticalSpacer_5">
-                     <property name="orientation">
-                      <enum>Qt::Vertical</enum>
-                     </property>
-                     <property name="sizeHint" stdset="0">
-                      <size>
-                       <width>20</width>
-                       <height>40</height>
-                      </size>
-                     </property>
-                    </spacer>
-                   </item>
-                   <item>
-                    <widget class="QCheckBox" name="foregroundCheck">
-                     <property name="text">
-                      <string>Foreground</string>
-                     </property>
-                    </widget>
-                   </item>
-                   <item>
-                    <widget class="QCheckBox" name="highlightCheck">
-                     <property name="text">
-                      <string>Highlight</string>
-                     </property>
-                    </widget>
-                   </item>
-                   <item>
-                    <widget class="QCheckBox" name="boldCheck">
-                     <property name="text">
-                      <string>Bold</string>
-                     </property>
-                    </widget>
-                   </item>
-                   <item>
-                    <widget class="QCheckBox" name="italicCheck">
-                     <property name="text">
-                      <string>Italic</string>
-                     </property>
-                    </widget>
-                   </item>
-                   <item>
-                    <widget class="QCheckBox" name="underlineCheck">
-                     <property name="text">
-                      <string>Underline</string>
-                     </property>
-                    </widget>
-                   </item>
-                   <item>
-                    <spacer name="verticalSpacer_4">
-                     <property name="orientation">
-                      <enum>Qt::Vertical</enum>
-                     </property>
-                     <property name="sizeHint" stdset="0">
-                      <size>
-                       <width>20</width>
-                       <height>40</height>
-                      </size>
-                     </property>
-                    </spacer>
-                   </item>
-                  </layout>
+                  <widget class="QListView" name="annotationsList">
+                   <property name="editTriggers">
+                    <set>QAbstractItemView::NoEditTriggers</set>
+                   </property>
+                   <property name="showDropIndicator" stdset="0">
+                    <bool>false</bool>
+                   </property>
+                   <property name="defaultDropAction">
+                    <enum>Qt::IgnoreAction</enum>
+                   </property>
+                  </widget>
                  </item>
                 </layout>
                </item>
@@ -522,6 +510,9 @@ Reopen book to see changes</string>
                    <height>100</height>
                   </size>
                  </property>
+                 <property name="focusPolicy">
+                  <enum>Qt::NoFocus</enum>
+                 </property>
                 </widget>
                </item>
               </layout>
@@ -530,7 +521,7 @@ Reopen book to see changes</string>
            </widget>
            <widget class="QWidget" name="imageTab">
             <attribute name="title">
-             <string>Comic/PDF</string>
+             <string>Image</string>
             </attribute>
            </widget>
           </widget>

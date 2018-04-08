@@ -26,9 +26,11 @@ import pathlib
 from PyQt5 import QtWidgets, QtCore, QtGui
 
 from lector import database
+from lector.annotations import AnnotationsUI
 from lector.models import MostExcellentFileSystemModel
 from lector.threaded import BackGroundBookSearch, BackGroundBookAddition
 from lector.resources import settingswindow
+from lector.settings import Settings
 
 
 class SettingsUI(QtWidgets.QDialog, settingswindow.Ui_Dialog):
@@ -40,6 +42,10 @@ class SettingsUI(QtWidgets.QDialog, settingswindow.Ui_Dialog):
 
         self.parent = parent
         self.database_path = self.parent.database_path
+        self.image_factory = self.parent.QImageFactory
+
+        # The annotation dialog will use the settings dialog as its parent
+        self.annotationsDialog = AnnotationsUI(self)
 
         self.resize(self.parent.settings['settings_dialog_size'])
         self.move(self.parent.settings['settings_dialog_position'])
@@ -121,21 +127,32 @@ class SettingsUI(QtWidgets.QDialog, settingswindow.Ui_Dialog):
         self.listView.setModel(self.listModel)
         self.listView.clicked.connect(self.page_switch)
 
+        # Annotation related buttons
+        # Icon names
+        self.newAnnotation.setIcon(self.image_factory.get_image('add'))
+        self.deleteAnnotation.setIcon(self.image_factory.get_image('remove'))
+        self.editAnnotation.setIcon(self.image_factory.get_image('edit-rename'))
+        self.moveUp.setIcon(self.image_factory.get_image('arrow-up'))
+        self.moveDown.setIcon(self.image_factory.get_image('arrow-down'))
+
+        # Icon sizes
+        self.newAnnotation.setIconSize(QtCore.QSize(24, 24))
+        self.deleteAnnotation.setIconSize(QtCore.QSize(24, 24))
+        self.editAnnotation.setIconSize(QtCore.QSize(24, 24))
+        self.moveUp.setIconSize(QtCore.QSize(24, 24))
+        self.moveDown.setIconSize(QtCore.QSize(24, 24))
+
+        self.annotationsList.clicked.connect(self.load_annotation)
+        self.annotationsList.doubleClicked.connect(self.editAnnotation.click)
+        self.newAnnotation.clicked.connect(self.add_annotation)
+        self.deleteAnnotation.clicked.connect(self.delete_annotation)
+        self.editAnnotation.clicked.connect(self.load_annotation)
+        self.moveUp.clicked.connect(self.move_annotation)
+        self.moveDown.clicked.connect(self.move_annotation)
+
         # Generate annotation settings
-        self.annotations_list = []
+        self.annotationModel = QtGui.QStandardItemModel()
         self.generate_annotations()
-
-        # Init colors
-        self.default_stylesheet = self.foregroundCheck.styleSheet()
-        self.foreground = QtGui.QColor.fromRgb(0, 0, 0)
-        self.highlight = QtGui.QColor.fromRgb(255, 255, 255)
-
-        # Connect annotation related checkboxes
-        self.foregroundCheck.clicked.connect(self.format_checkboxes)
-        self.highlightCheck.clicked.connect(self.format_checkboxes)
-        self.boldCheck.clicked.connect(self.format_checkboxes)
-        self.italicCheck.clicked.connect(self.format_checkboxes)
-        self.underlineCheck.clicked.connect(self.format_checkboxes)
 
         # Generate the filesystem treeView
         self.generate_tree()
@@ -297,6 +314,8 @@ class SettingsUI(QtWidgets.QDialog, settingswindow.Ui_Dialog):
 
     def no_more_settings(self):
         self.parent.libraryToolBar.settingsButton.setChecked(False)
+        self.gather_annotations()
+        Settings(self.parent).save_settings()
         self.resizeEvent()
 
     def resizeEvent(self, event=None):
@@ -344,20 +363,21 @@ class SettingsUI(QtWidgets.QDialog, settingswindow.Ui_Dialog):
             self.parent.cover_functions.load_all_covers()
 
     def generate_annotations(self):
-        annotations_model = QtGui.QStandardItemModel()
-        items_list = ['Sample annotation']
+        saved_annotations = self.parent.settings['annotations']
 
-        for i in items_list:
-            # TODO
-            # Set annotation types to user roles
-
+        for i in saved_annotations:
             item = QtGui.QStandardItem()
-            item.setText(i)
-            annotations_model.appendRow(item)
+            item.setText(i['name'])
+            item.setData(i, QtCore.Qt.UserRole)
+            self.annotationModel.appendRow(item)
 
-        self.annotationsList.setModel(annotations_model)
+        self.annotationsList.setModel(self.annotationModel)
 
     def format_preview(self):
+        # Needed to clear the preview of annotation ickiness
+        cursor = QtGui.QTextCursor()
+        self.previewView.setTextCursor(cursor)
+
         self.previewView.setText('Vidistine nuper imagines moventes bonas?')
         profile_index = self.parent.bookToolBar.profileBox.currentIndex()
         current_profile = self.parent.bookToolBar.profileBox.itemData(
@@ -387,76 +407,54 @@ class SettingsUI(QtWidgets.QDialog, settingswindow.Ui_Dialog):
             if old_position == new_position:
                 break
 
-    def update_preview(self):
-        cursor = self.previewView.textCursor()
-        cursor.setPosition(0)
-        cursor.movePosition(QtGui.QTextCursor.End, QtGui.QTextCursor.KeepAnchor)
+    def add_annotation(self):
+        self.annotationsDialog.show_dialog('add')
 
-        # TODO
-        # Other kinds of text markup
-        previewCharFormat = QtGui.QTextCharFormat()
-
-        if self.foregroundCheck.isChecked():
-            previewCharFormat.setForeground(self.foreground)
-
-        highlight = QtCore.Qt.transparent
-        if self.highlightCheck.isChecked():
-            highlight = self.highlight
-        previewCharFormat.setBackground(highlight)
-
-        font_weight = QtGui.QFont.Normal
-        if self.boldCheck.isChecked():
-            font_weight = QtGui.QFont.Bold
-        previewCharFormat.setFontWeight(font_weight)
-
-        font_italic = False
-        if self.italicCheck.isChecked():
-            font_italic = True
-        previewCharFormat.setFontItalic(font_italic)
-
-        font_underline = False
-        if self.underlineCheck.isChecked():
-            font_underline = True
-        previewCharFormat.setFontUnderline(font_underline)
-
-        previewCharFormat.setFontStyleStrategy(
-            QtGui.QFont.PreferAntialias)
-
-        cursor.setCharFormat(previewCharFormat)
-        cursor.clearSelection()
-        self.previewView.setTextCursor(cursor)
-
-    def format_checkboxes(self):
-        sender = self.sender()
-        if not sender.isChecked():
-            sender.setStyleSheet(self.default_stylesheet)
-            self.update_preview()
+    def delete_annotation(self):
+        selected_index = self.annotationsList.currentIndex()
+        if not selected_index.isValid():
             return
 
-        if sender == self.foregroundCheck:
-            new_color = self.get_color(self.foreground)
-            self.foregroundCheck.setStyleSheet(
-                "QCheckBox {{color: {0}; border: none;}}".format(new_color.name()))
-            self.foreground = new_color
+        self.annotationModel.removeRow(
+            self.annotationsList.currentIndex().row())
+        self.format_preview()
+        self.annotationsList.clearSelection()
 
-        if sender == self.highlightCheck:
-            new_color = self.get_color(self.highlight)
-            self.highlightCheck.setStyleSheet(
-                "QCheckBox {{background-color: {0}}}".format(new_color.name()))
-            self.highlight = new_color
+    def load_annotation(self):
+        selected_index = self.annotationsList.currentIndex()
+        if not selected_index.isValid():
+            return
 
-        # TODO
-        # See if QCheckboxes support this
-        if sender == self.boldCheck:
-            self.boldCheck.setStyleSheet(
-                "QCheckBox {{font-weight: bold;}}")
+        if self.sender() == self.annotationsList:
+            self.annotationsDialog.show_dialog('preview', selected_index)
 
-        self.update_preview()
+        elif self.sender() == self.editAnnotation:
+            self.annotationsDialog.show_dialog('edit', selected_index)
 
-    def get_color(self, current_color):
-        color_dialog = QtWidgets.QColorDialog()
-        new_color = color_dialog.getColor(current_color)
-        if new_color.isValid():  # Returned in case cancel is pressed
-            return new_color
-        else:
-            return current_color
+    def move_annotation(self):
+        current_row = self.annotationsList.currentIndex().row()
+
+        if self.sender() == self.moveUp:
+            new_row = current_row - 1
+            if new_row < 0:
+                return
+
+        elif self.sender() == self.moveDown:
+            new_row = current_row + 1
+            if new_row == self.annotationModel.rowCount():
+                return
+
+        row_out = self.annotationModel.takeRow(current_row)
+        self.annotationModel.insertRow(new_row, row_out)
+        new_index = self.annotationModel.index(new_row, 0)
+
+        self.annotationsList.setCurrentIndex(new_index)
+
+    def gather_annotations(self):
+        annotations_out = []
+        for i in range(self.annotationModel.rowCount()):
+            annotation_item = self.annotationModel.item(i, 0)
+            annotation_data = annotation_item.data(QtCore.Qt.UserRole)
+            annotations_out.append(annotation_data)
+
+        self.parent.settings['annotations'] = annotations_out

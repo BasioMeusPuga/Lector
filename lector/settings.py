@@ -113,6 +113,13 @@ class Settings:
             'dialogBackground', QtGui.QColor().fromRgb(0, 0, 0))
         self.settings.endGroup()
 
+        self.settings.beginGroup('annotations')
+        self.parent.settings['annotations'] = self.settings.value(
+            'annotationList', list())
+        if self.parent.settings['annotations'] is None:
+            self.parent.settings['annotations'] = list()
+        self.settings.endGroup()
+
     def save_settings(self):
         print('Saving settings...')
         current_settings = self.parent.settings
@@ -182,4 +189,8 @@ class Settings:
 
         self.settings.beginGroup('dialogSettings')
         self.settings.setValue('dialogBackground', current_settings['dialog_background'])
+        self.settings.endGroup()
+
+        self.settings.beginGroup('annotations')
+        self.settings.setValue('annotationList', current_settings['annotations'])
         self.settings.endGroup()
