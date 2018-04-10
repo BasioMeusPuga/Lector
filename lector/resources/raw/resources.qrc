@@ -1,5 +1,10 @@
 <RCC>
   <qresource prefix="images">
+    <file>Google.png</file>
+    <file>Wikipedia.png</file>
+    <file>Youtube.png</file>
+    <file>DarkIcons/web-browser.svg</file>
+    <file>LightIcons/web-browser.svg</file>
     <file>DarkIcons/arrow-down.svg</file>
     <file>DarkIcons/arrow-up.svg</file>
     <file>LightIcons/arrow-down.svg</file>

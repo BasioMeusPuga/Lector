@@ -18,6 +18,7 @@
 
 import os
 import zipfile
+import webbrowser
 
 try:
     import popplerqt5
@@ -252,7 +253,8 @@ class PliantQGraphicsView(QtWidgets.QGraphicsView):
                 self.main_window.QImageFactory.get_image('visibility'),
                 distraction_free_prompt)
 
-        viewSubMenu = contextMenu.addMenu('View')
+        view_submenu_string = self._translate('PliantQGraphicsView', 'View')
+        viewSubMenu = contextMenu.addMenu(view_submenu_string)
         viewSubMenu.setIcon(
             self.main_window.QImageFactory.get_image('mail-thread-watch'))
 
@@ -392,25 +394,41 @@ class PliantQTextBrowser(QtWidgets.QTextBrowser):
             self.parent.metadata['position']['cursor_position'] = cursor_position
 
     def generate_textbrowser_context_menu(self, position):
-        selected_word = self.textCursor().selection()
-        selected_word = selected_word.toPlainText()
+        selection = self.textCursor().selection()
+        selection = selection.toPlainText()
 
         contextMenu = QtWidgets.QMenu()
 
         # The following cannot be None because a click
         # outside the menu means that the action variable is None.
         defineAction = fsToggleAction = dfToggleAction = 'Caesar si viveret, ad remum dareris'
+        searchAction = searchGoogleAction = 'TODO Insert Latin Joke'
+        searchWikipediaAction = searchYoutubeAction = 'Does anyone know something funny in Latin?'
 
-        if selected_word and selected_word != '':
-            selected_word = selected_word.split()[0]
+        if selection and selection != '':
+            first_selected_word = selection.split()[0]
             define_string = self._translate('PliantQTextBrowser', 'Define')
             defineAction = contextMenu.addAction(
                 self.main_window.QImageFactory.get_image('view-readermode'),
-                f'{define_string} "{selected_word}"')
+                f'{define_string} "{first_selected_word}"')
 
-        searchAction = contextMenu.addAction(
-            self.main_window.QImageFactory.get_image('search'),
-            self._translate('PliantQTextBrowser', 'Search'))
+            search_submenu_string = self._translate('PliantQTextBrowser', 'Search for')
+            searchSubMenu = contextMenu.addMenu(search_submenu_string + f' "{selection}"')
+            searchSubMenu.setIcon(self.main_window.QImageFactory.get_image('search'))
+
+            searchAction = searchSubMenu.addAction(
+                self.main_window.QImageFactory.get_image('search'),
+                self._translate('PliantQTextBrowser', 'In this book'))
+            searchSubMenu.addSeparator()
+            searchGoogleAction = searchSubMenu.addAction(
+                QtGui.QIcon(':/images/Google.png'),
+                'Google')
+            searchWikipediaAction = searchSubMenu.addAction(
+                QtGui.QIcon(':/images/Wikipedia.png'),
+                'Wikipedia')
+            searchYoutubeAction = searchSubMenu.addAction(
+                QtGui.QIcon(':/images/Youtube.png'),
+                'Youtube')
 
         if self.parent.is_fullscreen:
             fsToggleAction = contextMenu.addAction(
@@ -439,9 +457,19 @@ class PliantQTextBrowser(QtWidgets.QTextBrowser):
         action = contextMenu.exec_(self.sender().mapToGlobal(position))
 
         if action == defineAction:
-            self.main_window.definitionDialog.find_definition(selected_word)
+            self.main_window.definitionDialog.find_definition(selection)
         if action == searchAction:
+            self.main_window.bookToolBar.searchBar.setText(selection)
             self.main_window.bookToolBar.searchBar.setFocus()
+        if action == searchGoogleAction:
+            webbrowser.open_new_tab(
+                f'https://www.google.com/search?q={selection}')
+        if action == searchWikipediaAction:
+            webbrowser.open_new_tab(
+                f'https://en.wikipedia.org/wiki/Special:Search?search={selection}')
+        if action == searchYoutubeAction:
+            webbrowser.open_new_tab(
+                f'https://www.youtube.com/results?search_query={selection}')
         if action == bookmarksToggleAction:
             self.parent.toggle_bookmarks()
         if action == fsToggleAction:

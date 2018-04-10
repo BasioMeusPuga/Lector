@@ -234,7 +234,8 @@ class Library:
 
         # Sorting according to roles and the drop down in the library toolbar
         self.itemProxyModel.setSortRole(
-            QtCore.Qt.UserRole + sort_roles[self.main_window.libraryToolBar.sortingBox.currentIndex()])
+            QtCore.Qt.UserRole +
+            sort_roles[self.main_window.libraryToolBar.sortingBox.currentIndex()])
 
         # This can be expanded to other fields by appending to the list
         sort_order = QtCore.Qt.AscendingOrder
