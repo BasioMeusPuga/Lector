@@ -265,7 +265,7 @@ class MainUI(QtWidgets.QMainWindow, mainwindow.Ui_MainWindow):
         self.tableView.horizontalHeader().resizeSection(5, 30)
         self.tableView.horizontalHeader().setStretchLastSection(False)
         self.tableView.horizontalHeader().sectionClicked.connect(
-            self.lib_ref.table_proxy_model.sort_table_columns)
+            self.lib_ref.tableProxyModel.sort_table_columns)
         self.tableView.setContextMenuPolicy(QtCore.Qt.CustomContextMenu)
         self.tableView.customContextMenuRequested.connect(
             self.generate_library_context_menu)
@@ -404,14 +404,14 @@ class MainUI(QtWidgets.QMainWindow, mainwindow.Ui_MainWindow):
         selected_indexes = None
 
         if library_widget == self.listView:
-            selected_books = self.lib_ref.item_proxy_model.mapSelectionToSource(
+            selected_books = self.lib_ref.itemProxyModel.mapSelectionToSource(
                 self.listView.selectionModel().selection())
             selected_indexes = [i.indexes()[0] for i in selected_books]
 
         elif library_widget == self.tableView:
             selected_books = self.tableView.selectionModel().selectedRows()
             selected_indexes = [
-                self.lib_ref.table_proxy_model.mapToSource(i) for i in selected_books]
+                self.lib_ref.tableProxyModel.mapToSource(i) for i in selected_books]
 
         return selected_indexes
 
@@ -437,12 +437,12 @@ class MainUI(QtWidgets.QMainWindow, mainwindow.Ui_MainWindow):
             # Persistent model indexes are required beause deletion mutates the model
             # Generate and delete by persistent index
             delete_hashes = [
-                self.lib_ref.view_model.data(
+                self.lib_ref.libraryModel.data(
                     i, QtCore.Qt.UserRole + 6) for i in selected_indexes]
             persistent_indexes = [QtCore.QPersistentModelIndex(i) for i in selected_indexes]
 
             for i in persistent_indexes:
-                self.lib_ref.view_model.removeRow(i.row())
+                self.lib_ref.libraryModel.removeRow(i.row())
 
             # Update the database in the background
             self.thread = BackGroundBookDeletion(
@@ -484,7 +484,7 @@ class MainUI(QtWidgets.QMainWindow, mainwindow.Ui_MainWindow):
         self.lib_ref.generate_library_tags()
 
         self.statusMessage.setText(
-            str(self.lib_ref.item_proxy_model.rowCount()) +
+            str(self.lib_ref.itemProxyModel.rowCount()) +
             self._translate('Main_UI', ' books'))
 
         if not self.settings['perform_culling']:
@@ -522,11 +522,11 @@ class MainUI(QtWidgets.QMainWindow, mainwindow.Ui_MainWindow):
                 self.bookToolBar.hide()
                 self.libraryToolBar.show()
 
-            if self.lib_ref.item_proxy_model:
+            if self.lib_ref.itemProxyModel:
                 # Making the proxy model available doesn't affect
                 # memory utilization at all. Bleh.
                 self.statusMessage.setText(
-                    str(self.lib_ref.item_proxy_model.rowCount()) +
+                    str(self.lib_ref.itemProxyModel.rowCount()) +
                     self._translate('Main_UI', ' Books'))
         else:
 
@@ -610,11 +610,11 @@ class MainUI(QtWidgets.QMainWindow, mainwindow.Ui_MainWindow):
         sender = self.sender().objectName()
 
         if sender == 'listView':
-            source_index = self.lib_ref.item_proxy_model.mapToSource(index)
+            source_index = self.lib_ref.itemProxyModel.mapToSource(index)
         elif sender == 'tableView':
-            source_index = self.lib_ref.table_proxy_model.mapToSource(index)
+            source_index = self.lib_ref.tableProxyModel.mapToSource(index)
 
-        item = self.lib_ref.view_model.item(source_index.row(), 0)
+        item = self.lib_ref.libraryModel.item(source_index.row(), 0)
         metadata = item.data(QtCore.Qt.UserRole + 3)
         path = {metadata['path']: metadata['hash']}
 
@@ -731,7 +731,7 @@ class MainUI(QtWidgets.QMainWindow, mainwindow.Ui_MainWindow):
         if not index.isValid():
             return
 
-        # It's worth remembering that these are indexes of the view_model
+        # It's worth remembering that these are indexes of the libraryModel
         # and NOT of the proxy models
         selected_indexes = self.get_selection(self.sender())
 
@@ -762,28 +762,28 @@ class MainUI(QtWidgets.QMainWindow, mainwindow.Ui_MainWindow):
         if action == openAction:
             books_to_open = {}
             for i in selected_indexes:
-                metadata = self.lib_ref.view_model.data(i, QtCore.Qt.UserRole + 3)
+                metadata = self.lib_ref.libraryModel.data(i, QtCore.Qt.UserRole + 3)
                 books_to_open[metadata['path']] = metadata['hash']
 
             self.open_files(books_to_open)
 
         if action == editAction:
             edit_book = selected_indexes[0]
-            metadata = self.lib_ref.view_model.data(
+            metadata = self.lib_ref.libraryModel.data(
                 edit_book, QtCore.Qt.UserRole + 3)
-            is_cover_loaded = self.lib_ref.view_model.data(
+            is_cover_loaded = self.lib_ref.libraryModel.data(
                 edit_book, QtCore.Qt.UserRole + 8)
 
             # Loads a cover in case culling is enabled and the table view is visible
             if not is_cover_loaded:
-                book_hash = self.lib_ref.view_model.data(
+                book_hash = self.lib_ref.libraryModel.data(
                     edit_book, QtCore.Qt.UserRole + 6)
-                book_item = self.lib_ref.view_model.item(edit_book.row())
+                book_item = self.lib_ref.libraryModel.item(edit_book.row())
                 book_cover = database.DatabaseFunctions(
                     self.database_path).fetch_covers_only([book_hash])[0][1]
                 self.cover_functions.cover_loader(book_item, book_cover)
 
-            cover = self.lib_ref.view_model.item(edit_book.row()).icon()
+            cover = self.lib_ref.libraryModel.item(edit_book.row()).icon()
             title = metadata['title']
             author = metadata['author']
             year = str(metadata['year'])
@@ -799,8 +799,8 @@ class MainUI(QtWidgets.QMainWindow, mainwindow.Ui_MainWindow):
 
         if action == readAction or action == unreadAction:
             for i in selected_indexes:
-                metadata = self.lib_ref.view_model.data(i, QtCore.Qt.UserRole + 3)
-                book_hash = self.lib_ref.view_model.data(i, QtCore.Qt.UserRole + 6)
+                metadata = self.lib_ref.libraryModel.data(i, QtCore.Qt.UserRole + 3)
+                book_hash = self.lib_ref.libraryModel.data(i, QtCore.Qt.UserRole + 6)
                 position = metadata['position']
 
                 if position:
@@ -824,9 +824,9 @@ class MainUI(QtWidgets.QMainWindow, mainwindow.Ui_MainWindow):
                     last_accessed_time = QtCore.QDateTime().currentDateTime()
                     position_perc = 1
 
-                self.lib_ref.view_model.setData(i, metadata, QtCore.Qt.UserRole + 3)
-                self.lib_ref.view_model.setData(i, position_perc, QtCore.Qt.UserRole + 7)
-                self.lib_ref.view_model.setData(i, last_accessed_time, QtCore.Qt.UserRole + 12)
+                self.lib_ref.libraryModel.setData(i, metadata, QtCore.Qt.UserRole + 3)
+                self.lib_ref.libraryModel.setData(i, position_perc, QtCore.Qt.UserRole + 7)
+                self.lib_ref.libraryModel.setData(i, last_accessed_time, QtCore.Qt.UserRole + 12)
                 self.lib_ref.update_proxymodels()
 
                 database_dict = {

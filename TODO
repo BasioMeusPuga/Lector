@@ -79,6 +79,7 @@ TODO
         ✓ Define every widget in code
     Bugs:
         Deselecting all directories in the settings dialog also filters out manually added books
+        Clean up 'switch' page layout
 
     Secondary:
         Graphical themes

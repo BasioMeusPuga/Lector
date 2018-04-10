@@ -135,8 +135,8 @@ class Tab(QtWidgets.QWidget):
         self.dockListView.clicked.connect(self.navigate_to_bookmark)
         self.dockWidget.setWidget(self.dockListView)
 
-        self.bookmark_model = QtGui.QStandardItemModel(self)
-        self.proxy_model = BookmarkProxyModel(self)
+        self.bookmarkModel = QtGui.QStandardItemModel(self)
+        self.bookmarkProxyModel = BookmarkProxyModel(self)
         self.generate_bookmark_model()
 
         self.generate_keyboard_shortcuts()
@@ -169,15 +169,15 @@ class Tab(QtWidgets.QWidget):
     def update_last_accessed_time(self):
         self.metadata['last_accessed'] = QtCore.QDateTime().currentDateTime()
 
-        start_index = self.main_window.lib_ref.view_model.index(0, 0)
-        matching_item = self.main_window.lib_ref.view_model.match(
+        start_index = self.main_window.lib_ref.libraryModel.index(0, 0)
+        matching_item = self.main_window.lib_ref.libraryModel.match(
             start_index,
             QtCore.Qt.UserRole + 6,
             self.metadata['hash'],
             1, QtCore.Qt.MatchExactly)
 
         try:
-            self.main_window.lib_ref.view_model.setData(
+            self.main_window.lib_ref.libraryModel.setData(
                 matching_item[0], self.metadata['last_accessed'], QtCore.Qt.UserRole + 12)
         except IndexError:  # The file has been deleted
             pass
@@ -408,15 +408,15 @@ class Tab(QtWidgets.QWidget):
         bookmark.setData(cursor_position, QtCore.Qt.UserRole + 1)
         bookmark.setData(identifier, QtCore.Qt.UserRole + 2)
 
-        self.bookmark_model.appendRow(bookmark)
+        self.bookmarkModel.appendRow(bookmark)
         self.update_bookmark_proxy_model()
 
     def navigate_to_bookmark(self, index):
         if not index.isValid():
             return
 
-        chapter = self.proxy_model.data(index, QtCore.Qt.UserRole)
-        cursor_position = self.proxy_model.data(index, QtCore.Qt.UserRole + 1)
+        chapter = self.bookmarkProxyModel.data(index, QtCore.Qt.UserRole)
+        cursor_position = self.bookmarkProxyModel.data(index, QtCore.Qt.UserRole + 1)
 
         self.main_window.bookToolBar.tocBox.setCurrentIndex(chapter - 1)
         if not self.are_we_doing_images_only:
@@ -444,16 +444,16 @@ class Tab(QtWidgets.QWidget):
         self.generate_bookmark_proxy_model()
 
     def generate_bookmark_proxy_model(self):
-        self.proxy_model.setSourceModel(self.bookmark_model)
-        self.proxy_model.setSortCaseSensitivity(False)
-        self.proxy_model.setSortRole(QtCore.Qt.UserRole)
-        self.dockListView.setModel(self.proxy_model)
+        self.bookmarkProxyModel.setSourceModel(self.bookmarkModel)
+        self.bookmarkProxyModel.setSortCaseSensitivity(False)
+        self.bookmarkProxyModel.setSortRole(QtCore.Qt.UserRole)
+        self.dockListView.setModel(self.bookmarkProxyModel)
 
     def update_bookmark_proxy_model(self):
-        self.proxy_model.invalidateFilter()
-        self.proxy_model.setFilterParams(
+        self.bookmarkProxyModel.invalidateFilter()
+        self.bookmarkProxyModel.setFilterParams(
             self.main_window.bookToolBar.searchBar.text())
-        self.proxy_model.setFilterFixedString(
+        self.bookmarkProxyModel.setFilterFixedString(
             self.main_window.bookToolBar.searchBar.text())
 
     def generate_bookmark_context_menu(self, position):
@@ -461,15 +461,15 @@ class Tab(QtWidgets.QWidget):
         if not index.isValid():
             return
 
-        bookmark_menu = QtWidgets.QMenu()
-        editAction = bookmark_menu.addAction(
+        bookmarkMenu = QtWidgets.QMenu()
+        editAction = bookmarkMenu.addAction(
             self.main_window.QImageFactory.get_image('edit-rename'),
             self._translate('Tab', 'Edit'))
-        deleteAction = bookmark_menu.addAction(
+        deleteAction = bookmarkMenu.addAction(
             self.main_window.QImageFactory.get_image('trash-empty'),
             self._translate('Tab', 'Delete'))
 
-        action = bookmark_menu.exec_(
+        action = bookmarkMenu.exec_(
             self.dockListView.mapToGlobal(position))
 
         if action == editAction:
@@ -477,10 +477,10 @@ class Tab(QtWidgets.QWidget):
 
         if action == deleteAction:
             row = index.row()
-            delete_uuid = self.bookmark_model.item(row).data(QtCore.Qt.UserRole + 2)
+            delete_uuid = self.bookmarkModel.item(row).data(QtCore.Qt.UserRole + 2)
 
             self.metadata['bookmarks'].pop(delete_uuid)
-            self.bookmark_model.removeRow(index.row())
+            self.bookmarkModel.removeRow(index.row())
 
     def hide_mouse(self):
         self.contentView.viewport().setCursor(QtCore.Qt.BlankCursor)

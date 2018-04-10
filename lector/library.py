@@ -28,19 +28,19 @@ from lector.models import TableProxyModel, ItemProxyModel
 
 class Library:
     def __init__(self, parent):
-        self.parent = parent
-        self.view_model = None
-        self.item_proxy_model = None
-        self.table_proxy_model = None
+        self.main_window = parent
+        self.libraryModel = None
+        self.itemProxyModel = None
+        self.tableProxyModel = None
         self._translate = QtCore.QCoreApplication.translate
 
     def generate_model(self, mode, parsed_books=None, is_database_ready=True):
         if mode == 'build':
-            self.view_model = QtGui.QStandardItemModel()
-            self.view_model.setColumnCount(10)
+            self.libraryModel = QtGui.QStandardItemModel()
+            self.libraryModel.setColumnCount(10)
 
             books = database.DatabaseFunctions(
-                self.parent.database_path).fetch_data(
+                self.main_window.database_path).fetch_data(
                     ('Title', 'Author', 'Year', 'DateAdded', 'Path',
                      'Position', 'ISBN', 'Tags', 'Hash', 'LastAccessed',
                      'Addition'),
@@ -53,7 +53,7 @@ class Library:
                 return
 
         elif mode == 'addition':
-            # Assumes self.view_model already exists and may be extended
+            # Assumes self.libraryModel already exists and may be extended
             # Because any additional books have already been added to the
             # database using background threads
 
@@ -164,57 +164,57 @@ class Library:
             item.setData(last_accessed, QtCore.Qt.UserRole + 12)
             item.setIcon(QtGui.QIcon(img_pixmap))
 
-            self.view_model.appendRow(item)
+            self.libraryModel.appendRow(item)
 
         # The is_database_ready boolean is required when a new thread sends
         # books here for model generation.
-        if not self.parent.settings['perform_culling'] and is_database_ready:
-            self.parent.cover_functions.load_all_covers()
+        if not self.main_window.settings['perform_culling'] and is_database_ready:
+            self.main_window.cover_functions.load_all_covers()
 
     def generate_proxymodels(self):
-        self.item_proxy_model = ItemProxyModel()
-        self.item_proxy_model.setSourceModel(self.view_model)
-        self.item_proxy_model.setSortCaseSensitivity(False)
+        self.itemProxyModel = ItemProxyModel()
+        self.itemProxyModel.setSourceModel(self.libraryModel)
+        self.itemProxyModel.setSortCaseSensitivity(False)
         s = QtCore.QSize(160, 250)  # Set icon sizing here
-        self.parent.listView.setIconSize(s)
-        self.parent.listView.setModel(self.item_proxy_model)
+        self.main_window.listView.setIconSize(s)
+        self.main_window.listView.setModel(self.itemProxyModel)
 
-        self.table_proxy_model = TableProxyModel(
-            self.parent.temp_dir.path(),
-            self.parent.tableView.horizontalHeader(),
-            self.parent.settings['consider_read_at'])
-        self.table_proxy_model.setSourceModel(self.view_model)
-        self.table_proxy_model.setSortCaseSensitivity(False)
-        self.parent.tableView.setModel(self.table_proxy_model)
+        self.tableProxyModel = TableProxyModel(
+            self.main_window.temp_dir.path(),
+            self.main_window.tableView.horizontalHeader(),
+            self.main_window.settings['consider_read_at'])
+        self.tableProxyModel.setSourceModel(self.libraryModel)
+        self.tableProxyModel.setSortCaseSensitivity(False)
+        self.main_window.tableView.setModel(self.tableProxyModel)
 
         self.update_proxymodels()
 
     def update_proxymodels(self):
         # Table proxy model
-        self.table_proxy_model.invalidateFilter()
-        self.table_proxy_model.setFilterParams(
-            self.parent.libraryToolBar.searchBar.text(),
-            self.parent.active_library_filters,
+        self.tableProxyModel.invalidateFilter()
+        self.tableProxyModel.setFilterParams(
+            self.main_window.libraryToolBar.searchBar.text(),
+            self.main_window.active_library_filters,
             0) # This doesn't need to know the sorting box position
-        self.table_proxy_model.setFilterFixedString(
-            self.parent.libraryToolBar.searchBar.text())
+        self.tableProxyModel.setFilterFixedString(
+            self.main_window.libraryToolBar.searchBar.text())
         # ^^^ This isn't needed, but it forces a model update every time the
         # text in the line edit changes. So I guess it is needed.
-        self.table_proxy_model.sort_table_columns(
-            self.parent.tableView.horizontalHeader().sortIndicatorSection())
-        self.table_proxy_model.sort_table_columns()
+        self.tableProxyModel.sort_table_columns(
+            self.main_window.tableView.horizontalHeader().sortIndicatorSection())
+        self.tableProxyModel.sort_table_columns()
 
         # Item proxy model
-        self.item_proxy_model.invalidateFilter()
-        self.item_proxy_model.setFilterParams(
-            self.parent.libraryToolBar.searchBar.text(),
-            self.parent.active_library_filters,
-            self.parent.libraryToolBar.sortingBox.currentIndex())
-        self.item_proxy_model.setFilterFixedString(
-            self.parent.libraryToolBar.searchBar.text())
+        self.itemProxyModel.invalidateFilter()
+        self.itemProxyModel.setFilterParams(
+            self.main_window.libraryToolBar.searchBar.text(),
+            self.main_window.active_library_filters,
+            self.main_window.libraryToolBar.sortingBox.currentIndex())
+        self.itemProxyModel.setFilterFixedString(
+            self.main_window.libraryToolBar.searchBar.text())
 
-        self.parent.statusMessage.setText(
-            str(self.item_proxy_model.rowCount()) +
+        self.main_window.statusMessage.setText(
+            str(self.itemProxyModel.rowCount()) +
             self._translate('Library', ' books'))
 
         # TODO
@@ -233,20 +233,20 @@ class Library:
             5: 7}
 
         # Sorting according to roles and the drop down in the library toolbar
-        self.item_proxy_model.setSortRole(
-            QtCore.Qt.UserRole + sort_roles[self.parent.libraryToolBar.sortingBox.currentIndex()])
+        self.itemProxyModel.setSortRole(
+            QtCore.Qt.UserRole + sort_roles[self.main_window.libraryToolBar.sortingBox.currentIndex()])
 
         # This can be expanded to other fields by appending to the list
         sort_order = QtCore.Qt.AscendingOrder
-        if self.parent.libraryToolBar.sortingBox.currentIndex() in [3, 4, 5]:
+        if self.main_window.libraryToolBar.sortingBox.currentIndex() in [3, 4, 5]:
             sort_order = QtCore.Qt.DescendingOrder
 
-        self.item_proxy_model.sort(0, sort_order)
-        self.parent.start_culling_timer()
+        self.itemProxyModel.sort(0, sort_order)
+        self.main_window.start_culling_timer()
 
     def generate_library_tags(self):
         db_library_directories = database.DatabaseFunctions(
-            self.parent.database_path).fetch_data(
+            self.main_window.database_path).fetch_data(
                 ('Path', 'Name', 'Tags'),
                 'directories',  # This checks the directories table NOT the book one
                 {'Path': ''},
@@ -258,7 +258,7 @@ class Library:
 
         else:
             db_library_directories = database.DatabaseFunctions(
-                self.parent.database_path).fetch_data(
+                self.main_window.database_path).fetch_data(
                     ('Path',),
                     'books', # THIS CHECKS THE BOOKS TABLE
                     {'Path': ''},
@@ -294,8 +294,8 @@ class Library:
 
         # Generate tags for the QStandardItemModel
         # This isn't triggered for an empty view model
-        for i in range(self.view_model.rowCount()):
-            this_item = self.view_model.item(i, 0)
+        for i in range(self.libraryModel.rowCount()):
+            this_item = self.libraryModel.item(i, 0)
             all_metadata = this_item.data(QtCore.Qt.UserRole + 3)
             directory_name, directory_tags = get_tags(all_metadata)
 
@@ -310,8 +310,8 @@ class Library:
         invalid_paths = []
         deletable_persistent_indexes = []
 
-        for i in range(self.view_model.rowCount()):
-            item = self.view_model.item(i)
+        for i in range(self.libraryModel.rowCount()):
+            item = self.libraryModel.item(i)
 
             item_metadata = item.data(QtCore.Qt.UserRole + 3)
             book_path = item_metadata['path']
@@ -330,8 +330,8 @@ class Library:
 
         if deletable_persistent_indexes:
             for i in deletable_persistent_indexes:
-                self.view_model.removeRow(i.row())
+                self.libraryModel.removeRow(i.row())
 
         # Remove invalid paths from the database as well
         database.DatabaseFunctions(
-            self.parent.database_path).delete_from_database('Path', invalid_paths)
+            self.main_window.database_path).delete_from_database('Path', invalid_paths)

@@ -40,15 +40,15 @@ class SettingsUI(QtWidgets.QDialog, settingswindow.Ui_Dialog):
         self.verticalLayout_4.setContentsMargins(0, 0, 0, 0)
         self._translate = QtCore.QCoreApplication.translate
 
-        self.parent = parent
-        self.database_path = self.parent.database_path
-        self.image_factory = self.parent.QImageFactory
+        self.main_window = parent
+        self.database_path = self.main_window.database_path
+        self.image_factory = self.main_window.QImageFactory
 
         # The annotation dialog will use the settings dialog as its parent
         self.annotationsDialog = AnnotationsUI(self)
 
-        self.resize(self.parent.settings['settings_dialog_size'])
-        self.move(self.parent.settings['settings_dialog_position'])
+        self.resize(self.main_window.settings['settings_dialog_size'])
+        self.move(self.main_window.settings['settings_dialog_position'])
 
         install_dir = os.path.realpath(__file__)
         install_dir = pathlib.Path(install_dir).parents[1]
@@ -58,7 +58,7 @@ class SettingsUI(QtWidgets.QDialog, settingswindow.Ui_Dialog):
 
         self.paths = None
         self.thread = None
-        self.filesystem_model = None
+        self.filesystemModel = None
         self.tag_data_copy = None
 
         english_string = self._translate('SettingsUI', 'English')
@@ -67,7 +67,7 @@ class SettingsUI(QtWidgets.QDialog, settingswindow.Ui_Dialog):
         languages = [english_string, spanish_string, hindi_string]
 
         self.languageBox.addItems(languages)
-        current_language = self.parent.settings['dictionary_language']
+        current_language = self.main_window.settings['dictionary_language']
         if current_language == 'en':
             self.languageBox.setCurrentIndex(0)
         elif current_language == 'es':
@@ -82,7 +82,7 @@ class SettingsUI(QtWidgets.QDialog, settingswindow.Ui_Dialog):
         self.cancelButton.clicked.connect(self.cancel_pressed)
 
         # Radio buttons
-        if self.parent.settings['icon_theme'] == 'DarkIcons':
+        if self.main_window.settings['icon_theme'] == 'DarkIcons':
             self.darkIconsRadio.setChecked(True)
         else:
             self.lightIconsRadio.setChecked(True)
@@ -90,15 +90,15 @@ class SettingsUI(QtWidgets.QDialog, settingswindow.Ui_Dialog):
         self.lightIconsRadio.clicked.connect(self.change_icon_theme)
 
         # Check boxes
-        self.autoTags.setChecked(self.parent.settings['auto_tags'])
-        self.coverShadows.setChecked(self.parent.settings['cover_shadows'])
-        self.refreshLibrary.setChecked(self.parent.settings['scan_library'])
-        self.fileRemember.setChecked(self.parent.settings['remember_files'])
-        self.performCulling.setChecked(self.parent.settings['perform_culling'])
-        self.cachingEnabled.setChecked(self.parent.settings['caching_enabled'])
-        self.hideScrollBars.setChecked(self.parent.settings['hide_scrollbars'])
-        self.scrollSpeedSlider.setValue(self.parent.settings['scroll_speed'])
-        self.readAtPercent.setValue(self.parent.settings['consider_read_at'])
+        self.autoTags.setChecked(self.main_window.settings['auto_tags'])
+        self.coverShadows.setChecked(self.main_window.settings['cover_shadows'])
+        self.refreshLibrary.setChecked(self.main_window.settings['scan_library'])
+        self.fileRemember.setChecked(self.main_window.settings['remember_files'])
+        self.performCulling.setChecked(self.main_window.settings['perform_culling'])
+        self.cachingEnabled.setChecked(self.main_window.settings['caching_enabled'])
+        self.hideScrollBars.setChecked(self.main_window.settings['hide_scrollbars'])
+        self.scrollSpeedSlider.setValue(self.main_window.settings['scroll_speed'])
+        self.readAtPercent.setValue(self.main_window.settings['consider_read_at'])
 
         self.autoTags.clicked.connect(self.manage_checkboxes)
         self.coverShadows.clicked.connect(self.manage_checkboxes)
@@ -166,7 +166,7 @@ class SettingsUI(QtWidgets.QDialog, settingswindow.Ui_Dialog):
                 {'Path': ''},
                 'LIKE')
 
-        self.parent.generate_library_filter_menu(paths)
+        self.main_window.generate_library_filter_menu(paths)
         directory_data = {}
         if not paths:
             print('Database: No paths for settings...')
@@ -179,9 +179,9 @@ class SettingsUI(QtWidgets.QDialog, settingswindow.Ui_Dialog):
                     'tags': i[2],
                     'check_state': i[3]}
 
-        self.filesystem_model = MostExcellentFileSystemModel(directory_data)
-        self.filesystem_model.setFilter(QtCore.QDir.NoDotAndDotDot | QtCore.QDir.Dirs)
-        self.treeView.setModel(self.filesystem_model)
+        self.filesystemModel = MostExcellentFileSystemModel(directory_data)
+        self.filesystemModel.setFilter(QtCore.QDir.NoDotAndDotDot | QtCore.QDir.Dirs)
+        self.treeView.setModel(self.filesystemModel)
 
         # TODO
         # This here might break on them pestilent non unixy OSes
@@ -189,7 +189,7 @@ class SettingsUI(QtWidgets.QDialog, settingswindow.Ui_Dialog):
 
         root_directory = QtCore.QDir().rootPath()
         self.treeView.setRootIndex(
-            self.filesystem_model.setRootPath(root_directory))
+            self.filesystemModel.setRootPath(root_directory))
 
         # Set the treeView and QFileSystemModel to its desired state
         selected_paths = [
@@ -211,10 +211,10 @@ class SettingsUI(QtWidgets.QDialog, settingswindow.Ui_Dialog):
             expand_paths.remove(root_directory)
 
         for i in expand_paths:
-            this_index = self.filesystem_model.index(i)
+            this_index = self.filesystemModel.index(i)
             self.treeView.expand(this_index)
 
-        header_sizes = self.parent.settings['settings_dialog_headers']
+        header_sizes = self.main_window.settings['settings_dialog_headers']
         if header_sizes:
             for count, i in enumerate((0, 4)):
                 self.treeView.setColumnWidth(i, int(header_sizes[count]))
@@ -232,7 +232,7 @@ class SettingsUI(QtWidgets.QDialog, settingswindow.Ui_Dialog):
         self.hide()
 
         data_pairs = []
-        for i in self.filesystem_model.tag_data.items():
+        for i in self.filesystemModel.tag_data.items():
             data_pairs.append([
                 i[0], i[1]['name'], i[1]['tags'], i[1]['check_state']
             ])
@@ -250,24 +250,24 @@ class SettingsUI(QtWidgets.QDialog, settingswindow.Ui_Dialog):
             database.DatabaseFunctions(
                 self.database_path).delete_from_database('*', '*')
 
-            self.parent.lib_ref.generate_model('build')
-            self.parent.lib_ref.generate_proxymodels()
-            self.parent.generate_library_filter_menu()
+            self.main_window.lib_ref.generate_model('build')
+            self.main_window.lib_ref.generate_proxymodels()
+            self.main_window.generate_library_filter_menu()
 
             return
 
         # Update the main window library filter menu
-        self.parent.generate_library_filter_menu(data_pairs)
-        self.parent.set_library_filter()
+        self.main_window.generate_library_filter_menu(data_pairs)
+        self.main_window.set_library_filter()
 
         # Disallow rechecking until the first check completes
         self.okButton.setEnabled(False)
-        self.parent.libraryToolBar.reloadLibraryButton.setEnabled(False)
+        self.main_window.libraryToolBar.reloadLibraryButton.setEnabled(False)
         self.okButton.setToolTip(
             self._translate('SettingsUI', 'Library scan in progress...'))
 
         # Traverse directories looking for files
-        self.parent.statusMessage.setText(
+        self.main_window.statusMessage.setText(
             self._translate('SettingsUI', 'Checking library folders'))
         self.thread = BackGroundBookSearch(data_pairs)
         self.thread.finished.connect(self.finished_iterating)
@@ -277,19 +277,19 @@ class SettingsUI(QtWidgets.QDialog, settingswindow.Ui_Dialog):
         # The books the search thread has found
         # are now in self.thread.valid_files
         if not self.thread.valid_files:
-            self.parent.move_on()
+            self.main_window.move_on()
             return
 
         # Hey, messaging is important, okay?
-        self.parent.statusBar.setVisible(True)
-        self.parent.sorterProgress.setVisible(True)
-        self.parent.statusMessage.setText(
+        self.main_window.statusBar.setVisible(True)
+        self.main_window.sorterProgress.setVisible(True)
+        self.main_window.statusMessage.setText(
             self._translate('SettingsUI', 'Parsing files'))
 
         # We now create a new thread to put those files into the database
         self.thread = BackGroundBookAddition(
-            self.thread.valid_files, self.database_path, 'automatic', self.parent)
-        self.thread.finished.connect(self.parent.move_on)
+            self.thread.valid_files, self.database_path, 'automatic', self.main_window)
+        self.thread.finished.connect(self.main_window.move_on)
         self.thread.start()
 
     def page_switch(self, index):
@@ -300,7 +300,7 @@ class SettingsUI(QtWidgets.QDialog, settingswindow.Ui_Dialog):
             self.okButton.setVisible(False)
 
     def cancel_pressed(self):
-        self.filesystem_model.tag_data = copy.deepcopy(self.tag_data_copy)
+        self.filesystemModel.tag_data = copy.deepcopy(self.tag_data_copy)
         self.hide()
 
     def hideEvent(self, event):
@@ -309,41 +309,42 @@ class SettingsUI(QtWidgets.QDialog, settingswindow.Ui_Dialog):
 
     def showEvent(self, event):
         self.format_preview()
-        self.tag_data_copy = copy.deepcopy(self.filesystem_model.tag_data)
+        self.tag_data_copy = copy.deepcopy(self.filesystemModel.tag_data)
         event.accept()
 
     def no_more_settings(self):
-        self.parent.libraryToolBar.settingsButton.setChecked(False)
+        self.main_window.libraryToolBar.settingsButton.setChecked(False)
         self.gather_annotations()
-        Settings(self.parent).save_settings()
+        Settings(self.main_window).save_settings()
         self.resizeEvent()
 
     def resizeEvent(self, event=None):
-        self.parent.settings['settings_dialog_size'] = self.size()
-        self.parent.settings['settings_dialog_position'] = self.pos()
+        self.main_window.settings['settings_dialog_size'] = self.size()
+        self.main_window.settings['settings_dialog_position'] = self.pos()
         table_headers = []
         for i in [0, 4]:
             table_headers.append(self.treeView.columnWidth(i))
-        self.parent.settings['settings_dialog_headers'] = table_headers
+        self.main_window.settings['settings_dialog_headers'] = table_headers
 
     def change_icon_theme(self):
         if self.sender() == self.darkIconsRadio:
-            self.parent.settings['icon_theme'] = 'DarkIcons'
+            self.main_window.settings['icon_theme'] = 'DarkIcons'
         else:
-            self.parent.settings['icon_theme'] = 'LightIcons'
+            self.main_window.settings['icon_theme'] = 'LightIcons'
 
     def change_dictionary_language(self, event):
         language_dict = {
             0: 'en',
             1: 'es',
             2: 'hi'}
-        self.parent.settings['dictionary_language'] = language_dict[self.languageBox.currentIndex()]
+        self.main_window.settings[
+            'dictionary_language'] = language_dict[self.languageBox.currentIndex()]
 
     def change_scroll_speed(self, event=None):
-        self.parent.settings['scroll_speed'] = self.scrollSpeedSlider.value()
+        self.main_window.settings['scroll_speed'] = self.scrollSpeedSlider.value()
 
     def change_read_at(self, event=None):
-        self.parent.settings['consider_read_at'] = self.readAtPercent.value()
+        self.main_window.settings['consider_read_at'] = self.readAtPercent.value()
 
     def manage_checkboxes(self, event=None):
         sender = self.sender().objectName()
@@ -357,13 +358,14 @@ class SettingsUI(QtWidgets.QDialog, settingswindow.Ui_Dialog):
             'cachingEnabled': 'caching_enabled',
             'hideScrollBars': 'hide_scrollbars'}
 
-        self.parent.settings[sender_dict[sender]] = not self.parent.settings[sender_dict[sender]]
+        self.main_window.settings[
+            sender_dict[sender]] = not self.main_window.settings[sender_dict[sender]]
 
         if not self.performCulling.isChecked():
-            self.parent.cover_functions.load_all_covers()
+            self.main_window.cover_functions.load_all_covers()
 
     def generate_annotations(self):
-        saved_annotations = self.parent.settings['annotations']
+        saved_annotations = self.main_window.settings['annotations']
 
         for i in saved_annotations:
             item = QtGui.QStandardItem()
@@ -379,8 +381,8 @@ class SettingsUI(QtWidgets.QDialog, settingswindow.Ui_Dialog):
         self.previewView.setTextCursor(cursor)
 
         self.previewView.setText('Vidistine nuper imagines moventes bonas?')
-        profile_index = self.parent.bookToolBar.profileBox.currentIndex()
-        current_profile = self.parent.bookToolBar.profileBox.itemData(
+        profile_index = self.main_window.bookToolBar.profileBox.currentIndex()
+        current_profile = self.main_window.bookToolBar.profileBox.itemData(
             profile_index, QtCore.Qt.UserRole)
 
         if not current_profile:
@@ -457,4 +459,4 @@ class SettingsUI(QtWidgets.QDialog, settingswindow.Ui_Dialog):
             annotation_data = annotation_item.data(QtCore.Qt.UserRole)
             annotations_out.append(annotation_data)
 
-        self.parent.settings['annotations'] = annotations_out
+        self.main_window.settings['annotations'] = annotations_out

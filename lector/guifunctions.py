@@ -51,8 +51,8 @@ class CoverLoadingAndCulling:
                                                  # listView to go blank on a resize
 
         all_indexes = set()
-        for i in range(self.lib_ref.item_proxy_model.rowCount()):
-            all_indexes.add(self.lib_ref.item_proxy_model.index(i, 0))
+        for i in range(self.lib_ref.itemProxyModel.rowCount()):
+            all_indexes.add(self.lib_ref.itemProxyModel.index(i, 0))
 
         y_range = list(range(0, self.listView.viewport().height(), 100))
         y_range.extend((-20, self.listView.viewport().height() + 20))
@@ -66,8 +66,8 @@ class CoverLoadingAndCulling:
 
         invisible_indexes = all_indexes - visible_indexes
         for i in invisible_indexes:
-            model_index = self.lib_ref.item_proxy_model.mapToSource(i)
-            this_item = self.lib_ref.view_model.item(model_index.row())
+            model_index = self.lib_ref.itemProxyModel.mapToSource(i)
+            this_item = self.lib_ref.libraryModel.item(model_index.row())
 
             if this_item:
                 this_item.setIcon(QtGui.QIcon(blank_pixmap))
@@ -76,11 +76,11 @@ class CoverLoadingAndCulling:
         hash_index_dict = {}
         hash_list = []
         for i in visible_indexes:
-            model_index = self.lib_ref.item_proxy_model.mapToSource(i)
+            model_index = self.lib_ref.itemProxyModel.mapToSource(i)
 
-            book_hash = self.lib_ref.view_model.data(
+            book_hash = self.lib_ref.libraryModel.data(
                 model_index, QtCore.Qt.UserRole + 6)
-            cover_displayed = self.lib_ref.view_model.data(
+            cover_displayed = self.lib_ref.libraryModel.data(
                 model_index, QtCore.Qt.UserRole + 8)
 
             if book_hash and not cover_displayed:
@@ -95,7 +95,7 @@ class CoverLoadingAndCulling:
             cover = i[1]
             model_index = hash_index_dict[book_hash]
 
-            book_item = self.lib_ref.view_model.item(model_index.row())
+            book_item = self.lib_ref.libraryModel.item(model_index.row())
             self.cover_loader(book_item, cover)
 
     def load_all_covers(self):
@@ -112,8 +112,8 @@ class CoverLoadingAndCulling:
         all_covers = {
             i[0]: i[1] for i in all_covers_db}
 
-        for i in range(self.lib_ref.view_model.rowCount()):
-            this_item = self.lib_ref.view_model.item(i, 0)
+        for i in range(self.lib_ref.libraryModel.rowCount()):
+            this_item = self.lib_ref.libraryModel.item(i, 0)
 
             is_cover_already_displayed = this_item.data(QtCore.Qt.UserRole + 8)
             if is_cover_already_displayed:

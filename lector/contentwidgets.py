@@ -340,6 +340,8 @@ class PliantQTextBrowser(QtWidgets.QTextBrowser):
         self.ignore_wheel_event = False
         self.ignore_wheel_event_number = 0
 
+        self.at_end = False
+
     def wheelEvent(self, event):
         self.record_position()
         self.common_functions.wheelEvent(event)
@@ -348,8 +350,11 @@ class PliantQTextBrowser(QtWidgets.QTextBrowser):
         QtWidgets.QTextEdit.keyPressEvent(self, event)
         if event.key() == QtCore.Qt.Key_Space:
             if self.verticalScrollBar().value() == self.verticalScrollBar().maximum():
-                self.common_functions.change_chapter(1, True)
+                if self.at_end:  # This makes sure the last lines of the chapter don't get skipped
+                    self.common_functions.change_chapter(1, True)
+                self.at_end = True
             else:
+                self.at_end = False
                 self.set_top_line_cleanly()
         self.record_position()
 
@@ -530,10 +535,10 @@ class PliantWidgetsCommonFunctions:
         # Set a baseline model index in case the item gets deleted
         # E.g It's open in a tab and deleted from the library
         model_index = None
-        start_index = self.main_window.lib_ref.view_model.index(0, 0)
+        start_index = self.main_window.lib_ref.libraryModel.index(0, 0)
 
         # Find index of the model item that corresponds to the tab
-        model_index = self.main_window.lib_ref.view_model.match(
+        model_index = self.main_window.lib_ref.libraryModel.match(
             start_index,
             QtCore.Qt.UserRole + 6,
             self.pw.parent.metadata['hash'],
@@ -548,7 +553,7 @@ class PliantWidgetsCommonFunctions:
 
         # Update position percentage
         if model_index:
-            self.main_window.lib_ref.view_model.setData(
+            self.main_window.lib_ref.libraryModel.setData(
                 model_index[0], position_percentage, QtCore.Qt.UserRole + 7)
 
     def generate_combo_box_action(self, contextMenu):

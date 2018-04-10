@@ -86,7 +86,7 @@ class MetadataUI(QtWidgets.QDialog, metadata.Ui_Dialog):
         self.coverView.setScene(graphics_scene)
 
     def ok_pressed(self, event=None):
-        book_item = self.parent.lib_ref.view_model.item(self.book_index.row())
+        book_item = self.parent.lib_ref.libraryModel.item(self.book_index.row())
 
         title = self.titleLine.text()
         author = self.authorLine.text()
