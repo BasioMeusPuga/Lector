@@ -1,5 +1,3 @@
-#!/usr/bin/env python3
-
 # This file is a part of Lector, a Qt based ebook reader
 # Copyright (C) 2017-2018 BasioMeusPuga
 
