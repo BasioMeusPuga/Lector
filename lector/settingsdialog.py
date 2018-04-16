@@ -314,6 +314,7 @@ class SettingsUI(QtWidgets.QDialog, settingswindow.Ui_Dialog):
         self.main_window.libraryToolBar.settingsButton.setChecked(False)
         self.gather_annotations()
         Settings(self.main_window).save_settings()
+        Settings(self.main_window).read_settings()
         self.resizeEvent()
 
     def resizeEvent(self, event=None):

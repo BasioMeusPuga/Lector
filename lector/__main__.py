@@ -164,9 +164,10 @@ class MainUI(QtWidgets.QMainWindow, mainwindow.Ui_MainWindow):
             self.libraryToolBar.tableViewButton.trigger()
 
         # Book toolbar
+        self.bookToolBar.annotationButton.triggered.connect(self.toggle_dock_widgets)
         self.bookToolBar.addBookmarkButton.triggered.connect(self.add_bookmark)
-        self.bookToolBar.bookmarkButton.triggered.connect(self.toggle_dock_widget)
-        self.bookToolBar.distractionFreeButton.triggered.connect(self.toggle_distraction_free)
+        self.bookToolBar.bookmarkButton.triggered.connect(self.toggle_dock_widgets)
+        self.bookToolBar.distractionFreeButton.triggered.connect(self.toggle_dock_widgets)
         self.bookToolBar.fullscreenButton.triggered.connect(self.set_fullscreen)
 
         for count, i in enumerate(self.display_profiles):
@@ -510,9 +511,10 @@ class MainUI(QtWidgets.QMainWindow, mainwindow.Ui_MainWindow):
 
         self.current_tab = self.tabWidget.currentIndex()
 
-        # Hide bookmark widgets
+        # Hide bookmark and annotation widgets
         for i in range(1, self.tabWidget.count()):
-            self.tabWidget.widget(i).dockWidget.setVisible(False)
+            self.tabWidget.widget(i).bookmarkDock.setVisible(False)
+            self.tabWidget.widget(i).annotationDock.setVisible(False)
 
         if self.tabWidget.currentIndex() == 0:
 
@@ -598,13 +600,16 @@ class MainUI(QtWidgets.QMainWindow, mainwindow.Ui_MainWindow):
         current_tab_widget = self.tabWidget.widget(current_tab)
         current_tab_widget.go_fullscreen()
 
-    def toggle_dock_widget(self):
-        sender = self.sender().objectName()
+    def toggle_dock_widgets(self):
+        sender = self.sender()
         current_tab = self.tabWidget.currentIndex()
         current_tab_widget = self.tabWidget.widget(current_tab)
 
-        if sender == 'bookmarkButton':
+        if sender == self.bookToolBar.bookmarkButton:
             current_tab_widget.toggle_bookmarks()
+
+        if sender == self.bookToolBar.annotationButton:
+            current_tab_widget.toggle_annotations()
 
     def library_doubleclick(self, index):
         sender = self.sender().objectName()

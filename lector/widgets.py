@@ -111,27 +111,43 @@ class Tab(QtWidgets.QWidget):
             self.contentView.setHorizontalScrollBarPolicy(QtCore.Qt.ScrollBarAsNeeded)
             self.contentView.setVerticalScrollBarPolicy(QtCore.Qt.ScrollBarAsNeeded)
 
+        # Create the annotations dock
+        self.annotationDock = PliantDockWidget(self.main_window, 'annotations', self.contentView)
+        self.annotationDock.setWindowTitle(self._translate('Tab', 'Annotations'))
+        self.annotationDock.setFeatures(QtWidgets.QDockWidget.DockWidgetClosable)
+        self.annotationDock.hide()
+
+        self.annotationListView = QtWidgets.QListView(self.annotationDock)
+        self.annotationListView.setResizeMode(QtWidgets.QListWidget.Adjust)
+        self.annotationListView.setMaximumWidth(350)
+        self.annotationListView.doubleClicked.connect(self.contentView.toggle_annotation_mode)
+        self.annotationListView.setEditTriggers(QtWidgets.QListView.NoEditTriggers)
+        self.annotationDock.setWidget(self.annotationListView)
+
+        self.annotationModel = QtGui.QStandardItemModel(self)
+        self.generate_annotation_model()
+
         # See bookmark availability
         if not self.metadata['bookmarks']:
             self.metadata['bookmarks'] = {}
 
         # Create the dock widget for context specific display
-        self.dockWidget = PliantDockWidget(self.main_window, self.contentView)
-        self.dockWidget.setWindowTitle(self._translate('Tab', 'Bookmarks'))
-        self.dockWidget.setFeatures(QtWidgets.QDockWidget.DockWidgetClosable)
-        self.dockWidget.hide()
+        self.bookmarkDock = PliantDockWidget(self.main_window, 'bookmarks', self.contentView)
+        self.bookmarkDock.setWindowTitle(self._translate('Tab', 'Bookmarks'))
+        self.bookmarkDock.setFeatures(QtWidgets.QDockWidget.DockWidgetClosable)
+        self.bookmarkDock.hide()
 
-        self.dockListView = QtWidgets.QListView(self.dockWidget)
-        self.dockListView.setResizeMode(QtWidgets.QListWidget.Adjust)
-        self.dockListView.setMaximumWidth(350)
-        self.dockListView.setItemDelegate(
-            BookmarkDelegate(self.main_window, self.dockListView))
-        self.dockListView.setUniformItemSizes(True)
-        self.dockListView.setContextMenuPolicy(QtCore.Qt.CustomContextMenu)
-        self.dockListView.customContextMenuRequested.connect(
+        self.bookmarkListView = QtWidgets.QListView(self.bookmarkDock)
+        self.bookmarkListView.setResizeMode(QtWidgets.QListWidget.Adjust)
+        self.bookmarkListView.setMaximumWidth(350)
+        self.bookmarkListView.setItemDelegate(
+            BookmarkDelegate(self.main_window, self.bookmarkListView))
+        self.bookmarkListView.setUniformItemSizes(True)
+        self.bookmarkListView.setContextMenuPolicy(QtCore.Qt.CustomContextMenu)
+        self.bookmarkListView.customContextMenuRequested.connect(
             self.generate_bookmark_context_menu)
-        self.dockListView.clicked.connect(self.navigate_to_bookmark)
-        self.dockWidget.setWidget(self.dockListView)
+        self.bookmarkListView.clicked.connect(self.navigate_to_bookmark)
+        self.bookmarkDock.setWidget(self.bookmarkListView)
 
         self.bookmarkModel = QtGui.QStandardItemModel(self)
         self.bookmarkProxyModel = BookmarkProxyModel(self)
@@ -140,9 +156,14 @@ class Tab(QtWidgets.QWidget):
         self.generate_keyboard_shortcuts()
 
         self.masterLayout.addWidget(self.contentView)
-        self.masterLayout.addWidget(self.dockWidget)
-        self.dockWidget.setFloating(True)
-        self.dockWidget.setWindowOpacity(.95)
+        self.masterLayout.addWidget(self.annotationDock)
+        self.masterLayout.addWidget(self.bookmarkDock)
+
+        # The following has to be after the docks are added to the layout
+        self.annotationDock.setFloating(True)
+        self.annotationDock.setWindowOpacity(.95)
+        self.bookmarkDock.setFloating(True)
+        self.bookmarkDock.setWindowOpacity(.95)
 
         title = self.metadata['title']
         self.main_window.tabWidget.addTab(self, title)
@@ -277,8 +298,8 @@ class Tab(QtWidgets.QWidget):
         self.is_fullscreen = True
 
     def exit_fullscreen(self):
-        if self.dockWidget.isVisible():
-            self.dockWidget.setVisible(False)
+        if self.bookmarkDock.isVisible():
+            self.bookmarkDock.setVisible(False)
             return
 
         if not self.are_we_doing_images_only:
@@ -370,11 +391,31 @@ class Tab(QtWidgets.QWidget):
                 if old_position == new_position:
                     break
 
-    def toggle_bookmarks(self):
-        if self.dockWidget.isVisible():
-            self.dockWidget.hide()
+    def toggle_annotations(self):
+        if self.annotationDock.isVisible():
+            self.annotationDock.hide()
         else:
-            self.dockWidget.show()
+            self.annotationDock.show()
+
+    def generate_annotation_model(self):
+        saved_annotations = self.main_window.settings['annotations']
+
+        if not saved_annotations:
+            return
+
+        for i in saved_annotations:
+            item = QtGui.QStandardItem()
+            item.setText(i['name'])
+            item.setData(i, QtCore.Qt.UserRole)
+            self.annotationModel.appendRow(item)
+
+        self.annotationListView.setModel(self.annotationModel)
+
+    def toggle_bookmarks(self):
+        if self.bookmarkDock.isVisible():
+            self.bookmarkDock.hide()
+        else:
+            self.bookmarkDock.show()
 
     def add_bookmark(self):
         # TODO
@@ -396,7 +437,7 @@ class Tab(QtWidgets.QWidget):
 
         self.add_bookmark_to_model(
             description, chapter, cursor_position, identifier)
-        self.dockWidget.setVisible(True)
+        self.bookmarkDock.setVisible(True)
 
     def add_bookmark_to_model(self, description, chapter, cursor_position, identifier):
         bookmark = QtGui.QStandardItem()
@@ -445,7 +486,7 @@ class Tab(QtWidgets.QWidget):
         self.bookmarkProxyModel.setSourceModel(self.bookmarkModel)
         self.bookmarkProxyModel.setSortCaseSensitivity(False)
         self.bookmarkProxyModel.setSortRole(QtCore.Qt.UserRole)
-        self.dockListView.setModel(self.bookmarkProxyModel)
+        self.bookmarkListView.setModel(self.bookmarkProxyModel)
 
     def update_bookmark_proxy_model(self):
         self.bookmarkProxyModel.invalidateFilter()
@@ -455,7 +496,7 @@ class Tab(QtWidgets.QWidget):
             self.main_window.bookToolBar.searchBar.text())
 
     def generate_bookmark_context_menu(self, position):
-        index = self.dockListView.indexAt(position)
+        index = self.bookmarkListView.indexAt(position)
         if not index.isValid():
             return
 
@@ -468,10 +509,10 @@ class Tab(QtWidgets.QWidget):
             self._translate('Tab', 'Delete'))
 
         action = bookmarkMenu.exec_(
-            self.dockListView.mapToGlobal(position))
+            self.bookmarkListView.mapToGlobal(position))
 
         if action == editAction:
-            self.dockListView.edit(index)
+            self.bookmarkListView.edit(index)
 
         if action == deleteAction:
             row = index.row()
@@ -497,29 +538,43 @@ class Tab(QtWidgets.QWidget):
 
 
 class PliantDockWidget(QtWidgets.QDockWidget):
-    def __init__(self, main_window, contentView, parent=None):
+    def __init__(self, main_window, intended_for, contentView, parent=None):
         super(PliantDockWidget, self).__init__()
         self.main_window = main_window
+        self.intended_for = intended_for
         self.contentView = contentView
 
     def showEvent(self, event):
         viewport_height = self.contentView.viewport().size().height()
         viewport_topRight = self.contentView.mapToGlobal(
             self.contentView.viewport().rect().topRight())
+        viewport_topLeft = self.contentView.mapToGlobal(
+            self.contentView.viewport().rect().topLeft())
 
         desktop_size = QtWidgets.QDesktopWidget().screenGeometry()
-        dock_width = desktop_size.width() // 5.5
 
-        dock_x = viewport_topRight.x() - dock_width + 1
+        if self.intended_for == 'bookmarks':
+            dock_x = viewport_topRight.x() - dock_width + 1
+            dock_width = desktop_size.width() // 5.5
+            self.main_window.bookToolBar.bookmarkButton.setChecked(True)
+
+        elif self.intended_for == 'annotations':
+            dock_x = viewport_topLeft.x()
+            dock_width = desktop_size.width() // 10
+            self.main_window.bookToolBar.annotationButton.setChecked(True)
+
         dock_y = viewport_topRight.y() + (viewport_height * .10)
         dock_height = viewport_height * .80
 
-        self.setGeometry(dock_x, dock_y, dock_width, dock_height)
-        self.main_window.bookToolBar.bookmarkButton.setChecked(True)
         self.main_window.active_bookmark_docks.append(self)
+        self.setGeometry(dock_x, dock_y, dock_width, dock_height)
 
     def hideEvent(self, event=None):
-        self.main_window.bookToolBar.bookmarkButton.setChecked(False)
+        if self.intended_for == 'bookmarks':
+            self.main_window.bookToolBar.bookmarkButton.setChecked(False)
+        elif self.intended_for == 'annotations':
+            self.main_window.bookToolBar.annotationButton.setChecked(False)
+
         try:
             self.main_window.active_bookmark_docks.remove(self)
         except ValueError:

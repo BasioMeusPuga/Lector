@@ -62,6 +62,8 @@ TODO
         ✓ Track open bookmark windows so they can be closed quickly at exit
         Annotations
             Text
+                Overlapping - Will involve passing current charformat
+                Annotation preview upon application
             Image
         Adjust key navigation according to viewport dimensions
         Search document using QTextCursor
@@ -80,6 +82,7 @@ TODO
     Bugs:
         Deselecting all directories in the settings dialog also filters out manually added books
         Clean up 'switch' page layout
+        Colors aren't loaded properly for annotation previews
 
     Secondary:
         Graphical themes

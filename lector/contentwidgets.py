@@ -27,6 +27,7 @@ from PyQt5 import QtWidgets, QtGui, QtCore
 
 from lector.rarfile import rarfile
 from lector.threaded import BackGroundCacheRefill
+from lector.annotations import AnnotationPlacement
 
 
 class PliantQGraphicsView(QtWidgets.QGraphicsView):
@@ -326,6 +327,9 @@ class PliantQTextBrowser(QtWidgets.QTextBrowser):
         self.parent = parent
         self.main_window = main_window
 
+        self.annotator = AnnotationPlacement()
+        self.current_annotation = None
+
         self.common_functions = PliantWidgetsCommonFunctions(
             self, self.main_window)
 
@@ -334,7 +338,6 @@ class PliantQTextBrowser(QtWidgets.QTextBrowser):
             self.generate_textbrowser_context_menu)
 
         self.setMouseTracking(True)
-        self.viewport().setCursor(QtCore.Qt.IBeamCursor)
         self.verticalScrollBar().sliderMoved.connect(
             self.record_position)
         self.ignore_wheel_event = False
@@ -390,6 +393,36 @@ class PliantQTextBrowser(QtWidgets.QTextBrowser):
                     cursor_position)
         else:
             self.parent.metadata['position']['cursor_position'] = cursor_position
+
+    def toggle_annotation_mode(self):
+        self.annotation_mode = True
+        self.viewport().setCursor(QtCore.Qt.IBeamCursor)
+        self.parent.annotationDock.setWindowOpacity(.40)
+
+        selected_index = self.parent.annotationListView.currentIndex()
+        self.current_annotation = self.parent.annotationModel.data(
+            selected_index, QtCore.Qt.UserRole)
+        print('Current annotation: ' + self.current_annotation['name'])
+
+    def mouseReleaseEvent(self, event):
+        # This takes care of annotation placement
+        if not self.current_annotation:
+            QtWidgets.QTextBrowser.mouseReleaseEvent(self, event)
+            return
+
+        self.annotator.set_current_annotation(
+            'text_markup', self.current_annotation['components'])
+
+        cursor = self.textCursor()
+        new_cursor = self.annotator.format_text(
+            cursor, cursor.selectionStart(), cursor.selectionEnd())
+        self.setTextCursor(new_cursor)
+
+        self.annotation_mode = False
+        self.viewport().setCursor(QtCore.Qt.ArrowCursor)
+        self.current_annotation = None
+        self.parent.annotationListView.clearSelection()
+        self.parent.annotationDock.setWindowOpacity(.95)
 
     def generate_textbrowser_context_menu(self, position):
         selection = self.textCursor().selection()
@@ -479,7 +512,7 @@ class PliantQTextBrowser(QtWidgets.QTextBrowser):
         self.main_window.closeEvent()
 
     def mouseMoveEvent(self, event):
-        self.viewport().setCursor(QtCore.Qt.IBeamCursor)
+        self.viewport().setCursor(QtCore.Qt.ArrowCursor)
         self.parent.mouse_hide_timer.start(3000)
         QtWidgets.QTextBrowser.mouseMoveEvent(self, event)
 

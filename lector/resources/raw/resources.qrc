@@ -1,5 +1,7 @@
 <RCC>
   <qresource prefix="images">
+    <file>LightIcons/annotate.svg</file>
+    <file>DarkIcons/annotate.svg</file>
     <file>Google.png</file>
     <file>Wikipedia.png</file>
     <file>Youtube.png</file>

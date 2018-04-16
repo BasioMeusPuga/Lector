@@ -69,6 +69,10 @@ class AnnotationsUI(QtWidgets.QDialog, annotationswindow.Ui_Dialog):
         self.underlineCheck.clicked.connect(self.modify_annotation)
 
     def show_dialog(self, mode, index=None):
+        # TODO
+        # Account for annotation type here
+        # and point to a relevant set of widgets accordingly
+
         if mode == 'edit' or mode == 'preview':
             self.modelIndex = index
             this_annotation = self.parent.annotationModel.data(
@@ -244,3 +248,62 @@ class AnnotationsUI(QtWidgets.QDialog, annotationswindow.Ui_Dialog):
             self.parent.annotationModel.appendRow(new_annotation_item)
 
         self.hide()
+
+
+class AnnotationPlacement:
+    def __init__(self):
+        self.annotation_type = None
+        self.annotation_components = None
+        self.underline_styles = {
+            'Solid': QtGui.QTextCharFormat.SingleUnderline,
+            'Dashes': QtGui.QTextCharFormat.DashUnderline,
+            'Dots': QtGui.QTextCharFormat.DotLine,
+            'Wavy': QtGui.QTextCharFormat.WaveUnderline}
+
+    def set_current_annotation(self, annotation_type, annotation_components):
+        # Components expected to be a dictionary
+        self.annotation_type = annotation_type  # This is currently unused
+        self.annotation_components = annotation_components
+
+    def format_text(self, cursor, start_here, end_here):
+        # This is applicable only to the PliantQTextBrowser
+        # for the text_markup style of annotation
+
+        # The cursor is the textCursor of the QTextEdit
+        # containing the text that has to be modified
+
+        if not self.annotation_components:
+            return
+
+        cursor.setPosition(start_here)
+        cursor.setPosition(end_here, QtGui.QTextCursor.KeepAnchor)
+
+        newCharFormat = QtGui.QTextCharFormat()
+
+        if 'foregroundColor' in self.annotation_components:
+            newCharFormat.setForeground(
+                self.annotation_components['foregroundColor'])
+
+        if 'highlightColor' in self.annotation_components:
+            newCharFormat.setBackground(
+                self.annotation_components['highlightColor'])
+
+        if 'bold' in self.annotation_components:
+            newCharFormat.setFontWeight(QtGui.QFont.Bold)
+
+        if 'italic' in self.annotation_components:
+            newCharFormat.setFontItalic(True)
+
+        if 'underline' in self.annotation_components:
+            newCharFormat.setFontUnderline(True)
+            newCharFormat.setUnderlineStyle(
+                self.underline_styles[self.annotation_components['underline'][0]])
+            newCharFormat.setUnderlineColor(
+                self.annotation_components['underline'][1])
+
+        newCharFormat.setFontStyleStrategy(
+            QtGui.QFont.PreferAntialias)
+
+        cursor.setCharFormat(newCharFormat)
+        cursor.clearSelection()
+        return cursor

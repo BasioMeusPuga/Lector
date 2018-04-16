@@ -43,6 +43,10 @@ class BookToolBar(QtWidgets.QToolBar):
             image_factory.get_image('gtk-select-font'),
             self._translate('BookToolBar', 'View settings'),
             self)
+        self.annotationButton = QtWidgets.QAction(
+            image_factory.get_image('annotate'),
+            self._translate('BookToolBar', 'Annotations'),
+            self)
         self.addBookmarkButton = QtWidgets.QAction(
             image_factory.get_image('bookmark-new'),
             self._translate('BookToolBar', 'Add bookmark'),
@@ -51,7 +55,6 @@ class BookToolBar(QtWidgets.QToolBar):
             image_factory.get_image('bookmarks'),
             self._translate('BookToolBar', 'Bookmarks (Ctrl + B)'),
             self)
-        self.bookmarkButton.setObjectName('bookmarkButton')
         self.distractionFreeButton = QtWidgets.QAction(
             image_factory.get_image('visibility'),
             self._translate('Main_BookToolBarUI', 'Toggle distraction free mode (Ctrl + D)'),
@@ -69,6 +72,9 @@ class BookToolBar(QtWidgets.QToolBar):
         self.addAction(self.fontButton)
         self.fontButton.setCheckable(True)
         self.fontButton.triggered.connect(self.toggle_font_settings)
+        self.addSeparator()
+        self.addAction(self.annotationButton)
+        self.annotationButton.setCheckable(True)
         self.addSeparator()
         self.addAction(self.addBookmarkButton)
         self.addAction(self.bookmarkButton)
@@ -280,6 +286,7 @@ class BookToolBar(QtWidgets.QToolBar):
         self.searchBarAction = self.addWidget(self.searchBar)
 
         self.bookActions = [
+            self.annotationButton,
             self.addBookmarkButton,
             self.bookmarkButton,
             self.distractionFreeButton,
