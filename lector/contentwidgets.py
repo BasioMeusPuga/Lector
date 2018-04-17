@@ -327,6 +327,7 @@ class PliantQTextBrowser(QtWidgets.QTextBrowser):
         self.parent = parent
         self.main_window = main_window
 
+        self.annotation_mode = False
         self.annotator = AnnotationPlacement()
         self.current_annotation = None
 
@@ -512,7 +513,10 @@ class PliantQTextBrowser(QtWidgets.QTextBrowser):
         self.main_window.closeEvent()
 
     def mouseMoveEvent(self, event):
-        self.viewport().setCursor(QtCore.Qt.ArrowCursor)
+        if self.annotation_mode:
+            self.viewport().setCursor(QtCore.Qt.IBeamCursor)
+        else:
+            self.viewport().setCursor(QtCore.Qt.ArrowCursor)
         self.parent.mouse_hide_timer.start(3000)
         QtWidgets.QTextBrowser.mouseMoveEvent(self, event)
 

@@ -120,7 +120,9 @@ class Tab(QtWidgets.QWidget):
         self.annotationListView = QtWidgets.QListView(self.annotationDock)
         self.annotationListView.setResizeMode(QtWidgets.QListWidget.Adjust)
         self.annotationListView.setMaximumWidth(350)
-        self.annotationListView.doubleClicked.connect(self.contentView.toggle_annotation_mode)
+        if not self.are_we_doing_images_only:
+            self.annotationListView.doubleClicked.connect(
+                self.contentView.toggle_annotation_mode)
         self.annotationListView.setEditTriggers(QtWidgets.QListView.NoEditTriggers)
         self.annotationDock.setWidget(self.annotationListView)
 

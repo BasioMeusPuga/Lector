@@ -187,21 +187,22 @@ class AnnotationsUI(QtWidgets.QDialog, annotationswindow.Ui_Dialog):
                 self.update_preview()
                 return
 
+        new_color = None
+
         if sender == self.foregroundColorButton:
             new_color = self.get_color(self.foregroundColor)
-            self.set_button_background_color(self.foregroundColorButton, new_color)
             self.foregroundColor = new_color
 
         if sender == self.highlightColorButton:
             new_color = self.get_color(self.highlightColor)
-            self.set_button_background_color(self.highlightColorButton, new_color)
             self.highlightColor = new_color
 
         if sender == self.underlineColorButton:
             new_color = self.get_color(self.underlineColor)
-            self.set_button_background_color(self.underlineColorButton, new_color)
             self.underlineColor = new_color
 
+        if new_color:
+            self.set_button_background_color(sender, new_color)
         self.update_preview()
 
     def get_color(self, current_color):
