@@ -138,6 +138,17 @@ class Tab(QtWidgets.QWidget):
         self.annotationModel = QtGui.QStandardItemModel(self)
         self.generate_annotation_model()
 
+        # Create the annotation notes dock
+        self.annotationNoteDock = PliantDockWidget(self.main_window, 'notes', self.contentView)
+        self.annotationNoteDock.setWindowTitle(self._translate('Tab', 'Note'))
+        self.annotationNoteDock.setFeatures(QtWidgets.QDockWidget.DockWidgetClosable)
+        self.annotationNoteDock.hide()
+
+        self.annotationNoteEdit = QtWidgets.QTextEdit(self.annotationDock)
+        self.annotationNoteEdit.setMaximumSize(QtCore.QSize(200, 200))
+        self.annotationNoteEdit.setFocusPolicy(QtCore.Qt.StrongFocus)
+        self.annotationNoteDock.setWidget(self.annotationNoteEdit)
+
         # Create the dock widget for context specific display
         self.bookmarkDock = PliantDockWidget(self.main_window, 'bookmarks', self.contentView)
         self.bookmarkDock.setWindowTitle(self._translate('Tab', 'Bookmarks'))
@@ -164,11 +175,14 @@ class Tab(QtWidgets.QWidget):
 
         self.masterLayout.addWidget(self.contentView)
         self.masterLayout.addWidget(self.annotationDock)
+        self.masterLayout.addWidget(self.annotationNoteDock)
         self.masterLayout.addWidget(self.bookmarkDock)
 
         # The following has to be after the docks are added to the layout
         self.annotationDock.setFloating(True)
         self.annotationDock.setWindowOpacity(.95)
+        self.annotationNoteDock.setFloating(True)
+        self.annotationNoteDock.setWindowOpacity(.95)
         self.bookmarkDock.setFloating(True)
         self.bookmarkDock.setWindowOpacity(.95)
 
@@ -305,9 +319,10 @@ class Tab(QtWidgets.QWidget):
         self.is_fullscreen = True
 
     def exit_fullscreen(self):
-        if self.bookmarkDock.isVisible():
-            self.bookmarkDock.setVisible(False)
-            return
+        for i in (self.bookmarkDock, self.annotationDock, self.annotationNoteDock):
+            if i.isVisible():
+                i.setVisible(False)
+                return
 
         if not self.are_we_doing_images_only:
             self.contentView.record_position()
@@ -559,6 +574,7 @@ class PliantDockWidget(QtWidgets.QDockWidget):
         self.main_window = main_window
         self.intended_for = intended_for
         self.contentView = contentView
+        self.current_annotation = None
 
     def showEvent(self, event):
         viewport_height = self.contentView.viewport().size().height()
@@ -568,6 +584,8 @@ class PliantDockWidget(QtWidgets.QDockWidget):
             self.contentView.viewport().rect().topLeft())
 
         desktop_size = QtWidgets.QDesktopWidget().screenGeometry()
+        dock_y = viewport_topRight.y() + (viewport_height * .10)
+        dock_height = viewport_height * .80
 
         if self.intended_for == 'bookmarks':
             dock_width = desktop_size.width() // 5.5
@@ -579,8 +597,10 @@ class PliantDockWidget(QtWidgets.QDockWidget):
             dock_x = viewport_topLeft.x()
             self.main_window.bookToolBar.annotationButton.setChecked(True)
 
-        dock_y = viewport_topRight.y() + (viewport_height * .10)
-        dock_height = viewport_height * .80
+        elif self.intended_for == 'notes':
+            dock_width = dock_height = desktop_size.width() // 6
+            dock_x = QtGui.QCursor.pos().x()
+            dock_y = QtGui.QCursor.pos().y()
 
         self.main_window.active_bookmark_docks.append(self)
         self.setGeometry(dock_x, dock_y, dock_width, dock_height)
@@ -590,14 +610,24 @@ class PliantDockWidget(QtWidgets.QDockWidget):
             self.main_window.bookToolBar.bookmarkButton.setChecked(False)
         elif self.intended_for == 'annotations':
             self.main_window.bookToolBar.annotationButton.setChecked(False)
+        elif self.intended_for == 'notes':
+            annotationNoteEdit = self.findChild(QtWidgets.QTextEdit)
+            if self.current_annotation:
+                self.current_annotation['note'] = annotationNoteEdit.toPlainText()
 
         try:
             self.main_window.active_bookmark_docks.remove(self)
         except ValueError:
             pass
 
+    def set_annotation(self, annotation):
+        self.current_annotation = annotation
+
     def closeEvent(self, event):
+        self.main_window.bookToolBar.annotationButton.setChecked(False)
         self.hide()
+
+        # Ignoring this event prevents application closure when everything is fullscreened
         event.ignore()
 
 

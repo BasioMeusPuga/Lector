@@ -405,6 +405,7 @@ class PliantQTextBrowser(QtWidgets.QTextBrowser):
         if self.annotation_mode:
             self.annotation_mode = False
             self.viewport().setCursor(QtCore.Qt.ArrowCursor)
+            self.parent.annotationDock.show()
             self.parent.annotationDock.setWindowOpacity(.95)
 
             self.current_annotation = None
@@ -413,7 +414,7 @@ class PliantQTextBrowser(QtWidgets.QTextBrowser):
         else:
             self.annotation_mode = True
             self.viewport().setCursor(QtCore.Qt.IBeamCursor)
-            self.parent.annotationDock.setWindowOpacity(.40)
+            self.parent.annotationDock.hide()
 
             selected_index = self.parent.annotationListView.currentIndex()
             self.current_annotation = self.parent.annotationModel.data(
@@ -555,6 +556,10 @@ class PliantQTextBrowser(QtWidgets.QTextBrowser):
         if action == searchYoutubeAction:
             webbrowser.open_new_tab(
                 f'https://www.youtube.com/results?search_query={selection}')
+
+        if action == editAnnotationNoteAction:
+            self.common_functions.show_annotation_note(
+                'text', current_chapter, cursor_at_mouse.position())
 
         if action == deleteAnnotationAction:
             self.common_functions.delete_annotation(
@@ -704,6 +709,26 @@ class PliantWidgetsCommonFunctions:
         self.clear_annotations()
         self.load_annotations(chapter)
         self.pw.verticalScrollBar().setValue(current_scroll_position)
+
+    def show_annotation_note(self, annotation_type, chapter, cursor_position):
+        # TODO
+        # Consolidate this and the next 2 functions
+
+        try:
+            chapter_annotations = self.pw.annotation_dict[chapter]
+        except KeyError:
+            return
+
+        for i in chapter_annotations:
+            if annotation_type == 'text':
+                cursor_start = i['cursor'][0]
+                cursor_end = i['cursor'][1]
+
+                if cursor_start <= cursor_position <= cursor_end:
+                    note = i['note']
+                    self.pw.parent.annotationNoteDock.set_annotation(i)
+                    self.pw.parent.annotationNoteEdit.setText(note)
+                    self.pw.parent.annotationNoteDock.show()
 
     def clear_annotations(self):
         if not self.are_we_doing_images_only:
