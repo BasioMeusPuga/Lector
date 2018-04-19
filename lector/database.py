@@ -219,7 +219,7 @@ class DatabaseFunctions:
 
     def modify_metadata(self, metadata_dict, book_hash):
         def generate_binary(column, data):
-            if column in ('Position', 'LastAccessed', 'Bookmarks'):
+            if column in ('Position', 'LastAccessed', 'Bookmarks', 'Annotations'):
                 return sqlite3.Binary(pickle.dumps(data))
             elif column == 'CoverImage':
                 return sqlite3.Binary(data)

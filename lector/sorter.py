@@ -126,7 +126,8 @@ class BookSorter:
     def database_entry_for_book(self, file_hash):
         database_return = database.DatabaseFunctions(
             self.database_path).fetch_data(
-                ('Title', 'Author', 'Year', 'ISBN', 'Tags', 'Position', 'Bookmarks', 'CoverImage'),
+                ('Title', 'Author', 'Year', 'ISBN', 'Tags',
+                 'Position', 'Bookmarks', 'CoverImage', 'Annotations'),
                 'books',
                 {'Hash': file_hash},
                 'EQUALS')[0]
@@ -134,7 +135,7 @@ class BookSorter:
         book_data = []
 
         for count, i in enumerate(database_return):
-            if count in (5, 6):
+            if count in (5, 6, 8):  # Position, Bookmarks, and Annotations are pickled
                 if i:
                     book_data.append(pickle.loads(i))
                 else:
@@ -233,12 +234,14 @@ class BookSorter:
                 position = book_data[5]
                 bookmarks = book_data[6]
                 cover = book_data[7]
+                annotations = book_data[8]
 
                 this_book[file_md5]['position'] = position
                 this_book[file_md5]['bookmarks'] = bookmarks
                 this_book[file_md5]['content'] = content
                 this_book[file_md5]['images_only'] = images_only
                 this_book[file_md5]['cover'] = cover
+                this_book[file_md5]['annotations'] = annotations
 
             this_book[file_md5]['title'] = title
             this_book[file_md5]['author'] = author

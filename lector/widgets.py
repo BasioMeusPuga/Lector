@@ -58,6 +58,14 @@ class Tab(QtWidgets.QWidget):
 
         chapter_content = self.metadata['content'][current_chapter - 1][1]
 
+        # Create relevant containers
+        if not self.metadata['annotations']:
+            self.metadata['annotations'] = {}
+
+        # See bookmark availability
+        if not self.metadata['bookmarks']:
+            self.metadata['bookmarks'] = {}
+
         # The content display widget is, by default a QTextBrowser.
         # In case the incoming data is only images
         # such as in the case of comic book files,
@@ -97,6 +105,9 @@ class Tab(QtWidgets.QWidget):
             self.hiddenButton.clicked.connect(self.set_cursor_position)
             self.hiddenButton.animateClick(50)
 
+        # Load annotations for current content
+        self.contentView.common_functions.load_annotations(current_chapter)
+
         # The following are common to both the text browser and
         # the graphics view
         self.contentView.setFrameShape(QtWidgets.QFrame.NoFrame)
@@ -120,18 +131,12 @@ class Tab(QtWidgets.QWidget):
         self.annotationListView = QtWidgets.QListView(self.annotationDock)
         self.annotationListView.setResizeMode(QtWidgets.QListWidget.Adjust)
         self.annotationListView.setMaximumWidth(350)
-        if not self.are_we_doing_images_only:
-            self.annotationListView.doubleClicked.connect(
-                self.contentView.toggle_annotation_mode)
+        self.annotationListView.doubleClicked.connect(self.contentView.toggle_annotation_mode)
         self.annotationListView.setEditTriggers(QtWidgets.QListView.NoEditTriggers)
         self.annotationDock.setWidget(self.annotationListView)
 
         self.annotationModel = QtGui.QStandardItemModel(self)
         self.generate_annotation_model()
-
-        # See bookmark availability
-        if not self.metadata['bookmarks']:
-            self.metadata['bookmarks'] = {}
 
         # Create the dock widget for context specific display
         self.bookmarkDock = PliantDockWidget(self.main_window, 'bookmarks', self.contentView)
@@ -335,6 +340,8 @@ class Tab(QtWidgets.QWidget):
             self.contentView.clear()
             self.contentView.setHtml(required_content)
 
+        self.contentView.common_functions.load_annotations(chapter_number + 1)
+
     def format_view(self, font, font_size, foreground,
                     background, padding, line_spacing,
                     text_alignment):
@@ -405,11 +412,18 @@ class Tab(QtWidgets.QWidget):
         if not saved_annotations:
             return
 
-        for i in saved_annotations:
+        def add_to_model(annotation):
             item = QtGui.QStandardItem()
-            item.setText(i['name'])
-            item.setData(i, QtCore.Qt.UserRole)
+            item.setText(annotation['name'])
+            item.setData(annotation, QtCore.Qt.UserRole)
             self.annotationModel.appendRow(item)
+
+        # Prevent annotation mixup
+        for i in saved_annotations:
+            if self.are_we_doing_images_only and i['applicable_to'] == 'images':
+                add_to_model(i)
+            elif not self.are_we_doing_images_only and i['applicable_to'] == 'text':
+                add_to_model(i)
 
         self.annotationListView.setModel(self.annotationModel)
 
@@ -556,13 +570,13 @@ class PliantDockWidget(QtWidgets.QDockWidget):
         desktop_size = QtWidgets.QDesktopWidget().screenGeometry()
 
         if self.intended_for == 'bookmarks':
-            dock_x = viewport_topRight.x() - dock_width + 1
             dock_width = desktop_size.width() // 5.5
+            dock_x = viewport_topRight.x() - dock_width + 1
             self.main_window.bookToolBar.bookmarkButton.setChecked(True)
 
         elif self.intended_for == 'annotations':
-            dock_x = viewport_topLeft.x()
             dock_width = desktop_size.width() // 10
+            dock_x = viewport_topLeft.x()
             self.main_window.bookToolBar.annotationButton.setChecked(True)
 
         dock_y = viewport_topRight.y() + (viewport_height * .10)

@@ -234,6 +234,7 @@ class AnnotationsUI(QtWidgets.QDialog, annotationswindow.Ui_Dialog):
 
         self.current_annotation = {
             'name': annotation_name,
+            'applicable_to': 'text',
             'type': 'text_markup',
             'components': annotation_components}
 

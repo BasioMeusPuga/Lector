@@ -36,7 +36,8 @@ class BackGroundTabUpdate(QtCore.QThread):
             database_dict = {
                 'Position': i['position'],
                 'LastAccessed': i['last_accessed'],
-                'Bookmarks': i['bookmarks']}
+                'Bookmarks': i['bookmarks'],
+                'Annotations': i['annotations']}
 
             database.DatabaseFunctions(self.database_path).modify_metadata(
                 database_dict, book_hash)

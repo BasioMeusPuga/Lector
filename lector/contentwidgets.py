@@ -43,6 +43,8 @@ class PliantQGraphicsView(QtWidgets.QGraphicsView):
 
         self.thread = None
 
+        self.annotation_dict = self.parent.metadata['annotations']
+
         self.filepath = filepath
         self.filetype = os.path.splitext(self.filepath)[1][1:]
 
@@ -318,6 +320,9 @@ class PliantQGraphicsView(QtWidgets.QGraphicsView):
         # In case the program is closed when a contentView is fullscreened
         self.main_window.closeEvent()
 
+    def toggle_annotation_mode(self):
+        pass
+
 
 class PliantQTextBrowser(QtWidgets.QTextBrowser):
     def __init__(self, main_window, parent=None):
@@ -330,6 +335,7 @@ class PliantQTextBrowser(QtWidgets.QTextBrowser):
         self.annotation_mode = False
         self.annotator = AnnotationPlacement()
         self.current_annotation = None
+        self.annotation_dict = self.parent.metadata['annotations']
 
         self.common_functions = PliantWidgetsCommonFunctions(
             self, self.main_window)
@@ -396,46 +402,82 @@ class PliantQTextBrowser(QtWidgets.QTextBrowser):
             self.parent.metadata['position']['cursor_position'] = cursor_position
 
     def toggle_annotation_mode(self):
-        self.annotation_mode = True
-        self.viewport().setCursor(QtCore.Qt.IBeamCursor)
-        self.parent.annotationDock.setWindowOpacity(.40)
+        if self.annotation_mode:
+            self.annotation_mode = False
+            self.viewport().setCursor(QtCore.Qt.ArrowCursor)
+            self.parent.annotationDock.setWindowOpacity(.95)
 
-        selected_index = self.parent.annotationListView.currentIndex()
-        self.current_annotation = self.parent.annotationModel.data(
-            selected_index, QtCore.Qt.UserRole)
-        print('Current annotation: ' + self.current_annotation['name'])
+            self.current_annotation = None
+            self.parent.annotationListView.clearSelection()
+
+        else:
+            self.annotation_mode = True
+            self.viewport().setCursor(QtCore.Qt.IBeamCursor)
+            self.parent.annotationDock.setWindowOpacity(.40)
+
+            selected_index = self.parent.annotationListView.currentIndex()
+            self.current_annotation = self.parent.annotationModel.data(
+                selected_index, QtCore.Qt.UserRole)
+            print('Current annotation: ' + self.current_annotation['name'])
 
     def mouseReleaseEvent(self, event):
         # This takes care of annotation placement
+        # and addition to the list that holds all current annotations
         if not self.current_annotation:
             QtWidgets.QTextBrowser.mouseReleaseEvent(self, event)
             return
 
-        self.annotator.set_current_annotation(
-            'text_markup', self.current_annotation['components'])
-
+        current_chapter = self.parent.metadata['position']['current_chapter']
         cursor = self.textCursor()
+        cursor_start = cursor.selectionStart()
+        cursor_end = cursor.selectionEnd()
+        annotation_type = 'text_markup'
+        applicable_to = 'text'
+        annotation_components = self.current_annotation['components']
+
+        self.annotator.set_current_annotation(
+            annotation_type, annotation_components)
+
         new_cursor = self.annotator.format_text(
-            cursor, cursor.selectionStart(), cursor.selectionEnd())
+            cursor, cursor_start, cursor_end)
         self.setTextCursor(new_cursor)
 
-        self.annotation_mode = False
-        self.viewport().setCursor(QtCore.Qt.ArrowCursor)
-        self.current_annotation = None
-        self.parent.annotationListView.clearSelection()
-        self.parent.annotationDock.setWindowOpacity(.95)
+        # TODO
+        # Maybe use annotation name for a consolidated annotation list
+
+        this_annotation = {
+            'name': self.current_annotation['name'],
+            'applicable_to': applicable_to,
+            'type': annotation_type,
+            'cursor': (cursor_start, cursor_end),
+            'components': annotation_components,
+            'note': None}
+
+        try:
+            self.annotation_dict[current_chapter].append(this_annotation)
+        except KeyError:
+            self.annotation_dict[current_chapter] = []
+            self.annotation_dict[current_chapter].append(this_annotation)
+
+        self.toggle_annotation_mode()
 
     def generate_textbrowser_context_menu(self, position):
         selection = self.textCursor().selection()
         selection = selection.toPlainText()
+
+        current_chapter = self.parent.metadata['position']['current_chapter']
+        cursor_at_mouse = self.cursorForPosition(position)
+        annotation_is_present = self.common_functions.check_annotation_position(
+            'text', current_chapter, cursor_at_mouse.position())
 
         contextMenu = QtWidgets.QMenu()
 
         # The following cannot be None because a click
         # outside the menu means that the action variable is None.
         defineAction = fsToggleAction = dfToggleAction = 'Caesar si viveret, ad remum dareris'
-        searchAction = searchGoogleAction = 'TODO Insert Latin Joke'
         searchWikipediaAction = searchYoutubeAction = 'Does anyone know something funny in Latin?'
+        searchAction = searchGoogleAction = bookmarksToggleAction = 'TODO Insert Latin Joke'
+        deleteAnnotationAction = editAnnotationNoteAction = 'Latin quote 2. Electric Boogaloo.'
 
         if selection and selection != '':
             first_selected_word = selection.split()[0]
@@ -462,6 +504,17 @@ class PliantQTextBrowser(QtWidgets.QTextBrowser):
                 QtGui.QIcon(':/images/Youtube.png'),
                 'Youtube')
 
+        if annotation_is_present:
+            annotationsubMenu = contextMenu.addMenu('Annotation')
+            annotationsubMenu.setIcon(self.main_window.QImageFactory.get_image('annotate'))
+
+            editAnnotationNoteAction = annotationsubMenu.addAction(
+                self.main_window.QImageFactory.get_image('edit-rename'),
+                self._translate('PliantQTextBrowser', 'Edit note'))
+            deleteAnnotationAction = annotationsubMenu.addAction(
+                self.main_window.QImageFactory.get_image('remove'),
+                self._translate('PliantQTextBrowser', 'Delete annotation'))
+
         if self.parent.is_fullscreen:
             fsToggleAction = contextMenu.addAction(
                 self.main_window.QImageFactory.get_image('view-fullscreen'),
@@ -478,7 +531,6 @@ class PliantQTextBrowser(QtWidgets.QTextBrowser):
                 self.main_window.QImageFactory.get_image('visibility'),
                 distraction_free_prompt)
 
-        bookmarksToggleAction = 'Latin quote 2. Electric Boogaloo.'
         if not self.main_window.settings['show_bars'] or self.parent.is_fullscreen:
             bookmarksToggleAction = contextMenu.addAction(
                 self.main_window.QImageFactory.get_image('bookmarks'),
@@ -490,6 +542,7 @@ class PliantQTextBrowser(QtWidgets.QTextBrowser):
 
         if action == defineAction:
             self.main_window.definitionDialog.find_definition(selection)
+
         if action == searchAction:
             self.main_window.bookToolBar.searchBar.setText(selection)
             self.main_window.bookToolBar.searchBar.setFocus()
@@ -502,8 +555,14 @@ class PliantQTextBrowser(QtWidgets.QTextBrowser):
         if action == searchYoutubeAction:
             webbrowser.open_new_tab(
                 f'https://www.youtube.com/results?search_query={selection}')
+
+        if action == deleteAnnotationAction:
+            self.common_functions.delete_annotation(
+                'text', current_chapter, cursor_at_mouse.position())
+
         if action == bookmarksToggleAction:
             self.parent.toggle_bookmarks()
+
         if action == fsToggleAction:
             self.parent.exit_fullscreen()
         if action == dfToggleAction:
@@ -588,8 +647,76 @@ class PliantWidgetsCommonFunctions:
             if not was_button_pressed:
                 self.pw.ignore_wheel_event = True
 
-            if not self.are_we_doing_images_only:
-                self.pw.record_position()
+    def load_annotations(self, chapter):
+        try:
+            chapter_annotations = self.pw.annotation_dict[chapter]
+        except KeyError:
+            return
+
+        for i in chapter_annotations:
+            applicable_to = i['applicable_to']
+            annotation_type = i['type']
+            annotation_components = i['components']
+
+            if not self.are_we_doing_images_only and applicable_to == 'text':
+                cursor = self.pw.textCursor()
+                cursor_start = i['cursor'][0]
+                cursor_end = i['cursor'][1]
+
+                self.pw.annotator.set_current_annotation(
+                    annotation_type, annotation_components)
+
+                new_cursor = self.pw.annotator.format_text(
+                    cursor, cursor_start, cursor_end)
+                self.pw.setTextCursor(new_cursor)
+
+    def check_annotation_position(self, annotation_type, chapter, cursor_position):
+        try:
+            chapter_annotations = self.pw.annotation_dict[chapter]
+        except KeyError:
+            return False
+
+        for i in chapter_annotations:
+            if annotation_type == 'text':
+                cursor_start = i['cursor'][0]
+                cursor_end = i['cursor'][1]
+
+                if cursor_start <= cursor_position <= cursor_end:
+                    return True
+
+        return False
+
+    def delete_annotation(self, annotation_type, chapter, cursor_position):
+        try:
+            chapter_annotations = self.pw.annotation_dict[chapter]
+        except KeyError:
+            return
+
+        for i in chapter_annotations:
+            if annotation_type == 'text':
+                cursor_start = i['cursor'][0]
+                cursor_end = i['cursor'][1]
+
+                if cursor_start <= cursor_position <= cursor_end:
+                    self.pw.annotation_dict[chapter].remove(i)
+
+        current_scroll_position = self.pw.verticalScrollBar().value()
+        self.clear_annotations()
+        self.load_annotations(chapter)
+        self.pw.verticalScrollBar().setValue(current_scroll_position)
+
+    def clear_annotations(self):
+        if not self.are_we_doing_images_only:
+            cursor = self.pw.textCursor()
+            cursor.setPosition(0)
+            cursor.movePosition(QtGui.QTextCursor.End, QtGui.QTextCursor.KeepAnchor)
+
+            previewCharFormat = QtGui.QTextCharFormat()
+            previewCharFormat.setFontStyleStrategy(
+                QtGui.QFont.PreferAntialias)
+            cursor.setCharFormat(previewCharFormat)
+            cursor.clearSelection()
+            self.pw.setTextCursor(cursor)
 
     def update_model(self):
         # We're updating the underlying model to have real-time
