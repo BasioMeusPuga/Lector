@@ -118,9 +118,18 @@ class SettingsUI(QtWidgets.QDialog, settingswindow.Ui_Dialog):
         list_options = [
             library_string, switches_string, annotations_string, about_string]
 
-        for i in list_options:
+        icon_dict = {
+            0: 'view-readermode',
+            1: 'switches',
+            2: 'annotate',
+            3: 'about'}
+
+        for count, i in enumerate(list_options):
             item = QtGui.QStandardItem()
             item.setText(i)
+            this_icon = icon_dict[count]
+            item.setIcon(
+                self.main_window.QImageFactory.get_image(this_icon))
             self.listModel.appendRow(item)
         self.listView.setModel(self.listModel)
         self.listView.clicked.connect(self.page_switch)

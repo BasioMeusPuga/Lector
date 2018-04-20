@@ -63,13 +63,10 @@ class PliantQGraphicsView(QtWidgets.QGraphicsView):
         self.common_functions = PliantWidgetsCommonFunctions(
             self, self.main_window)
 
-        # TODO
-        # Image panning with mouse
         self.ignore_wheel_event = False
         self.ignore_wheel_event_number = 0
         self.setMouseTracking(True)
         self.setDragMode(QtWidgets.QGraphicsView.ScrollHandDrag)
-        self.viewport().setCursor(QtCore.Qt.ArrowCursor)
 
         self.setContextMenuPolicy(QtCore.Qt.CustomContextMenu)
         self.customContextMenuRequested.connect(
@@ -225,9 +222,13 @@ class PliantQGraphicsView(QtWidgets.QGraphicsView):
         self.parent.metadata['position']['is_read'] = False
         self.common_functions.update_model()
 
-    def mouseMoveEvent(self, *args):
-        self.viewport().setCursor(QtCore.Qt.ArrowCursor)
+    def mouseMoveEvent(self, event):
+        if QtWidgets.QApplication.mouseButtons() == QtCore.Qt.NoButton:
+            self.viewport().setCursor(QtCore.Qt.OpenHandCursor)
+        else:
+            self.viewport().setCursor(QtCore.Qt.ClosedHandCursor)
         self.parent.mouse_hide_timer.start(3000)
+        QtWidgets.QGraphicsView.mouseMoveEvent(self, event)
 
     def generate_graphicsview_context_menu(self, position):
         contextMenu = QtWidgets.QMenu()
@@ -468,8 +469,8 @@ class PliantQTextBrowser(QtWidgets.QTextBrowser):
 
         current_chapter = self.parent.metadata['position']['current_chapter']
         cursor_at_mouse = self.cursorForPosition(position)
-        annotation_is_present = self.common_functions.check_annotation_position(
-            'text', current_chapter, cursor_at_mouse.position())
+        annotation_is_present = self.common_functions.annotation_specific(
+            'check', 'text', current_chapter, cursor_at_mouse.position())
 
         contextMenu = QtWidgets.QMenu()
 
@@ -558,12 +559,12 @@ class PliantQTextBrowser(QtWidgets.QTextBrowser):
                 f'https://www.youtube.com/results?search_query={selection}')
 
         if action == editAnnotationNoteAction:
-            self.common_functions.show_annotation_note(
-                'text', current_chapter, cursor_at_mouse.position())
+            self.common_functions.annotation_specific(
+                'note', 'text', current_chapter, cursor_at_mouse.position())
 
         if action == deleteAnnotationAction:
-            self.common_functions.delete_annotation(
-                'text', current_chapter, cursor_at_mouse.position())
+            self.common_functions.annotation_specific(
+                'delete', 'text', current_chapter, cursor_at_mouse.position())
 
         if action == bookmarksToggleAction:
             self.parent.toggle_bookmarks()
@@ -675,61 +676,6 @@ class PliantWidgetsCommonFunctions:
                     cursor, cursor_start, cursor_end)
                 self.pw.setTextCursor(new_cursor)
 
-    def check_annotation_position(self, annotation_type, chapter, cursor_position):
-        try:
-            chapter_annotations = self.pw.annotation_dict[chapter]
-        except KeyError:
-            return False
-
-        for i in chapter_annotations:
-            if annotation_type == 'text':
-                cursor_start = i['cursor'][0]
-                cursor_end = i['cursor'][1]
-
-                if cursor_start <= cursor_position <= cursor_end:
-                    return True
-
-        return False
-
-    def delete_annotation(self, annotation_type, chapter, cursor_position):
-        try:
-            chapter_annotations = self.pw.annotation_dict[chapter]
-        except KeyError:
-            return
-
-        for i in chapter_annotations:
-            if annotation_type == 'text':
-                cursor_start = i['cursor'][0]
-                cursor_end = i['cursor'][1]
-
-                if cursor_start <= cursor_position <= cursor_end:
-                    self.pw.annotation_dict[chapter].remove(i)
-
-        current_scroll_position = self.pw.verticalScrollBar().value()
-        self.clear_annotations()
-        self.load_annotations(chapter)
-        self.pw.verticalScrollBar().setValue(current_scroll_position)
-
-    def show_annotation_note(self, annotation_type, chapter, cursor_position):
-        # TODO
-        # Consolidate this and the next 2 functions
-
-        try:
-            chapter_annotations = self.pw.annotation_dict[chapter]
-        except KeyError:
-            return
-
-        for i in chapter_annotations:
-            if annotation_type == 'text':
-                cursor_start = i['cursor'][0]
-                cursor_end = i['cursor'][1]
-
-                if cursor_start <= cursor_position <= cursor_end:
-                    note = i['note']
-                    self.pw.parent.annotationNoteDock.set_annotation(i)
-                    self.pw.parent.annotationNoteEdit.setText(note)
-                    self.pw.parent.annotationNoteDock.show()
-
     def clear_annotations(self):
         if not self.are_we_doing_images_only:
             cursor = self.pw.textCursor()
@@ -742,6 +688,37 @@ class PliantWidgetsCommonFunctions:
             cursor.setCharFormat(previewCharFormat)
             cursor.clearSelection()
             self.pw.setTextCursor(cursor)
+
+    def annotation_specific(self, mode, annotation_type, chapter, cursor_position):
+        try:
+            chapter_annotations = self.pw.annotation_dict[chapter]
+        except KeyError:
+            return False
+
+        for i in chapter_annotations:
+            if annotation_type == 'text':
+                cursor_start = i['cursor'][0]
+                cursor_end = i['cursor'][1]
+
+                if cursor_start <= cursor_position <= cursor_end:
+                    if mode == 'check':
+                        return True
+                    if mode == 'delete':
+                        self.pw.annotation_dict[chapter].remove(i)
+                    if mode == 'note':
+                        note = i['note']
+                        self.pw.parent.annotationNoteDock.set_annotation(i)
+                        self.pw.parent.annotationNoteEdit.setText(note)
+                        self.pw.parent.annotationNoteDock.show()
+
+        # Post iteration
+        if mode == 'check':
+            return False
+        if mode == 'delete':
+            scroll_position = self.pw.verticalScrollBar().value()
+            self.clear_annotations()
+            self.load_annotations(chapter)
+            self.pw.verticalScrollBar().setValue(scroll_position)
 
     def update_model(self):
         # We're updating the underlying model to have real-time

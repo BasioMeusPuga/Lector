@@ -61,9 +61,8 @@ TODO
         ✓ Spacebar should not cut off lines at the top
         ✓ Track open bookmark windows so they can be closed quickly at exit
         Annotations
-            Text
-                Overlapping - Will involve passing current charformat
-                Annotation preview upon application
+            ✓ Text
+                Annotation preview in listView
             Image
         Adjust key navigation according to viewport dimensions
         Search document using QTextCursor

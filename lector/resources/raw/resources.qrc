@@ -1,5 +1,9 @@
 <RCC>
   <qresource prefix="images">
+    <file>DarkIcons/about.svg</file>
+    <file>DarkIcons/switches.svg</file>
+    <file>LightIcons/about.svg</file>
+    <file>LightIcons/switches.svg</file>
     <file>LightIcons/annotate.svg</file>
     <file>DarkIcons/annotate.svg</file>
     <file>Google.png</file>

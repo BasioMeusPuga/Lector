@@ -145,7 +145,7 @@ class Tab(QtWidgets.QWidget):
         self.annotationNoteDock.hide()
 
         self.annotationNoteEdit = QtWidgets.QTextEdit(self.annotationDock)
-        self.annotationNoteEdit.setMaximumSize(QtCore.QSize(200, 200))
+        self.annotationNoteEdit.setMaximumSize(QtCore.QSize(250, 250))
         self.annotationNoteEdit.setFocusPolicy(QtCore.Qt.StrongFocus)
         self.annotationNoteDock.setWidget(self.annotationNoteEdit)
 
@@ -593,17 +593,18 @@ class PliantDockWidget(QtWidgets.QDockWidget):
             self.main_window.bookToolBar.bookmarkButton.setChecked(True)
 
         elif self.intended_for == 'annotations':
-            dock_width = desktop_size.width() // 10
+            dock_width = desktop_size.width() // 5.5
             dock_x = viewport_topLeft.x()
             self.main_window.bookToolBar.annotationButton.setChecked(True)
 
         elif self.intended_for == 'notes':
-            dock_width = dock_height = desktop_size.width() // 6
+            dock_width = dock_height = desktop_size.width() // 5.5
             dock_x = QtGui.QCursor.pos().x()
             dock_y = QtGui.QCursor.pos().y()
 
         self.main_window.active_bookmark_docks.append(self)
         self.setGeometry(dock_x, dock_y, dock_width, dock_height)
+        self.setFocus()  # TODO This doesn't work
 
     def hideEvent(self, event=None):
         if self.intended_for == 'bookmarks':
