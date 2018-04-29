@@ -49,12 +49,12 @@ class LibraryDelegate(QtWidgets.QStyledItemDelegate):
         if not file_exists:
             painter.setOpacity(.7)
             QtWidgets.QStyledItemDelegate.paint(self, painter, option, index)
+            painter.setOpacity(1)
             read_icon = pie_chart.pixmapper(
                 -1, None, self.parent.settings['consider_read_at'], 36)
             x_draw = option.rect.bottomRight().x() - 30
             y_draw = option.rect.bottomRight().y() - 35
             painter.drawPixmap(x_draw, y_draw, read_icon)
-            painter.setOpacity(1)
             return
 
         QtWidgets.QStyledItemDelegate.paint(self, painter, option, index)

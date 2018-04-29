@@ -33,13 +33,14 @@
 
 import io
 import os
+import sys
 import time
 import pickle
 import hashlib
 import threading
 
 # The multiprocessing module does not work correctly on Windows
-if os.uname().sysname == 'Windows':
+if sys.platform.startswith('win'):
     from multiprocessing.dummy import Pool, Manager
 else:
     from multiprocessing import Pool, Manager

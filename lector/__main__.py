@@ -670,6 +670,12 @@ class MainUI(QtWidgets.QMainWindow, mainwindow.Ui_MainWindow):
             True,
             self.temp_dir.path()).initiate_threads()
 
+        # TODO
+        # Notification feedback in case all books return nothing
+
+        if not contents:
+            return
+
         for i in contents:
             # New tabs are created here
             # Initial position adjustment is carried out by the tab itself
