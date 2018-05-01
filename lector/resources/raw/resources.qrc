@@ -93,5 +93,6 @@
     <file>translations_bin/Lector_es.qm</file>
     <file>translations_bin/Lector_de.qm</file>
     <file>translations_bin/Lector_fr.qm</file>
+    <file>translations_bin/Lector_zh.qm</file>
   </qresource>
 </RCC>
