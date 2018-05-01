@@ -37,7 +37,7 @@ poppler-qt5 and python-poppler-qt5 are optional.
 * [Gentoo (unofficial)](https://bitbucket.org/szymonsz/gen2-overlay/src/master/app-text/lector/)
 
 ## Translations
-1. There is a `SAMPLE.ts` file in `resources/translations`. Open it in `Qt Linguist`.
+1. There is a `SAMPLE.ts` file [here](https://github.com/BasioMeusPuga/Lector/tree/master/lector/resources/translations). Open it in `Qt Linguist`.
 2. Pick the language you wish to translate to.
 3. Translate relevant strings.
 4. Try to resist the urge to include profanity.
