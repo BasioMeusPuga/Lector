@@ -324,6 +324,8 @@ class SettingsUI(QtWidgets.QDialog, settingswindow.Ui_Dialog):
         self.gather_annotations()
         Settings(self.main_window).save_settings()
         Settings(self.main_window).read_settings()
+        self.main_window.settings['last_open_tab'] = None  # Needed to allow focus change
+                                                           # to newly opened book
         self.resizeEvent()
 
     def resizeEvent(self, event=None):

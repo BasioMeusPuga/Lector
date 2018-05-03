@@ -38,8 +38,12 @@ class DefinitionsUI(QtWidgets.QDialog, definitions.Ui_Dialog):
         radius = 15
         path = QtGui.QPainterPath()
         path.addRoundedRect(QtCore.QRectF(self.rect()), radius, radius)
-        mask = QtGui.QRegion(path.toFillPolygon().toPolygon())
-        self.setMask(mask)
+
+        try:
+            mask = QtGui.QRegion(path.toFillPolygon().toPolygon())
+            self.setMask(mask)
+        except TypeError:  # Required for older versions of Qt
+            pass
 
         self.definitionView.setVerticalScrollBarPolicy(QtCore.Qt.ScrollBarAlwaysOff)
 
