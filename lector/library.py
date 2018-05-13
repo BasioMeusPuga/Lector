@@ -160,6 +160,7 @@ class Library:
             item.setData(False, QtCore.Qt.UserRole + 8) # Is the cover being displayed?
             item.setData(date_added, QtCore.Qt.UserRole + 9)
             item.setData(last_accessed, QtCore.Qt.UserRole + 12)
+            item.setData(path, QtCore.Qt.UserRole + 13)
             item.setIcon(QtGui.QIcon(img_pixmap))
 
             self.libraryModel.appendRow(item)

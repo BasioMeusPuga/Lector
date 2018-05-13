@@ -166,6 +166,13 @@
                     </property>
                    </widget>
                   </item>
+                  <item>
+                   <widget class="QCheckBox" name="attenuateTitles">
+                    <property name="text">
+                     <string>Shrink long book titles</string>
+                    </property>
+                   </widget>
+                  </item>
                  </layout>
                 </item>
                </layout>

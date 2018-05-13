@@ -102,6 +102,9 @@ class Ui_Dialog(object):
         self.autoTags = QtWidgets.QCheckBox(self.groupBox)
         self.autoTags.setObjectName("autoTags")
         self.horizontalLayout_9.addWidget(self.autoTags)
+        self.attenuateTitles = QtWidgets.QCheckBox(self.groupBox)
+        self.attenuateTitles.setObjectName("attenuateTitles")
+        self.horizontalLayout_9.addWidget(self.attenuateTitles)
         self.verticalLayout_2.addLayout(self.horizontalLayout_9)
         self.gridLayout_4.addLayout(self.verticalLayout_2, 0, 0, 1, 1)
         self.verticalLayout.addWidget(self.groupBox)
@@ -314,6 +317,7 @@ class Ui_Dialog(object):
         self.performCulling.setToolTip(_translate("Dialog", "Enabling reduces startup time and memory usage"))
         self.performCulling.setText(_translate("Dialog", "Load covers only when needed"))
         self.autoTags.setText(_translate("Dialog", "Generate tags from files"))
+        self.attenuateTitles.setText(_translate("Dialog", "Shrink long book titles"))
         self.groupBox_2.setTitle(_translate("Dialog", "Reading"))
         self.hideScrollBars.setToolTip(_translate("Dialog", "Horizontal scrolling with Alt + Scroll\n"
 "Reopen book to see changes"))

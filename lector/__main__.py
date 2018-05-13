@@ -167,7 +167,7 @@ class MainUI(QtWidgets.QMainWindow, mainwindow.Ui_MainWindow):
         self.bookToolBar.annotationButton.triggered.connect(self.toggle_dock_widgets)
         self.bookToolBar.addBookmarkButton.triggered.connect(self.add_bookmark)
         self.bookToolBar.bookmarkButton.triggered.connect(self.toggle_dock_widgets)
-        self.bookToolBar.distractionFreeButton.triggered.connect(self.toggle_dock_widgets)
+        self.bookToolBar.distractionFreeButton.triggered.connect(self.toggle_distraction_free)
         self.bookToolBar.fullscreenButton.triggered.connect(self.set_fullscreen)
 
         for count, i in enumerate(self.display_profiles):
@@ -239,6 +239,7 @@ class MainUI(QtWidgets.QMainWindow, mainwindow.Ui_MainWindow):
         self.listView.customContextMenuRequested.connect(self.generate_library_context_menu)
         self.listView.verticalScrollBar().valueChanged.connect(self.start_culling_timer)
         self.listView.setVerticalScrollBarPolicy(QtCore.Qt.ScrollBarAsNeeded)
+        self.listView.setAcceptDrops(True)
 
         self.listView.setStyleSheet(
             "QListView {{background-color: {0}}}".format(
@@ -698,9 +699,6 @@ class MainUI(QtWidgets.QMainWindow, mainwindow.Ui_MainWindow):
 
         self.tabWidget.setCurrentIndex(self.tabWidget.count() - 1)
         finishing_touches()
-
-    # TODO
-    # def dropEvent
 
     def statusbar_visibility(self):
         if self.sender() == self.libraryToolBar.searchBar:

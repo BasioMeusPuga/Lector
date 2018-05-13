@@ -202,6 +202,7 @@ class ProxyModelsCommonFunctions:
         directory_name = model.data(this_index, QtCore.Qt.UserRole + 10)
         directory_tags = model.data(this_index, QtCore.Qt.UserRole + 11)
         last_accessed = model.data(this_index, QtCore.Qt.UserRole + 12)
+        file_path = model.data(this_index, QtCore.Qt.UserRole + 13)
 
         # Hide untouched files when sorting by last accessed
         if self.parent_model.sorting_box_position == 4 and not last_accessed:
@@ -222,7 +223,9 @@ class ProxyModelsCommonFunctions:
         else:
             valid_data = [
                 i.lower() for i in (
-                    title, author, tags, directory_name, directory_tags) if i is not None]
+                    title, author, tags, directory_name,
+                    directory_tags, file_path)
+                if i is not None]
             for i in valid_data:
                 if self.parent_model.filter_text.lower() in i:
                     return True

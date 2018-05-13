@@ -187,6 +187,8 @@ class Tab(QtWidgets.QWidget):
         self.bookmarkDock.setWindowOpacity(.95)
 
         title = self.metadata['title']
+        if self.main_window.settings['attenuate_titles'] and len(title) > 30:
+            title = title[:30] + '...'
         self.main_window.tabWidget.addTab(self, title)
 
         this_tab_index = self.main_window.tabWidget.indexOf(self)

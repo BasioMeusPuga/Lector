@@ -95,6 +95,7 @@ class SettingsUI(QtWidgets.QDialog, settingswindow.Ui_Dialog):
         self.performCulling.setChecked(self.main_window.settings['perform_culling'])
         self.cachingEnabled.setChecked(self.main_window.settings['caching_enabled'])
         self.hideScrollBars.setChecked(self.main_window.settings['hide_scrollbars'])
+        self.attenuateTitles.setChecked(self.main_window.settings['attenuate_titles'])
         self.scrollSpeedSlider.setValue(self.main_window.settings['scroll_speed'])
         self.readAtPercent.setValue(self.main_window.settings['consider_read_at'])
 
@@ -105,6 +106,7 @@ class SettingsUI(QtWidgets.QDialog, settingswindow.Ui_Dialog):
         self.performCulling.clicked.connect(self.manage_checkboxes)
         self.cachingEnabled.clicked.connect(self.manage_checkboxes)
         self.hideScrollBars.clicked.connect(self.manage_checkboxes)
+        self.attenuateTitles.clicked.connect(self.manage_checkboxes)
         self.scrollSpeedSlider.valueChanged.connect(self.change_scroll_speed)
         self.readAtPercent.valueChanged.connect(self.change_read_at)
 
@@ -163,6 +165,11 @@ class SettingsUI(QtWidgets.QDialog, settingswindow.Ui_Dialog):
 
         # Generate the filesystem treeView
         self.generate_tree()
+
+        # Hide the image annotation tab
+        # TODO
+        # Maybe get off your lazy ass and write something for this
+        self.tabWidget.tabBar().setVisible(False)
 
     def generate_tree(self):
         # Fetch all directories in the database
@@ -366,7 +373,8 @@ class SettingsUI(QtWidgets.QDialog, settingswindow.Ui_Dialog):
             'fileRemember': 'remember_files',
             'performCulling': 'perform_culling',
             'cachingEnabled': 'caching_enabled',
-            'hideScrollBars': 'hide_scrollbars'}
+            'hideScrollBars': 'hide_scrollbars',
+            'attenuateTitles': 'attenuate_titles'}
 
         self.main_window.settings[
             sender_dict[sender]] = not self.main_window.settings[sender_dict[sender]]

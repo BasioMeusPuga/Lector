@@ -64,9 +64,12 @@ class ParsePDF:
             popplerqt5.Poppler.Document.Antialiasing
             and popplerqt5.Poppler.Document.TextAntialiasing)
 
-        cover_page = self.book.page(0)
-        cover_image = cover_page.renderToImage(300, 300)
-        return resize_image(cover_image)
+        try:
+            cover_page = self.book.page(0)
+            cover_image = cover_page.renderToImage(300, 300)
+            return resize_image(cover_image)
+        except AttributeError:
+            return None
 
     def get_isbn(self):
         return None
