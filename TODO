@@ -29,6 +29,7 @@ TODO
         ✓ Information dialog widget
         ✓ Allow editing of database data through the UI + for Bookmarks
         ✓ Include (action) icons with the applications
+        ✓ Drag and drop support for the library
         Set focus to newly added file
     Reading:
         ✓ Drop down for TOC
@@ -97,7 +98,6 @@ TODO
         Shift to logging instead of print statements
         txt, doc, chm, djvu, fb2 support
         Include icons for filetype emblems
-        Drag and drop support for the library
         Comic view modes
             Continuous paging
             Double pages

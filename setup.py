@@ -5,8 +5,8 @@ from setuptools import setup, find_packages
 HERE = path.abspath(path.dirname(__file__))
 
 MAJOR_VERSION = '0'
-MINOR_VERSION = '3'
-MICRO_VERSION = '3'
+MINOR_VERSION = '4'
+MICRO_VERSION = '0'
 VERSION = "{}.{}.{}".format(MAJOR_VERSION, MINOR_VERSION, MICRO_VERSION)
 
 # Get the long description from the README file
