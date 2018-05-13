@@ -2,7 +2,7 @@
 
 # Form implementation generated from reading ui file 'raw/main.ui'
 #
-# Created by: PyQt5 UI code generator 5.9.2
+# Created by: PyQt5 UI code generator 5.10.1
 #
 # WARNING! All changes made in this file will be lost!
 
@@ -35,20 +35,6 @@ class Ui_MainWindow(object):
         self.gridLayout_4.setContentsMargins(0, 0, 0, 0)
         self.gridLayout_4.setSpacing(0)
         self.gridLayout_4.setObjectName("gridLayout_4")
-        self.listView = QtWidgets.QListView(self.listPage)
-        self.listView.setFrameShape(QtWidgets.QFrame.NoFrame)
-        self.listView.setEditTriggers(QtWidgets.QAbstractItemView.NoEditTriggers)
-        self.listView.setProperty("showDropIndicator", False)
-        self.listView.setSelectionMode(QtWidgets.QAbstractItemView.ExtendedSelection)
-        self.listView.setMovement(QtWidgets.QListView.Static)
-        self.listView.setProperty("isWrapping", True)
-        self.listView.setResizeMode(QtWidgets.QListView.Fixed)
-        self.listView.setLayoutMode(QtWidgets.QListView.SinglePass)
-        self.listView.setViewMode(QtWidgets.QListView.IconMode)
-        self.listView.setUniformItemSizes(True)
-        self.listView.setWordWrap(True)
-        self.listView.setObjectName("listView")
-        self.gridLayout_4.addWidget(self.listView, 0, 0, 1, 1)
         self.stackedWidget.addWidget(self.listPage)
         self.tablePage = QtWidgets.QWidget()
         self.tablePage.setObjectName("tablePage")
@@ -56,20 +42,6 @@ class Ui_MainWindow(object):
         self.gridLayout_3.setContentsMargins(0, 0, 0, 0)
         self.gridLayout_3.setSpacing(0)
         self.gridLayout_3.setObjectName("gridLayout_3")
-        self.tableView = QtWidgets.QTableView(self.tablePage)
-        self.tableView.setFrameShape(QtWidgets.QFrame.Box)
-        self.tableView.setFrameShadow(QtWidgets.QFrame.Plain)
-        self.tableView.setSizeAdjustPolicy(QtWidgets.QAbstractScrollArea.AdjustToContentsOnFirstShow)
-        self.tableView.setEditTriggers(QtWidgets.QAbstractItemView.DoubleClicked|QtWidgets.QAbstractItemView.EditKeyPressed|QtWidgets.QAbstractItemView.SelectedClicked)
-        self.tableView.setAlternatingRowColors(True)
-        self.tableView.setSelectionBehavior(QtWidgets.QAbstractItemView.SelectRows)
-        self.tableView.setGridStyle(QtCore.Qt.NoPen)
-        self.tableView.setSortingEnabled(True)
-        self.tableView.setWordWrap(False)
-        self.tableView.setObjectName("tableView")
-        self.tableView.horizontalHeader().setVisible(True)
-        self.tableView.verticalHeader().setVisible(False)
-        self.gridLayout_3.addWidget(self.tableView, 0, 0, 1, 1)
         self.stackedWidget.addWidget(self.tablePage)
         self.gridLayout_2.addWidget(self.stackedWidget, 0, 0, 1, 1)
         self.tabWidget.addTab(self.tab, "")

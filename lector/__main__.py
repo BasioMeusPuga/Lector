@@ -34,7 +34,7 @@ from PyQt5 import QtWidgets, QtGui, QtCore
 from lector import database
 from lector import sorter
 from lector.toolbars import LibraryToolBar, BookToolBar
-from lector.widgets import Tab
+from lector.widgets import Tab, DragDropListView, DragDropTableView
 from lector.delegates import LibraryDelegate
 from lector.threaded import BackGroundTabUpdate, BackGroundBookAddition, BackGroundBookDeletion
 from lector.library import Library
@@ -61,6 +61,13 @@ class MainUI(QtWidgets.QMainWindow, mainwindow.Ui_MainWindow):
 
         # Initialize translation function
         self._translate = QtCore.QCoreApplication.translate
+
+        # Create library widgets
+        self.listView = DragDropListView(self, self.listPage)
+        self.gridLayout_4.addWidget(self.listView, 0, 0, 1, 1)
+
+        self.tableView = DragDropTableView(self, self.tablePage)
+        self.gridLayout_3.addWidget(self.tableView, 0, 0, 1, 1)
 
         # Empty variables that will be infested soon
         self.settings = {}
@@ -318,24 +325,104 @@ class MainUI(QtWidgets.QMainWindow, mainwindow.Ui_MainWindow):
         my_args = cl_parser.positionalArguments()
         if my_args:
             file_list = [QtCore.QFileInfo(i).absoluteFilePath() for i in my_args]
-            books = sorter.BookSorter(
-                file_list,
-                ('addition', 'manual'),
-                self.database_path,
-                self.settings['auto_tags'],
-                self.temp_dir.path())
+            self.process_post_hoc_files(file_list, True)
 
-            parsed_books = books.initiate_threads()
-            if not parsed_books:
-                return
+    def process_post_hoc_files(self, file_list, open_files_after_processing):
+        # Takes care of both dragged and dropped files
+        # As well as files sent as command line arguments
+        books = sorter.BookSorter(
+            file_list,
+            ('addition', 'manual'),
+            self.database_path,
+            self.settings['auto_tags'],
+            self.temp_dir.path())
 
-            database.DatabaseFunctions(self.database_path).add_to_database(parsed_books)
-            self.lib_ref.generate_model('addition', parsed_books, True)
+        parsed_books = books.initiate_threads()
+        if not parsed_books:
+            return
 
-            file_dict = {QtCore.QFileInfo(i).absoluteFilePath(): None for i in my_args}
+        database.DatabaseFunctions(self.database_path).add_to_database(parsed_books)
+        self.lib_ref.generate_model('addition', parsed_books, True)
+
+        file_dict = {i: None for i in file_list}
+        if open_files_after_processing:
             self.open_files(file_dict)
 
-            self.move_on()
+        self.move_on()
+
+    def open_files(self, path_hash_dictionary):
+        # file_paths is expected to be a dictionary
+        # This allows for threading file opening
+        # Which should speed up multiple file opening
+        # especially @ application start
+
+        file_paths = [i for i in path_hash_dictionary]
+
+        for filename in path_hash_dictionary.items():
+
+            file_md5 = filename[1]
+            if not file_md5:
+                try:
+                    with open(filename[0], 'rb') as current_book:
+                        first_bytes = current_book.read(1024 * 32)  # First 32KB of the file
+                        file_md5 = hashlib.md5(first_bytes).hexdigest()
+                except FileNotFoundError:
+                    return
+
+            # Remove any already open files
+            # Set focus to last file in case only one is open
+            for i in range(1, self.tabWidget.count()):
+                tab_metadata = self.tabWidget.widget(i).metadata
+                if tab_metadata['hash'] == file_md5:
+                    file_paths.remove(filename[0])
+                    if not file_paths:
+                        self.tabWidget.setCurrentIndex(i)
+                        return
+
+        if not file_paths:
+            return
+
+        def finishing_touches():
+            self.profile_functions.format_contentView()
+            self.start_culling_timer()
+
+        print('Attempting to open: ' + ', '.join(file_paths))
+
+        contents = sorter.BookSorter(
+            file_paths,
+            ('reading', None),
+            self.database_path,
+            True,
+            self.temp_dir.path()).initiate_threads()
+
+        # TODO
+        # Notification feedback in case all books return nothing
+
+        if not contents:
+            return
+
+        for i in contents:
+            # New tabs are created here
+            # Initial position adjustment is carried out by the tab itself
+            file_data = contents[i]
+            Tab(file_data, self)
+
+        if self.settings['last_open_tab'] == 'library':
+            self.tabWidget.setCurrentIndex(0)
+            self.listView.setFocus()
+            self.settings['last_open_tab'] = None
+            return
+
+        for i in range(1, self.tabWidget.count()):
+            this_path = self.tabWidget.widget(i).metadata['path']
+            if self.settings['last_open_tab'] == this_path:
+                self.tabWidget.setCurrentIndex(i)
+                self.settings['last_open_tab'] = None
+                finishing_touches()
+                return
+
+        self.tabWidget.setCurrentIndex(self.tabWidget.count() - 1)
+        finishing_touches()
 
     def start_culling_timer(self):
         if self.settings['perform_culling']:
@@ -625,80 +712,6 @@ class MainUI(QtWidgets.QMainWindow, mainwindow.Ui_MainWindow):
         path = {metadata['path']: metadata['hash']}
 
         self.open_files(path)
-
-    def open_files(self, path_hash_dictionary):
-        # file_paths is expected to be a dictionary
-        # This allows for threading file opening
-        # Which should speed up multiple file opening
-        # especially @ application start
-
-        file_paths = [i for i in path_hash_dictionary]
-
-        for filename in path_hash_dictionary.items():
-
-            file_md5 = filename[1]
-            if not file_md5:
-                try:
-                    with open(filename[0], 'rb') as current_book:
-                        first_bytes = current_book.read(1024 * 32)  # First 32KB of the file
-                        file_md5 = hashlib.md5(first_bytes).hexdigest()
-                except FileNotFoundError:
-                    return
-
-            # Remove any already open files
-            # Set focus to last file in case only one is open
-            for i in range(1, self.tabWidget.count()):
-                tab_metadata = self.tabWidget.widget(i).metadata
-                if tab_metadata['hash'] == file_md5:
-                    file_paths.remove(filename[0])
-                    if not file_paths:
-                        self.tabWidget.setCurrentIndex(i)
-                        return
-
-        if not file_paths:
-            return
-
-        def finishing_touches():
-            self.profile_functions.format_contentView()
-            self.start_culling_timer()
-
-        print('Attempting to open: ' + ', '.join(file_paths))
-
-        contents = sorter.BookSorter(
-            file_paths,
-            ('reading', None),
-            self.database_path,
-            True,
-            self.temp_dir.path()).initiate_threads()
-
-        # TODO
-        # Notification feedback in case all books return nothing
-
-        if not contents:
-            return
-
-        for i in contents:
-            # New tabs are created here
-            # Initial position adjustment is carried out by the tab itself
-            file_data = contents[i]
-            Tab(file_data, self)
-
-        if self.settings['last_open_tab'] == 'library':
-            self.tabWidget.setCurrentIndex(0)
-            self.listView.setFocus()
-            self.settings['last_open_tab'] = None
-            return
-
-        for i in range(1, self.tabWidget.count()):
-            this_path = self.tabWidget.widget(i).metadata['path']
-            if self.settings['last_open_tab'] == this_path:
-                self.tabWidget.setCurrentIndex(i)
-                self.settings['last_open_tab'] = None
-                finishing_touches()
-                return
-
-        self.tabWidget.setCurrentIndex(self.tabWidget.count() - 1)
-        finishing_touches()
 
     def statusbar_visibility(self):
         if self.sender() == self.libraryToolBar.searchBar:
