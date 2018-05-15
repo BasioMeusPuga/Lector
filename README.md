@@ -35,6 +35,7 @@ poppler-qt5 and python-poppler-qt5 are optional.
 ### Available packages
 * [AUR](https://aur.archlinux.org/packages/lector-git/)
 * [Gentoo (unofficial)](https://bitbucket.org/szymonsz/gen2-overlay/src/master/app-text/lector/)
+* [Fedora (unofficial)](https://copr.fedorainfracloud.org/coprs/bugzy/lector/)
 
 ## Translations
 1. There is a `SAMPLE.ts` file [here](https://github.com/BasioMeusPuga/Lector/tree/master/lector/resources/translations). Open it in `Qt Linguist`.
@@ -48,28 +49,37 @@ Please keep the translations short. There's only so much space for UI elements.
 ## Screenshots
 
 ### Main window
-![alt tag](https://i.imgur.com/yrv2c0a.png)
+![alt tag](https://i.imgur.com/516hRkS.png)
 
 ### Table view
-![alt tag](https://i.imgur.com/b1XdXqP.png)
+![alt tag](https://i.imgur.com/o9An7AR.png)
 
 ### Book reading view
-![alt tag](https://i.imgur.com/Tei6TqF.png)
+![alt tag](https://i.imgur.com/ITG63Fc.png)
+
+### Distraction free view
+![alt tag](https://i.imgur.com/g8Ltupy.png)
+
+### Annotation support
+![alt tag](https://i.imgur.com/gLK29F4.png)
 
 ### Comic reading view
-![alt tag](https://i.imgur.com/U5JR35g.png)
+![alt tag](https://i.imgur.com/rvvTQCM.png)
 
 ### Bookmark support
-![alt tag](https://i.imgur.com/RZkmCzG.png)
+![alt tag](https://i.imgur.com/Y7qoU8m.png)
 
 ### View profiles
-![alt tag](https://i.imgur.com/gkJ88pi.png)
+![alt tag](https://i.imgur.com/awE2q2K.png)
 
 ### Metadata editor
-![alt tag](https://i.imgur.com/AqQREBf.png)
+![alt tag](https://i.imgur.com/0CDpNO8.png)
 
 ### In program dictionary
-![alt tag](https://i.imgur.com/Vh9xQUC.png)
+![alt tag](https://i.imgur.com/RF72m2h.png)
+
+### Settings window
+![alt tag](https://i.imgur.com/l6zJXaH.png)
 
 ## Reporting issues
 When reporting issues:
