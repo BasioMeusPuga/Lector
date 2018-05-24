@@ -182,6 +182,7 @@ class MainUI(QtWidgets.QMainWindow, mainwindow.Ui_MainWindow):
         self.bookToolBar.profileBox.currentIndexChanged.connect(
             self.profile_functions.format_contentView)
         self.bookToolBar.profileBox.setCurrentIndex(self.current_profile_index)
+        self.bookToolBar.searchBar.textChanged.connect(self.search_book)
 
         self.bookToolBar.fontBox.currentFontChanged.connect(self.modify_font)
         self.bookToolBar.fontSizeBox.currentIndexChanged.connect(self.modify_font)
@@ -210,6 +211,9 @@ class MainUI(QtWidgets.QMainWindow, mainwindow.Ui_MainWindow):
         self.bookToolBar.colorBoxBG.clicked.connect(self.get_color)
         self.bookToolBar.tocBox.currentIndexChanged.connect(self.set_toc_position)
         self.addToolBar(self.bookToolBar)
+
+        # Get the stylesheet of the default QLineEdit
+        self.lineEditStyleSheet = self.bookToolBar.searchBar.styleSheet()
 
         # Make the correct toolbar visible
         self.current_tab = self.tabWidget.currentIndex()
@@ -330,6 +334,11 @@ class MainUI(QtWidgets.QMainWindow, mainwindow.Ui_MainWindow):
     def process_post_hoc_files(self, file_list, open_files_after_processing):
         # Takes care of both dragged and dropped files
         # As well as files sent as command line arguments
+
+        file_list = [i for i in file_list if os.path.exists(i)]
+        if not file_list:
+            return
+
         books = sorter.BookSorter(
             file_list,
             ('addition', 'manual'),
@@ -338,7 +347,7 @@ class MainUI(QtWidgets.QMainWindow, mainwindow.Ui_MainWindow):
             self.temp_dir.path())
 
         parsed_books = books.initiate_threads()
-        if not parsed_books:
+        if not parsed_books and not open_files_after_processing:
             return
 
         database.DatabaseFunctions(self.database_path).add_to_database(parsed_books)
@@ -618,6 +627,10 @@ class MainUI(QtWidgets.QMainWindow, mainwindow.Ui_MainWindow):
                 self.statusMessage.setText(
                     str(self.lib_ref.itemProxyModel.rowCount()) +
                     self._translate('Main_UI', ' Books'))
+
+            if self.libraryToolBar.searchBar.text() != '':
+                self.statusBar.setVisible(True)
+
         else:
 
             if self.settings['show_bars']:
@@ -631,8 +644,6 @@ class MainUI(QtWidgets.QMainWindow, mainwindow.Ui_MainWindow):
             if self.bookToolBar.fontButton.isChecked():
                 self.bookToolBar.customize_view_on()
 
-            current_title = current_metadata['title']
-            current_author = current_metadata['author']
             current_position = current_metadata['position']
             current_toc = [i[0] for i in current_metadata['content']]
 
@@ -648,8 +659,7 @@ class MainUI(QtWidgets.QMainWindow, mainwindow.Ui_MainWindow):
 
             self.profile_functions.format_contentView()
 
-            self.statusMessage.setText(
-                current_author + ' - ' + current_title)
+            self.statusBar.setVisible(False)
 
     def tab_close(self, tab_index=None):
         if not tab_index:
@@ -748,6 +758,30 @@ class MainUI(QtWidgets.QMainWindow, mainwindow.Ui_MainWindow):
 
     #____________________________________________
 
+    def search_book(self, search_text):
+        current_tab = self.tabWidget.currentIndex()
+        if not (current_tab != 0 and not self.tabWidget.widget(
+                current_tab).are_we_doing_images_only):
+            return
+
+        contentView = self.tabWidget.widget(current_tab).contentView
+
+        text_cursor = contentView.textCursor()
+        something_found = True
+        if search_text:
+            text_cursor.setPosition(0, QtGui.QTextCursor.MoveAnchor)
+            contentView.setTextCursor(text_cursor)
+            contentView.verticalScrollBar().setValue(contentView.verticalScrollBar().maximum())
+            something_found = contentView.find(search_text)
+        else:
+            text_cursor.clearSelection()
+            contentView.setTextCursor(text_cursor)
+
+        if not something_found:
+            self.bookToolBar.searchBar.setStyleSheet("QLineEdit {color: red;}")
+        else:
+            self.bookToolBar.searchBar.setStyleSheet(self.lineEditStyleSheet)
+
     def generate_library_context_menu(self, position):
         index = self.sender().indexAt(position)
         if not index.isValid():
@@ -791,8 +825,6 @@ class MainUI(QtWidgets.QMainWindow, mainwindow.Ui_MainWindow):
 
         if action == editAction:
             edit_book = selected_indexes[0]
-            metadata = self.lib_ref.libraryModel.data(
-                edit_book, QtCore.Qt.UserRole + 3)
             is_cover_loaded = self.lib_ref.libraryModel.data(
                 edit_book, QtCore.Qt.UserRole + 8)
 
@@ -805,15 +837,19 @@ class MainUI(QtWidgets.QMainWindow, mainwindow.Ui_MainWindow):
                     self.database_path).fetch_covers_only([book_hash])[0][1]
                 self.cover_functions.cover_loader(book_item, book_cover)
 
-            cover = self.lib_ref.libraryModel.item(edit_book.row()).icon()
-            title = metadata['title']
-            author = metadata['author']
-            year = str(metadata['year'])
-            tags = metadata['tags']
+            cover = self.lib_ref.libraryModel.item(
+                edit_book.row()).icon()
+            title = self.lib_ref.libraryModel.data(
+                edit_book, QtCore.Qt.UserRole)
+            author = self.lib_ref.libraryModel.data(
+                edit_book, QtCore.Qt.UserRole + 1)
+            year = str(self.lib_ref.libraryModel.data(
+                edit_book, QtCore.Qt.UserRole + 2))  # Text cannot be int
+            tags = self.lib_ref.libraryModel.data(
+                edit_book, QtCore.Qt.UserRole + 4)
 
             self.metadataDialog.load_book(
                 cover, title, author, year, tags, edit_book)
-
             self.metadataDialog.show()
 
         if action == deleteAction:

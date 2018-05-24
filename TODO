@@ -83,6 +83,7 @@ TODO
         Deselecting all directories in the settings dialog also filters out manually added books
         Clean up 'switch' page layout
         Colors aren't loaded properly for annotation previews
+        Cover page shouldn't be scolled midway
 
     Secondary:
         Graphical themes

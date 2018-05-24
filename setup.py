@@ -6,7 +6,7 @@ HERE = path.abspath(path.dirname(__file__))
 
 MAJOR_VERSION = '0'
 MINOR_VERSION = '4'
-MICRO_VERSION = '0'
+MICRO_VERSION = '1'
 VERSION = "{}.{}.{}".format(MAJOR_VERSION, MINOR_VERSION, MICRO_VERSION)
 
 # Get the long description from the README file

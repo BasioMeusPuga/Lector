@@ -228,7 +228,7 @@ class Tab(QtWidgets.QWidget):
         try:
             required_position = self.metadata['position']['cursor_position']
         except KeyError:
-            print(f'Database: Cursor position error. Recommend retry.')
+            print('Database: Cursor position error. Recommend retry.')
             return
 
         if cursor_position:
