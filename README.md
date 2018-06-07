@@ -36,6 +36,7 @@ poppler-qt5 and python-poppler-qt5 are optional.
 * [AUR](https://aur.archlinux.org/packages/lector-git/)
 * [Gentoo (unofficial)](https://bitbucket.org/szymonsz/gen2-overlay/src/master/app-text/lector/)
 * [Fedora (unofficial)](https://copr.fedorainfracloud.org/coprs/bugzy/lector/)
+* [openSUSE (unofficial)](https://software.opensuse.org/package/lector)
 
 ## Translations
 1. There is a `SAMPLE.ts` file [here](https://github.com/BasioMeusPuga/Lector/tree/master/lector/resources/translations). Open it in `Qt Linguist`.
