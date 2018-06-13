@@ -84,6 +84,7 @@ TODO
         Clean up 'switch' page layout
         Colors aren't loaded properly for annotation previews
         Cover page shouldn't be scolled midway
+        It's possible the addition function is also parsing the whole book.
 
     Secondary:
         Graphical themes
@@ -106,3 +107,4 @@ TODO
         ? Add only one file type if multiple are present
         ? Create emblem per filetype
         In application notifications
+        Notification in case the filter is filtering out all files with no option in place

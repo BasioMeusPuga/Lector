@@ -1,7 +1,5 @@
-#!/usr/bin/env python3
-
 # This file is a part of Lector, a Qt based ebook reader
-# Copyright (C) 2018 BasioMeusPuga
+# Copyright (C) 2017-2018 BasioMeusPuga
 
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -15,6 +13,10 @@
 
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
+
+# TODO
+# Error handling
+# TOC parsing
 
 import io
 import os

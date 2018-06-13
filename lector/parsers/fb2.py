@@ -17,10 +17,10 @@
 import os
 import zipfile
 
-from lector.readers.read_epub import EPUB
+from lector.readers.read_fb2 import FB2
 
 
-class ParseEPUB:
+class ParseFB2:
     def __init__(self, filename, temp_dir, file_md5):
         # TODO
         # Maybe also include book description
@@ -30,8 +30,8 @@ class ParseEPUB:
         self.extract_path = os.path.join(temp_dir, file_md5)
 
     def read_book(self):
-        self.book_ref = EPUB(self.filename)
-        contents_found = self.book_ref.read_epub()
+        self.book_ref = FB2(self.filename)
+        contents_found = self.book_ref.read_fb2()
         if not contents_found:
             print('Cannot process: ' + self.filename)
             return
@@ -56,9 +56,12 @@ class ParseEPUB:
         return self.book['tags']
 
     def get_contents(self):
-        zipfile.ZipFile(self.filename).extractall(self.extract_path)
+        # TODO
+        # Make this save images to the temp path
+        # Relative file paths should then point there
+        # zipfile.ZipFile(self.filename).extractall(self.extract_path)
 
-        self.book_ref.parse_chapters(temp_dir=self.extract_path)
+        # self.book_ref.parse_chapters(temp_dir=self.extract_path)
         file_settings = {
             'images_only': False}
         return self.book['book_list'], file_settings

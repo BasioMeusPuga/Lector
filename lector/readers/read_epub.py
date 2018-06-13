@@ -1,7 +1,5 @@
-#!/usr/bin/env python3
-
 # This file is a part of Lector, a Qt based ebook reader
-# Copyright (C) 2017 BasioMeusPuga
+# Copyright (C) 2017-2018 BasioMeusPuga
 
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -33,15 +31,18 @@ class EPUB:
     def read_epub(self):
         # This is the function that should error out in
         # case the module cannot process the file
-        self.load_zip()
-        contents_path = self.get_file_path(
-            None, True)
+        try:
+            self.load_zip()
+            contents_path = self.get_file_path(
+                None, True)
 
-        if not contents_path:
-            return False  # No (valid) opf was found so processing cannot continue
+            if not contents_path:
+                return False  # No (valid) opf was found so processing cannot continue
 
-        self.generate_book_metadata(contents_path)
-        self.parse_toc()
+            self.generate_book_metadata(contents_path)
+            self.parse_toc()
+        except:  # Not specifying an exception type here may be justified
+            return False
 
         return True
 

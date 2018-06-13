@@ -1,7 +1,5 @@
-#!/usr/bin/env python3
-
 # This file is a part of Lector, a Qt based ebook reader
-# Copyright (C) 2017 BasioMeusPuga
+# Copyright (C) 2017-2018 BasioMeusPuga
 
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -24,7 +22,7 @@ import sys
 import shutil
 import zipfile
 
-from lector.ePub.read_epub import EPUB
+from lector.readers.read_epub import EPUB
 import lector.KindleUnpack.kindleunpack as KindleUnpack
 
 

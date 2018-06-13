@@ -406,7 +406,7 @@ Reopen book to see changes</source>
     <message>
         <location filename="../../library.py" line="292"/>
         <source>manually added</source>
-        <translation>手动添加</translation>
+        <translation>手动添加的</translation>
     </message>
     <message>
         <location filename="../../library.py" line="215"/>

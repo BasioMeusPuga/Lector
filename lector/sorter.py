@@ -50,6 +50,7 @@ from lector import database
 
 from lector.parsers.epub import ParseEPUB
 from lector.parsers.mobi import ParseMOBI
+from lector.parsers.fb2 import ParseFB2
 from lector.parsers.comicbooks import ParseCOMIC
 
 sorter = {
@@ -59,6 +60,8 @@ sorter = {
     'azw3': ParseMOBI,
     'azw4': ParseMOBI,
     'prc': ParseMOBI,
+    'fb2': ParseFB2,
+    'fb2.zip': ParseFB2,
     'cbz': ParseCOMIC,
     'cbr': ParseCOMIC}
 
@@ -172,7 +175,8 @@ class BookSorter:
                     print(f'{os.path.basename(filename)} is already in database')
                 return
 
-        file_extension = os.path.splitext(filename)[1][1:]
+        # Using os.extsep like so allows for file extensions with multiple dots
+        file_extension = os.path.basename(filename).split(os.extsep, 1)[1]
         try:
             # Get the requisite parser from the sorter dict
             book_ref = sorter[file_extension](filename, self.temp_dir, file_md5)
