@@ -4,6 +4,7 @@ Qt based ebook reader
 Currently supports:
 * pdf
 * epub
+* fb2
 * mobi
 * azw / azw3 / azw4
 * cbr / cbz
