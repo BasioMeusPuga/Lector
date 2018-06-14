@@ -48,25 +48,29 @@ class FB2:
         return True
 
     def generate_book_metadata(self):
-        self.book['title'] = os.path.splitext(
-            os.path.basename(self.filename))[0]
-        self.book['author'] = 'Unknown'
         self.book['isbn'] = None
         self.book['tags'] = None
         self.book['cover'] = None
-        self.book['year'] = 9999
         self.book['book_list'] = []
 
-        # TODO
-        # Look for other components of book metadata here
-        for i in self.xml.find_all():
+        # All metadata can be parsed in one pass
+        all_tags = self.xml.find('description')
 
-            if i.name == 'section':
-                for j in i:
-                    if j.name == 'title':
-                        this_title = j.text
-                self.book['book_list'].append(
-                    (this_title, str(i)))
+        self.book['title'] = all_tags.find('book-title').text
+        if self.book['title'] == '' or self.book['title'] is None:
+            self.book['title'] = os.path.splitext(
+                os.path.basename(self.filename))[0]
+
+        self.book['author'] = all_tags.find('author').getText(separator=' ').replace('\n', ' ')
+        if self.book['author'] == '' or self.book['author'] is None:
+            self.book['author'] = 'Unknown'
+
+        # TODO
+        # Account for other date formats
+        try:
+            self.book['year'] = int(all_tags.find('date').text)
+        except ValueError:
+            self.book['year'] = 9999
 
         # Cover Image
         cover_image_xml = self.xml.find('coverpage')
@@ -75,8 +79,26 @@ class FB2:
 
         cover_image_data = self.xml.find_all('binary')
         for i in cover_image_data:
-
-            # TODO
-            # Account for other images as well
             if cover_image_name.endswith(i.get('id')):
                 self.book['cover'] = base64.decodebytes(i.text.encode())
+
+    def parse_chapters(self, temp_dir):
+        # There's no need to parse the TOC separately because
+        # everything is linear
+        for i in self.xml.find_all('section'):
+            for j in i:
+                if j.name == 'title':
+                    this_title = j.getText(separator=' ')
+            self.book['book_list'].append(
+                (this_title, str(i)))
+
+        # Extract all images to the temp_dir
+        for i in self.xml.find_all('binary'):
+            this_image_name = i.get('id')
+            this_image_path = os.path.join(temp_dir, this_image_name)
+            try:
+                this_image_data = base64.decodebytes(i.text.encode())
+                with open(this_image_path, 'wb') as outimage:
+                    outimage.write(this_image_data)
+            except AttributeError:
+                pass

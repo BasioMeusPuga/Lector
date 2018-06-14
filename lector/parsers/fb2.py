@@ -15,7 +15,6 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 import os
-import zipfile
 
 from lector.readers.read_fb2 import FB2
 
@@ -56,12 +55,8 @@ class ParseFB2:
         return self.book['tags']
 
     def get_contents(self):
-        # TODO
-        # Make this save images to the temp path
-        # Relative file paths should then point there
-        # zipfile.ZipFile(self.filename).extractall(self.extract_path)
-
-        # self.book_ref.parse_chapters(temp_dir=self.extract_path)
+        os.makedirs(self.extract_path, exist_ok=True)  # Manual creation is required here
+        self.book_ref.parse_chapters(temp_dir=self.extract_path)
         file_settings = {
             'images_only': False}
         return self.book['book_list'], file_settings

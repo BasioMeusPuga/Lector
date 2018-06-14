@@ -58,6 +58,7 @@ class ParseEPUB:
     def get_contents(self):
         zipfile.ZipFile(self.filename).extractall(self.extract_path)
 
+        self.book_ref.parse_toc()
         self.book_ref.parse_chapters(temp_dir=self.extract_path)
         file_settings = {
             'images_only': False}

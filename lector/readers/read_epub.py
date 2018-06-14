@@ -40,7 +40,6 @@ class EPUB:
                 return False  # No (valid) opf was found so processing cannot continue
 
             self.generate_book_metadata(contents_path)
-            self.parse_toc()
         except:  # Not specifying an exception type here may be justified
             return False
 

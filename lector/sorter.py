@@ -175,14 +175,20 @@ class BookSorter:
                     print(f'{os.path.basename(filename)} is already in database')
                 return
 
-        # Using os.extsep like so allows for file extensions with multiple dots
-        file_extension = os.path.basename(filename).split(os.extsep, 1)[1]
-        try:
-            # Get the requisite parser from the sorter dict
-            book_ref = sorter[file_extension](filename, self.temp_dir, file_md5)
-        except KeyError:
+        # This allows for eliminating issues with filenames that have
+        # a dot in them. All hail the roundabout fix.
+        valid_extension = False
+        for i in sorter:
+            if os.path.basename(filename).endswith(i):
+                file_extension = i
+                valid_extension = True
+                break
+
+        if not valid_extension:
             print(filename + ' has an unsupported extension')
             return
+
+        book_ref = sorter[file_extension](filename, self.temp_dir, file_md5)
 
         # Everything following this is standard
         # None values are accounted for here
