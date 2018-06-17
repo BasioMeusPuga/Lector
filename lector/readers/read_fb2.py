@@ -89,16 +89,22 @@ class FB2:
             for j in i:
                 if j.name == 'title':
                     this_title = j.getText(separator=' ')
+
             self.book['book_list'].append(
-                (this_title, str(i)))
+                [this_title, str(i)])
 
         # Extract all images to the temp_dir
         for i in self.xml.find_all('binary'):
-            this_image_name = i.get('id')
-            this_image_path = os.path.join(temp_dir, this_image_name)
+            image_name = i.get('id')
+            image_path = os.path.join(temp_dir, image_name)
+            image_string = f'<image l:href="#{image_name}"'
+            replacement_string = f'<img src=\"{image_path}\"'
+
+            for j in self.book['book_list']:
+                j[1] = j[1].replace(image_string, replacement_string)
             try:
-                this_image_data = base64.decodebytes(i.text.encode())
-                with open(this_image_path, 'wb') as outimage:
-                    outimage.write(this_image_data)
+                image_data = base64.decodebytes(i.text.encode())
+                with open(image_path, 'wb') as outimage:
+                    outimage.write(image_data)
             except AttributeError:
                 pass
