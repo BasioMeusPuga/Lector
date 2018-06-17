@@ -42,7 +42,7 @@ class FB2:
 
             self.xml = BeautifulSoup(book_text, 'lxml')
             self.generate_book_metadata()
-        except:  # Not specifying an exception type here may be justified
+        except ValueError:  # Not specifying an exception type here may be justified
             return False
 
         return True
@@ -50,7 +50,6 @@ class FB2:
     def generate_book_metadata(self):
         self.book['isbn'] = None
         self.book['tags'] = None
-        self.book['cover'] = None
         self.book['book_list'] = []
 
         # All metadata can be parsed in one pass
@@ -73,19 +72,23 @@ class FB2:
             self.book['year'] = 9999
 
         # Cover Image
-        cover_image_xml = self.xml.find('coverpage')
-        for i in cover_image_xml:
-            cover_image_name = i.get('l:href')
+        try:
+            cover_image_xml = self.xml.find('coverpage')
+            for i in cover_image_xml:
+                cover_image_name = i.get('l:href')
 
-        cover_image_data = self.xml.find_all('binary')
-        for i in cover_image_data:
-            if cover_image_name.endswith(i.get('id')):
-                self.book['cover'] = base64.decodebytes(i.text.encode())
+            cover_image_data = self.xml.find_all('binary')
+            for i in cover_image_data:
+                if cover_image_name.endswith(i.get('id')):
+                    self.book['cover'] = base64.decodebytes(i.text.encode())
+        except AttributeError:
+            self.book['cover'] = None
 
     def parse_chapters(self, temp_dir):
         # There's no need to parse the TOC separately because
         # everything is linear
         for i in self.xml.find_all('section'):
+            this_title = '<No title>'
             for j in i:
                 if j.name == 'title':
                     this_title = j.getText(separator=' ')
