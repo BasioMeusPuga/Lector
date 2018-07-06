@@ -34,7 +34,8 @@ poppler-qt5 and python-poppler-qt5 are optional.
 3. OR launch with `lector/__main__.py`
 
 ### Available packages
-* [AUR](https://aur.archlinux.org/packages/lector-git/)
+* [AUR - Releases](https://aur.archlinux.org/packages/lector/)
+* [AUR - Git](https://aur.archlinux.org/packages/lector-git/)
 * [Gentoo (unofficial)](https://bitbucket.org/szymonsz/gen2-overlay/src/master/app-text/lector/)
 * [Fedora (unofficial)](https://copr.fedorainfracloud.org/coprs/bugzy/lector/)
 * [openSUSE (unofficial)](https://software.opensuse.org/package/lector)
