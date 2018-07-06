@@ -163,7 +163,7 @@ class BookSorter:
         self.queue.put(filename)
 
         # This should not get triggered in reading mode
-        # IF the file is NOT being loaded into the reader,
+        # IF the file is NOT being loaded into the reader
 
         # Do not allow addition in case the file
         # is already in the database and it remains at its original path

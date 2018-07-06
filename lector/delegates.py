@@ -66,31 +66,3 @@ class LibraryDelegate(QtWidgets.QStyledItemDelegate):
             x_draw = option.rect.bottomRight().x() - 30
             y_draw = option.rect.bottomRight().y() - 35
             painter.drawPixmap(x_draw, y_draw, read_icon)
-
-
-class BookmarkDelegate(QtWidgets.QStyledItemDelegate):
-    def __init__(self, main_window, parent=None):
-        super(BookmarkDelegate, self).__init__()
-        self.main_window = main_window
-        self.parent = parent
-
-    def sizeHint(self, *args):
-        dockwidget_width = self.parent.width() - 20
-        return QtCore.QSize(dockwidget_width, 50)
-
-    def paint(self, painter, option, index):
-        # TODO
-        # Alignment of the painted item
-
-        option = option.__class__(option)
-
-        chapter_index = index.data(QtCore.Qt.UserRole)
-        chapter_name = self.main_window.bookToolBar.tocBox.itemText(chapter_index - 1)
-        if len(chapter_name) > 25:
-            chapter_name = chapter_name[:25] + '...'
-
-        QtWidgets.QStyledItemDelegate.paint(self, painter, option, index)
-        painter.drawText(
-            option.rect,
-            QtCore.Qt.AlignBottom | QtCore.Qt.AlignRight | QtCore.Qt.TextWordWrap,
-            '   ' + chapter_name)

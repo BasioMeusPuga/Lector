@@ -25,7 +25,6 @@ import uuid
 from PyQt5 import QtWidgets, QtGui, QtCore
 
 from lector.models import BookmarkProxyModel
-from lector.delegates import BookmarkDelegate
 from lector.sorter import resize_image
 from lector.contentwidgets import PliantQGraphicsView, PliantQTextBrowser
 
@@ -155,17 +154,14 @@ class Tab(QtWidgets.QWidget):
         self.bookmarkDock.setFeatures(QtWidgets.QDockWidget.DockWidgetClosable)
         self.bookmarkDock.hide()
 
-        self.bookmarkListView = QtWidgets.QListView(self.bookmarkDock)
-        self.bookmarkListView.setResizeMode(QtWidgets.QListWidget.Adjust)
-        self.bookmarkListView.setMaximumWidth(350)
-        self.bookmarkListView.setItemDelegate(
-            BookmarkDelegate(self.main_window, self.bookmarkListView))
-        self.bookmarkListView.setUniformItemSizes(True)
-        self.bookmarkListView.setContextMenuPolicy(QtCore.Qt.CustomContextMenu)
-        self.bookmarkListView.customContextMenuRequested.connect(
+        self.bookmarkTreeView = QtWidgets.QTreeView(self.bookmarkDock)
+        self.bookmarkTreeView.setHeaderHidden(True)
+        self.bookmarkTreeView.setMaximumWidth(350)
+        self.bookmarkTreeView.setContextMenuPolicy(QtCore.Qt.CustomContextMenu)
+        self.bookmarkTreeView.customContextMenuRequested.connect(
             self.generate_bookmark_context_menu)
-        self.bookmarkListView.clicked.connect(self.navigate_to_bookmark)
-        self.bookmarkDock.setWidget(self.bookmarkListView)
+        self.bookmarkTreeView.clicked.connect(self.navigate_to_bookmark)
+        self.bookmarkDock.setWidget(self.bookmarkTreeView)
 
         self.bookmarkModel = QtGui.QStandardItemModel(self)
         self.bookmarkProxyModel = BookmarkProxyModel(self)
@@ -451,9 +447,6 @@ class Tab(QtWidgets.QWidget):
             self.bookmarkDock.show()
 
     def add_bookmark(self):
-        # TODO
-        # Start dockListView.edit(index) when something new is added
-
         identifier = uuid.uuid4().hex[:10]
         description = self._translate('Tab', 'New bookmark')
 
@@ -468,23 +461,53 @@ class Tab(QtWidgets.QWidget):
             'cursor_position': cursor_position,
             'description': description}
 
-        self.add_bookmark_to_model(
-            description, chapter, cursor_position, identifier)
         self.bookmarkDock.setVisible(True)
+        self.add_bookmark_to_model(
+            description, chapter, cursor_position, identifier, True)
 
-    def add_bookmark_to_model(self, description, chapter, cursor_position, identifier):
+    def add_bookmark_to_model(
+            self, description, chapter, cursor_position,
+            identifier, new_bookmark=False):
+
+        # TODO
+        # Start treeview.edit(index) when a new bookmark is added
+        # Expand parent item of newly added bookmark
+
         bookmark = QtGui.QStandardItem()
-        bookmark.setData(description, QtCore.Qt.DisplayRole)
 
-        bookmark.setData(chapter, QtCore.Qt.UserRole)
-        bookmark.setData(cursor_position, QtCore.Qt.UserRole + 1)
-        bookmark.setData(identifier, QtCore.Qt.UserRole + 2)
+        bookmark.setData(False, QtCore.Qt.UserRole + 10) # Is Parent
+        bookmark.setData(chapter, QtCore.Qt.UserRole)  # Chapter name
+        bookmark.setData(cursor_position, QtCore.Qt.UserRole + 1)  # Cursor Position
+        bookmark.setData(identifier, QtCore.Qt.UserRole + 2)  # Identifier
+        bookmark.setData(description, QtCore.Qt.DisplayRole)  # Description
 
-        self.bookmarkModel.appendRow(bookmark)
-        self.update_bookmark_proxy_model()
+        for i in range(self.bookmarkModel.rowCount()):
+            parentIndex = self.bookmarkModel.index(i, 0)
+            parent_chapter = parentIndex.data(QtCore.Qt.UserRole)
+            if parent_chapter == chapter:
+                parentItem = self.bookmarkModel.itemFromIndex(parentIndex)
+                parentItem.appendRow(bookmark)
+                return
+
+        # In case no parent item exists
+        bookmarkParent = QtGui.QStandardItem()
+        bookmarkParent.setData(True, QtCore.Qt.UserRole + 10) # Is Parent
+        bookmarkParent.setFlags(bookmarkParent.flags() & ~QtCore.Qt.ItemIsEditable)
+        chapter_name = self.metadata['content'][chapter - 1][0]
+        bookmarkParent.setData(chapter_name, QtCore.Qt.DisplayRole)
+        bookmarkParent.setData(chapter, QtCore.Qt.UserRole)
+
+        bookmarkParent.appendRow(bookmark)
+        self.bookmarkModel.appendRow(bookmarkParent)
+        # self.update_bookmark_proxy_model()
 
     def navigate_to_bookmark(self, index):
         if not index.isValid():
+            return
+
+        is_parent = self.bookmarkProxyModel.data(
+            index, QtCore.Qt.UserRole + 10)
+        if is_parent:
             return
 
         chapter = self.bookmarkProxyModel.data(index, QtCore.Qt.UserRole)
@@ -495,23 +518,14 @@ class Tab(QtWidgets.QWidget):
             self.set_cursor_position(cursor_position)
 
     def generate_bookmark_model(self):
-        # TODO
-        # Sorting is not working correctly
-
-        try:
-            for i in self.metadata['bookmarks'].items():
-                self.add_bookmark_to_model(
-                    i[1]['description'],
-                    i[1]['chapter'],
-                    i[1]['cursor_position'],
-                    i[0])
-        except KeyError:
-            title = self.metadata['title']
-
-            # TODO
-            # Delete the bookmarks entry for this file
-            print(f'Database: Bookmark error for {title}. Recommend delete entry.')
-            return
+        self.bookmarkModel = QtGui.QStandardItemModel(self)
+        for i in self.metadata['bookmarks'].items():
+            description = i[1]['description']
+            chapter = i[1]['chapter']
+            cursor_position = i[1]['cursor_position']
+            identifier = i[0]
+            self.add_bookmark_to_model(
+                description, chapter, cursor_position, identifier)
 
         self.generate_bookmark_proxy_model()
 
@@ -519,9 +533,14 @@ class Tab(QtWidgets.QWidget):
         self.bookmarkProxyModel.setSourceModel(self.bookmarkModel)
         self.bookmarkProxyModel.setSortCaseSensitivity(False)
         self.bookmarkProxyModel.setSortRole(QtCore.Qt.UserRole)
-        self.bookmarkListView.setModel(self.bookmarkProxyModel)
+        self.bookmarkProxyModel.sort(0)
+        self.bookmarkTreeView.setModel(self.bookmarkProxyModel)
 
     def update_bookmark_proxy_model(self):
+        # TODO
+        # This isn't being called currently
+        # See if there's any rationale for keeping it / removing it
+
         self.bookmarkProxyModel.invalidateFilter()
         self.bookmarkProxyModel.setFilterParams(
             self.main_window.bookToolBar.searchBar.text())
@@ -529,8 +548,13 @@ class Tab(QtWidgets.QWidget):
             self.main_window.bookToolBar.searchBar.text())
 
     def generate_bookmark_context_menu(self, position):
-        index = self.bookmarkListView.indexAt(position)
+        index = self.bookmarkTreeView.indexAt(position)
         if not index.isValid():
+            return
+
+        is_parent = self.bookmarkProxyModel.data(
+            index, QtCore.Qt.UserRole + 10)
+        if is_parent:
             return
 
         bookmarkMenu = QtWidgets.QMenu()
@@ -542,17 +566,21 @@ class Tab(QtWidgets.QWidget):
             self._translate('Tab', 'Delete'))
 
         action = bookmarkMenu.exec_(
-            self.bookmarkListView.mapToGlobal(position))
+            self.bookmarkTreeView.mapToGlobal(position))
 
         if action == editAction:
-            self.bookmarkListView.edit(index)
+            self.bookmarkTreeView.edit(index)
 
         if action == deleteAction:
-            row = index.row()
-            delete_uuid = self.bookmarkModel.item(row).data(QtCore.Qt.UserRole + 2)
+            # TODO
+            # Deletion that doesn't need to generate the whole model again
+
+            source_index = self.bookmarkProxyModel.mapToSource(index)
+            delete_uuid = self.bookmarkModel.data(
+                source_index, QtCore.Qt.UserRole + 2)
 
             self.metadata['bookmarks'].pop(delete_uuid)
-            self.bookmarkModel.removeRow(index.row())
+            self.generate_bookmark_model()
 
     def hide_mouse(self):
         self.contentView.viewport().setCursor(QtCore.Qt.BlankCursor)

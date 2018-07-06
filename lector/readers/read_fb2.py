@@ -31,7 +31,8 @@ class FB2:
     def read_fb2(self):
         try:
             if self.filename.endswith('.fb2.zip'):
-                this_book = zipfile.ZipFile(self.filename, mode='r', allowZip64=True)
+                this_book = zipfile.ZipFile(
+                    self.filename, mode='r', allowZip64=True)
                 for i in this_book.filelist:
                     if os.path.splitext(i.filename)[1] == '.fb2':
                         book_text = this_book.read(i.filename)
@@ -42,7 +43,7 @@ class FB2:
 
             self.xml = BeautifulSoup(book_text, 'lxml')
             self.generate_book_metadata()
-        except ValueError:  # Not specifying an exception type here may be justified
+        except:  # Not specifying an exception type here may be justified
             return False
 
         return True
@@ -60,7 +61,8 @@ class FB2:
             self.book['title'] = os.path.splitext(
                 os.path.basename(self.filename))[0]
 
-        self.book['author'] = all_tags.find('author').getText(separator=' ').replace('\n', ' ')
+        self.book['author'] = all_tags.find(
+            'author').getText(separator=' ').replace('\n', ' ')
         if self.book['author'] == '' or self.book['author'] is None:
             self.book['author'] = 'Unknown'
 
@@ -104,7 +106,8 @@ class FB2:
             replacement_string = f'<img src=\"{image_path}\"'
 
             for j in self.book['book_list']:
-                j[1] = j[1].replace(image_string, replacement_string)
+                j[1] = j[1].replace(
+                    image_string, replacement_string)
             try:
                 image_data = base64.decodebytes(i.text.encode())
                 with open(image_path, 'wb') as outimage:
