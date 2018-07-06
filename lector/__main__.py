@@ -679,6 +679,9 @@ class MainUI(QtWidgets.QMainWindow, mainwindow.Ui_MainWindow):
         self.tabWidget.widget(tab_index).setParent(None)
         gc.collect()
 
+        self.bookToolBar.bookmarkButton.setChecked(False)
+        self.bookToolBar.annotationButton.setChecked(False)
+
     def set_toc_position(self, event=None):
         current_tab = self.tabWidget.widget(self.tabWidget.currentIndex())
 

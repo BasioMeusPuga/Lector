@@ -87,9 +87,6 @@ TODO
         Clean up 'switch' page layout
         Colors aren't loaded properly for annotation previews
         Cover page shouldn't be scolled midway
-        Docks
-            Fullscreening should keep dock visible
-            Closing a book keeps dock show button clicked
 
     Secondary:
         Graphical themes

@@ -299,6 +299,12 @@ class Tab(QtWidgets.QWidget):
         self.ksToggleBookMarks.activated.connect(self.toggle_bookmarks)
 
     def go_fullscreen(self):
+        # To allow toggles to function
+        # properly after the fullscreening
+        self.bookmarkDock.hide()
+        self.annotationDock.hide()
+        self.annotationNoteDock.hide()
+
         if self.contentView.windowState() == QtCore.Qt.WindowFullScreen:
             self.exit_fullscreen()
             return
@@ -469,9 +475,14 @@ class Tab(QtWidgets.QWidget):
             self, description, chapter, cursor_position,
             identifier, new_bookmark=False):
 
-        # TODO
-        # Start treeview.edit(index) when a new bookmark is added
-        # Expand parent item of newly added bookmark
+        def edit_new_bookmark(parent_item):
+            new_child = parent_item.child(parent_item.rowCount() - 1, 0)
+            source_index = self.bookmarkModel.indexFromItem(new_child)
+            edit_index = self.bookmarkTreeView.model().mapFromSource(source_index)
+            self.bookmarkDock.activateWindow()
+            self.bookmarkTreeView.setFocus()
+            self.bookmarkTreeView.setCurrentIndex(edit_index)
+            self.bookmarkTreeView.edit(edit_index)
 
         bookmark = QtGui.QStandardItem()
 
@@ -485,8 +496,11 @@ class Tab(QtWidgets.QWidget):
             parentIndex = self.bookmarkModel.index(i, 0)
             parent_chapter = parentIndex.data(QtCore.Qt.UserRole)
             if parent_chapter == chapter:
-                parentItem = self.bookmarkModel.itemFromIndex(parentIndex)
-                parentItem.appendRow(bookmark)
+                bookmarkParent = self.bookmarkModel.itemFromIndex(parentIndex)
+                bookmarkParent.appendRow(bookmark)
+                if new_bookmark:
+                    edit_new_bookmark(bookmarkParent)
+
                 return
 
         # In case no parent item exists
@@ -499,6 +513,8 @@ class Tab(QtWidgets.QWidget):
 
         bookmarkParent.appendRow(bookmark)
         self.bookmarkModel.appendRow(bookmarkParent)
+        if new_bookmark:
+            edit_new_bookmark(bookmarkParent)
         # self.update_bookmark_proxy_model()
 
     def navigate_to_bookmark(self, index):
@@ -572,15 +588,17 @@ class Tab(QtWidgets.QWidget):
             self.bookmarkTreeView.edit(index)
 
         if action == deleteAction:
-            # TODO
-            # Deletion that doesn't need to generate the whole model again
-
-            source_index = self.bookmarkProxyModel.mapToSource(index)
+            child_index = self.bookmarkProxyModel.mapToSource(index)
+            parent_index = child_index.parent()
+            child_rows = self.bookmarkModel.itemFromIndex(parent_index).rowCount()
             delete_uuid = self.bookmarkModel.data(
-                source_index, QtCore.Qt.UserRole + 2)
+                child_index, QtCore.Qt.UserRole + 2)
 
             self.metadata['bookmarks'].pop(delete_uuid)
-            self.generate_bookmark_model()
+
+            self.bookmarkModel.removeRow(child_index.row(), child_index.parent())
+            if child_rows == 1:
+                self.bookmarkModel.removeRow(parent_index.row())
 
     def hide_mouse(self):
         self.contentView.viewport().setCursor(QtCore.Qt.BlankCursor)
@@ -596,8 +614,7 @@ class Tab(QtWidgets.QWidget):
     def sneaky_exit(self):
         self.contentView.hide()
         self.main_window.closeEvent()
-
-
+    
 class PliantDockWidget(QtWidgets.QDockWidget):
     def __init__(self, main_window, intended_for, contentView, parent=None):
         super(PliantDockWidget, self).__init__()
@@ -606,7 +623,7 @@ class PliantDockWidget(QtWidgets.QDockWidget):
         self.contentView = contentView
         self.current_annotation = None
 
-    def showEvent(self, event):
+    def showEvent(self, event=None):
         viewport_height = self.contentView.viewport().size().height()
         viewport_topRight = self.contentView.mapToGlobal(
             self.contentView.viewport().rect().topRight())
@@ -634,7 +651,6 @@ class PliantDockWidget(QtWidgets.QDockWidget):
 
         self.main_window.active_bookmark_docks.append(self)
         self.setGeometry(dock_x, dock_y, dock_width, dock_height)
-        self.setFocus()  # TODO This doesn't work
 
     def hideEvent(self, event=None):
         if self.intended_for == 'bookmarks':
@@ -655,7 +671,6 @@ class PliantDockWidget(QtWidgets.QDockWidget):
         self.current_annotation = annotation
 
     def closeEvent(self, event):
-        self.main_window.bookToolBar.annotationButton.setChecked(False)
         self.hide()
 
         # Ignoring this event prevents application closure when everything is fullscreened
