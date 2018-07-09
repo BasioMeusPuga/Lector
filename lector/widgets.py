@@ -150,7 +150,12 @@ class Tab(QtWidgets.QWidget):
 
         # Create the dock widget for context specific display
         self.bookmarkDock = PliantDockWidget(self.main_window, 'bookmarks', self.contentView)
-        self.bookmarkDock.setWindowTitle(self._translate('Tab', 'Bookmarks'))
+
+        title_string = self._translate('Tab', 'Bookmarks')
+        if self.main_window.settings['toc_with_bookmarks']:
+            title_string = self._translate('Tab', 'TOC + Bookmarks')
+        self.bookmarkDock.setWindowTitle(title_string)
+
         self.bookmarkDock.setFeatures(QtWidgets.QDockWidget.DockWidgetClosable)
         self.bookmarkDock.hide()
 
@@ -505,11 +510,11 @@ class Tab(QtWidgets.QWidget):
 
         # In case no parent item exists
         bookmarkParent = QtGui.QStandardItem()
-        bookmarkParent.setData(True, QtCore.Qt.UserRole + 10) # Is Parent
-        bookmarkParent.setFlags(bookmarkParent.flags() & ~QtCore.Qt.ItemIsEditable)
-        chapter_name = self.metadata['content'][chapter - 1][0]
+        bookmarkParent.setData(True, QtCore.Qt.UserRole + 10)  # Is Parent
+        bookmarkParent.setFlags(bookmarkParent.flags() & ~QtCore.Qt.ItemIsEditable)  # Is Editable
+        chapter_name = self.metadata['content'][chapter - 1][0]  # Chapter Name
         bookmarkParent.setData(chapter_name, QtCore.Qt.DisplayRole)
-        bookmarkParent.setData(chapter, QtCore.Qt.UserRole)
+        bookmarkParent.setData(chapter, QtCore.Qt.UserRole)  # Chapter Number
 
         bookmarkParent.appendRow(bookmark)
         self.bookmarkModel.appendRow(bookmarkParent)
@@ -521,9 +526,10 @@ class Tab(QtWidgets.QWidget):
         if not index.isValid():
             return
 
-        is_parent = self.bookmarkProxyModel.data(
-            index, QtCore.Qt.UserRole + 10)
+        is_parent = self.bookmarkProxyModel.data(index, QtCore.Qt.UserRole + 10)
         if is_parent:
+            chapter_number = self.bookmarkProxyModel.data(index, QtCore.Qt.UserRole)
+            self.main_window.bookToolBar.tocBox.setCurrentIndex(chapter_number - 1)
             return
 
         chapter = self.bookmarkProxyModel.data(index, QtCore.Qt.UserRole)
@@ -535,6 +541,16 @@ class Tab(QtWidgets.QWidget):
 
     def generate_bookmark_model(self):
         self.bookmarkModel = QtGui.QStandardItemModel(self)
+
+        if self.main_window.settings['toc_with_bookmarks']:
+            for chapter_number, i in enumerate(self.metadata['content']):
+                chapterItem = QtGui.QStandardItem()
+                chapterItem.setData(i[0], QtCore.Qt.DisplayRole)  # Display name
+                chapterItem.setData(chapter_number + 1, QtCore.Qt.UserRole)  # Chapter Number
+                chapterItem.setData(True, QtCore.Qt.UserRole + 10)  # Is Parent
+                chapterItem.setFlags(chapterItem.flags() & ~QtCore.Qt.ItemIsEditable)  # Is Editable
+                self.bookmarkModel.appendRow(chapterItem)
+
         for i in self.metadata['bookmarks'].items():
             description = i[1]['description']
             chapter = i[1]['chapter']
@@ -568,8 +584,7 @@ class Tab(QtWidgets.QWidget):
         if not index.isValid():
             return
 
-        is_parent = self.bookmarkProxyModel.data(
-            index, QtCore.Qt.UserRole + 10)
+        is_parent = self.bookmarkProxyModel.data(index, QtCore.Qt.UserRole + 10)
         if is_parent:
             return
 
@@ -614,7 +629,8 @@ class Tab(QtWidgets.QWidget):
     def sneaky_exit(self):
         self.contentView.hide()
         self.main_window.closeEvent()
-    
+
+
 class PliantDockWidget(QtWidgets.QDockWidget):
     def __init__(self, main_window, intended_for, contentView, parent=None):
         super(PliantDockWidget, self).__init__()
@@ -631,17 +647,17 @@ class PliantDockWidget(QtWidgets.QDockWidget):
             self.contentView.viewport().rect().topLeft())
 
         desktop_size = QtWidgets.QDesktopWidget().screenGeometry()
-        dock_y = viewport_topRight.y() + (viewport_height * .10)
-        dock_height = viewport_height * .80
+        dock_y = viewport_topRight.y()  # + (viewport_height * .10)
+        dock_height = viewport_height * .999
 
         if self.intended_for == 'bookmarks':
             dock_width = desktop_size.width() // 5.5
-            dock_x = viewport_topRight.x() - dock_width + 1
+            dock_x = viewport_topLeft.x()
             self.main_window.bookToolBar.bookmarkButton.setChecked(True)
 
         elif self.intended_for == 'annotations':
             dock_width = desktop_size.width() // 5.5
-            dock_x = viewport_topLeft.x()
+            dock_x = viewport_topRight.x() - dock_width + 1
             self.main_window.bookToolBar.annotationButton.setChecked(True)
 
         elif self.intended_for == 'notes':

@@ -214,6 +214,17 @@ Reopen book to see changes</string>
                  </layout>
                 </item>
                 <item>
+                 <layout class="QHBoxLayout" name="horizontalLayout_12">
+                  <item>
+                   <widget class="QCheckBox" name="tocWithBookmarks">
+                    <property name="text">
+                     <string>Show TOC with Bookmarks</string>
+                    </property>
+                   </widget>
+                  </item>
+                 </layout>
+                </item>
+                <item>
                  <layout class="QHBoxLayout" name="horizontalLayout_8">
                   <item>
                    <layout class="QHBoxLayout" name="horizontalLayout_5">

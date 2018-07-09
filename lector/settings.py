@@ -119,6 +119,8 @@ class Settings:
             'cachingEnabled', 'True').capitalize())
         self.parent.settings['hide_scrollbars'] = literal_eval(self.settings.value(
             'hideScrollBars', 'False').capitalize())
+        self.parent.settings['toc_with_bookmarks'] = literal_eval(self.settings.value(
+            'tocWithBookmarks', 'False').capitalize())
         self.parent.settings['scroll_speed'] = int(self.settings.value('scrollSpeed', 7))
         self.parent.settings['consider_read_at'] = int(self.settings.value('considerReadAt', 95))
         self.parent.settings['attenuate_titles'] = literal_eval(self.settings.value(
@@ -201,6 +203,7 @@ class Settings:
         self.settings.setValue('cachingEnabled', str(current_settings['caching_enabled']))
         self.settings.setValue('hideScrollBars', str(current_settings['hide_scrollbars']))
         self.settings.setValue('attenuateTitles', str(current_settings['attenuate_titles']))
+        self.settings.setValue('tocWithBookmarks', str(current_settings['toc_with_bookmarks']))
         self.settings.setValue('scrollSpeed', current_settings['scroll_speed'])
         self.settings.setValue('considerReadAt', current_settings['consider_read_at'])
         self.settings.endGroup()
