@@ -1,4 +1,5 @@
-# Lector
+<p align="center"><img src="logo/logotype_horizontal.png" alt="Lector" height="150px"></p>
+
 Qt based ebook reader
 
 Currently supports:
