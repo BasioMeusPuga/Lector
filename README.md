@@ -1,4 +1,4 @@
-<p align="center"><img src="logo/logotype_horizontal.png" alt="Lector" height="150px"></p>
+<p align="center"><img src="lector/resources/raw/logo/logotype_horizontal.png" alt="Lector" height="90px"></p>
 
 Qt based ebook reader
 
