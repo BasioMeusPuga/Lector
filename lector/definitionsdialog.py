@@ -17,7 +17,13 @@
 import json
 import urllib.request
 
-from PyQt5 import QtWidgets, QtCore, QtGui, QtMultimedia
+from PyQt5 import QtWidgets, QtCore, QtGui
+try:
+    from PyQt5 import QtMultimedia
+    multimedia_available = True
+except ImportError:
+    print('QtMultimedia not found. Sounds will not play.')
+    multimedia_available = False
 
 from lector.resources import definitions
 
@@ -56,8 +62,11 @@ class DefinitionsUI(QtWidgets.QDialog, definitions.Ui_Dialog):
         self.pronunciation_mp3 = None
 
         self.okButton.clicked.connect(self.hide)
-        self.pronounceButton.clicked.connect(self.play_pronunciation)
         self.dialogBackground.clicked.connect(self.color_background)
+        if multimedia_available:
+            self.pronounceButton.clicked.connect(self.play_pronunciation)
+        else:
+            self.pronounceButton.setEnabled(False)
 
     def api_call(self, url, word):
         language = self.parent.settings['dictionary_language']
@@ -158,7 +167,7 @@ class DefinitionsUI(QtWidgets.QDialog, definitions.Ui_Dialog):
             self.show()
 
     def play_pronunciation(self):
-        if not self.pronunciation_mp3:
+        if not self.pronunciation_mp3 or not multimedia_available:
             return
 
         media_content = QtMultimedia.QMediaContent(
