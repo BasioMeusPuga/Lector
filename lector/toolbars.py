@@ -68,6 +68,26 @@ class BookToolBar(QtWidgets.QToolBar):
             self._translate('BookToolBar', 'Reset profile'),
             self)
 
+        # Single and double page view buttons
+        self.singlePageButton = QtWidgets.QAction(
+            image_factory.get_image('page-single'),
+            self._translate('BookToolBar', 'View as single page'),
+            self)
+        self.singlePageButton.setObjectName('singlePageButton')
+        self.singlePageButton.setCheckable(True)
+
+        self.doublePageButton = QtWidgets.QAction(
+            image_factory.get_image('page-double'),
+            self._translate('BookToolBar', 'View as double page'),
+            self)
+        self.doublePageButton.setObjectName('doublePageButton')            
+        self.doublePageButton.setCheckable(True)
+
+        self.pageViewButtons = QtWidgets.QActionGroup(self)
+        self.pageViewButtons.setExclusive(True)
+        self.pageViewButtons.addAction(self.singlePageButton)
+        self.pageViewButtons.addAction(self.doublePageButton)
+
         # Add buttons
         self.addAction(self.fontButton)
         self.fontButton.setCheckable(True)
@@ -79,6 +99,9 @@ class BookToolBar(QtWidgets.QToolBar):
         self.addAction(self.addBookmarkButton)
         self.addAction(self.bookmarkButton)
         self.bookmarkButton.setCheckable(True)
+        self.addSeparator()
+        self.addAction(self.singlePageButton)
+        self.addAction(self.doublePageButton)
         self.addSeparator()
         self.addAction(self.distractionFreeButton)
         self.addAction(self.fullscreenButton)

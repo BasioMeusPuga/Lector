@@ -74,7 +74,7 @@ class PliantQGraphicsView(QtWidgets.QGraphicsView):
 
     def loadImage(self, current_page):
         # TODO
-        # For double page view: 1 before, 1 after
+        # For double page view: 2 before, 2 after
         all_pages = [i[1] for i in self.parent.metadata['content']]
 
         def load_page(current_page):
@@ -93,7 +93,14 @@ class PliantQGraphicsView(QtWidgets.QGraphicsView):
             print('Building image cache')
             current_page_index = all_pages.index(current_page)
 
-            for i in (-1, 0, 1, 2):
+            # Image caching for single and double page views
+            if self.main_window.settings['page_view_button'] == 'singlePageButton':
+                page_indices = (-1, 0, 1, 2)
+            else:
+                # 2 page view
+                page_indices = (-2, -1, 0, 1, 2, 3)
+
+            for i in page_indices:
                 try:
                     this_page = all_pages[current_page_index + i]
                     this_pixmap = load_page(this_page)
@@ -171,10 +178,10 @@ class PliantQGraphicsView(QtWidgets.QGraphicsView):
             image_pixmap = self.image_pixmap.scaledToWidth(
                 available_width, QtCore.Qt.SmoothTransformation)
 
-        graphics_scene = QtWidgets.QGraphicsScene()
-        graphics_scene.addPixmap(image_pixmap)
+        graphicsScene = QtWidgets.QGraphicsScene()
+        graphicsScene.addPixmap(image_pixmap)
 
-        self.setScene(graphics_scene)
+        self.setScene(graphicsScene)
         self.show()
 
     def wheelEvent(self, event):
@@ -751,14 +758,14 @@ class PliantWidgetsCommonFunctions:
     def generate_combo_box_action(self, contextMenu):
         contextMenu.addSeparator()
 
-        toc_combobox = QtWidgets.QComboBox()
+        tocCombobox = QtWidgets.QComboBox()
         toc_data = [i[0] for i in self.pw.parent.metadata['content']]
-        toc_combobox.addItems(toc_data)
-        toc_combobox.setCurrentIndex(
+        tocCombobox.addItems(toc_data)
+        tocCombobox.setCurrentIndex(
             self.pw.main_window.bookToolBar.tocBox.currentIndex())
-        toc_combobox.currentIndexChanged.connect(
+        tocCombobox.currentIndexChanged.connect(
             self.pw.main_window.bookToolBar.tocBox.setCurrentIndex)
 
         comboboxAction = QtWidgets.QWidgetAction(self.pw)
-        comboboxAction.setDefaultWidget(toc_combobox)
+        comboboxAction.setDefaultWidget(tocCombobox)
         contextMenu.addAction(comboboxAction)

@@ -148,7 +148,7 @@ class BackGroundCacheRefill(QtCore.QThread):
                 image_pixmap.loadFromData(page_data)
             elif self.filetype == 'pdf':
                 page_data = self.book.page(current_page)
-                page_qimage = page_data.renderToImage(350, 350)
+                page_qimage = page_data.renderToImage(400, 400)  # TODO Readjust
                 image_pixmap.convertFromImage(page_qimage)
             return image_pixmap
 

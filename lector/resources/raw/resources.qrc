@@ -1,5 +1,9 @@
 <RCC>
   <qresource prefix="images">
+    <file>DarkIcons/page-single.svg</file>
+    <file>DarkIcons/page-double.svg</file>
+    <file>LightIcons/page-single.svg</file>
+    <file>LightIcons/page-double.svg</file>
     <file>DarkIcons/about.svg</file>
     <file>DarkIcons/switches.svg</file>
     <file>LightIcons/about.svg</file>

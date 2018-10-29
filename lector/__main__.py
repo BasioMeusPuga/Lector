@@ -177,6 +177,9 @@ class MainUI(QtWidgets.QMainWindow, mainwindow.Ui_MainWindow):
         self.bookToolBar.distractionFreeButton.triggered.connect(self.toggle_distraction_free)
         self.bookToolBar.fullscreenButton.triggered.connect(self.set_fullscreen)
 
+        self.bookToolBar.singlePageButton.triggered.connect(self.change_page_view)
+        self.bookToolBar.doublePageButton.triggered.connect(self.change_page_view)
+
         for count, i in enumerate(self.display_profiles):
             self.bookToolBar.profileBox.setItemData(count, i, QtCore.Qt.UserRole)
         self.bookToolBar.profileBox.currentIndexChanged.connect(
@@ -760,6 +763,10 @@ class MainUI(QtWidgets.QMainWindow, mainwindow.Ui_MainWindow):
             signal_sender, key_pressed)
 
     #____________________________________________
+
+    def change_page_view(self):
+        self.settings['page_view_button'] = self.sender().objectName() 
+        print(self.sender().objectName())
 
     def search_book(self, search_text):
         current_tab = self.tabWidget.currentIndex()

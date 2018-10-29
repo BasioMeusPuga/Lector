@@ -87,8 +87,10 @@ TODO
         Clean up 'switch' page layout
         Colors aren't loaded properly for annotation previews
         Cover page shouldn't be scolled midway
+        Last line in QTextBrowser should never be cut off
 
     Secondary:
+        Double page view for books
         Graphical themes
         Change focus rectangle dimensions
         Tab reordering
