@@ -61,10 +61,12 @@ TODO
         ✓ Make the bookmark dock float over the reading area
         ✓ Spacebar should not cut off lines at the top
         ✓ Track open bookmark windows so they can be closed quickly at exit
+        Double page / column view
+            ✓ For comics
+                Caching is current non fuctional
         Annotations
             ✓ Text
                 Annotation preview in listView
-            Image
         Adjust key navigation according to viewport dimensions
         Search document using QTextCursor
     Filetypes:
@@ -106,7 +108,6 @@ TODO
         Include icons for filetype emblems
         Comic view modes
             Continuous paging
-            Double pages
         Ignore a / the / numbers for sorting purposes
         ? Add only one file type if multiple are present
         ? Create emblem per filetype

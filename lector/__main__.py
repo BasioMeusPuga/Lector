@@ -179,6 +179,10 @@ class MainUI(QtWidgets.QMainWindow, mainwindow.Ui_MainWindow):
 
         self.bookToolBar.singlePageButton.triggered.connect(self.change_page_view)
         self.bookToolBar.doublePageButton.triggered.connect(self.change_page_view)
+        if self.settings['page_view_button'] == 'singlePageButton':
+            self.bookToolBar.singlePageButton.setChecked(True)
+        else:
+            self.bookToolBar.doublePageButton.setChecked(True)
 
         for count, i in enumerate(self.display_profiles):
             self.bookToolBar.profileBox.setItemData(count, i, QtCore.Qt.UserRole)
@@ -765,8 +769,13 @@ class MainUI(QtWidgets.QMainWindow, mainwindow.Ui_MainWindow):
     #____________________________________________
 
     def change_page_view(self):
-        self.settings['page_view_button'] = self.sender().objectName() 
-        print(self.sender().objectName())
+        self.settings['page_view_button'] = self.sender().objectName()
+        chapter_number = self.bookToolBar.tocBox.currentIndex()
+
+        # Switch page to whatever index is selected in the tocBox
+        current_tab = self.tabWidget.currentWidget()
+        required_content = current_tab.metadata['content'][chapter_number][1]
+        current_tab.contentView.loadImage(required_content)
 
     def search_book(self, search_text):
         current_tab = self.tabWidget.currentIndex()

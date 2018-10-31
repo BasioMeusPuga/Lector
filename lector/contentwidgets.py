@@ -73,36 +73,58 @@ class PliantQGraphicsView(QtWidgets.QGraphicsView):
             self.generate_graphicsview_context_menu)
 
     def loadImage(self, current_page):
-        # TODO
-        # For double page view: 2 before, 2 after
         all_pages = [i[1] for i in self.parent.metadata['content']]
+        current_page_index = all_pages.index(current_page)
+
+        double_page_mode = False
+        if (self.main_window.settings['page_view_button'] == 'doublePageButton'
+                and (current_page_index != 0 and current_page_index != len(all_pages) - 1)):
+            double_page_mode = True
 
         def load_page(current_page):
-            image_pixmap = QtGui.QPixmap()
+            def page_loader(page):
+                # TODO Maybe pdf image res needs a setting?
+                pixmap = QtGui.QPixmap()
+                if self.filetype in ('cbz', 'cbr'):
+                    page_data = self.book.read(page)
+                    pixmap.loadFromData(page_data)
+                elif self.filetype == 'pdf':
+                    page_data = self.book.page(current_page)
+                    page_qimage = page_data.renderToImage(400, 400)
+                    pixmap.convertFromImage(page_qimage)
+                return pixmap
 
-            if self.filetype in ('cbz', 'cbr'):
-                page_data = self.book.read(current_page)
-                image_pixmap.loadFromData(page_data)
-            elif self.filetype == 'pdf':
-                page_data = self.book.page(current_page)
-                page_qimage = page_data.renderToImage(400, 400)  # TODO Maybe this needs a setting?
-                image_pixmap.convertFromImage(page_qimage)
-            return image_pixmap
+            firstPixmap = page_loader(current_page)
+            if not double_page_mode:
+                return firstPixmap
+
+            next_page = all_pages[current_page_index + 1]
+            secondPixmap = page_loader(next_page)
+
+            bigPixmap = QtGui.QPixmap(
+                firstPixmap.width() + secondPixmap.width() + 5,
+                firstPixmap.height())
+            bigPixmap.fill(QtCore.Qt.transparent)
+            imagePainter = QtGui.QPainter(bigPixmap)
+            imagePainter.drawPixmap(0, 0, firstPixmap)
+            imagePainter.drawPixmap(firstPixmap.width() + 5, 0, secondPixmap)
+            imagePainter.end()
+            return bigPixmap
 
         def generate_image_cache(current_page):
             print('Building image cache')
             current_page_index = all_pages.index(current_page)
 
             # Image caching for single and double page views
-            if self.main_window.settings['page_view_button'] == 'singlePageButton':
-                page_indices = (-1, 0, 1, 2)
-            else:
-                # 2 page view
-                page_indices = (-2, -1, 0, 1, 2, 3)
+            page_indices = (-1, 0, 1, 2)
+
+            index_modifier = 0
+            if double_page_mode:
+                index_modifier = 1
 
             for i in page_indices:
                 try:
-                    this_page = all_pages[current_page_index + i]
+                    this_page = all_pages[current_page_index + i + index_modifier]
                     this_pixmap = load_page(this_page)
                     self.image_cache[i + 1] = (this_page, this_pixmap)
                 except IndexError:
@@ -131,7 +153,9 @@ class PliantQGraphicsView(QtWidgets.QGraphicsView):
             # No return happened so the image isn't in the cache
             generate_image_cache(current_page)
 
-        if self.main_window.settings['caching_enabled']:
+        # TODO
+        # Get caching working for double page view
+        if not double_page_mode and self.main_window.settings['caching_enabled']:
             return_pixmap = None
             while not return_pixmap:
                 return_pixmap = check_cache(current_page)
@@ -267,6 +291,18 @@ class PliantQGraphicsView(QtWidgets.QGraphicsView):
         viewSubMenu.setIcon(
             self.main_window.QImageFactory.get_image('mail-thread-watch'))
 
+        singlePageAction = doublePageAction = 'It\'s hammer time'
+        if self.main_window.settings['page_view_button'] == 'doublePageButton':
+            singlePageAction = viewSubMenu.addAction(
+                self.main_window.QImageFactory.get_image('page-single'),
+                self._translate('PliantQGraphicsView', 'Single page view'))
+        else:
+            doublePageAction = viewSubMenu.addAction(
+                self.main_window.QImageFactory.get_image('page-double'),
+                self._translate('PliantQGraphicsView', 'Double page view'))
+
+        viewSubMenu.addSeparator()
+
         zoominAction = viewSubMenu.addAction(
             self.main_window.QImageFactory.get_image('zoom-in'),
             self._translate('PliantQGraphicsView', 'Zoom in (+)'))
@@ -296,6 +332,12 @@ class PliantQGraphicsView(QtWidgets.QGraphicsView):
             self.common_functions.generate_combo_box_action(contextMenu)
 
         action = contextMenu.exec_(self.sender().mapToGlobal(position))
+
+        if action == singlePageAction:
+            self.main_window.bookToolBar.singlePageButton.trigger()
+
+        if action == doublePageAction:
+            self.main_window.bookToolBar.doublePageButton.trigger()
 
         if action == saveAction:
             dialog_prompt = self._translate('Main_UI', 'Save page as...')
@@ -647,8 +689,22 @@ class PliantWidgetsCommonFunctions:
 
         if (current_toc_index < max_toc_index and direction == 1) or (
                 current_toc_index > 0 and direction == -1):
+
+            # Special cases for double page view
+            def get_modifier():
+                if (self.main_window.settings['page_view_button'] == 'singlePageButton'
+                        or not self.are_we_doing_images_only):
+                    return 0
+
+                if (current_toc_index == 0
+                        or current_toc_index % 2 == 0
+                        or current_toc_index == max_toc_index):
+                    return 0
+                if current_toc_index % 2 == 1:
+                    return direction
+
             self.main_window.bookToolBar.tocBox.setCurrentIndex(
-                current_toc_index + direction)
+                current_toc_index + direction + get_modifier())
 
             # Set page position depending on if the chapter number is increasing or decreasing
             if direction == 1 or was_button_pressed:
