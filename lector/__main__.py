@@ -644,8 +644,7 @@ class MainUI(QtWidgets.QMainWindow, mainwindow.Ui_MainWindow):
                 self.bookToolBar.show()
                 self.libraryToolBar.hide()
 
-            current_tab = self.tabWidget.widget(
-                self.tabWidget.currentIndex())
+            current_tab = self.tabWidget.currentWidget()
             current_metadata = current_tab.metadata
 
             if self.bookToolBar.fontButton.isChecked():
@@ -690,7 +689,7 @@ class MainUI(QtWidgets.QMainWindow, mainwindow.Ui_MainWindow):
         self.bookToolBar.annotationButton.setChecked(False)
 
     def set_toc_position(self, event=None):
-        current_tab = self.tabWidget.widget(self.tabWidget.currentIndex())
+        current_tab = self.tabWidget.currentWidget()
 
         current_tab.metadata[
             'position']['current_chapter'] = event + 1
@@ -704,20 +703,15 @@ class MainUI(QtWidgets.QMainWindow, mainwindow.Ui_MainWindow):
         self.profile_functions.format_contentView()
 
     def set_fullscreen(self):
-        current_tab = self.tabWidget.currentIndex()
-        current_tab_widget = self.tabWidget.widget(current_tab)
-        current_tab_widget.go_fullscreen()
+        self.tabWidget.currentWidget().go_fullscreen()
 
     def toggle_dock_widgets(self):
         sender = self.sender()
-        current_tab = self.tabWidget.currentIndex()
-        current_tab_widget = self.tabWidget.widget(current_tab)
 
         if sender == self.bookToolBar.bookmarkButton:
-            current_tab_widget.toggle_bookmarks()
-
+            self.tabWidget.currentWidget().toggle_bookmarks()
         if sender == self.bookToolBar.annotationButton:
-            current_tab_widget.toggle_annotations()
+            self.tabWidget.currentWidget().toggle_annotations()
 
     def library_doubleclick(self, index):
         sender = self.sender().objectName()
@@ -778,12 +772,11 @@ class MainUI(QtWidgets.QMainWindow, mainwindow.Ui_MainWindow):
         current_tab.contentView.loadImage(required_content)
 
     def search_book(self, search_text):
-        current_tab = self.tabWidget.currentIndex()
-        if not (current_tab != 0 and not self.tabWidget.widget(
-                current_tab).are_we_doing_images_only):
+        if not (self.tabWidget.currentIndex() != 0
+                and not self.tabWidget.currentWidget().are_we_doing_images_only):
             return
 
-        contentView = self.tabWidget.widget(current_tab).contentView
+        contentView = self.tabWidget.currentWidget().contentView
 
         text_cursor = contentView.textCursor()
         something_found = True
