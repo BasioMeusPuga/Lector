@@ -134,7 +134,8 @@ class Tab(QtWidgets.QWidget):
         self.annotationListView.setMaximumWidth(350)
         self.annotationListView.doubleClicked.connect(self.contentView.toggle_annotation_mode)
         self.annotationListView.setEditTriggers(QtWidgets.QListView.NoEditTriggers)
-        self.sideDockTabWidget.addTab(self.annotationListView, 'Annotations')
+        annotations_string = self._translate('Tab', 'Annotations')
+        self.sideDockTabWidget.addTab(self.annotationListView, annotations_string)
 
         self.annotationModel = QtGui.QStandardItemModel(self)
         self.generate_annotation_model()
@@ -147,7 +148,8 @@ class Tab(QtWidgets.QWidget):
         self.bookmarkTreeView.customContextMenuRequested.connect(
             self.generate_bookmark_context_menu)
         self.bookmarkTreeView.clicked.connect(self.navigate_to_bookmark)
-        self.sideDockTabWidget.addTab(self.bookmarkTreeView, 'Bookmarks')
+        bookmarks_string = self._translate('Tab', 'Bookmarks')
+        self.sideDockTabWidget.addTab(self.bookmarkTreeView, bookmarks_string)
 
         self.bookmarkModel = QtGui.QStandardItemModel(self)
         self.bookmarkProxyModel = BookmarkProxyModel(self)
@@ -514,7 +516,6 @@ class Tab(QtWidgets.QWidget):
         self.bookmarkModel.appendRow(bookmarkParent)
         if new_bookmark:
             edit_new_bookmark(bookmarkParent)
-        # self.update_bookmark_proxy_model()
 
     def navigate_to_bookmark(self, index):
         if not index.isValid():

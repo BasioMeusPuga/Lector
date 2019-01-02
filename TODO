@@ -92,7 +92,6 @@ TODO
         Colors aren't loaded properly for annotation previews
         Cover page shouldn't be scolled midway
         Last line in QTextBrowser should never be cut off
-        Annotation / bookmark docks shouldn't be separate
         Cursor position is a little finicky when toggling fullscreen
         Hide mousepointer more aggressively
 
