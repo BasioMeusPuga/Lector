@@ -2,7 +2,8 @@ TODO
     General:
         ✓ Internationalization
         ✓ Application icon
-        ✓ .desktop file        
+        ✓ .desktop file    
+        Flatpak and maybe AppImage support    
     Options:
         ✓ Automatic library management
             ✓ Recursive file addition
@@ -63,7 +64,7 @@ TODO
         ✓ Track open bookmark windows so they can be closed quickly at exit
         Double page / column view
             ✓ For comics
-                Caching is current non fuctional
+                Caching is currently non fuctional
         Annotations
             ✓ Text
                 Annotation preview in listView
@@ -76,6 +77,7 @@ TODO
             ✓ Homegrown solution please
         ✓ cbz, cbr support
             ✓ Keep font settings enabled but only for background color
+            ✓ Double page view
         ✓ mobi, azw support
             Limit the extra files produced by KindleUnpack
                 Have them save to memory
@@ -90,6 +92,9 @@ TODO
         Colors aren't loaded properly for annotation previews
         Cover page shouldn't be scolled midway
         Last line in QTextBrowser should never be cut off
+        Annotation / bookmark docks shouldn't be separate
+        Cursor position is a little finicky when toggling fullscreen
+        Hide mousepointer more aggressively
 
     Secondary:
         Double page view for books

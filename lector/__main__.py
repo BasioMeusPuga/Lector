@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 
 # This file is a part of Lector, a Qt based ebook reader
-# Copyright (C) 2017 BasioMeusPuga
+# Copyright (C) 2017-2019 BasioMeusPuga
 
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -78,7 +78,7 @@ class MainUI(QtWidgets.QMainWindow, mainwindow.Ui_MainWindow):
         self.comic_profile = {}
         self.database_path = None
         self.active_library_filters = []
-        self.active_bookmark_docks = []
+        self.active_docks = []
 
         # Initialize application
         Settings(self).read_settings()  # This should populate all variables that need
@@ -171,9 +171,9 @@ class MainUI(QtWidgets.QMainWindow, mainwindow.Ui_MainWindow):
             self.libraryToolBar.tableViewButton.trigger()
 
         # Book toolbar
-        self.bookToolBar.annotationButton.triggered.connect(self.toggle_dock_widgets)
+        self.bookToolBar.annotationButton.triggered.connect(self.toggle_side_dock)
         self.bookToolBar.addBookmarkButton.triggered.connect(self.add_bookmark)
-        self.bookToolBar.bookmarkButton.triggered.connect(self.toggle_dock_widgets)
+        self.bookToolBar.bookmarkButton.triggered.connect(self.toggle_side_dock)
         self.bookToolBar.distractionFreeButton.triggered.connect(self.toggle_distraction_free)
         self.bookToolBar.fullscreenButton.triggered.connect(self.set_fullscreen)
 
@@ -617,8 +617,7 @@ class MainUI(QtWidgets.QMainWindow, mainwindow.Ui_MainWindow):
 
         # Hide bookmark and annotation widgets
         for i in range(1, self.tabWidget.count()):
-            self.tabWidget.widget(i).bookmarkDock.setVisible(False)
-            self.tabWidget.widget(i).annotationDock.setVisible(False)
+            self.tabWidget.widget(i).sideDock.setVisible(False)
 
         if self.tabWidget.currentIndex() == 0:
 
@@ -685,9 +684,6 @@ class MainUI(QtWidgets.QMainWindow, mainwindow.Ui_MainWindow):
         self.tabWidget.widget(tab_index).setParent(None)
         gc.collect()
 
-        self.bookToolBar.bookmarkButton.setChecked(False)
-        self.bookToolBar.annotationButton.setChecked(False)
-
     def set_toc_position(self, event=None):
         current_tab = self.tabWidget.currentWidget()
 
@@ -705,13 +701,15 @@ class MainUI(QtWidgets.QMainWindow, mainwindow.Ui_MainWindow):
     def set_fullscreen(self):
         self.tabWidget.currentWidget().go_fullscreen()
 
-    def toggle_dock_widgets(self):
+    def toggle_side_dock(self):
+        # Tab indices are fixed
+        # 0 = Annotations
+        # 1 = Bookmarks
         sender = self.sender()
-
-        if sender == self.bookToolBar.bookmarkButton:
-            self.tabWidget.currentWidget().toggle_bookmarks()
         if sender == self.bookToolBar.annotationButton:
-            self.tabWidget.currentWidget().toggle_annotations()
+            self.tabWidget.currentWidget().toggle_side_dock(0)
+        if sender == self.bookToolBar.bookmarkButton:
+            self.tabWidget.currentWidget().toggle_side_dock(1)
 
     def library_doubleclick(self, index):
         sender = self.sender().objectName()
@@ -986,7 +984,7 @@ class MainUI(QtWidgets.QMainWindow, mainwindow.Ui_MainWindow):
         self.settingsDialog.hide()
         self.definitionDialog.hide()
         self.temp_dir.remove()
-        for this_dock in self.active_bookmark_docks:
+        for this_dock in self.active_docks:
             try:
                 this_dock.setVisible(False)
             except RuntimeError:

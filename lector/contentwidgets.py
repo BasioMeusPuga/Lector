@@ -1,5 +1,5 @@
 # This file is a part of Lector, a Qt based ebook reader
-# Copyright (C) 2017-2018 BasioMeusPuga
+# Copyright (C) 2017-2019 BasioMeusPuga
 
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -350,7 +350,7 @@ class PliantQGraphicsView(QtWidgets.QGraphicsView):
                 self.image_pixmap.save(save_file[0])
 
         if action == bookmarksToggleAction:
-            self.parent.toggle_bookmarks()
+            self.parent.toggle_side_dock(1)
         if action == dfToggleAction:
             self.main_window.toggle_distraction_free()
         if action == fsToggleAction:
@@ -455,8 +455,8 @@ class PliantQTextBrowser(QtWidgets.QTextBrowser):
         if self.annotation_mode:
             self.annotation_mode = False
             self.viewport().setCursor(QtCore.Qt.ArrowCursor)
-            self.parent.annotationDock.show()
-            self.parent.annotationDock.setWindowOpacity(.95)
+            self.parent.sideDock.show()
+            self.parent.sideDock.setWindowOpacity(.95)
 
             self.current_annotation = None
             self.parent.annotationListView.clearSelection()
@@ -464,7 +464,7 @@ class PliantQTextBrowser(QtWidgets.QTextBrowser):
         else:
             self.annotation_mode = True
             self.viewport().setCursor(QtCore.Qt.IBeamCursor)
-            self.parent.annotationDock.hide()
+            self.parent.sideDock.hide()
 
             selected_index = self.parent.annotationListView.currentIndex()
             self.current_annotation = self.parent.annotationModel.data(
@@ -616,7 +616,7 @@ class PliantQTextBrowser(QtWidgets.QTextBrowser):
                 'delete', 'text', current_chapter, cursor_at_mouse.position())
 
         if action == bookmarksToggleAction:
-            self.parent.toggle_bookmarks()
+            self.parent.toggle_side_dock(1)
 
         if action == fsToggleAction:
             self.parent.exit_fullscreen()

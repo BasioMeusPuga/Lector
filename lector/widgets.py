@@ -1,5 +1,5 @@
 # This file is a part of Lector, a Qt based ebook reader
-# Copyright (C) 2017-2018 BasioMeusPuga
+# Copyright (C) 2017-2019 BasioMeusPuga
 
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -17,7 +17,6 @@
 # TODO
 # Reading modes
 # Double page, Continuous etc
-# Especially for comics
 
 import os
 import uuid
@@ -121,71 +120,61 @@ class Tab(QtWidgets.QWidget):
             self.contentView.setHorizontalScrollBarPolicy(QtCore.Qt.ScrollBarAsNeeded)
             self.contentView.setVerticalScrollBarPolicy(QtCore.Qt.ScrollBarAsNeeded)
 
-        # Create the annotations dock
-        self.annotationDock = PliantDockWidget(self.main_window, 'annotations', self.contentView)
-        self.annotationDock.setWindowTitle(self._translate('Tab', 'Annotations'))
-        self.annotationDock.setFeatures(QtWidgets.QDockWidget.DockWidgetClosable)
-        self.annotationDock.hide()
+        # Create a common dock for annotations and bookmarks
+        # And add a vertical layout to it for requisite widgets
+        self.sideDock = PliantDockWidget(self.main_window, False, self.contentView)
+        self.sideDock.setFeatures(QtWidgets.QDockWidget.DockWidgetClosable)
+        self.sideDock.setTitleBarWidget(QtWidgets.QWidget())
+        self.sideDockTabWidget = QtWidgets.QTabWidget()
+        self.sideDock.setWidget(self.sideDockTabWidget)
 
-        self.annotationListView = QtWidgets.QListView(self.annotationDock)
+        # Annotation list view and model
+        self.annotationListView = QtWidgets.QListView(self.sideDock)
         self.annotationListView.setResizeMode(QtWidgets.QListWidget.Adjust)
         self.annotationListView.setMaximumWidth(350)
         self.annotationListView.doubleClicked.connect(self.contentView.toggle_annotation_mode)
         self.annotationListView.setEditTriggers(QtWidgets.QListView.NoEditTriggers)
-        self.annotationDock.setWidget(self.annotationListView)
+        self.sideDockTabWidget.addTab(self.annotationListView, 'Annotations')
 
         self.annotationModel = QtGui.QStandardItemModel(self)
         self.generate_annotation_model()
 
-        # Create the annotation notes dock
-        self.annotationNoteDock = PliantDockWidget(self.main_window, 'notes', self.contentView)
-        self.annotationNoteDock.setWindowTitle(self._translate('Tab', 'Note'))
-        self.annotationNoteDock.setFeatures(QtWidgets.QDockWidget.DockWidgetClosable)
-        self.annotationNoteDock.hide()
-
-        self.annotationNoteEdit = QtWidgets.QTextEdit(self.annotationDock)
-        self.annotationNoteEdit.setMaximumSize(QtCore.QSize(250, 250))
-        self.annotationNoteEdit.setFocusPolicy(QtCore.Qt.StrongFocus)
-        self.annotationNoteDock.setWidget(self.annotationNoteEdit)
-
-        # Create the dock widget for context specific display
-        self.bookmarkDock = PliantDockWidget(self.main_window, 'bookmarks', self.contentView)
-
-        title_string = self._translate('Tab', 'Bookmarks')
-        if self.main_window.settings['toc_with_bookmarks']:
-            title_string = self._translate('Tab', 'TOC + Bookmarks')
-        self.bookmarkDock.setWindowTitle(title_string)
-
-        self.bookmarkDock.setFeatures(QtWidgets.QDockWidget.DockWidgetClosable)
-        self.bookmarkDock.hide()
-
-        self.bookmarkTreeView = QtWidgets.QTreeView(self.bookmarkDock)
+        # Bookmark tree view and model
+        self.bookmarkTreeView = QtWidgets.QTreeView(self.sideDock)
         self.bookmarkTreeView.setHeaderHidden(True)
         self.bookmarkTreeView.setMaximumWidth(350)
         self.bookmarkTreeView.setContextMenuPolicy(QtCore.Qt.CustomContextMenu)
         self.bookmarkTreeView.customContextMenuRequested.connect(
             self.generate_bookmark_context_menu)
         self.bookmarkTreeView.clicked.connect(self.navigate_to_bookmark)
-        self.bookmarkDock.setWidget(self.bookmarkTreeView)
+        self.sideDockTabWidget.addTab(self.bookmarkTreeView, 'Bookmarks')
 
         self.bookmarkModel = QtGui.QStandardItemModel(self)
         self.bookmarkProxyModel = BookmarkProxyModel(self)
         self.generate_bookmark_model()
 
+        # Create the annotation notes dock
+        self.annotationNoteDock = PliantDockWidget(self.main_window, True, self.contentView)
+        self.annotationNoteDock.setWindowTitle(self._translate('Tab', 'Note'))
+        self.annotationNoteDock.setFeatures(QtWidgets.QDockWidget.DockWidgetClosable)
+        self.annotationNoteDock.hide()
+
+        self.annotationNoteEdit = QtWidgets.QTextEdit(self.annotationNoteDock)
+        self.annotationNoteEdit.setMaximumSize(QtCore.QSize(250, 250))
+        self.annotationNoteEdit.setFocusPolicy(QtCore.Qt.StrongFocus)
+        self.annotationNoteDock.setWidget(self.annotationNoteEdit)
+
         self.generate_keyboard_shortcuts()
 
         self.masterLayout.addWidget(self.contentView)
-        self.masterLayout.addWidget(self.annotationDock)
+        self.masterLayout.addWidget(self.sideDock)
         self.masterLayout.addWidget(self.annotationNoteDock)
-        self.masterLayout.addWidget(self.bookmarkDock)
 
         # The following has to be after the docks are added to the layout
-        self.annotationDock.setFloating(True)
-        self.annotationDock.setWindowOpacity(.95)
+        self.sideDock.setFloating(True)
+        self.sideDock.setWindowOpacity(.95)
         self.annotationNoteDock.setFloating(True)
         self.annotationNoteDock.setWindowOpacity(.95)
-        self.bookmarkDock.setFloating(True)
-        self.bookmarkDock.setWindowOpacity(.95)
 
         title = self.metadata['title']
         if self.main_window.settings['attenuate_titles'] and len(title) > 30:
@@ -208,6 +197,18 @@ class Tab(QtWidgets.QWidget):
             self.main_window.tabWidget.tabBar().setVisible(False)
 
         self.contentView.setFocus()
+
+    def toggle_side_dock(self, tab_required=1):
+        if (self.sideDock.isVisible()
+                and self.sideDockTabWidget.currentIndex() == tab_required):
+            self.sideDock.hide()
+        elif not self.sideDock.isVisible():
+            self.sideDock.show()
+
+        if tab_required == 0:
+            self.sideDockTabWidget.setCurrentIndex(0)
+        else:  # Takes care of the action menu as well
+            self.sideDockTabWidget.setCurrentIndex(1)
 
     def update_last_accessed_time(self):
         self.metadata['last_accessed'] = QtCore.QDateTime().currentDateTime()
@@ -301,13 +302,13 @@ class Tab(QtWidgets.QWidget):
 
         self.ksToggleBookMarks = QtWidgets.QShortcut(
             QtGui.QKeySequence('Ctrl+B'), self.contentView)
-        self.ksToggleBookMarks.activated.connect(self.toggle_bookmarks)
+        self.ksToggleBookMarks.activated.connect(self.toggle_side_dock)
 
     def go_fullscreen(self):
         # To allow toggles to function
         # properly after the fullscreening
-        self.bookmarkDock.hide()
-        self.annotationDock.hide()
+
+        self.sideDock.hide()
         self.annotationNoteDock.hide()
 
         if self.contentView.windowState() == QtCore.Qt.WindowFullScreen:
@@ -328,10 +329,15 @@ class Tab(QtWidgets.QWidget):
         self.is_fullscreen = True
 
     def exit_fullscreen(self):
-        for i in (self.bookmarkDock, self.annotationDock, self.annotationNoteDock):
+        # Intercept escape presses
+        for i in (self.annotationNoteDock, self.sideDock):
             if i.isVisible():
                 i.setVisible(False)
                 return
+
+        # Prevents cursor position change on escape presses
+        if self.main_window.isVisible():
+            return
 
         if not self.are_we_doing_images_only:
             self.contentView.record_position()
@@ -424,12 +430,6 @@ class Tab(QtWidgets.QWidget):
                 if old_position == new_position:
                     break
 
-    def toggle_annotations(self):
-        if self.annotationDock.isVisible():
-            self.annotationDock.hide()
-        else:
-            self.annotationDock.show()
-
     def generate_annotation_model(self):
         saved_annotations = self.main_window.settings['annotations']
 
@@ -451,12 +451,6 @@ class Tab(QtWidgets.QWidget):
 
         self.annotationListView.setModel(self.annotationModel)
 
-    def toggle_bookmarks(self):
-        if self.bookmarkDock.isVisible():
-            self.bookmarkDock.hide()
-        else:
-            self.bookmarkDock.show()
-
     def add_bookmark(self):
         identifier = uuid.uuid4().hex[:10]
         description = self._translate('Tab', 'New bookmark')
@@ -472,7 +466,7 @@ class Tab(QtWidgets.QWidget):
             'cursor_position': cursor_position,
             'description': description}
 
-        self.bookmarkDock.setVisible(True)
+        self.sideDock.setVisible(True)
         self.add_bookmark_to_model(
             description, chapter, cursor_position, identifier, True)
 
@@ -484,7 +478,7 @@ class Tab(QtWidgets.QWidget):
             new_child = parent_item.child(parent_item.rowCount() - 1, 0)
             source_index = self.bookmarkModel.indexFromItem(new_child)
             edit_index = self.bookmarkTreeView.model().mapFromSource(source_index)
-            self.bookmarkDock.activateWindow()
+            self.sideDock.activateWindow()
             self.bookmarkTreeView.setFocus()
             self.bookmarkTreeView.setCurrentIndex(edit_index)
             self.bookmarkTreeView.edit(edit_index)
@@ -632,10 +626,10 @@ class Tab(QtWidgets.QWidget):
 
 
 class PliantDockWidget(QtWidgets.QDockWidget):
-    def __init__(self, main_window, intended_for, contentView, parent=None):
+    def __init__(self, main_window, notes_only, contentView, parent=None):
         super(PliantDockWidget, self).__init__()
         self.main_window = main_window
-        self.intended_for = intended_for
+        self.notes_only = notes_only
         self.contentView = contentView
         self.current_annotation = None
 
@@ -643,43 +637,30 @@ class PliantDockWidget(QtWidgets.QDockWidget):
         viewport_height = self.contentView.viewport().size().height()
         viewport_topRight = self.contentView.mapToGlobal(
             self.contentView.viewport().rect().topRight())
-        viewport_topLeft = self.contentView.mapToGlobal(
-            self.contentView.viewport().rect().topLeft())
 
         desktop_size = QtWidgets.QDesktopWidget().screenGeometry()
-        dock_y = viewport_topRight.y()  # + (viewport_height * .10)
+        dock_y = viewport_topRight.y()
         dock_height = viewport_height * .999
 
-        if self.intended_for == 'bookmarks':
-            dock_width = desktop_size.width() // 5.5
-            dock_x = viewport_topLeft.x()
-            self.main_window.bookToolBar.bookmarkButton.setChecked(True)
-
-        elif self.intended_for == 'annotations':
-            dock_width = desktop_size.width() // 5.5
-            dock_x = viewport_topRight.x() - dock_width + 1
-            self.main_window.bookToolBar.annotationButton.setChecked(True)
-
-        elif self.intended_for == 'notes':
+        if self.notes_only:
             dock_width = dock_height = desktop_size.width() // 5.5
             dock_x = QtGui.QCursor.pos().x()
             dock_y = QtGui.QCursor.pos().y()
+        else:
+            dock_width = desktop_size.width() // 5.5
+            dock_x = viewport_topRight.x() - dock_width + 1
 
-        self.main_window.active_bookmark_docks.append(self)
+        self.main_window.active_docks.append(self)
         self.setGeometry(dock_x, dock_y, dock_width, dock_height)
 
     def hideEvent(self, event=None):
-        if self.intended_for == 'bookmarks':
-            self.main_window.bookToolBar.bookmarkButton.setChecked(False)
-        elif self.intended_for == 'annotations':
-            self.main_window.bookToolBar.annotationButton.setChecked(False)
-        elif self.intended_for == 'notes':
+        if self.notes_only:
             annotationNoteEdit = self.findChild(QtWidgets.QTextEdit)
             if self.current_annotation:
                 self.current_annotation['note'] = annotationNoteEdit.toPlainText()
 
         try:
-            self.main_window.active_bookmark_docks.remove(self)
+            self.main_window.active_docks.remove(self)
         except ValueError:
             pass
 

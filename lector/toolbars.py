@@ -1,5 +1,5 @@
 # This file is a part of Lector, a Qt based ebook reader
-# Copyright (C) 2017-2018 BasioMeusPuga
+# Copyright (C) 2017-2019 BasioMeusPuga
 
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -74,11 +74,9 @@ class BookToolBar(QtWidgets.QToolBar):
         self.fontButton.triggered.connect(self.toggle_font_settings)
         self.addSeparator()
         self.addAction(self.annotationButton)
-        self.annotationButton.setCheckable(True)
         self.addSeparator()
         self.addAction(self.addBookmarkButton)
         self.addAction(self.bookmarkButton)
-        self.bookmarkButton.setCheckable(True)
         self.addSeparator()
         self.addAction(self.distractionFreeButton)
         self.addAction(self.fullscreenButton)
