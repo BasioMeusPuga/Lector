@@ -27,9 +27,6 @@ class BookToolBar(QtWidgets.QToolBar):
         spacer.setSizePolicy(
             QtWidgets.QSizePolicy.Expanding, QtWidgets.QSizePolicy.Expanding)
 
-        sizePolicy = QtWidgets.QSizePolicy(
-            QtWidgets.QSizePolicy.Fixed, QtWidgets.QSizePolicy.Fixed)
-
         self.setMovable(False)
         self.setIconSize(QtCore.QSize(22, 22))
         self.setFloatable(False)
@@ -45,7 +42,7 @@ class BookToolBar(QtWidgets.QToolBar):
             self)
         self.annotationButton = QtWidgets.QAction(
             image_factory.get_image('annotate'),
-            self._translate('BookToolBar', 'Annotations'),
+            self._translate('BookToolBar', 'Annotations (Ctrl + N)'),
             self)
         self.addBookmarkButton = QtWidgets.QAction(
             image_factory.get_image('bookmark-new'),
@@ -55,13 +52,17 @@ class BookToolBar(QtWidgets.QToolBar):
             image_factory.get_image('bookmarks'),
             self._translate('BookToolBar', 'Bookmarks (Ctrl + B)'),
             self)
+        self.searchButton = QtWidgets.QAction(
+            image_factory.get_image('search'),
+            self._translate('BookToolBar', 'Search (Ctrl + F)'),
+            self)
         self.distractionFreeButton = QtWidgets.QAction(
             image_factory.get_image('visibility'),
             self._translate('Main_BookToolBarUI', 'Toggle distraction free mode (Ctrl + D)'),
             self)
         self.fullscreenButton = QtWidgets.QAction(
             image_factory.get_image('view-fullscreen'),
-            self._translate('BookToolBar', 'Fullscreen (F11)'),
+            self._translate('BookToolBar', 'Fullscreen (F)'),
             self)
         self.resetProfile = QtWidgets.QAction(
             image_factory.get_image('reload'),
@@ -72,12 +73,14 @@ class BookToolBar(QtWidgets.QToolBar):
         self.addAction(self.fontButton)
         self.fontButton.setCheckable(True)
         self.fontButton.triggered.connect(self.toggle_font_settings)
-        self.addSeparator()
+        self.bookSeparator1 = self.addSeparator()
+        self.addAction(self.searchButton)
+        self.bookSeparator2 = self.addSeparator()
         self.addAction(self.annotationButton)
-        self.addSeparator()
+        self.bookSeparator3 = self.addSeparator()
         self.addAction(self.addBookmarkButton)
         self.addAction(self.bookmarkButton)
-        self.addSeparator()
+        self.bookSeparator4 = self.addSeparator()
         self.addAction(self.distractionFreeButton)
         self.addAction(self.fullscreenButton)
 
@@ -175,7 +178,7 @@ class BookToolBar(QtWidgets.QToolBar):
         self.fontSeparator4 = self.addSeparator()
         self.addAction(self.paddingUp)
         self.addAction(self.paddingDown)
-        self.fontSeparator4 = self.addSeparator()
+        self.fontSeparator5 = self.addSeparator()
         self.addAction(self.alignLeft)
         self.addAction(self.alignRight)
         self.addAction(self.alignCenter)
@@ -199,6 +202,7 @@ class BookToolBar(QtWidgets.QToolBar):
             self.fontSeparator2,
             self.fontSeparator3,
             self.fontSeparator4,
+            self.fontSeparator5,
             self.resetProfile]
 
         for i in self.fontActions:
@@ -287,14 +291,6 @@ class BookToolBar(QtWidgets.QToolBar):
         for i in self.comicActions:
             i.setVisible(False)
 
-        # Other booktoolbar widgets
-        self.searchBar = FixedLineEdit(self)
-        self.searchBar.setPlaceholderText(
-            self._translate('BookToolBar', 'Search...'))
-        self.searchBar.setSizePolicy(sizePolicy)
-        self.searchBar.setContentsMargins(10, 0, 0, 0)
-        self.searchBar.setObjectName('searchBar')
-
         # Sorter
         self.tocBox = FixedComboBox(self)
         self.tocBox.setObjectName('sortingBox')
@@ -304,10 +300,8 @@ class BookToolBar(QtWidgets.QToolBar):
         # All of these will be put after the spacer
         # This means that the buttons in the left side of
         # the toolbar have to split up and added here
-        self.boxSpacer = self.addWidget(spacer)
-
+        self.addWidget(spacer)
         self.tocBoxAction = self.addWidget(self.tocBox)
-        self.searchBarAction = self.addWidget(self.searchBar)
 
         self.bookActions = [
             self.annotationButton,
@@ -316,7 +310,9 @@ class BookToolBar(QtWidgets.QToolBar):
             self.distractionFreeButton,
             self.fullscreenButton,
             self.tocBoxAction,
-            self.searchBarAction]
+            self.bookSeparator2,
+            self.bookSeparator3,
+            self.bookSeparator4]
 
         for i in self.bookActions:
             i.setVisible(True)
@@ -368,10 +364,6 @@ class LibraryToolBar(QtWidgets.QToolBar):
         super(LibraryToolBar, self).__init__(parent)
         self._translate = QtCore.QCoreApplication.translate
 
-        spacer = QtWidgets.QWidget()
-        spacer.setSizePolicy(
-            QtWidgets.QSizePolicy.Expanding, QtWidgets.QSizePolicy.Expanding)
-
         self.setMovable(False)
         self.setIconSize(QtCore.QSize(22, 22))
         self.setFloatable(False)
@@ -418,8 +410,6 @@ class LibraryToolBar(QtWidgets.QToolBar):
 
         self.libraryFilterButton = QtWidgets.QToolButton(self)
         self.libraryFilterButton.setIcon(image_factory.get_image('view-readermode'))
-        self.libraryFilterButton.setText(
-            self._translate('LibraryToolBar', 'Filter library'))
         self.libraryFilterButton.setToolTip(
             self._translate('LibraryToolBar', 'Filter library'))
 
@@ -451,7 +441,7 @@ class LibraryToolBar(QtWidgets.QToolBar):
         self.searchBar.setPlaceholderText(
             self._translate('LibraryToolBar', 'Search for Title, Author, Tags...'))
         self.searchBar.setSizePolicy(sizePolicy)
-        self.searchBar.setContentsMargins(10, 0, 0, 0)
+        self.searchBar.setContentsMargins(0, 0, 10, 0)
         self.searchBar.setObjectName('searchBar')
 
         # Sorter
@@ -472,10 +462,15 @@ class LibraryToolBar(QtWidgets.QToolBar):
         self.sortingBox.setMinimumContentsLength(10)
         self.sortingBox.setToolTip(self._translate('LibraryToolBar', 'Sort by'))
 
+        # Spacer
+        spacer = QtWidgets.QWidget()
+        spacer.setSizePolicy(
+            QtWidgets.QSizePolicy.Expanding, QtWidgets.QSizePolicy.Expanding)
+
         # Add widgets
         self.addWidget(spacer)
-        self.sortingBoxAction = self.addWidget(self.sortingBox)
         self.addWidget(self.searchBar)
+        self.sortingBoxAction = self.addWidget(self.sortingBox)
 
 
 # Sublassing these widgets out prevents them from resizing

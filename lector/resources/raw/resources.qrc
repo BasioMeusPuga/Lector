@@ -1,5 +1,9 @@
 <RCC>
   <qresource prefix="images">
+    <file>DarkIcons/search-word.svg</file>
+    <file>DarkIcons/search-case.svg</file>
+    <file>LightIcons/search-word.svg</file>
+    <file>LightIcons/search-case.svg</file>
     <file>DarkIcons/page-single.svg</file>
     <file>DarkIcons/page-double.svg</file>
     <file>LightIcons/page-single.svg</file>

@@ -68,6 +68,7 @@ TODO
         Annotations
             ✓ Text
                 Annotation preview in listView
+            Disable buttons for annotations, search in images
         Adjust key navigation according to viewport dimensions
         Search document using QTextCursor
     Filetypes:
@@ -96,6 +97,7 @@ TODO
         Hide mousepointer more aggressively
 
     Secondary:
+        Manga mode for comics
         Double page view for books
         Graphical themes
         Change focus rectangle dimensions

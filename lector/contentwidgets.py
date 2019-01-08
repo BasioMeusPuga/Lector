@@ -371,6 +371,8 @@ class PliantQGraphicsView(QtWidgets.QGraphicsView):
         self.main_window.closeEvent()
 
     def toggle_annotation_mode(self):
+        # The graphics view doesn't currently have annotation functionality
+        # Don't delete this because it's still called
         pass
 
 
@@ -554,6 +556,10 @@ class PliantQTextBrowser(QtWidgets.QTextBrowser):
             searchYoutubeAction = searchSubMenu.addAction(
                 QtGui.QIcon(':/images/Youtube.png'),
                 'Youtube')
+        else:
+            searchAction = contextMenu.addAction(
+                self.main_window.QImageFactory.get_image('search'),
+                self._translate('PliantQTextBrowser', 'Search'))
 
         if annotation_is_present:
             annotationsubMenu = contextMenu.addMenu('Annotation')
@@ -582,6 +588,11 @@ class PliantQTextBrowser(QtWidgets.QTextBrowser):
                 self.main_window.QImageFactory.get_image('visibility'),
                 distraction_free_prompt)
 
+        add_bookmark_string = self._translate('PliantQTextBrowser', 'Add Bookmark')
+        addBookMarkAction = contextMenu.addAction(
+            self.main_window.QImageFactory.get_image('bookmark-new'),
+            add_bookmark_string)
+
         if not self.main_window.settings['show_bars'] or self.parent.is_fullscreen:
             bookmarksToggleAction = contextMenu.addAction(
                 self.main_window.QImageFactory.get_image('bookmarks'),
@@ -591,12 +602,17 @@ class PliantQTextBrowser(QtWidgets.QTextBrowser):
 
         action = contextMenu.exec_(self.sender().mapToGlobal(position))
 
+        if action == addBookMarkAction:
+            self.parent.add_bookmark(cursor_at_mouse.position())
+
         if action == defineAction:
             self.main_window.definitionDialog.find_definition(selection)
 
         if action == searchAction:
-            self.main_window.bookToolBar.searchBar.setText(selection)
-            self.main_window.bookToolBar.searchBar.setFocus()
+            if selection and selection != '':
+                self.parent.searchLineEdit.setText(selection)
+            self.parent.toggle_side_dock(2, True)
+
         if action == searchGoogleAction:
             webbrowser.open_new_tab(
                 f'https://www.google.com/search?q={selection}')

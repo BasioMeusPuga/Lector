@@ -129,11 +129,10 @@ class Tab(QtWidgets.QWidget):
         self.sideDock.setWidget(self.sideDockTabWidget)
 
         # Annotation list view and model
-        self.annotationListView = QtWidgets.QListView(self.sideDock)
-        self.annotationListView.setResizeMode(QtWidgets.QListWidget.Adjust)
-        self.annotationListView.setMaximumWidth(350)
-        self.annotationListView.doubleClicked.connect(self.contentView.toggle_annotation_mode)
+        self.annotationListView = QtWidgets.QListView(self.sideDockTabWidget)
+        # self.annotationListView.setResizeMode(QtWidgets.QListWidget.Adjust)
         self.annotationListView.setEditTriggers(QtWidgets.QListView.NoEditTriggers)
+        self.annotationListView.doubleClicked.connect(self.contentView.toggle_annotation_mode)
         annotations_string = self._translate('Tab', 'Annotations')
         self.sideDockTabWidget.addTab(self.annotationListView, annotations_string)
 
@@ -141,9 +140,8 @@ class Tab(QtWidgets.QWidget):
         self.generate_annotation_model()
 
         # Bookmark tree view and model
-        self.bookmarkTreeView = QtWidgets.QTreeView(self.sideDock)
+        self.bookmarkTreeView = QtWidgets.QTreeView(self.sideDockTabWidget)
         self.bookmarkTreeView.setHeaderHidden(True)
-        self.bookmarkTreeView.setMaximumWidth(350)
         self.bookmarkTreeView.setContextMenuPolicy(QtCore.Qt.CustomContextMenu)
         self.bookmarkTreeView.customContextMenuRequested.connect(
             self.generate_bookmark_context_menu)
@@ -154,6 +152,56 @@ class Tab(QtWidgets.QWidget):
         self.bookmarkModel = QtGui.QStandardItemModel(self)
         self.bookmarkProxyModel = BookmarkProxyModel(self)
         self.generate_bookmark_model()
+
+        # Search view and model
+        self.searchLineEdit = QtWidgets.QLineEdit(self.sideDockTabWidget)
+        self.searchLineEdit.setFocusPolicy(QtCore.Qt.StrongFocus)
+        search_string = self._translate('Tab', 'Search')
+        self.searchLineEdit.setPlaceholderText(search_string)
+
+        search_book_string = self._translate('Tab', 'Search entire book')
+        self.searchBookButton = QtWidgets.QToolButton(self.sideDockTabWidget)
+        self.searchBookButton.setIcon(
+            self.main_window.QImageFactory.get_image('view-readermode'))
+        self.searchBookButton.setToolTip(search_book_string)
+        self.searchBookButton.setCheckable(True)
+        self.searchBookButton.setAutoRaise(True)
+
+        case_sensitive_string = self._translate('Tab', 'Match case')
+        self.caseSensitiveSearchButton = QtWidgets.QToolButton(self.sideDockTabWidget)
+        self.caseSensitiveSearchButton.setIcon(
+            self.main_window.QImageFactory.get_image('search-case'))
+        self.caseSensitiveSearchButton.setToolTip(case_sensitive_string)
+        self.caseSensitiveSearchButton.setCheckable(True)
+        self.caseSensitiveSearchButton.setAutoRaise(True)
+
+        match_word_string = self._translate('Tab', 'Match word')
+        self.matchWholeWordButton = QtWidgets.QToolButton(self.sideDockTabWidget)
+        self.matchWholeWordButton.setIcon(
+            self.main_window.QImageFactory.get_image('search-word'))
+        self.matchWholeWordButton.setToolTip(match_word_string)
+        self.matchWholeWordButton.setCheckable(True)
+        self.matchWholeWordButton.setAutoRaise(True)
+
+        self.searchOptionsLayout = QtWidgets.QHBoxLayout()
+        self.searchOptionsLayout.setContentsMargins(0, 3, 0, 0)
+        self.searchOptionsLayout.addWidget(self.searchLineEdit)
+        self.searchOptionsLayout.addWidget(self.searchBookButton)
+        self.searchOptionsLayout.addWidget(self.caseSensitiveSearchButton)
+        self.searchOptionsLayout.addWidget(self.matchWholeWordButton)
+
+        self.searchResultsListView = QtWidgets.QListView(self.sideDockTabWidget)
+        self.searchResultsListView.setEditTriggers(QtWidgets.QListView.NoEditTriggers)
+        self.searchResultsListView.doubleClicked.connect(self.go_to_search_result)
+
+        self.searchTabLayout = QtWidgets.QVBoxLayout(self.sideDockTabWidget)
+        self.searchTabLayout.addLayout(self.searchOptionsLayout)
+        self.searchTabLayout.addWidget(self.searchResultsListView)
+        self.searchTabLayout.setContentsMargins(0, 0, 0, 0)
+        self.searchTabWidget = QtWidgets.QWidget(self.sideDockTabWidget)
+        self.searchTabWidget.setLayout(self.searchTabLayout)
+
+        self.sideDockTabWidget.addTab(self.searchTabWidget, search_string)
 
         # Create the annotation notes dock
         self.annotationNoteDock = PliantDockWidget(self.main_window, True, self.contentView)
@@ -177,6 +225,7 @@ class Tab(QtWidgets.QWidget):
         self.sideDock.setWindowOpacity(.95)
         self.annotationNoteDock.setFloating(True)
         self.annotationNoteDock.setWindowOpacity(.95)
+        self.sideDock.hide()
 
         title = self.metadata['title']
         if self.main_window.settings['attenuate_titles'] and len(title) > 30:
@@ -200,17 +249,18 @@ class Tab(QtWidgets.QWidget):
 
         self.contentView.setFocus()
 
-    def toggle_side_dock(self, tab_required=1):
+    def toggle_side_dock(self, tab_required, override_hide=False):
         if (self.sideDock.isVisible()
-                and self.sideDockTabWidget.currentIndex() == tab_required):
+                and self.sideDockTabWidget.currentIndex() == tab_required
+                and not override_hide):
             self.sideDock.hide()
         elif not self.sideDock.isVisible():
             self.sideDock.show()
+            if tab_required == 2:
+                self.sideDock.activateWindow()
+                self.searchLineEdit.setFocus()
 
-        if tab_required == 0:
-            self.sideDockTabWidget.setCurrentIndex(0)
-        else:  # Takes care of the action menu as well
-            self.sideDockTabWidget.setCurrentIndex(1)
+        self.sideDockTabWidget.setCurrentIndex(tab_required)
 
     def update_last_accessed_time(self):
         self.metadata['last_accessed'] = QtCore.QDateTime().currentDateTime()
@@ -283,28 +333,36 @@ class Tab(QtWidgets.QWidget):
             'cursor_position': 0}
 
     def generate_keyboard_shortcuts(self):
-        self.ksNextChapter = QtWidgets.QShortcut(
+        ksNextChapter = QtWidgets.QShortcut(
             QtGui.QKeySequence('Right'), self.contentView)
-        self.ksNextChapter.setObjectName('nextChapter')
-        self.ksNextChapter.activated.connect(self.sneaky_change)
+        ksNextChapter.setObjectName('nextChapter')
+        ksNextChapter.activated.connect(self.sneaky_change)
 
-        self.ksPrevChapter = QtWidgets.QShortcut(
+        ksPrevChapter = QtWidgets.QShortcut(
             QtGui.QKeySequence('Left'), self.contentView)
-        self.ksPrevChapter.setObjectName('prevChapter')
-        self.ksPrevChapter.activated.connect(self.sneaky_change)
+        ksPrevChapter.setObjectName('prevChapter')
+        ksPrevChapter.activated.connect(self.sneaky_change)
 
-        self.ksGoFullscreen = QtWidgets.QShortcut(
-            QtGui.QKeySequence('F11'), self.contentView)
-        self.ksGoFullscreen.activated.connect(self.go_fullscreen)
+        ksGoFullscreen = QtWidgets.QShortcut(
+            QtGui.QKeySequence('F'), self.contentView)
+        ksGoFullscreen.activated.connect(self.go_fullscreen)
 
-        self.ksExitFullscreen = QtWidgets.QShortcut(
+        ksExitFullscreen = QtWidgets.QShortcut(
             QtGui.QKeySequence('Escape'), self.contentView)
-        self.ksExitFullscreen.setContext(QtCore.Qt.ApplicationShortcut)
-        self.ksExitFullscreen.activated.connect(self.exit_fullscreen)
+        ksExitFullscreen.setContext(QtCore.Qt.ApplicationShortcut)
+        ksExitFullscreen.activated.connect(self.exit_fullscreen)
 
-        self.ksToggleBookMarks = QtWidgets.QShortcut(
+        ksToggleAnnotations = QtWidgets.QShortcut(
+            QtGui.QKeySequence('Ctrl+N'), self.contentView)
+        ksToggleAnnotations.activated.connect(lambda: self.toggle_side_dock(0))
+
+        ksToggleBookmarks = QtWidgets.QShortcut(
             QtGui.QKeySequence('Ctrl+B'), self.contentView)
-        self.ksToggleBookMarks.activated.connect(self.toggle_side_dock)
+        ksToggleBookmarks.activated.connect(lambda: self.toggle_side_dock(1))
+
+        ksToggleSearch = QtWidgets.QShortcut(
+            QtGui.QKeySequence('Ctrl+F'), self.contentView)
+        ksToggleSearch.activated.connect(lambda: self.toggle_side_dock(2))
 
     def go_fullscreen(self):
         # To allow toggles to function
@@ -453,7 +511,7 @@ class Tab(QtWidgets.QWidget):
 
         self.annotationListView.setModel(self.annotationModel)
 
-    def add_bookmark(self):
+    def add_bookmark(self, position=None):
         identifier = uuid.uuid4().hex[:10]
         description = self._translate('Tab', 'New bookmark')
 
@@ -462,6 +520,8 @@ class Tab(QtWidgets.QWidget):
             cursor_position = 0
         else:
             chapter, cursor_position = self.contentView.record_position(True)
+            if position:  # Should be the case when called from the context menu
+                cursor_position = position
 
         self.metadata['bookmarks'][identifier] = {
             'chapter': chapter,
@@ -469,6 +529,7 @@ class Tab(QtWidgets.QWidget):
             'description': description}
 
         self.sideDock.setVisible(True)
+        self.sideDockTabWidget.setCurrentIndex(1)
         self.add_bookmark_to_model(
             description, chapter, cursor_position, identifier, True)
 
@@ -564,15 +625,17 @@ class Tab(QtWidgets.QWidget):
         self.bookmarkTreeView.setModel(self.bookmarkProxyModel)
 
     def update_bookmark_proxy_model(self):
+        pass
+
         # TODO
         # This isn't being called currently
         # See if there's any rationale for keeping it / removing it
 
-        self.bookmarkProxyModel.invalidateFilter()
-        self.bookmarkProxyModel.setFilterParams(
-            self.main_window.bookToolBar.searchBar.text())
-        self.bookmarkProxyModel.setFilterFixedString(
-            self.main_window.bookToolBar.searchBar.text())
+        # self.bookmarkProxyModel.invalidateFilter()
+        # self.bookmarkProxyModel.setFilterParams(
+        #     self.main_window.bookToolBar.searchBar.text())
+        # self.bookmarkProxyModel.setFilterFixedString(
+        #     self.main_window.bookToolBar.searchBar.text())
 
     def generate_bookmark_context_menu(self, position):
         index = self.bookmarkTreeView.indexAt(position)
@@ -610,6 +673,9 @@ class Tab(QtWidgets.QWidget):
             if child_rows == 1:
                 self.bookmarkModel.removeRow(parent_index.row())
 
+    def go_to_search_result(self, event):
+        print(event)
+
     def hide_mouse(self):
         self.contentView.viewport().setCursor(QtCore.Qt.BlankCursor)
 
@@ -635,20 +701,19 @@ class PliantDockWidget(QtWidgets.QDockWidget):
         self.current_annotation = None
 
     def showEvent(self, event=None):
-        viewport_height = self.contentView.viewport().size().height()
         viewport_topRight = self.contentView.mapToGlobal(
             self.contentView.viewport().rect().topRight())
 
         desktop_size = QtWidgets.QDesktopWidget().screenGeometry()
         dock_y = viewport_topRight.y()
-        dock_height = viewport_height * .999
+        dock_height = self.contentView.viewport().size().height()
 
         if self.notes_only:
             dock_width = dock_height = desktop_size.width() // 5.5
             dock_x = QtGui.QCursor.pos().x()
             dock_y = QtGui.QCursor.pos().y()
         else:
-            dock_width = desktop_size.width() // 5.5
+            dock_width = desktop_size.width() // 5
             dock_x = viewport_topRight.x() - dock_width + 1
 
         self.main_window.active_docks.append(self)

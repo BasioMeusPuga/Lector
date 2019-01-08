@@ -149,6 +149,7 @@ class Library:
             item.setToolTip(tooltip_string)
 
             # Just keep the following order. It's way too much trouble otherwise
+            # User roles have to be correlated to sorting order below
             item.setData(title, QtCore.Qt.UserRole)
             item.setData(author, QtCore.Qt.UserRole + 1)
             item.setData(year, QtCore.Qt.UserRole + 2)

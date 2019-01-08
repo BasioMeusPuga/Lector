@@ -171,9 +171,13 @@ class MainUI(QtWidgets.QMainWindow, mainwindow.Ui_MainWindow):
             self.libraryToolBar.tableViewButton.trigger()
 
         # Book toolbar
-        self.bookToolBar.annotationButton.triggered.connect(self.toggle_side_dock)
+        self.bookToolBar.annotationButton.triggered.connect(
+            lambda: self.tabWidget.currentWidget().toggle_side_dock(0))
         self.bookToolBar.addBookmarkButton.triggered.connect(self.add_bookmark)
-        self.bookToolBar.bookmarkButton.triggered.connect(self.toggle_side_dock)
+        self.bookToolBar.bookmarkButton.triggered.connect(
+            lambda: self.tabWidget.currentWidget().toggle_side_dock(1))
+        self.bookToolBar.searchButton.triggered.connect(
+            lambda: self.tabWidget.currentWidget().toggle_side_dock(2))
         self.bookToolBar.distractionFreeButton.triggered.connect(self.toggle_distraction_free)
         self.bookToolBar.fullscreenButton.triggered.connect(self.set_fullscreen)
 
@@ -189,7 +193,6 @@ class MainUI(QtWidgets.QMainWindow, mainwindow.Ui_MainWindow):
         self.bookToolBar.profileBox.currentIndexChanged.connect(
             self.profile_functions.format_contentView)
         self.bookToolBar.profileBox.setCurrentIndex(self.current_profile_index)
-        self.bookToolBar.searchBar.textChanged.connect(self.search_book)
 
         self.bookToolBar.fontBox.currentFontChanged.connect(self.modify_font)
         self.bookToolBar.fontSizeBox.currentIndexChanged.connect(self.modify_font)
@@ -218,9 +221,6 @@ class MainUI(QtWidgets.QMainWindow, mainwindow.Ui_MainWindow):
         self.bookToolBar.colorBoxBG.clicked.connect(self.get_color)
         self.bookToolBar.tocBox.currentIndexChanged.connect(self.set_toc_position)
         self.addToolBar(self.bookToolBar)
-
-        # Get the stylesheet of the default QLineEdit
-        self.lineEditStyleSheet = self.bookToolBar.searchBar.styleSheet()
 
         # Make the correct toolbar visible
         self.current_tab = self.tabWidget.currentIndex()
@@ -701,16 +701,6 @@ class MainUI(QtWidgets.QMainWindow, mainwindow.Ui_MainWindow):
     def set_fullscreen(self):
         self.tabWidget.currentWidget().go_fullscreen()
 
-    def toggle_side_dock(self):
-        # Tab indices are fixed
-        # 0 = Annotations
-        # 1 = Bookmarks
-        sender = self.sender()
-        if sender == self.bookToolBar.annotationButton:
-            self.tabWidget.currentWidget().toggle_side_dock(0)
-        if sender == self.bookToolBar.bookmarkButton:
-            self.tabWidget.currentWidget().toggle_side_dock(1)
-
     def library_doubleclick(self, index):
         sender = self.sender().objectName()
 
@@ -774,6 +764,9 @@ class MainUI(QtWidgets.QMainWindow, mainwindow.Ui_MainWindow):
                 and not self.tabWidget.currentWidget().are_we_doing_images_only):
             return
 
+        self.tabWidget.currentWidget().sideDock.setVisible(True)
+        self.tabWidget.currentWidget().sideDockTabWidget.setCurrentIndex(2)
+
         contentView = self.tabWidget.currentWidget().contentView
 
         text_cursor = contentView.textCursor()
@@ -787,10 +780,10 @@ class MainUI(QtWidgets.QMainWindow, mainwindow.Ui_MainWindow):
             text_cursor.clearSelection()
             contentView.setTextCursor(text_cursor)
 
-        if not something_found:
-            self.bookToolBar.searchBar.setStyleSheet("QLineEdit {color: red;}")
-        else:
-            self.bookToolBar.searchBar.setStyleSheet(self.lineEditStyleSheet)
+        # if not something_found:
+        #     self.bookToolBar.searchBar.setStyleSheet("QLineEdit {color: red;}")
+        # else:
+        #     self.bookToolBar.searchBar.setStyleSheet(self.lineEditStyleSheet)
 
     def generate_library_context_menu(self, position):
         index = self.sender().indexAt(position)

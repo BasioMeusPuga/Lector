@@ -1,5 +1,5 @@
 # This file is a part of Lector, a Qt based ebook reader
-# Copyright (C) 2017-2018 BasioMeusPuga
+# Copyright (C) 2017-2019 BasioMeusPuga
 
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -67,7 +67,7 @@ class EPUB:
     def get_file_path(self, filename, is_content_file=False):
         # Use this to get the location of the content.opf file
         # And maybe some other file that has a more well formatted
-
+        # idea of the TOC
         # We're going to all this trouble because there really is
         # no going forward without a toc
         if is_content_file:

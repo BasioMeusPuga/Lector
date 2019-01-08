@@ -1,5 +1,5 @@
 # This file is a part of Lector, a Qt based ebook reader
-# Copyright (C) 2017-18 BasioMeusPuga
+# Copyright (C) 2017-19 BasioMeusPuga
 
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by

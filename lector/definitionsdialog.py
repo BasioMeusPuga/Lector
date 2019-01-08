@@ -81,7 +81,7 @@ class DefinitionsUI(QtWidgets.QDialog, definitions.Ui_Dialog):
             if response.getcode() == 200:
                 return_json = json.loads(response.read())
                 return return_json
-        except urllib.error.HTTPError:
+        except (urllib.error.HTTPError, urllib.error.URLError):
             return None
 
     def find_definition(self, word):
