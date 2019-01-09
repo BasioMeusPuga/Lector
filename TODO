@@ -62,6 +62,7 @@ TODO
         ✓ Make the bookmark dock float over the reading area
         ✓ Spacebar should not cut off lines at the top
         ✓ Track open bookmark windows so they can be closed quickly at exit
+        ✓ Search document using QTextCursor
         Double page / column view
             ✓ For comics
                 Caching is currently non fuctional
@@ -70,7 +71,6 @@ TODO
                 Annotation preview in listView
             Disable buttons for annotations, search in images
         Adjust key navigation according to viewport dimensions
-        Search document using QTextCursor
         Redo context menu order
     Filetypes:
         ✓ pdf support

@@ -130,18 +130,18 @@ class Tab(QtWidgets.QWidget):
         self.sideDock.setWidget(self.sideDockTabWidget)
 
         # Annotation list view and model
-        self.annotationListView = QtWidgets.QListView(self.sideDockTabWidget)
-        # self.annotationListView.setResizeMode(QtWidgets.QListWidget.Adjust)
+        self.annotationListView = QtWidgets.QListView()
         self.annotationListView.setEditTriggers(QtWidgets.QListView.NoEditTriggers)
         self.annotationListView.doubleClicked.connect(self.contentView.toggle_annotation_mode)
         annotations_string = self._translate('Tab', 'Annotations')
-        self.sideDockTabWidget.addTab(self.annotationListView, annotations_string)
+        if not self.are_we_doing_images_only:
+            self.sideDockTabWidget.addTab(self.annotationListView, annotations_string)
 
         self.annotationModel = QtGui.QStandardItemModel(self)
         self.generate_annotation_model()
 
         # Bookmark tree view and model
-        self.bookmarkTreeView = QtWidgets.QTreeView(self.sideDockTabWidget)
+        self.bookmarkTreeView = QtWidgets.QTreeView()
         self.bookmarkTreeView.setHeaderHidden(True)
         self.bookmarkTreeView.setContextMenuPolicy(QtCore.Qt.CustomContextMenu)
         self.bookmarkTreeView.customContextMenuRequested.connect(
@@ -155,14 +155,14 @@ class Tab(QtWidgets.QWidget):
         self.generate_bookmark_model()
 
         # Search view and model
-        self.searchLineEdit = QtWidgets.QLineEdit(self.sideDockTabWidget)
+        self.searchLineEdit = QtWidgets.QLineEdit()
         self.searchLineEdit.setFocusPolicy(QtCore.Qt.StrongFocus)
         self.searchLineEdit.setClearButtonEnabled(True)
         search_string = self._translate('Tab', 'Search')
         self.searchLineEdit.setPlaceholderText(search_string)
 
         search_book_string = self._translate('Tab', 'Search entire book')
-        self.searchBookButton = QtWidgets.QToolButton(self.sideDockTabWidget)
+        self.searchBookButton = QtWidgets.QToolButton()
         self.searchBookButton.setIcon(
             self.main_window.QImageFactory.get_image('view-readermode'))
         self.searchBookButton.setToolTip(search_book_string)
@@ -170,7 +170,7 @@ class Tab(QtWidgets.QWidget):
         self.searchBookButton.setAutoRaise(True)
 
         case_sensitive_string = self._translate('Tab', 'Match case')
-        self.caseSensitiveSearchButton = QtWidgets.QToolButton(self.sideDockTabWidget)
+        self.caseSensitiveSearchButton = QtWidgets.QToolButton()
         self.caseSensitiveSearchButton.setIcon(
             self.main_window.QImageFactory.get_image('search-case'))
         self.caseSensitiveSearchButton.setToolTip(case_sensitive_string)
@@ -178,7 +178,7 @@ class Tab(QtWidgets.QWidget):
         self.caseSensitiveSearchButton.setAutoRaise(True)
 
         match_word_string = self._translate('Tab', 'Match word')
-        self.matchWholeWordButton = QtWidgets.QToolButton(self.sideDockTabWidget)
+        self.matchWholeWordButton = QtWidgets.QToolButton()
         self.matchWholeWordButton.setIcon(
             self.main_window.QImageFactory.get_image('search-word'))
         self.matchWholeWordButton.setToolTip(match_word_string)
@@ -192,19 +192,20 @@ class Tab(QtWidgets.QWidget):
         self.searchOptionsLayout.addWidget(self.caseSensitiveSearchButton)
         self.searchOptionsLayout.addWidget(self.matchWholeWordButton)
 
-        self.searchResultsTreeView = QtWidgets.QTreeView(self.sideDockTabWidget)
+        self.searchResultsTreeView = QtWidgets.QTreeView()
         self.searchResultsTreeView.setHeaderHidden(True)
         self.searchResultsTreeView.setEditTriggers(QtWidgets.QTreeView.NoEditTriggers)
         self.searchResultsTreeView.clicked.connect(self.navigate_to_search_result)
 
-        self.searchTabLayout = QtWidgets.QVBoxLayout(self.sideDockTabWidget)
+        self.searchTabLayout = QtWidgets.QVBoxLayout()
         self.searchTabLayout.addLayout(self.searchOptionsLayout)
         self.searchTabLayout.addWidget(self.searchResultsTreeView)
         self.searchTabLayout.setContentsMargins(0, 0, 0, 0)
-        self.searchTabWidget = QtWidgets.QWidget(self.sideDockTabWidget)
+        self.searchTabWidget = QtWidgets.QWidget()
         self.searchTabWidget.setLayout(self.searchTabLayout)
 
-        self.sideDockTabWidget.addTab(self.searchTabWidget, search_string)
+        if not self.are_we_doing_images_only:
+            self.sideDockTabWidget.addTab(self.searchTabWidget, search_string)
 
         # Create the annotation notes dock
         self.annotationNoteDock = PliantDockWidget(self.main_window, True, self.contentView)
@@ -241,6 +242,8 @@ class Tab(QtWidgets.QWidget):
             self.searchTimer.setSingleShot(True)
             self.searchTimer.timeout.connect(self.set_search_options)
 
+            self.searchLineEdit.textChanged.connect(
+                lambda: self.searchLineEdit.setStyleSheet(QtWidgets.QLineEdit.styleSheet(self)))
             self.searchLineEdit.textChanged.connect(lambda: self.searchTimer.start(500))
             self.searchBookButton.clicked.connect(lambda: self.searchTimer.start(100))
             self.caseSensitiveSearchButton.clicked.connect(lambda: self.searchTimer.start(100))
@@ -705,22 +708,45 @@ class Tab(QtWidgets.QWidget):
         search_results = self.searchThread.search_results
         for i in search_results:
             parentItem = QtGui.QStandardItem()
-            parentItem.setText(i)
-            parentItem.setData(True, QtCore.Qt.UserRole)
+            parentItem.setData(True, QtCore.Qt.UserRole)  # Is parent?
+            parentItem.setData(i, QtCore.Qt.UserRole + 3)  # Display text for label
             chapter_index = self.main_window.bookToolBar.tocBox.findText(
                 i, QtCore.Qt.MatchExactly)
 
             for j in search_results[i]:
-                childItem = QtGui.QStandardItem()
-                childItem.setText(j[1])
+                childItem = QtGui.QStandardItem(parentItem)
                 childItem.setData(False, QtCore.Qt.UserRole)  # Is parent?
                 childItem.setData(chapter_index, QtCore.Qt.UserRole + 1)  # Chapter index
                 childItem.setData(j[0], QtCore.Qt.UserRole + 2)  # Cursor Position
+                childItem.setData(j[1], QtCore.Qt.UserRole + 3)  # Display text for label
+                childItem.setData(j[2], QtCore.Qt.UserRole + 4)  # Search term
                 parentItem.appendRow(childItem)
             self.searchResultsModel.appendRow(parentItem)
 
         self.searchResultsTreeView.setModel(self.searchResultsModel)
         self.searchResultsTreeView.expandToDepth(1)
+
+        if not search_results and len(self.searchLineEdit.text()) > 2:
+            self.searchLineEdit.setStyleSheet("QLineEdit {color: red;}")
+
+        # We'll be putting in labels instead of making a delegate
+        # QLabels can understand RTF, and they also have the somewhat
+        # distinct advantage of being a lot less work than a delegate
+
+        def generate_label(index):
+            label_text = self.searchResultsModel.data(index, QtCore.Qt.UserRole + 3)
+            labelWidget = PliantLabelWidget(index, self.navigate_to_search_result)
+            labelWidget.setText(label_text)
+            self.searchResultsTreeView.setIndexWidget(index, labelWidget)
+
+        for parent_iter in range(self.searchResultsModel.rowCount()):
+            parentItem = self.searchResultsModel.item(parent_iter)
+            parentIndex = self.searchResultsModel.index(parent_iter, 0)
+            generate_label(parentIndex)
+
+            for child_iter in range(parentItem.rowCount()):
+                childIndex = self.searchResultsModel.index(child_iter, 0, parentIndex)
+                generate_label(childIndex)
 
     def navigate_to_search_result(self, index):
         if not index.isValid():
@@ -732,11 +758,12 @@ class Tab(QtWidgets.QWidget):
 
         chapter_index = self.searchResultsModel.data(index, QtCore.Qt.UserRole + 1)
         cursor_position = self.searchResultsModel.data(index, QtCore.Qt.UserRole + 2)
+        search_term = self.searchResultsModel.data(index, QtCore.Qt.UserRole + 4)
 
         self.main_window.bookToolBar.tocBox.setCurrentIndex(chapter_index)
         if not self.are_we_doing_images_only:
             self.set_cursor_position(
-                cursor_position, len(self.searchLineEdit.text()))
+                cursor_position, len(search_term))
 
     def hide_mouse(self):
         self.contentView.viewport().setCursor(QtCore.Qt.BlankCursor)
@@ -753,6 +780,19 @@ class Tab(QtWidgets.QWidget):
         self.contentView.hide()
         self.main_window.closeEvent()
 
+
+class PliantLabelWidget(QtWidgets.QLabel):
+    # This is a hack to get clickable / editable appearance
+    # search results in the tree view.
+
+    def __init__(self, index, navigate_to_search_result):
+        super(PliantLabelWidget, self).__init__()
+        self.index = index
+        self.navigate_to_search_result = navigate_to_search_result
+
+    def mousePressEvent(self, QMouseEvent):
+        self.navigate_to_search_result(self.index)
+        QtWidgets.QLabel.mousePressEvent(self, QMouseEvent)
 
 class PliantDockWidget(QtWidgets.QDockWidget):
     def __init__(self, main_window, notes_only, contentView, parent=None):

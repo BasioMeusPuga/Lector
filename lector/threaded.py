@@ -15,6 +15,7 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 import os
+import re
 import pathlib
 
 from multiprocessing.dummy import Pool
@@ -217,18 +218,25 @@ class BackGroundTextSearch(QtCore.QThread):
                 surroundingTextCursor = QtGui.QTextCursor(chapterDocument)
                 surroundingTextCursor.setPosition(
                     result_position, QtGui.QTextCursor.MoveAnchor)
+                # Get words before and after
                 surroundingTextCursor.movePosition(
-                    QtGui.QTextCursor.WordLeft, QtGui.QTextCursor.MoveAnchor, 2)
+                    QtGui.QTextCursor.WordLeft, QtGui.QTextCursor.MoveAnchor, 3)
                 surroundingTextCursor.movePosition(
-                    QtGui.QTextCursor.NextWord, QtGui.QTextCursor.KeepAnchor, 5)  # 2n + 1
+                    QtGui.QTextCursor.NextWord, QtGui.QTextCursor.KeepAnchor, 6)
                 surrounding_text = surroundingTextCursor.selection().toPlainText()
                 surrounding_text = surrounding_text.replace('\n', ' ')
 
+                # Case insensitive replace for find results
+                replace_pattern = re.compile(re.escape(self.search_text), re.IGNORECASE)
+                surrounding_text = replace_pattern.sub(
+                    f'<b>{self.search_text}</b>', surrounding_text)
+
                 try:
                     self.search_results[chapter].append(
-                        (result_position, surrounding_text))
+                        (result_position, surrounding_text, self.search_text))
                 except KeyError:
-                    self.search_results[chapter] = [(result_position, surrounding_text)]
+                    self.search_results[chapter] = [
+                        (result_position, surrounding_text, self.search_text)]
 
                 new_position = result_position + len(self.search_text)
                 findResultCursor = chapterDocument.find(

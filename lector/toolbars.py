@@ -74,12 +74,12 @@ class BookToolBar(QtWidgets.QToolBar):
         self.fontButton.setCheckable(True)
         self.fontButton.triggered.connect(self.toggle_font_settings)
         self.bookSeparator1 = self.addSeparator()
-        self.addAction(self.searchButton)
-        self.bookSeparator2 = self.addSeparator()
         self.addAction(self.annotationButton)
-        self.bookSeparator3 = self.addSeparator()
+        self.bookSeparator2 = self.addSeparator()
         self.addAction(self.addBookmarkButton)
         self.addAction(self.bookmarkButton)
+        self.bookSeparator3 = self.addSeparator()
+        self.addAction(self.searchButton)
         self.bookSeparator4 = self.addSeparator()
         self.addAction(self.distractionFreeButton)
         self.addAction(self.fullscreenButton)
@@ -307,9 +307,11 @@ class BookToolBar(QtWidgets.QToolBar):
             self.annotationButton,
             self.addBookmarkButton,
             self.bookmarkButton,
+            self.searchButton,
             self.distractionFreeButton,
             self.fullscreenButton,
             self.tocBoxAction,
+            self.bookSeparator1,
             self.bookSeparator2,
             self.bookSeparator3,
             self.bookSeparator4]

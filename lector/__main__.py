@@ -643,6 +643,14 @@ class MainUI(QtWidgets.QMainWindow, mainwindow.Ui_MainWindow):
             if self.bookToolBar.fontButton.isChecked():
                 self.bookToolBar.customize_view_on()
 
+            # Disable irrelevant buttons in image view mode
+            if current_tab.are_we_doing_images_only:
+                self.bookToolBar.searchButton.setEnabled(False)
+                self.bookToolBar.annotationButton.setEnabled(False)
+            else:
+                self.bookToolBar.searchButton.setEnabled(True)
+                self.bookToolBar.annotationButton.setEnabled(True)
+
             current_position = current_metadata['position']
             current_toc = [i[0] for i in current_metadata['content']]
 
