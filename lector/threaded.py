@@ -171,3 +171,65 @@ class BackGroundCacheRefill(QtCore.QThread):
                 self.image_cache.append((next_page, refill_pixmap))
             except (IndexError, TypeError):
                 self.image_cache.append(None)
+
+
+class BackGroundTextSearch(QtCore.QThread):
+    def __init__(self):
+        super(BackGroundTextSearch, self).__init__(None)
+        self.search_content = None
+        self.search_text = None
+        self.case_sensitive = False
+        self.match_words = False
+        self.search_results = []
+
+    def set_search_options(
+            self, search_content, search_text,
+            case_sensitive, match_words):
+        self.search_content = search_content
+        self.search_text = search_text
+        self.case_sensitive = case_sensitive
+        self.match_words = match_words
+
+    def run(self):
+        if not self.search_text or len(self.search_text) < 3:
+            return
+
+        self.search_results = {}
+
+        # Create a new QTextDocument of each chapter and iterate
+        # through it looking for hits
+
+        for i in self.search_content:
+            chapter = i[0]
+            chapterDocument = QtGui.QTextDocument()
+            chapterDocument.setHtml(i[1])
+
+            findFlags = QtGui.QTextDocument.FindFlags(0)
+            if self.case_sensitive:
+                findFlags = findFlags | QtGui.QTextDocument.FindCaseSensitively
+            if self.match_words:
+                findFlags = findFlags | QtGui.QTextDocument.FindWholeWords
+
+            findResultCursor = chapterDocument.find(self.search_text, 0, findFlags)
+            while not findResultCursor.isNull():
+                result_position = findResultCursor.position()
+
+                surroundingTextCursor = QtGui.QTextCursor(chapterDocument)
+                surroundingTextCursor.setPosition(
+                    result_position, QtGui.QTextCursor.MoveAnchor)
+                surroundingTextCursor.movePosition(
+                    QtGui.QTextCursor.WordLeft, QtGui.QTextCursor.MoveAnchor, 2)
+                surroundingTextCursor.movePosition(
+                    QtGui.QTextCursor.NextWord, QtGui.QTextCursor.KeepAnchor, 5)  # 2n + 1
+                surrounding_text = surroundingTextCursor.selection().toPlainText()
+                surrounding_text = surrounding_text.replace('\n', ' ')
+
+                try:
+                    self.search_results[chapter].append(
+                        (result_position, surrounding_text))
+                except KeyError:
+                    self.search_results[chapter] = [(result_position, surrounding_text)]
+
+                new_position = result_position + len(self.search_text)
+                findResultCursor = chapterDocument.find(
+                    self.search_text, new_position, findFlags)

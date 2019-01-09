@@ -398,10 +398,6 @@ class MainUI(QtWidgets.QMainWindow, mainwindow.Ui_MainWindow):
         if not file_paths:
             return
 
-        def finishing_touches():
-            self.profile_functions.format_contentView()
-            self.start_culling_timer()
-
         print('Attempting to open: ' + ', '.join(file_paths))
 
         contents = sorter.BookSorter(
@@ -434,11 +430,9 @@ class MainUI(QtWidgets.QMainWindow, mainwindow.Ui_MainWindow):
             if self.settings['last_open_tab'] == this_path:
                 self.tabWidget.setCurrentIndex(i)
                 self.settings['last_open_tab'] = None
-                finishing_touches()
                 return
 
         self.tabWidget.setCurrentIndex(self.tabWidget.count() - 1)
-        finishing_touches()
 
     def start_culling_timer(self):
         if self.settings['perform_culling']:
@@ -457,7 +451,7 @@ class MainUI(QtWidgets.QMainWindow, mainwindow.Ui_MainWindow):
 
         # The hackiness of this hack is just...
         default_size = 170  # This is size of the QIcon (160 by default) +
-                            # minimum margin is needed between thumbnails
+                            # minimum margin needed between thumbnails
 
         # for n icons, the n + 1th icon will appear at > n +1.11875
         # First, calculate the number of images per row
@@ -758,32 +752,6 @@ class MainUI(QtWidgets.QMainWindow, mainwindow.Ui_MainWindow):
         current_tab = self.tabWidget.currentWidget()
         required_content = current_tab.metadata['content'][chapter_number][1]
         current_tab.contentView.loadImage(required_content)
-
-    def search_book(self, search_text):
-        if not (self.tabWidget.currentIndex() != 0
-                and not self.tabWidget.currentWidget().are_we_doing_images_only):
-            return
-
-        self.tabWidget.currentWidget().sideDock.setVisible(True)
-        self.tabWidget.currentWidget().sideDockTabWidget.setCurrentIndex(2)
-
-        contentView = self.tabWidget.currentWidget().contentView
-
-        text_cursor = contentView.textCursor()
-        something_found = True
-        if search_text:
-            text_cursor.setPosition(0, QtGui.QTextCursor.MoveAnchor)
-            contentView.setTextCursor(text_cursor)
-            contentView.verticalScrollBar().setValue(contentView.verticalScrollBar().maximum())
-            something_found = contentView.find(search_text)
-        else:
-            text_cursor.clearSelection()
-            contentView.setTextCursor(text_cursor)
-
-        # if not something_found:
-        #     self.bookToolBar.searchBar.setStyleSheet("QLineEdit {color: red;}")
-        # else:
-        #     self.bookToolBar.searchBar.setStyleSheet(self.lineEditStyleSheet)
 
     def generate_library_context_menu(self, position):
         index = self.sender().indexAt(position)

@@ -71,6 +71,7 @@ TODO
             Disable buttons for annotations, search in images
         Adjust key navigation according to viewport dimensions
         Search document using QTextCursor
+        Redo context menu order
     Filetypes:
         ✓ pdf support
             Parse TOC

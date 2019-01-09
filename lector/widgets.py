@@ -25,6 +25,7 @@ from PyQt5 import QtWidgets, QtGui, QtCore
 
 from lector.models import BookmarkProxyModel
 from lector.sorter import resize_image
+from lector.threaded import BackGroundTextSearch
 from lector.contentwidgets import PliantQGraphicsView, PliantQTextBrowser
 
 
@@ -156,6 +157,7 @@ class Tab(QtWidgets.QWidget):
         # Search view and model
         self.searchLineEdit = QtWidgets.QLineEdit(self.sideDockTabWidget)
         self.searchLineEdit.setFocusPolicy(QtCore.Qt.StrongFocus)
+        self.searchLineEdit.setClearButtonEnabled(True)
         search_string = self._translate('Tab', 'Search')
         self.searchLineEdit.setPlaceholderText(search_string)
 
@@ -190,13 +192,14 @@ class Tab(QtWidgets.QWidget):
         self.searchOptionsLayout.addWidget(self.caseSensitiveSearchButton)
         self.searchOptionsLayout.addWidget(self.matchWholeWordButton)
 
-        self.searchResultsListView = QtWidgets.QListView(self.sideDockTabWidget)
-        self.searchResultsListView.setEditTriggers(QtWidgets.QListView.NoEditTriggers)
-        self.searchResultsListView.doubleClicked.connect(self.go_to_search_result)
+        self.searchResultsTreeView = QtWidgets.QTreeView(self.sideDockTabWidget)
+        self.searchResultsTreeView.setHeaderHidden(True)
+        self.searchResultsTreeView.setEditTriggers(QtWidgets.QTreeView.NoEditTriggers)
+        self.searchResultsTreeView.clicked.connect(self.navigate_to_search_result)
 
         self.searchTabLayout = QtWidgets.QVBoxLayout(self.sideDockTabWidget)
         self.searchTabLayout.addLayout(self.searchOptionsLayout)
-        self.searchTabLayout.addWidget(self.searchResultsListView)
+        self.searchTabLayout.addWidget(self.searchResultsTreeView)
         self.searchTabLayout.setContentsMargins(0, 0, 0, 0)
         self.searchTabWidget = QtWidgets.QWidget(self.sideDockTabWidget)
         self.searchTabWidget.setLayout(self.searchTabLayout)
@@ -227,6 +230,23 @@ class Tab(QtWidgets.QWidget):
         self.annotationNoteDock.setWindowOpacity(.95)
         self.sideDock.hide()
 
+        # Create search references
+        if not self.are_we_doing_images_only:
+            self.searchResultsModel = None
+
+            self.searchThread = BackGroundTextSearch()
+            self.searchThread.finished.connect(self.generate_search_result_model)
+
+            self.searchTimer = QtCore.QTimer()
+            self.searchTimer.setSingleShot(True)
+            self.searchTimer.timeout.connect(self.set_search_options)
+
+            self.searchLineEdit.textChanged.connect(lambda: self.searchTimer.start(500))
+            self.searchBookButton.clicked.connect(lambda: self.searchTimer.start(100))
+            self.caseSensitiveSearchButton.clicked.connect(lambda: self.searchTimer.start(100))
+            self.matchWholeWordButton.clicked.connect(lambda: self.searchTimer.start(100))
+
+        # Create tab in the central tab widget
         title = self.metadata['title']
         if self.main_window.settings['attenuate_titles'] and len(title) > 30:
             title = title[:30] + '...'
@@ -259,6 +279,7 @@ class Tab(QtWidgets.QWidget):
             if tab_required == 2:
                 self.sideDock.activateWindow()
                 self.searchLineEdit.setFocus()
+                self.searchLineEdit.selectAll()
 
         self.sideDockTabWidget.setCurrentIndex(tab_required)
 
@@ -278,7 +299,7 @@ class Tab(QtWidgets.QWidget):
         except IndexError:  # The file has been deleted
             pass
 
-    def set_cursor_position(self, cursor_position=None):
+    def set_cursor_position(self, cursor_position=None, select_chars=0):
         try:
             required_position = self.metadata['position']['cursor_position']
         except KeyError:
@@ -296,7 +317,13 @@ class Tab(QtWidgets.QWidget):
         # textCursor() RETURNS a copy of the textcursor
         cursor = self.contentView.textCursor()
         cursor.setPosition(
-            required_position, QtGui.QTextCursor.MoveAnchor)
+            required_position - select_chars,
+            QtGui.QTextCursor.MoveAnchor)
+        if select_chars > 0:  # Select search results
+            cursor.movePosition(
+                QtGui.QTextCursor.NextCharacter,
+                QtGui.QTextCursor.KeepAnchor,
+                select_chars)
         self.contentView.setTextCursor(cursor)
         self.contentView.ensureCursorVisible()
 
@@ -624,19 +651,6 @@ class Tab(QtWidgets.QWidget):
         self.bookmarkProxyModel.sort(0)
         self.bookmarkTreeView.setModel(self.bookmarkProxyModel)
 
-    def update_bookmark_proxy_model(self):
-        pass
-
-        # TODO
-        # This isn't being called currently
-        # See if there's any rationale for keeping it / removing it
-
-        # self.bookmarkProxyModel.invalidateFilter()
-        # self.bookmarkProxyModel.setFilterParams(
-        #     self.main_window.bookToolBar.searchBar.text())
-        # self.bookmarkProxyModel.setFilterFixedString(
-        #     self.main_window.bookToolBar.searchBar.text())
-
     def generate_bookmark_context_menu(self, position):
         index = self.bookmarkTreeView.indexAt(position)
         if not index.isValid():
@@ -673,8 +687,56 @@ class Tab(QtWidgets.QWidget):
             if child_rows == 1:
                 self.bookmarkModel.removeRow(parent_index.row())
 
-    def go_to_search_result(self, event):
-        print(event)
+    def set_search_options(self):
+        search_content = (
+            self.metadata['content'][self.main_window.bookToolBar.tocBox.currentIndex()],)
+        if self.searchBookButton.isChecked():
+            search_content = self.metadata['content']
+
+        self.searchThread.set_search_options(
+            search_content,
+            self.searchLineEdit.text(),
+            self.caseSensitiveSearchButton.isChecked(),
+            self.matchWholeWordButton.isChecked())
+        self.searchThread.start()
+
+    def generate_search_result_model(self):
+        self.searchResultsModel = QtGui.QStandardItemModel()
+        search_results = self.searchThread.search_results
+        for i in search_results:
+            parentItem = QtGui.QStandardItem()
+            parentItem.setText(i)
+            parentItem.setData(True, QtCore.Qt.UserRole)
+            chapter_index = self.main_window.bookToolBar.tocBox.findText(
+                i, QtCore.Qt.MatchExactly)
+
+            for j in search_results[i]:
+                childItem = QtGui.QStandardItem()
+                childItem.setText(j[1])
+                childItem.setData(False, QtCore.Qt.UserRole)  # Is parent?
+                childItem.setData(chapter_index, QtCore.Qt.UserRole + 1)  # Chapter index
+                childItem.setData(j[0], QtCore.Qt.UserRole + 2)  # Cursor Position
+                parentItem.appendRow(childItem)
+            self.searchResultsModel.appendRow(parentItem)
+
+        self.searchResultsTreeView.setModel(self.searchResultsModel)
+        self.searchResultsTreeView.expandToDepth(1)
+
+    def navigate_to_search_result(self, index):
+        if not index.isValid():
+            return
+
+        is_parent = self.searchResultsModel.data(index, QtCore.Qt.UserRole)
+        if is_parent:
+            return
+
+        chapter_index = self.searchResultsModel.data(index, QtCore.Qt.UserRole + 1)
+        cursor_position = self.searchResultsModel.data(index, QtCore.Qt.UserRole + 2)
+
+        self.main_window.bookToolBar.tocBox.setCurrentIndex(chapter_index)
+        if not self.are_we_doing_images_only:
+            self.set_cursor_position(
+                cursor_position, len(self.searchLineEdit.text()))
 
     def hide_mouse(self):
         self.contentView.viewport().setCursor(QtCore.Qt.BlankCursor)

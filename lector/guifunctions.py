@@ -277,8 +277,7 @@ class ViewProfileModification:
         self.format_contentView()
 
     def format_contentView(self):
-        current_tab = self.tabWidget.widget(
-            self.tabWidget.currentIndex())
+        current_tab = self.tabWidget.currentWidget()
 
         try:
             current_metadata = current_tab.metadata
