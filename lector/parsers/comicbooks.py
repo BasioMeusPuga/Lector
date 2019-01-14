@@ -36,16 +36,24 @@ class ParseCOMIC:
             if self.book_extension[1] == '.cbz':
                 self.book = zipfile.ZipFile(
                     self.filename, mode='r', allowZip64=True)
-                self.image_list = [i.filename for i in self.book.infolist() if not i.is_dir()]
+                self.image_list = [
+                    i.filename for i in self.book.infolist()
+                    if not i.is_dir() and is_image(i.filename)]
 
             elif self.book_extension[1] == '.cbr':
                 self.book = rarfile.RarFile(self.filename)
-                self.image_list = [i.filename for i in self.book.infolist() if not i.isdir()]
+                self.image_list = [
+                    i.filename for i in self.book.infolist()
+                    if not i.isdir() and is_image(i.filename)]
 
             self.image_list.sort()
-        except:  # Specifying no exception here is warranted
-            print('Cannot parse ' + self.filename)
-            return
+            if not self.image_list:
+                return False
+
+            return True
+
+        except: # Specifying no exception here is warranted
+            return False
 
     def get_title(self):
         title = os.path.basename(self.book_extension[0]).strip(' ')
@@ -76,3 +84,11 @@ class ParseCOMIC:
         contents = [(f'Page {count + 1}', i) for count, i in enumerate(self.image_list)]
 
         return contents, file_settings
+
+
+def is_image(filename):
+    valid_image_extensions = ['.png', '.jpg', '.bmp']
+    if os.path.splitext(filename)[1].lower() in valid_image_extensions:
+        return True
+    else:
+        return False

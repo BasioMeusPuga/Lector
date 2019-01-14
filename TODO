@@ -69,7 +69,7 @@ TODO
         Annotations
             ✓ Text
                 Annotation preview in listView
-            Disable buttons for annotations, search in images
+            ✓ Disable buttons for annotations, search in images
         Adjust key navigation according to viewport dimensions
         Redo context menu order
     Filetypes:
@@ -80,6 +80,7 @@ TODO
         ✓ cbz, cbr support
             ✓ Keep font settings enabled but only for background color
             ✓ Double page view
+            ✓ Manga mode
         ✓ mobi, azw support
             Limit the extra files produced by KindleUnpack
                 Have them save to memory
@@ -98,7 +99,6 @@ TODO
         Hide mousepointer more aggressively
 
     Secondary:
-        Manga mode for comics
         Double page view for books
         Graphical themes
         Change focus rectangle dimensions

@@ -243,11 +243,16 @@ class Tab(QtWidgets.QWidget):
             self.searchTimer.timeout.connect(self.set_search_options)
 
             self.searchLineEdit.textChanged.connect(
-                lambda: self.searchLineEdit.setStyleSheet(QtWidgets.QLineEdit.styleSheet(self)))
-            self.searchLineEdit.textChanged.connect(lambda: self.searchTimer.start(500))
-            self.searchBookButton.clicked.connect(lambda: self.searchTimer.start(100))
-            self.caseSensitiveSearchButton.clicked.connect(lambda: self.searchTimer.start(100))
-            self.matchWholeWordButton.clicked.connect(lambda: self.searchTimer.start(100))
+                lambda: self.searchLineEdit.setStyleSheet(
+                    QtWidgets.QLineEdit.styleSheet(self)))
+            self.searchLineEdit.textChanged.connect(
+                lambda: self.searchTimer.start(500))
+            self.searchBookButton.clicked.connect(
+                lambda: self.searchTimer.start(100))
+            self.caseSensitiveSearchButton.clicked.connect(
+                lambda: self.searchTimer.start(100))
+            self.matchWholeWordButton.clicked.connect(
+                lambda: self.searchTimer.start(100))
 
         # Create tab in the central tab widget
         title = self.metadata['title']
@@ -793,6 +798,7 @@ class PliantLabelWidget(QtWidgets.QLabel):
     def mousePressEvent(self, QMouseEvent):
         self.navigate_to_search_result(self.index)
         QtWidgets.QLabel.mousePressEvent(self, QMouseEvent)
+
 
 class PliantDockWidget(QtWidgets.QDockWidget):
     def __init__(self, main_window, notes_only, contentView, parent=None):

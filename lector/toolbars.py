@@ -209,52 +209,46 @@ class BookToolBar(QtWidgets.QToolBar):
             i.setVisible(False)
 
         # Comic view modification
-        # Single and double page view buttons
-        self.singlePageButton = QtWidgets.QAction(
-            image_factory.get_image('page-single'),
-            self._translate('BookToolBar', 'View as single page'),
-            self)
-        self.singlePageButton.setObjectName('singlePageButton')
-        self.singlePageButton.setCheckable(True)
-
         self.doublePageButton = QtWidgets.QAction(
             image_factory.get_image('page-double'),
-            self._translate('BookToolBar', 'View as double page'),
+            self._translate('BookToolBar', 'Double page mode (D)'),
             self)
         self.doublePageButton.setObjectName('doublePageButton')            
         self.doublePageButton.setCheckable(True)
 
-        self.pageViewButtons = QtWidgets.QActionGroup(self)
-        self.pageViewButtons.setExclusive(True)
-        self.pageViewButtons.addAction(self.singlePageButton)
-        self.pageViewButtons.addAction(self.doublePageButton)
+        self.mangaModeButton = QtWidgets.QAction(
+            image_factory.get_image('manga-mode'),
+            self._translate('BookToolBar', 'Manga mode (M)'),
+            self)
+        self.mangaModeButton.setObjectName('mangaModeButton')
+        self.mangaModeButton.setCheckable(True)
 
         self.zoomIn = QtWidgets.QAction(
             image_factory.get_image('zoom-in'),
-            self._translate('BookToolBar', 'Zoom in'),
+            self._translate('BookToolBar', 'Zoom in (+)'),
             self)
         self.zoomIn.setObjectName('zoomIn')
         self.zoomOut = QtWidgets.QAction(
             image_factory.get_image('zoom-out'),
-            self._translate('BookToolBar', 'Zoom Out'),
+            self._translate('BookToolBar', 'Zoom Out (-)'),
             self)
         self.zoomOut.setObjectName('zoomOut')
 
         self.fitWidth = QtWidgets.QAction(
             image_factory.get_image('zoom-fit-width'),
-            self._translate('BookToolBar', 'Fit Width'),
+            self._translate('BookToolBar', 'Fit Width (W)'),
             self)
         self.fitWidth.setObjectName('fitWidth')
         self.fitWidth.setCheckable(True)
         self.bestFit = QtWidgets.QAction(
             image_factory.get_image('zoom-fit-best'),
-            self._translate('BookToolBar', 'Best Fit'),
+            self._translate('BookToolBar', 'Best Fit (B)'),
             self)
         self.bestFit.setObjectName('bestFit')
         self.bestFit.setCheckable(True)
         self.originalSize = QtWidgets.QAction(
             image_factory.get_image('zoom-original'),
-            self._translate('BookToolBar', 'Original size'),
+            self._translate('BookToolBar', 'Original size (O)'),
             self)
         self.originalSize.setObjectName('originalSize')
         self.originalSize.setCheckable(True)
@@ -264,8 +258,8 @@ class BookToolBar(QtWidgets.QToolBar):
         self.comicBGColor.setObjectName('comicBGColor')
 
         self.comicSeparator1 = self.addSeparator()
-        self.addAction(self.singlePageButton)
         self.addAction(self.doublePageButton)
+        self.addAction(self.mangaModeButton)
         self.comicSeparator2 = self.addSeparator()
         self.addAction(self.zoomIn)
         self.addAction(self.zoomOut)
@@ -276,8 +270,8 @@ class BookToolBar(QtWidgets.QToolBar):
         self.comicBGColorAction = self.addWidget(self.comicBGColor)
 
         self.comicActions = [
-            self.singlePageButton,
             self.doublePageButton,
+            self.mangaModeButton,
             self.comicBGColorAction,
             self.zoomIn,
             self.zoomOut,

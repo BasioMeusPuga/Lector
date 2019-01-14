@@ -77,7 +77,7 @@ class PliantQGraphicsView(QtWidgets.QGraphicsView):
         current_page_index = all_pages.index(current_page)
 
         double_page_mode = False
-        if (self.main_window.settings['page_view_button'] == 'doublePageButton'
+        if (self.main_window.settings['double_page_mode']
                 and (current_page_index != 0 and current_page_index != len(all_pages) - 1)):
             double_page_mode = True
 
@@ -101,13 +101,25 @@ class PliantQGraphicsView(QtWidgets.QGraphicsView):
             next_page = all_pages[current_page_index + 1]
             secondPixmap = page_loader(next_page)
 
+            # Pixmap height should be the greater of the 2 images
+            pixmap_height = firstPixmap.height()
+            if secondPixmap.height() > pixmap_height:
+                pixmap_height = secondPixmap.height()
+
             bigPixmap = QtGui.QPixmap(
                 firstPixmap.width() + secondPixmap.width() + 5,
-                firstPixmap.height())
+                pixmap_height)
             bigPixmap.fill(QtCore.Qt.transparent)
             imagePainter = QtGui.QPainter(bigPixmap)
-            imagePainter.drawPixmap(0, 0, firstPixmap)
-            imagePainter.drawPixmap(firstPixmap.width() + 5, 0, secondPixmap)
+
+            manga_mode = self.main_window.settings['manga_mode']
+            if manga_mode:
+                imagePainter.drawPixmap(0, 0, secondPixmap)
+                imagePainter.drawPixmap(secondPixmap.width() + 4, 0, firstPixmap)
+            else:
+                imagePainter.drawPixmap(0, 0, firstPixmap)
+                imagePainter.drawPixmap(firstPixmap.width() + 4, 0, secondPixmap)
+
             imagePainter.end()
             return bigPixmap
 
@@ -236,6 +248,7 @@ class PliantQGraphicsView(QtWidgets.QGraphicsView):
         small_increment = maximum // 4
         big_increment = maximum // 2
 
+        # Scrolling
         if event.key() == QtCore.Qt.Key_Up:
             scroller(small_increment, False)
         if event.key() == QtCore.Qt.Key_Down:
@@ -243,6 +256,11 @@ class PliantQGraphicsView(QtWidgets.QGraphicsView):
         if event.key() == QtCore.Qt.Key_Space:
             scroller(big_increment)
 
+        # Double page mode and manga mode
+        if event.key() in (QtCore.Qt.Key_D, QtCore.Qt.Key_M):
+            self.main_window.change_page_view(event.key())
+
+        # Image fit modes
         view_modification_keys = (
             QtCore.Qt.Key_Plus, QtCore.Qt.Key_Minus, QtCore.Qt.Key_Equal,
             QtCore.Qt.Key_B, QtCore.Qt.Key_W, QtCore.Qt.Key_O)
@@ -291,16 +309,19 @@ class PliantQGraphicsView(QtWidgets.QGraphicsView):
         viewSubMenu.setIcon(
             self.main_window.QImageFactory.get_image('mail-thread-watch'))
 
-        singlePageAction = doublePageAction = 'It\'s hammer time'
-        if self.main_window.settings['page_view_button'] == 'doublePageButton':
-            singlePageAction = viewSubMenu.addAction(
-                self.main_window.QImageFactory.get_image('page-single'),
-                self._translate('PliantQGraphicsView', 'Single page view'))
-        else:
-            doublePageAction = viewSubMenu.addAction(
-                self.main_window.QImageFactory.get_image('page-double'),
-                self._translate('PliantQGraphicsView', 'Double page view'))
+        doublePageAction = viewSubMenu.addAction(
+            self.main_window.QImageFactory.get_image('page-double'),
+            self._translate('PliantQGraphicsView', 'Double page mode (D)'))
+        doublePageAction.setCheckable(True)
+        doublePageAction.setChecked(
+            self.main_window.bookToolBar.doublePageButton.isChecked())
 
+        mangaModeAction = viewSubMenu.addAction(
+            self.main_window.QImageFactory.get_image('manga-mode'),
+            self._translate('PliantQGraphicsView', 'Manga mode (M)'))
+        mangaModeAction.setCheckable(True)
+        mangaModeAction.setChecked(
+            self.main_window.bookToolBar.mangaModeButton.isChecked())
         viewSubMenu.addSeparator()
 
         zoominAction = viewSubMenu.addAction(
@@ -333,11 +354,10 @@ class PliantQGraphicsView(QtWidgets.QGraphicsView):
 
         action = contextMenu.exec_(self.sender().mapToGlobal(position))
 
-        if action == singlePageAction:
-            self.main_window.bookToolBar.singlePageButton.trigger()
-
         if action == doublePageAction:
             self.main_window.bookToolBar.doublePageButton.trigger()
+        if action == mangaModeAction:
+            self.main_window.bookToolBar.mangaModeButton.trigger()
 
         if action == saveAction:
             dialog_prompt = self._translate('Main_UI', 'Save page as...')
@@ -708,7 +728,11 @@ class PliantWidgetsCommonFunctions:
 
             # Special cases for double page view
             def get_modifier():
-                if (self.main_window.settings['page_view_button'] == 'singlePageButton'
+                # if (self.main_window.settings['page_view_button'] == 'singlePageButton'
+                #         or not self.are_we_doing_images_only):
+                #     return 0
+
+                if (not self.main_window.settings['double_page_mode']
                         or not self.are_we_doing_images_only):
                     return 0
 

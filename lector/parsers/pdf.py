@@ -36,9 +36,10 @@ class ParsePDF:
     def read_book(self):
         self.book = popplerqt5.Poppler.Document.load(self.filename)
         if not self.book:
-            return
+            return False
 
         self.metadata = BeautifulSoup(self.book.metadata(), 'xml')
+        return True
 
     def get_title(self):
         try:

@@ -33,9 +33,9 @@ class ParseEPUB:
         self.book_ref = EPUB(self.filename)
         contents_found = self.book_ref.read_epub()
         if not contents_found:
-            print('Cannot process: ' + self.filename)
-            return
+            return False
         self.book = self.book_ref.book
+        return True
 
     def get_title(self):
         return self.book['title']

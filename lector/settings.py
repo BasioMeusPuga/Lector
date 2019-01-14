@@ -125,8 +125,10 @@ class Settings:
         self.parent.settings['consider_read_at'] = int(self.settings.value('considerReadAt', 95))
         self.parent.settings['attenuate_titles'] = literal_eval(self.settings.value(
             'attenuateTitles', 'False').capitalize())
-        self.parent.settings['page_view_button'] = self.settings.value(
-            'pageViewButton', 'singlePageButton')
+        self.parent.settings['double_page_mode'] = literal_eval(self.settings.value(
+            'doublePageMode', 'False').capitalize())
+        self.parent.settings['manga_mode'] = literal_eval(self.settings.value(
+            'mangaMode', 'False').capitalize())
         self.settings.endGroup()
 
         self.settings.beginGroup('dialogSettings')
@@ -208,7 +210,8 @@ class Settings:
         self.settings.setValue('tocWithBookmarks', str(current_settings['toc_with_bookmarks']))
         self.settings.setValue('scrollSpeed', current_settings['scroll_speed'])
         self.settings.setValue('considerReadAt', current_settings['consider_read_at'])
-        self.settings.setValue('pageViewButton', current_settings['page_view_button'])
+        self.settings.setValue('mangaMode', str(current_settings['manga_mode']))
+        self.settings.setValue('doublePageMode', str(current_settings['double_page_mode']))
         self.settings.endGroup()
 
         self.settings.beginGroup('dialogSettings')

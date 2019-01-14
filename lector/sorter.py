@@ -192,7 +192,11 @@ class BookSorter:
 
         # Everything following this is standard
         # None values are accounted for here
-        book_ref.read_book()
+        is_valid = book_ref.read_book()
+        if not is_valid:
+            print('Cannot parse: ' + filename)
+            return
+
         if book_ref.book:
 
             this_book = {}

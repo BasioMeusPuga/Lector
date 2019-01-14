@@ -181,12 +181,12 @@ class MainUI(QtWidgets.QMainWindow, mainwindow.Ui_MainWindow):
         self.bookToolBar.distractionFreeButton.triggered.connect(self.toggle_distraction_free)
         self.bookToolBar.fullscreenButton.triggered.connect(self.set_fullscreen)
 
-        self.bookToolBar.singlePageButton.triggered.connect(self.change_page_view)
         self.bookToolBar.doublePageButton.triggered.connect(self.change_page_view)
-        if self.settings['page_view_button'] == 'singlePageButton':
-            self.bookToolBar.singlePageButton.setChecked(True)
-        else:
+        self.bookToolBar.mangaModeButton.triggered.connect(self.change_page_view)
+        if self.settings['double_page_mode']:
             self.bookToolBar.doublePageButton.setChecked(True)
+        if self.settings['manga_mode']:
+            self.bookToolBar.mangaModeButton.setChecked(True)
 
         for count, i in enumerate(self.display_profiles):
             self.bookToolBar.profileBox.setItemData(count, i, QtCore.Qt.UserRole)
@@ -210,12 +210,18 @@ class MainUI(QtWidgets.QMainWindow, mainwindow.Ui_MainWindow):
             i[1].triggered.connect(self.modify_font)
         self.alignment_dict[current_profile['text_alignment']].setChecked(True)
 
-        self.bookToolBar.zoomIn.triggered.connect(self.modify_comic_view)
-        self.bookToolBar.zoomOut.triggered.connect(self.modify_comic_view)
-        self.bookToolBar.fitWidth.triggered.connect(self.modify_comic_view)
-        self.bookToolBar.bestFit.triggered.connect(self.modify_comic_view)
-        self.bookToolBar.originalSize.triggered.connect(self.modify_comic_view)
-        self.bookToolBar.comicBGColor.clicked.connect(self.get_color)
+        self.bookToolBar.zoomIn.triggered.connect(
+            self.modify_comic_view)
+        self.bookToolBar.zoomOut.triggered.connect(
+            self.modify_comic_view)
+        self.bookToolBar.fitWidth.triggered.connect(
+            lambda: self.modify_comic_view(False))
+        self.bookToolBar.bestFit.triggered.connect(
+            lambda: self.modify_comic_view(False))
+        self.bookToolBar.originalSize.triggered.connect(
+            lambda: self.modify_comic_view(False))
+        self.bookToolBar.comicBGColor.clicked.connect(
+            self.get_color)
 
         self.bookToolBar.colorBoxFG.clicked.connect(self.get_color)
         self.bookToolBar.colorBoxBG.clicked.connect(self.get_color)
@@ -752,8 +758,19 @@ class MainUI(QtWidgets.QMainWindow, mainwindow.Ui_MainWindow):
 
     #____________________________________________
 
-    def change_page_view(self):
-        self.settings['page_view_button'] = self.sender().objectName()
+    def change_page_view(self, key_pressed=False):
+        # Toggle Double page mode / manga mode on keypress
+        if key_pressed == QtCore.Qt.Key_D:
+            self.bookToolBar.doublePageButton.setChecked(
+                not self.bookToolBar.doublePageButton.isChecked())
+        if key_pressed == QtCore.Qt.Key_M:
+            self.bookToolBar.mangaModeButton.setChecked(
+                not self.bookToolBar.mangaModeButton.isChecked())
+
+        # Change settings according to the
+        # current state of each of the toolbar buttons
+        self.settings['double_page_mode'] = self.bookToolBar.doublePageButton.isChecked()
+        self.settings['manga_mode'] = self.bookToolBar.mangaModeButton.isChecked()
         chapter_number = self.bookToolBar.tocBox.currentIndex()
 
         # Switch page to whatever index is selected in the tocBox

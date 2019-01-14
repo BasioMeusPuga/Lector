@@ -32,9 +32,9 @@ class ParseFB2:
         self.book_ref = FB2(self.filename)
         contents_found = self.book_ref.read_fb2()
         if not contents_found:
-            print('Cannot process: ' + self.filename)
-            return
+            return False
         self.book = self.book_ref.book
+        return True
 
     def get_title(self):
         return self.book['title']
