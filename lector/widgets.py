@@ -426,6 +426,7 @@ class Tab(QtWidgets.QWidget):
         if not self.are_we_doing_images_only:
             self.hiddenButton.animateClick(100)
 
+        self.mouse_hide_timer.start(2000)
         self.is_fullscreen = True
 
     def exit_fullscreen(self):
@@ -458,6 +459,7 @@ class Tab(QtWidgets.QWidget):
         if not self.main_window.settings['show_bars']:
             self.main_window.toggle_distraction_free()
 
+        self.mouse_hide_timer.start(2000)
         self.contentView.setFocus()
 
     def change_chapter_tocBox(self):

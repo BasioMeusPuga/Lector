@@ -195,6 +195,18 @@ class BackGroundTextSearch(QtCore.QThread):
         if not self.search_text or len(self.search_text) < 3:
             return
 
+        def get_surrounding_text(textCursor, words_before):
+            textCursor.movePosition(
+                QtGui.QTextCursor.WordLeft,
+                QtGui.QTextCursor.MoveAnchor,
+                words_before)
+            textCursor.movePosition(
+                QtGui.QTextCursor.NextWord,
+                QtGui.QTextCursor.KeepAnchor,
+                words_before * 2)
+            cursor_selection = textCursor.selection().toPlainText()
+            return cursor_selection.replace('\n', '')
+
         self.search_results = {}
 
         # Create a new QTextDocument of each chapter and iterate
@@ -215,16 +227,16 @@ class BackGroundTextSearch(QtCore.QThread):
             while not findResultCursor.isNull():
                 result_position = findResultCursor.position()
 
-                surroundingTextCursor = QtGui.QTextCursor(chapterDocument)
-                surroundingTextCursor.setPosition(
-                    result_position, QtGui.QTextCursor.MoveAnchor)
-                # Get words before and after
-                surroundingTextCursor.movePosition(
-                    QtGui.QTextCursor.WordLeft, QtGui.QTextCursor.MoveAnchor, 3)
-                surroundingTextCursor.movePosition(
-                    QtGui.QTextCursor.NextWord, QtGui.QTextCursor.KeepAnchor, 6)
-                surrounding_text = surroundingTextCursor.selection().toPlainText()
-                surrounding_text = surrounding_text.replace('\n', ' ')
+                words_before = 3
+                while True:
+                    surroundingTextCursor = QtGui.QTextCursor(chapterDocument)
+                    surroundingTextCursor.setPosition(
+                        result_position, QtGui.QTextCursor.MoveAnchor)
+                    surrounding_text = get_surrounding_text(
+                        surroundingTextCursor, words_before)
+                    words_before += 1
+                    if surrounding_text[:2] not in ('. ', ', '):
+                        break
 
                 # Case insensitive replace for find results
                 replace_pattern = re.compile(re.escape(self.search_text), re.IGNORECASE)

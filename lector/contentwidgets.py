@@ -276,7 +276,7 @@ class PliantQGraphicsView(QtWidgets.QGraphicsView):
             self.viewport().setCursor(QtCore.Qt.OpenHandCursor)
         else:
             self.viewport().setCursor(QtCore.Qt.ClosedHandCursor)
-        self.parent.mouse_hide_timer.start(3000)
+        self.parent.mouse_hide_timer.start(2000)
         QtWidgets.QGraphicsView.mouseMoveEvent(self, event)
 
     def generate_graphicsview_context_menu(self, position):
@@ -669,7 +669,7 @@ class PliantQTextBrowser(QtWidgets.QTextBrowser):
             self.viewport().setCursor(QtCore.Qt.IBeamCursor)
         else:
             self.viewport().setCursor(QtCore.Qt.ArrowCursor)
-        self.parent.mouse_hide_timer.start(3000)
+        self.parent.mouse_hide_timer.start(2000)
         QtWidgets.QTextBrowser.mouseMoveEvent(self, event)
 
 

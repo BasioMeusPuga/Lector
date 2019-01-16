@@ -93,9 +93,7 @@ TODO
         Deselecting all directories in the settings dialog also filters out manually added books
         Clean up 'switch' page layout
         Colors aren't loaded properly for annotation previews
-        Cover page shouldn't be scolled midway
         Last line in QTextBrowser should never be cut off
-        Cursor position is a little finicky when toggling fullscreen
         Hide mousepointer more aggressively
 
     Secondary:
