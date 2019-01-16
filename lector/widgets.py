@@ -335,6 +335,11 @@ class Tab(QtWidgets.QWidget):
         self.contentView.setTextCursor(cursor)
         self.contentView.ensureCursorVisible()
 
+        # Finally, to make sure the cover image isn't
+        # scrolled halfway through on first open,
+        if self.main_window.bookToolBar.tocBox.currentIndex() == 0:
+            self.contentView.verticalScrollBar().setValue(0)
+
     def generate_position(self, is_read=False):
         total_chapters = len(self.metadata['content'])
 

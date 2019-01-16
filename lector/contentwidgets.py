@@ -451,7 +451,9 @@ class PliantQTextBrowser(QtWidgets.QTextBrowser):
     def record_position(self, return_as_bookmark=False):
         self.parent.metadata['position']['is_read'] = False
 
-        cursor = self.cursorForPosition(QtCore.QPoint(0, 0))
+        # The y coordinate is set to 10 because 0 tends to make
+        # cursor position a little finicky
+        cursor = self.cursorForPosition(QtCore.QPoint(0, 10))
         cursor_position = cursor.position()
 
         # Current block for progress measurement
@@ -728,10 +730,6 @@ class PliantWidgetsCommonFunctions:
 
             # Special cases for double page view
             def get_modifier():
-                # if (self.main_window.settings['page_view_button'] == 'singlePageButton'
-                #         or not self.are_we_doing_images_only):
-                #     return 0
-
                 if (not self.main_window.settings['double_page_mode']
                         or not self.are_we_doing_images_only):
                     return 0
@@ -783,7 +781,8 @@ class PliantWidgetsCommonFunctions:
         if not self.are_we_doing_images_only:
             cursor = self.pw.textCursor()
             cursor.setPosition(0)
-            cursor.movePosition(QtGui.QTextCursor.End, QtGui.QTextCursor.KeepAnchor)
+            cursor.movePosition(
+                QtGui.QTextCursor.End, QtGui.QTextCursor.KeepAnchor)
 
             previewCharFormat = QtGui.QTextCharFormat()
             previewCharFormat.setFontStyleStrategy(
@@ -840,11 +839,13 @@ class PliantWidgetsCommonFunctions:
             1, QtCore.Qt.MatchExactly)
 
         if self.are_we_doing_images_only:
-            position_percentage = (self.pw.parent.metadata['position']['current_chapter'] /
-                                   self.pw.parent.metadata['position']['total_chapters'])
+            position_percentage = (
+                self.pw.parent.metadata['position']['current_chapter'] /
+                self.pw.parent.metadata['position']['total_chapters'])
         else:
-            position_percentage = (self.pw.parent.metadata['position']['current_block'] /
-                                   self.pw.parent.metadata['position']['total_blocks'])
+            position_percentage = (
+                self.pw.parent.metadata['position']['current_block'] /
+                self.pw.parent.metadata['position']['total_blocks'])
 
         # Update position percentage
         if model_index:

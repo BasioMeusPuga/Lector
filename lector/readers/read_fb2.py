@@ -114,3 +114,11 @@ class FB2:
                     outimage.write(image_data)
             except AttributeError:
                 pass
+
+        # Insert the book cover at the beginning
+        if self.book['cover']:
+            cover_path = os.path.join(temp_dir, 'cover')
+            with open(cover_path, 'wb') as outimage:
+                outimage.write(self.book['cover'])
+            self.book['book_list'].insert(
+                0, ('Cover', f'<center><img src="{cover_path}" alt="Cover"></center>'))
