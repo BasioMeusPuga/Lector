@@ -130,17 +130,6 @@ class Tab(QtWidgets.QWidget):
         self.sideDockTabWidget = QtWidgets.QTabWidget()
         self.sideDock.setWidget(self.sideDockTabWidget)
 
-        # Annotation list view and model
-        self.annotationListView = QtWidgets.QListView()
-        self.annotationListView.setEditTriggers(QtWidgets.QListView.NoEditTriggers)
-        self.annotationListView.doubleClicked.connect(self.contentView.toggle_annotation_mode)
-        annotations_string = self._translate('Tab', 'Annotations')
-        if not self.are_we_doing_images_only:
-            self.sideDockTabWidget.addTab(self.annotationListView, annotations_string)
-
-        self.annotationModel = QtGui.QStandardItemModel(self)
-        self.generate_annotation_model()
-
         # Bookmark tree view and model
         self.bookmarkTreeView = QtWidgets.QTreeView()
         self.bookmarkTreeView.setHeaderHidden(True)
@@ -154,6 +143,17 @@ class Tab(QtWidgets.QWidget):
         self.bookmarkModel = QtGui.QStandardItemModel(self)
         self.bookmarkProxyModel = BookmarkProxyModel(self)
         self.generate_bookmark_model()
+
+        # Annotation list view and model
+        self.annotationListView = QtWidgets.QListView()
+        self.annotationListView.setEditTriggers(QtWidgets.QListView.NoEditTriggers)
+        self.annotationListView.doubleClicked.connect(self.contentView.toggle_annotation_mode)
+        annotations_string = self._translate('Tab', 'Annotations')
+        if not self.are_we_doing_images_only:
+            self.sideDockTabWidget.addTab(self.annotationListView, annotations_string)
+
+        self.annotationModel = QtGui.QStandardItemModel(self)
+        self.generate_annotation_model()
 
         # Search view and model
         self.searchLineEdit = QtWidgets.QLineEdit()
@@ -393,17 +393,19 @@ class Tab(QtWidgets.QWidget):
         ksExitFullscreen.setContext(QtCore.Qt.ApplicationShortcut)
         ksExitFullscreen.activated.connect(self.exit_fullscreen)
 
-        ksToggleAnnotations = QtWidgets.QShortcut(
-            QtGui.QKeySequence('Ctrl+N'), self.contentView)
-        ksToggleAnnotations.activated.connect(lambda: self.toggle_side_dock(0))
-
         ksToggleBookmarks = QtWidgets.QShortcut(
             QtGui.QKeySequence('Ctrl+B'), self.contentView)
-        ksToggleBookmarks.activated.connect(lambda: self.toggle_side_dock(1))
+        ksToggleBookmarks.activated.connect(lambda: self.toggle_side_dock(0))
 
-        ksToggleSearch = QtWidgets.QShortcut(
-            QtGui.QKeySequence('Ctrl+F'), self.contentView)
-        ksToggleSearch.activated.connect(lambda: self.toggle_side_dock(2))
+        # Shortcuts not required for comic view functionality
+        if not self.are_we_doing_images_only:
+            ksToggleAnnotations = QtWidgets.QShortcut(
+                QtGui.QKeySequence('Ctrl+N'), self.contentView)
+            ksToggleAnnotations.activated.connect(lambda: self.toggle_side_dock(1))
+
+            ksToggleSearch = QtWidgets.QShortcut(
+                QtGui.QKeySequence('Ctrl+F'), self.contentView)
+            ksToggleSearch.activated.connect(lambda: self.toggle_side_dock(2))
 
     def go_fullscreen(self):
         # To allow toggles to function
@@ -567,7 +569,7 @@ class Tab(QtWidgets.QWidget):
             'description': description}
 
         self.sideDock.setVisible(True)
-        self.sideDockTabWidget.setCurrentIndex(1)
+        self.sideDockTabWidget.setCurrentIndex(0)
         self.add_bookmark_to_model(
             description, chapter, cursor_position, identifier, True)
 

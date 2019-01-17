@@ -71,7 +71,6 @@ TODO
             ✓ Text
             ✓ Disable buttons for annotations, search in images
         Adjust key navigation according to viewport dimensions
-        Redo context menu order
     Filetypes:
         ✓ pdf support
             Parse TOC

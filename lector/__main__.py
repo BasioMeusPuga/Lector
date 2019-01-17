@@ -171,10 +171,10 @@ class MainUI(QtWidgets.QMainWindow, mainwindow.Ui_MainWindow):
             self.libraryToolBar.tableViewButton.trigger()
 
         # Book toolbar
-        self.bookToolBar.annotationButton.triggered.connect(
-            lambda: self.tabWidget.currentWidget().toggle_side_dock(0))
         self.bookToolBar.addBookmarkButton.triggered.connect(self.add_bookmark)
         self.bookToolBar.bookmarkButton.triggered.connect(
+            lambda: self.tabWidget.currentWidget().toggle_side_dock(0))
+        self.bookToolBar.annotationButton.triggered.connect(
             lambda: self.tabWidget.currentWidget().toggle_side_dock(1))
         self.bookToolBar.searchButton.triggered.connect(
             lambda: self.tabWidget.currentWidget().toggle_side_dock(2))
@@ -660,11 +660,15 @@ class MainUI(QtWidgets.QMainWindow, mainwindow.Ui_MainWindow):
 
             # Disable irrelevant buttons in image view mode
             if current_tab.are_we_doing_images_only:
-                self.bookToolBar.searchButton.setEnabled(False)
-                self.bookToolBar.annotationButton.setEnabled(False)
+                self.bookToolBar.searchButton.setVisible(False)
+                self.bookToolBar.annotationButton.setVisible(False)
+                self.bookToolBar.bookSeparator2.setVisible(False)
+                self.bookToolBar.bookSeparator3.setVisible(False)
             else:
-                self.bookToolBar.searchButton.setEnabled(True)
-                self.bookToolBar.annotationButton.setEnabled(True)
+                self.bookToolBar.searchButton.setVisible(True)
+                self.bookToolBar.annotationButton.setVisible(True)
+                self.bookToolBar.bookSeparator2.setVisible(True)
+                self.bookToolBar.bookSeparator3.setVisible(True)
 
             current_position = current_metadata['position']
             current_toc = [i[0] for i in current_metadata['content']]

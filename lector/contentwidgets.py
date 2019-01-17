@@ -554,6 +554,17 @@ class PliantQTextBrowser(QtWidgets.QTextBrowser):
         searchAction = searchGoogleAction = bookmarksToggleAction = 'TODO Insert Latin Joke'
         deleteAnnotationAction = editAnnotationNoteAction = 'Latin quote 2. Electric Boogaloo.'
 
+        if self.parent.is_fullscreen:
+            fsToggleAction = contextMenu.addAction(
+                self.main_window.QImageFactory.get_image('view-fullscreen'),
+                self._translate('PliantQTextBrowser', 'Exit fullscreen'))
+        elif not self.main_window.settings['show_bars']:
+            distraction_free_prompt = self._translate(
+                'PliantQTextBrowser', 'Exit Distraction Free mode')
+            dfToggleAction = contextMenu.addAction(
+                self.main_window.QImageFactory.get_image('visibility'),
+                distraction_free_prompt)
+
         if selection and selection != '':
             first_selected_word = selection.split()[0]
             define_string = self._translate('PliantQTextBrowser', 'Define')
@@ -593,22 +604,6 @@ class PliantQTextBrowser(QtWidgets.QTextBrowser):
             deleteAnnotationAction = annotationsubMenu.addAction(
                 self.main_window.QImageFactory.get_image('remove'),
                 self._translate('PliantQTextBrowser', 'Delete annotation'))
-
-        if self.parent.is_fullscreen:
-            fsToggleAction = contextMenu.addAction(
-                self.main_window.QImageFactory.get_image('view-fullscreen'),
-                self._translate('PliantQTextBrowser', 'Exit fullscreen'))
-        else:
-            if self.main_window.settings['show_bars']:
-                distraction_free_prompt = self._translate(
-                    'PliantQTextBrowser', 'Distraction Free mode')
-            else:
-                distraction_free_prompt = self._translate(
-                    'PliantQTextBrowser', 'Exit Distraction Free mode')
-
-            dfToggleAction = contextMenu.addAction(
-                self.main_window.QImageFactory.get_image('visibility'),
-                distraction_free_prompt)
 
         add_bookmark_string = self._translate('PliantQTextBrowser', 'Add Bookmark')
         addBookMarkAction = contextMenu.addAction(
@@ -654,7 +649,7 @@ class PliantQTextBrowser(QtWidgets.QTextBrowser):
                 'delete', 'text', current_chapter, cursor_at_mouse.position())
 
         if action == bookmarksToggleAction:
-            self.parent.toggle_side_dock(1)
+            self.parent.toggle_side_dock(0)
 
         if action == fsToggleAction:
             self.parent.exit_fullscreen()
