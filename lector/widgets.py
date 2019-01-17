@@ -116,11 +116,15 @@ class Tab(QtWidgets.QWidget):
             self.main_window.settings['scroll_speed'])
 
         if self.main_window.settings['hide_scrollbars']:
-            self.contentView.setHorizontalScrollBarPolicy(QtCore.Qt.ScrollBarAlwaysOff)
-            self.contentView.setVerticalScrollBarPolicy(QtCore.Qt.ScrollBarAlwaysOff)
+            self.contentView.setHorizontalScrollBarPolicy(
+                QtCore.Qt.ScrollBarAlwaysOff)
+            self.contentView.setVerticalScrollBarPolicy(
+                QtCore.Qt.ScrollBarAlwaysOff)
         else:
-            self.contentView.setHorizontalScrollBarPolicy(QtCore.Qt.ScrollBarAsNeeded)
-            self.contentView.setVerticalScrollBarPolicy(QtCore.Qt.ScrollBarAsNeeded)
+            self.contentView.setHorizontalScrollBarPolicy(
+                QtCore.Qt.ScrollBarAsNeeded)
+            self.contentView.setVerticalScrollBarPolicy(
+                QtCore.Qt.ScrollBarAsNeeded)
 
         # Create a common dock for annotations and bookmarks
         # And add a vertical layout to it for requisite widgets

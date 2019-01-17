@@ -220,6 +220,9 @@ class PliantQGraphicsView(QtWidgets.QGraphicsView):
         self.setScene(graphicsScene)
         self.show()
 
+        # This prevents a partial page scroll on first load
+        self.verticalScrollBar().setValue(0)
+
     def wheelEvent(self, event):
         self.common_functions.wheelEvent(event)
 
@@ -281,28 +284,23 @@ class PliantQGraphicsView(QtWidgets.QGraphicsView):
 
     def generate_graphicsview_context_menu(self, position):
         contextMenu = QtWidgets.QMenu()
-
-        saveAction = contextMenu.addAction(
-            self.main_window.QImageFactory.get_image('filesaveas'),
-            self._translate('PliantQGraphicsView', 'Save page as...'))
-
         fsToggleAction = dfToggleAction = 'Caesar si viveret, ad remum dareris'
 
         if self.parent.is_fullscreen:
             fsToggleAction = contextMenu.addAction(
                 self.main_window.QImageFactory.get_image('view-fullscreen'),
                 self._translate('PliantQGraphicsView', 'Exit fullscreen'))
-        else:
-            if self.main_window.settings['show_bars']:
-                distraction_free_prompt = self._translate(
-                    'PliantQGraphicsView', 'Distraction Free mode')
-            else:
-                distraction_free_prompt = self._translate(
-                    'PliantQGraphicsView', 'Exit Distraction Free mode')
+        elif not self.main_window.settings['show_bars']:
+            distraction_free_prompt = self._translate(
+                'PliantQGraphicsView', 'Exit Distraction Free mode')
 
             dfToggleAction = contextMenu.addAction(
                 self.main_window.QImageFactory.get_image('visibility'),
                 distraction_free_prompt)
+
+        saveAction = contextMenu.addAction(
+            self.main_window.QImageFactory.get_image('filesaveas'),
+            self._translate('PliantQGraphicsView', 'Save page as...'))
 
         view_submenu_string = self._translate('PliantQGraphicsView', 'View')
         viewSubMenu = contextMenu.addMenu(view_submenu_string)

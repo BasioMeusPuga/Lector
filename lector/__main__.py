@@ -779,6 +779,10 @@ class MainUI(QtWidgets.QMainWindow, mainwindow.Ui_MainWindow):
     #____________________________________________
 
     def change_page_view(self, key_pressed=False):
+        # Set zoom mode to best fit to
+        # make the transition less jarring
+        self.comic_profile['zoom_mode'] = 'bestFit'
+
         # Toggle Double page mode / manga mode on keypress
         if key_pressed == QtCore.Qt.Key_D:
             self.bookToolBar.doublePageButton.setChecked(
