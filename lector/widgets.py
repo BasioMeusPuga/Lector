@@ -41,6 +41,7 @@ class Tab(QtWidgets.QWidget):
         self.metadata = metadata  # Save progress data into this dictionary
         self.are_we_doing_images_only = self.metadata['images_only']
         self.is_fullscreen = False
+        self.is_library = False
 
         self.masterLayout = QtWidgets.QHBoxLayout(self)
         self.masterLayout.setContentsMargins(0, 0, 0, 0)
@@ -534,23 +535,18 @@ class Tab(QtWidgets.QWidget):
 
     def generate_annotation_model(self):
         saved_annotations = self.main_window.settings['annotations']
-
         if not saved_annotations:
             return
 
-        def add_to_model(annotation):
-            item = QtGui.QStandardItem()
-            item.setText(annotation['name'])
-            item.setData(annotation, QtCore.Qt.UserRole)
-            self.annotationModel.appendRow(item)
-
-        # Prevent annotation mixup
+        # Create annotation model
+        # TODO
+        # Annotation previews will require creation of a
+        # QStyledItemDelegate
         for i in saved_annotations:
-            if self.are_we_doing_images_only and i['applicable_to'] == 'images':
-                add_to_model(i)
-            elif not self.are_we_doing_images_only and i['applicable_to'] == 'text':
-                add_to_model(i)
-
+            item = QtGui.QStandardItem()
+            item.setText(i['name'])
+            item.setData(i, QtCore.Qt.UserRole)
+            self.annotationModel.appendRow(item)
         self.annotationListView.setModel(self.annotationModel)
 
     def add_bookmark(self, position=None):

@@ -233,8 +233,10 @@ class MainUI(QtWidgets.QMainWindow, mainwindow.Ui_MainWindow):
         self.tab_switch()
         self.tabWidget.currentChanged.connect(self.tab_switch)
 
-        # Tab closing
+        # Tab Widget formatting
         self.tabWidget.setTabsClosable(True)
+        self.tabWidget.setDocumentMode(True)
+        self.tabWidget.tabBarClicked.connect(self.tab_disallow_library_movement)
 
         # Get list of available parsers
         self.available_parsers = '*.' + ' *.'.join(sorter.available_parsers)
@@ -243,6 +245,7 @@ class MainUI(QtWidgets.QMainWindow, mainwindow.Ui_MainWindow):
         # The Library tab gets no button
         self.tabWidget.tabBar().setTabButton(
             0, QtWidgets.QTabBar.RightSide, None)
+        self.tabWidget.widget(0).is_library = True
         self.tabWidget.tabCloseRequested.connect(self.tab_close)
         self.tabWidget.setTabBarAutoHide(True)
 
@@ -607,6 +610,12 @@ class MainUI(QtWidgets.QMainWindow, mainwindow.Ui_MainWindow):
 
     def tab_switch(self):
         try:
+            # Disallow library tab movement
+            # Does not need to be looped since the library
+            # tab can only ever go to position 1
+            if not self.tabWidget.widget(0).is_library:
+                self.tabWidget.tabBar().moveTab(1, 0)
+
             if self.current_tab != 0:
                 self.tabWidget.widget(
                     self.current_tab).update_last_accessed_time()
@@ -691,6 +700,13 @@ class MainUI(QtWidgets.QMainWindow, mainwindow.Ui_MainWindow):
         self.tabWidget.widget(tab_index).deleteLater()
         self.tabWidget.widget(tab_index).setParent(None)
         gc.collect()
+
+    def tab_disallow_library_movement(self, tab_index):
+        # Makes the library tab immovable
+        if tab_index == 0:
+            self.tabWidget.setMovable(False)
+        else:
+            self.tabWidget.setMovable(True)
 
     def set_toc_position(self, event=None):
         current_tab = self.tabWidget.currentWidget()

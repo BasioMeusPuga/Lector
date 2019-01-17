@@ -31,6 +31,7 @@ TODO
         ✓ Allow editing of database data through the UI + for Bookmarks
         ✓ Include (action) icons with the applications
         ✓ Drag and drop support for the library
+        ✓ Tab reordering
         Set focus to newly added file
     Reading:
         ✓ Drop down for TOC
@@ -68,7 +69,6 @@ TODO
                 Caching is currently non fuctional
         Annotations
             ✓ Text
-                Annotation preview in listView
             ✓ Disable buttons for annotations, search in images
         Adjust key navigation according to viewport dimensions
         Redo context menu order
@@ -94,20 +94,15 @@ TODO
         Clean up 'switch' page layout
         Colors aren't loaded properly for annotation previews
         Last line in QTextBrowser should never be cut off
-        Hide mousepointer more aggressively
 
     Secondary:
-        Double page view for books
         Graphical themes
         Change focus rectangle dimensions
-        Tab reordering
         Universal Ctrl + Tab
         Allow tabs to detach and form their own windows
         Goodreads API: Ratings, Read, Recommendations
         Get ISBN using python-isbnlib
-        Pagination
         Use embedded fonts + CSS
-        Scrolling: Smooth / By Line
         Shift to logging instead of print statements
         txt, doc, chm support
         Include icons for filetype emblems
@@ -118,3 +113,9 @@ TODO
         ? Create emblem per filetype
         In application notifications
         Notification in case the filter is filtering out all files with no option in place
+
+    Need help with:
+        Double page view for books
+        Scrolling: Smooth / By Line
+        Annotation preview in listView
+        Pagination
