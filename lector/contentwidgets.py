@@ -245,8 +245,8 @@ class PliantQGraphicsView(QtWidgets.QGraphicsView):
                         next_val = 0
                     self.verticalScrollBar().setValue(next_val)
 
-        small_increment = maximum // 4
-        big_increment = maximum // 2
+        small_increment = maximum //self.main_window.settings['small_increment']
+        big_increment = maximum // self.main_window.settings['large_increment']
 
         # Scrolling
         if event.key() == QtCore.Qt.Key_Up:

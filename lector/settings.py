@@ -123,6 +123,8 @@ class Settings:
             'tocWithBookmarks', 'False').capitalize())
         self.parent.settings['scroll_speed'] = int(self.settings.value('scrollSpeed', 7))
         self.parent.settings['consider_read_at'] = int(self.settings.value('considerReadAt', 95))
+        self.parent.settings['small_increment'] = int(self.settings.value('smallIncrement', 4))
+        self.parent.settings['large_increment'] = int(self.settings.value('largeIncrement', 2))
         self.parent.settings['attenuate_titles'] = literal_eval(self.settings.value(
             'attenuateTitles', 'False').capitalize())
         self.parent.settings['double_page_mode'] = literal_eval(self.settings.value(
@@ -212,6 +214,8 @@ class Settings:
         self.settings.setValue('considerReadAt', current_settings['consider_read_at'])
         self.settings.setValue('mangaMode', str(current_settings['manga_mode']))
         self.settings.setValue('doublePageMode', str(current_settings['double_page_mode']))
+        self.settings.setValue('smallIncrement', current_settings['small_increment'])
+        self.settings.setValue('largeIncrement', current_settings['large_increment'])
         self.settings.endGroup()
 
         self.settings.beginGroup('dialogSettings')

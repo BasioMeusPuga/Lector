@@ -2,7 +2,7 @@
 
 # Form implementation generated from reading ui file 'raw/settings.ui'
 #
-# Created by: PyQt5 UI code generator 5.10.1
+# Created by: PyQt5 UI code generator 5.11.3
 #
 # WARNING! All changes made in this file will be lost!
 
@@ -11,7 +11,7 @@ from PyQt5 import QtCore, QtGui, QtWidgets
 class Ui_Dialog(object):
     def setupUi(self, Dialog):
         Dialog.setObjectName("Dialog")
-        Dialog.resize(1119, 612)
+        Dialog.resize(1139, 612)
         self.gridLayout = QtWidgets.QGridLayout(Dialog)
         self.gridLayout.setObjectName("gridLayout")
         self.listView = QtWidgets.QListView(Dialog)
@@ -128,6 +128,27 @@ class Ui_Dialog(object):
         self.tocWithBookmarks = QtWidgets.QCheckBox(self.groupBox_2)
         self.tocWithBookmarks.setObjectName("tocWithBookmarks")
         self.horizontalLayout_12.addWidget(self.tocWithBookmarks)
+        self.horizontalLayout_15 = QtWidgets.QHBoxLayout()
+        self.horizontalLayout_15.setObjectName("horizontalLayout_15")
+        self.smallIncrementLabel = QtWidgets.QLabel(self.groupBox_2)
+        self.smallIncrementLabel.setObjectName("smallIncrementLabel")
+        self.horizontalLayout_15.addWidget(self.smallIncrementLabel)
+        self.smallIncrementBox = QtWidgets.QSpinBox(self.groupBox_2)
+        self.smallIncrementBox.setMinimum(4)
+        self.smallIncrementBox.setMaximum(10)
+        self.smallIncrementBox.setProperty("value", 4)
+        self.smallIncrementBox.setObjectName("smallIncrementBox")
+        self.horizontalLayout_15.addWidget(self.smallIncrementBox)
+        self.largeIncrementLabel = QtWidgets.QLabel(self.groupBox_2)
+        self.largeIncrementLabel.setObjectName("largeIncrementLabel")
+        self.horizontalLayout_15.addWidget(self.largeIncrementLabel)
+        self.largeIncrementBox = QtWidgets.QSpinBox(self.groupBox_2)
+        self.largeIncrementBox.setMinimum(1)
+        self.largeIncrementBox.setMaximum(10)
+        self.largeIncrementBox.setProperty("value", 2)
+        self.largeIncrementBox.setObjectName("largeIncrementBox")
+        self.horizontalLayout_15.addWidget(self.largeIncrementBox)
+        self.horizontalLayout_12.addLayout(self.horizontalLayout_15)
         self.verticalLayout_3.addLayout(self.horizontalLayout_12)
         self.horizontalLayout_8 = QtWidgets.QHBoxLayout()
         self.horizontalLayout_8.setObjectName("horizontalLayout_8")
@@ -331,6 +352,12 @@ class Ui_Dialog(object):
         self.cachingEnabled.setToolTip(_translate("Dialog", "Greatly reduces page transition time at the cost of more memory"))
         self.cachingEnabled.setText(_translate("Dialog", "Cache comic / pdf pages"))
         self.tocWithBookmarks.setText(_translate("Dialog", "Show TOC with Bookmarks"))
+        self.smallIncrementLabel.setToolTip(_translate("Dialog", "<html><head/><body><p>UP/DOWN ARROW - Steps to take before turning comicbook page</p></body></html>"))
+        self.smallIncrementLabel.setText(_translate("Dialog", "Small increment"))
+        self.smallIncrementBox.setToolTip(_translate("Dialog", "<html><head/><body><p>UP/DOWN ARROW - Steps to take before turning comicbook page</p></body></html>"))
+        self.largeIncrementLabel.setToolTip(_translate("Dialog", "<html><head/><body><p>SPACEBAR - Steps to take before turning comicbook page</p></body></html>"))
+        self.largeIncrementLabel.setText(_translate("Dialog", "Large increment"))
+        self.largeIncrementBox.setToolTip(_translate("Dialog", "<html><head/><body><p>SPACEBAR - Steps to take before turning comicbook page</p></body></html>"))
         self.languageLabel.setText(_translate("Dialog", "Dictionary language"))
         self.scrollSpeedLabel.setText(_translate("Dialog", "Scroll speed"))
         self.newAnnotation.setToolTip(_translate("Dialog", "New"))

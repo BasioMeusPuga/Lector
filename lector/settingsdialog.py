@@ -99,6 +99,8 @@ class SettingsUI(QtWidgets.QDialog, settingswindow.Ui_Dialog):
         self.tocWithBookmarks.setChecked(self.main_window.settings['toc_with_bookmarks'])
         self.scrollSpeedSlider.setValue(self.main_window.settings['scroll_speed'])
         self.readAtPercent.setValue(self.main_window.settings['consider_read_at'])
+        self.smallIncrementBox.setValue(self.main_window.settings['small_increment'])
+        self.largeIncrementBox.setValue(self.main_window.settings['large_increment'])
 
         self.autoTags.clicked.connect(self.manage_checkboxes)
         self.coverShadows.clicked.connect(self.manage_checkboxes)
@@ -111,6 +113,8 @@ class SettingsUI(QtWidgets.QDialog, settingswindow.Ui_Dialog):
         self.tocWithBookmarks.clicked.connect(self.manage_checkboxes)
         self.scrollSpeedSlider.valueChanged.connect(self.change_scroll_speed)
         self.readAtPercent.valueChanged.connect(self.change_read_at)
+        self.smallIncrementBox.valueChanged.connect(self.change_increment)
+        self.largeIncrementBox.valueChanged.connect(self.change_increment)
 
         # Generate the QStandardItemModel for the listView
         self.listModel = QtGui.QStandardItemModel()
@@ -364,6 +368,10 @@ class SettingsUI(QtWidgets.QDialog, settingswindow.Ui_Dialog):
 
     def change_read_at(self, event=None):
         self.main_window.settings['consider_read_at'] = self.readAtPercent.value()
+
+    def change_increment(self, event=None):
+        self.main_window.settings['small_increment'] = self.smallIncrementBox.value()
+        self.main_window.settings['large_increment'] = self.largeIncrementBox.value()
 
     def manage_checkboxes(self, event=None):
         sender = self.sender().objectName()
