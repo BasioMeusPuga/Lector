@@ -15,10 +15,13 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 import os
+import logging
 import zipfile
 from urllib.parse import unquote
 
 from bs4 import BeautifulSoup
+
+logger = logging.getLogger(__name__)
 
 
 class EPUB:
@@ -189,7 +192,7 @@ class EPUB:
             if biggest_image:
                 self.book['cover'] = self.read_from_zip(biggest_image)
             else:
-                print('No cover found for: ' + self.filename)
+                logger.error('No cover found for: ' + self.filename)
 
         # Parse spine and arrange chapter paths acquired from the opf
         # according to the order IN THE SPINE

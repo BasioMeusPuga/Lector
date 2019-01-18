@@ -16,6 +16,7 @@
 
 import os
 import zipfile
+import logging
 import webbrowser
 
 try:
@@ -28,6 +29,8 @@ from PyQt5 import QtWidgets, QtGui, QtCore
 from lector.rarfile import rarfile
 from lector.threaded import BackGroundCacheRefill
 from lector.annotations import AnnotationPlacement
+
+logger = logging.getLogger(__name__)
 
 
 class PliantQGraphicsView(QtWidgets.QGraphicsView):
@@ -124,7 +127,7 @@ class PliantQGraphicsView(QtWidgets.QGraphicsView):
             return bigPixmap
 
         def generate_image_cache(current_page):
-            print('Building image cache')
+            logger.info('(Re)building image cache')
             current_page_index = all_pages.index(current_page)
 
             # Image caching for single and double page views
@@ -491,7 +494,7 @@ class PliantQTextBrowser(QtWidgets.QTextBrowser):
             selected_index = self.parent.annotationListView.currentIndex()
             self.current_annotation = self.parent.annotationModel.data(
                 selected_index, QtCore.Qt.UserRole)
-            print('Current annotation: ' + self.current_annotation['name'])
+            logger.info('Selected annotation: ' + + self.current_annotation['name'])
 
     def mouseReleaseEvent(self, event):
         # This takes care of annotation placement

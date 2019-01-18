@@ -15,14 +15,20 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 import json
+import logging
 import urllib.request
 
 from PyQt5 import QtWidgets, QtCore, QtGui
+
+logger = logging.getLogger(__name__)
+
 try:
     from PyQt5 import QtMultimedia
     multimedia_available = True
 except ImportError:
-    print('QtMultimedia not found. Sounds will not play.')
+    error_string = 'QtMultimedia not found. Sounds will not play.'
+    print(error_string)
+    logger.error(error_string)
     multimedia_available = False
 
 from lector.resources import definitions

@@ -14,11 +14,15 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
+import logging
+
 from PyQt5 import QtWidgets, QtCore, QtGui
 
 from lector import database
 from lector.widgets import PliantQGraphicsScene
 from lector.resources import metadata
+
+logger = logging.getLogger(__name__)
 
 
 class MetadataUI(QtWidgets.QDialog, metadata.Ui_Dialog):

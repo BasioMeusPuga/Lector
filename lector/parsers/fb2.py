@@ -15,8 +15,11 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 import os
+import logging
 
 from lector.readers.read_fb2 import FB2
+
+logger = logging.getLogger(__name__)
 
 
 class ParseFB2:

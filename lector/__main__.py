@@ -19,8 +19,11 @@
 import os
 import gc
 import sys
+import logging
 import hashlib
 import pathlib
+
+from PyQt5 import QtWidgets, QtGui, QtCore
 
 # This allows for the program to be launched from the
 # dir where it's been copied instead of needing to be
@@ -29,7 +32,20 @@ install_dir = os.path.realpath(__file__)
 install_dir = pathlib.Path(install_dir).parents[1]
 sys.path.append(str(install_dir))
 
-from PyQt5 import QtWidgets, QtGui, QtCore
+# Initialize logging
+# This is outside the UI declaration to allow sharing
+# the object across modules without explicit redeclaration
+logger_filename = os.path.join(
+    QtCore.QStandardPaths.writableLocation(QtCore.QStandardPaths.AppDataLocation),
+    'Lector',
+    'Lector.log')
+logging.basicConfig(
+    filename=logger_filename,
+    filemode='a',
+    format='%(asctime)s,%(msecs)d %(name)s %(levelname)s %(message)s',
+    datefmt='%H:%M:%S',
+    level=logging.ERROR)
+logger = logging.getLogger('lector.main')
 
 from lector import database
 from lector import sorter
@@ -240,7 +256,7 @@ class MainUI(QtWidgets.QMainWindow, mainwindow.Ui_MainWindow):
 
         # Get list of available parsers
         self.available_parsers = '*.' + ' *.'.join(sorter.available_parsers)
-        print('Available parsers: ' + self.available_parsers)
+        logger.info('Available parsers: ' + self.available_parsers)
 
         # The Library tab gets no button
         self.tabWidget.tabBar().setTabButton(
@@ -407,7 +423,8 @@ class MainUI(QtWidgets.QMainWindow, mainwindow.Ui_MainWindow):
         if not file_paths:
             return
 
-        print('Attempting to open: ' + ', '.join(file_paths))
+        logger.info(
+            'Attempting to open: ' + ', '.join(file_paths))
 
         contents = sorter.BookSorter(
             file_paths,
@@ -420,13 +437,18 @@ class MainUI(QtWidgets.QMainWindow, mainwindow.Ui_MainWindow):
         # Notification feedback in case all books return nothing
 
         if not contents:
+            logger.error('No parseable files found')
             return
 
+        successfully_opened = []
         for i in contents:
             # New tabs are created here
             # Initial position adjustment is carried out by the tab itself
             file_data = contents[i]
             Tab(file_data, self)
+            successfully_opened.append(file_data['path'])
+        logger.info(
+            'Successfully opened: ' + ', '.join(file_paths))
 
         if self.settings['last_open_tab'] == 'library':
             self.tabWidget.setCurrentIndex(0)
@@ -1041,7 +1063,8 @@ def main():
     translations_out_string = '(Translations found)'
     if not translations_found:
         translations_out_string = '(No translations found)'
-    print(f'Locale: {QtCore.QLocale.system().name()}', translations_out_string)
+    log_string = f'Locale: {QtCore.QLocale.system().name()}' + translations_out_string
+    logger.info(log_string)
 
     form = MainUI()
     form.show()
@@ -1050,4 +1073,5 @@ def main():
 
 
 if __name__ == '__main__':
+    logger.info('Application start')
     main()

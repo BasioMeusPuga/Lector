@@ -20,6 +20,7 @@
 
 import os
 import uuid
+import logging
 
 from PyQt5 import QtWidgets, QtGui, QtCore
 
@@ -27,6 +28,8 @@ from lector.models import BookmarkProxyModel
 from lector.sorter import resize_image
 from lector.threaded import BackGroundTextSearch
 from lector.contentwidgets import PliantQGraphicsView, PliantQTextBrowser
+
+logger = logging.getLogger(__name__)
 
 
 class Tab(QtWidgets.QWidget):

@@ -21,9 +21,12 @@ import os
 import sys
 import shutil
 import zipfile
+import logging
 
 from lector.readers.read_epub import EPUB
 import lector.KindleUnpack.kindleunpack as KindleUnpack
+
+logger = logging.getLogger(__name__)
 
 
 class ParseMOBI:

@@ -16,6 +16,7 @@
 
 import os
 import re
+import logging
 import pathlib
 
 from multiprocessing.dummy import Pool
@@ -23,6 +24,8 @@ from PyQt5 import QtCore, QtGui
 
 from lector import sorter
 from lector import database
+
+logger = logging.getLogger(__name__)
 
 
 class BackGroundTabUpdate(QtCore.QThread):

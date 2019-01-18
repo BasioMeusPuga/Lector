@@ -16,8 +16,11 @@
 
 import os
 import zipfile
+import logging
 
 from lector.readers.read_epub import EPUB
+
+logger = logging.getLogger(__name__)
 
 
 class ParseEPUB:

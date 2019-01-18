@@ -19,9 +19,12 @@
 
 import os
 import time
+import logging
 import zipfile
 
 from lector.rarfile import rarfile
+
+logger = logging.getLogger(__name__)
 
 
 class ParseCOMIC:

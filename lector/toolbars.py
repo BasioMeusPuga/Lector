@@ -14,7 +14,11 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
+import logging
+
 from PyQt5 import QtWidgets, QtCore
+
+logger = logging.getLogger(__name__)
 
 
 class BookToolBar(QtWidgets.QToolBar):

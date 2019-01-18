@@ -36,6 +36,7 @@ import os
 import sys
 import time
 import pickle
+import logging
 import hashlib
 import threading
 
@@ -52,6 +53,8 @@ from lector.parsers.epub import ParseEPUB
 from lector.parsers.mobi import ParseMOBI
 from lector.parsers.fb2 import ParseFB2
 from lector.parsers.comicbooks import ParseCOMIC
+
+logger = logging.getLogger(__name__)
 
 sorter = {
     'epub': ParseEPUB,
@@ -70,7 +73,9 @@ try:
     from lector.parsers.pdf import ParsePDF
     sorter['pdf'] = ParsePDF
 except ImportError:
-    print('python-poppler-qt5 is not installed. Pdf files will not work.')
+    error_string = 'python-poppler-qt5 is not installed. Pdf files will not work.'
+    print(error_string)
+    logger.error(error_string)
 
 available_parsers = [i for i in sorter]
 progressbar = None  # This is populated by __main__
@@ -194,7 +199,7 @@ class BookSorter:
         # None values are accounted for here
         is_valid = book_ref.read_book()
         if not is_valid:
-            print('Cannot parse: ' + filename)
+            logger.error('Cannot parse:' + filename)
             return
 
         if book_ref.book:
@@ -311,7 +316,8 @@ class BookSorter:
                 return_books[j] = i[j]
 
         del self.processed_books
-        print('Finished processing in', time.time() - start_time)
+        processing_time = str(time.time() - start_time)
+        logger.info('Finished processing in:' + processing_time)
         return return_books
 
 

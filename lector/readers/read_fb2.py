@@ -17,8 +17,11 @@
 import os
 import base64
 import zipfile
+import logging
 
 from bs4 import BeautifulSoup
+
+logger = logging.getLogger(__name__)
 
 
 class FB2:
@@ -83,7 +86,9 @@ class FB2:
             for i in cover_image_data:
                 if cover_image_name.endswith(i.get('id')):
                     self.book['cover'] = base64.decodebytes(i.text.encode())
-        except AttributeError:
+        except (AttributeError, TypeError):
+            # Catch TypeError in case no images exist in the book
+            logger.error('No cover found for: ' + self.filename)
             self.book['cover'] = None
 
     def parse_chapters(self, temp_dir):

@@ -20,11 +20,14 @@
 
 import io
 import os
+import logging
 
 from PyQt5 import QtCore
 from bs4 import BeautifulSoup
 
 import popplerqt5
+
+logger = logging.getLogger(__name__)
 
 
 class ParsePDF:

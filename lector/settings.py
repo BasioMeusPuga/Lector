@@ -17,9 +17,12 @@
 # Keep in mind that all integer / boolean settings are returned as strings
 
 import os
-
+import logging
 from ast import literal_eval
+
 from PyQt5 import QtCore, QtGui
+
+logger = logging.getLogger(__name__)
 
 
 class Settings:

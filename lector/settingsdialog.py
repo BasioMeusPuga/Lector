@@ -19,6 +19,7 @@
 
 import os
 import copy
+import logging
 import pathlib
 
 from PyQt5 import QtWidgets, QtCore, QtGui
@@ -29,6 +30,8 @@ from lector.models import MostExcellentFileSystemModel
 from lector.threaded import BackGroundBookSearch, BackGroundBookAddition
 from lector.resources import settingswindow
 from lector.settings import Settings
+
+logger = logging.getLogger(__name__)
 
 
 class SettingsUI(QtWidgets.QDialog, settingswindow.Ui_Dialog):
@@ -189,7 +192,7 @@ class SettingsUI(QtWidgets.QDialog, settingswindow.Ui_Dialog):
         self.main_window.generate_library_filter_menu(paths)
         directory_data = {}
         if not paths:
-            print('Database: No paths for settings...')
+            logger.error('Database: No paths for settings...')
         else:
             # Convert to the dictionary format that is
             # to be fed into the QFileSystemModel

@@ -14,10 +14,13 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
+import logging
 import pathlib
 
 from PyQt5 import QtCore, QtWidgets
 from lector.resources import pie_chart
+
+logger = logging.getLogger(__name__)
 
 
 class BookmarkProxyModel(QtCore.QSortFilterProxyModel):

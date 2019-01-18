@@ -16,12 +16,15 @@
 
 import os
 import pickle
+import logging
 import pathlib
 
 from PyQt5 import QtGui, QtCore
 
 from lector import database
 from lector.models import TableProxyModel, ItemProxyModel
+
+logger = logging.getLogger(__name__)
 
 
 class Library:
@@ -47,7 +50,7 @@ class Library:
                     'LIKE')
 
             if not books:
-                print('Database returned nothing')
+                logger.error('Database returned nothing')
                 return
 
         elif mode == 'addition':
@@ -320,7 +323,7 @@ class Library:
                 addition_mode = item_metadata['addition_mode']
             except KeyError:
                 addition_mode = 'automatic'
-                print('Libary: Error setting addition mode for prune')
+                logger.error('Libary: Error setting addition mode for prune')
 
             if (book_path not in valid_paths and
                     (addition_mode != 'manual' or addition_mode is None)):

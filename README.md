@@ -10,19 +10,30 @@ Currently supports:
 * azw / azw3 / azw4
 * cbr / cbz
 
-Support for a bunch of other formats is coming. Please see the TODO for additional information.
+## Donate to support development
+Bitcoin: 17jaxj26vFJNqQ2hEVerbBV5fpTusfqFro
 
 ## Requirements
+### Needed
 | Package | Version tested |
 | --- | --- |
 | Qt5 | 5.10.1 |
 | Python | 3.6 |
 | PyQt5 | 5.10.1 |
+| python-lxml | 4.3.0 |
 | python-beautifulsoup4 | 4.6.0 |
+
+### Optional
+| Package | Version tested |
+| --- | --- |
 | poppler-qt5 | 0.61.1 |
 | python-poppler-qt5 | 0.24.2 |
 
-poppler-qt5 and python-poppler-qt5 are optional.
+## Support
+When reporting issues:
+* Include the log `~/.local/share/Lector/Lector.log` AND terminal output.
+* If you're having trouble with a book while the rest of the application / other books work, please link to a copy of the book itself.
+* If nothing is working, please make sure the requirements mentioned above are all installed, and are at least at the version mentioned.
 
 ## Installation
 ### Manual
@@ -84,12 +95,6 @@ Please keep the translations short. There's only so much space for UI elements.
 
 ### Settings window
 ![alt tag](https://i.imgur.com/l6zJXaH.png)
-
-## Reporting issues
-When reporting issues:
-
-* If you're having trouble with a book while the rest of the application / other books work, please link to a copy of the book itself.
-* If nothing is working, please make sure the requirements mentioned above are all installed, and are at least at the version mentioned.
 
 ## Attributions
 * [KindleUnpack](https://github.com/kevinhendricks/KindleUnpack)
