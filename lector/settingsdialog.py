@@ -192,7 +192,7 @@ class SettingsUI(QtWidgets.QDialog, settingswindow.Ui_Dialog):
         self.main_window.generate_library_filter_menu(paths)
         directory_data = {}
         if not paths:
-            logger.warning('No paths saved for books')
+            logger.warning('No book paths saved')
         else:
             # Convert to the dictionary format that is
             # to be fed into the QFileSystemModel
@@ -264,9 +264,14 @@ class SettingsUI(QtWidgets.QDialog, settingswindow.Ui_Dialog):
             self.database_path).set_library_paths(data_pairs)
 
         if not data_pairs:
+            logger.error('Can\'t scan - No book paths saved')
             try:
                 if self.sender().objectName() == 'reloadLibrary':
                     self.show()
+                    treeViewIndex = self.listModel.index(0, 0)
+                    self.listView.setCurrentIndex(treeViewIndex)
+                    self.page_switch(treeViewIndex)
+                    return
             except AttributeError:
                 pass
 

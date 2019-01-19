@@ -124,8 +124,11 @@ class BackGroundBookSearch(QtCore.QThread):
 
         if self.valid_directories:
             initiate_threads()
-            info_string = str(len(self.valid_files)) + ' books found'
-            logger.info(info_string)
+            if self.valid_files:
+                info_string = str(len(self.valid_files)) + ' books found'
+                logger.info(info_string)
+            else:
+                logger.error('No books found on scan')
         else:
             logger.error('No valid directories')
 

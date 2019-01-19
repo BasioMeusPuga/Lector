@@ -39,6 +39,7 @@ import pickle
 import logging
 import hashlib
 import threading
+import importlib
 
 # The multiprocessing module does not work correctly on Windows
 if sys.platform.startswith('win'):
@@ -57,25 +58,37 @@ from lector.parsers.comicbooks import ParseCOMIC
 logger = logging.getLogger(__name__)
 
 sorter = {
-    'epub': ParseEPUB,
-    'mobi': ParseMOBI,
-    'azw': ParseMOBI,
-    'azw3': ParseMOBI,
-    'azw4': ParseMOBI,
-    'prc': ParseMOBI,
-    'fb2': ParseFB2,
-    'fb2.zip': ParseFB2,
     'cbz': ParseCOMIC,
     'cbr': ParseCOMIC}
 
-# The following imports are for optional dependencies
-try:
+# Check what dependencies are installed
+# python-poppler-qt5 - Optional
+poppler_check = importlib.util.find_spec('popplerqt5')
+if poppler_check:
     from lector.parsers.pdf import ParsePDF
     sorter['pdf'] = ParsePDF
-except ImportError:
-    error_string = 'python-poppler-qt5 is not installed. Pdf files will not work.'
+else:
+    error_string = 'python-poppler-qt5 is not installed. Will be unable to load PDFs.'
     print(error_string)
     logger.error(error_string)
+
+# python-lxml - Required for everything except comics
+lxml_check = importlib.util.find_spec('lxml')
+if lxml_check:
+    lxml_dependent = {
+        'epub': ParseEPUB,
+        'mobi': ParseMOBI,
+        'azw': ParseMOBI,
+        'azw3': ParseMOBI,
+        'azw4': ParseMOBI,
+        'prc': ParseMOBI,
+        'fb2': ParseFB2,
+        'fb2.zip': ParseFB2}
+    sorter.update(lxml_dependent)
+else:
+    critical_sting = 'python-lxml is not installed. Only comics will load.'
+    print(critical_sting)
+    logger.critical(critical_sting)
 
 available_parsers = [i for i in sorter]
 progressbar = None  # This is populated by __main__

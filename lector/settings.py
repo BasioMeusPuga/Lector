@@ -88,11 +88,6 @@ class Settings:
             'currentProfileIndex', 0))
         self.parent.comic_profile = self.settings.value(
             'comicProfile', self.default_comic_profile)
-        try:
-            log_level = int(self.settings.value('logLevel', logging.WARNING))
-        except ValueError:
-            log_level = 30
-        self.parent.settings['log_level'] = log_level
         self.settings.endGroup()
 
         self.settings.beginGroup('lastOpen')
@@ -153,6 +148,8 @@ class Settings:
             self.parent.settings['annotations'] = list()
         self.settings.endGroup()
 
+        logger.info('Settings loaded')
+
     def save_settings(self):
         current_settings = self.parent.settings
 
@@ -187,7 +184,6 @@ class Settings:
             current_profile3])
         self.settings.setValue('currentProfileIndex', current_profile_index)
         self.settings.setValue('comicProfile', self.parent.comic_profile)
-        self.settings.setValue('logLevel', self.parent.settings['log_level'])
         self.settings.endGroup()
 
         current_tab_index = self.parent.tabWidget.currentIndex()

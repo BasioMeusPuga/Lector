@@ -19,7 +19,6 @@
 import os
 import gc
 import sys
-import logging
 import hashlib
 import pathlib
 
@@ -29,6 +28,13 @@ import pathlib
 install_dir = os.path.realpath(__file__)
 install_dir = pathlib.Path(install_dir).parents[1]
 sys.path.append(str(install_dir))
+
+# Init logging
+# Must be done first and at the module level
+# or it won't work properly in case of the imports below
+from lector.logger import init_logging
+logger = init_logging(sys.argv)
+logger.log(60, 'Application started')
 
 from PyQt5 import QtWidgets, QtGui, QtCore
 
@@ -84,10 +90,6 @@ class MainUI(QtWidgets.QMainWindow, mainwindow.Ui_MainWindow):
         # Initialize application
         Settings(self).read_settings()  # This should populate all variables that need
                                         # to be remembered across sessions
-
-        # Initialize logging
-        self.logger = init_logging(self.settings['log_level'])
-        self.logger.log(60, 'Application started')
 
         # Initialize icon factory
         self.QImageFactory = QImageFactory(self)
@@ -245,7 +247,7 @@ class MainUI(QtWidgets.QMainWindow, mainwindow.Ui_MainWindow):
 
         # Get list of available parsers
         self.available_parsers = '*.' + ' *.'.join(sorter.available_parsers)
-        self.logger.info('Available parsers: ' + self.available_parsers)
+        logger.info('Available parsers: ' + self.available_parsers)
 
         # The Library tab gets no button
         self.tabWidget.tabBar().setTabButton(
@@ -412,7 +414,7 @@ class MainUI(QtWidgets.QMainWindow, mainwindow.Ui_MainWindow):
         if not file_paths:
             return
 
-        self.logger.info(
+        logger.info(
             'Attempting to open: ' + ', '.join(file_paths))
 
         contents = sorter.BookSorter(
@@ -426,7 +428,7 @@ class MainUI(QtWidgets.QMainWindow, mainwindow.Ui_MainWindow):
         # Notification feedback in case all books return nothing
 
         if not contents:
-            self.logger.error('No parseable files found')
+            logger.error('No parseable files found')
             return
 
         successfully_opened = []
@@ -436,7 +438,7 @@ class MainUI(QtWidgets.QMainWindow, mainwindow.Ui_MainWindow):
             file_data = contents[i]
             Tab(file_data, self)
             successfully_opened.append(file_data['path'])
-        self.logger.info(
+        logger.info(
             'Successfully opened: ' + ', '.join(file_paths))
 
         if self.settings['last_open_tab'] == 'library':
@@ -1036,21 +1038,6 @@ class MainUI(QtWidgets.QMainWindow, mainwindow.Ui_MainWindow):
     def database_care(self):
         database.DatabaseFunctions(self.database_path).vacuum_database()
         QtWidgets.qApp.exit()
-
-
-def init_logging(log_level):
-    location_prefix = QtCore.QStandardPaths.writableLocation(
-        QtCore.QStandardPaths.AppDataLocation)
-    os.makedirs(location_prefix, exist_ok=True)
-    logger_filename = os.path.join(location_prefix, 'Lector.log')
-    logging.basicConfig(
-        filename=logger_filename,
-        filemode='a',
-        format='%(asctime)s,%(msecs)d %(name)s %(levelname)s %(message)s',
-        datefmt='%Y/%M/%d  %H:%M:%S',
-        level=log_level)
-    logging.addLevelName(60, 'HammerTime')  ## Messages that MUST be logged
-    return logging.getLogger('lector.main')
 
 
 def main():

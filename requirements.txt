@@ -1,0 +1,5 @@
+beautifulsoup4==4.7.1
+lxml==4.3.0
+PyQt5==5.11.3
+PyQt5-sip==4.19.13
+soupsieve==1.7.2

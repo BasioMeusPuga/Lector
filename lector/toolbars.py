@@ -407,6 +407,7 @@ class LibraryToolBar(QtWidgets.QToolBar):
             image_factory.get_image('reload'),
             self._translate('LibraryToolBar', 'Scan Library'),
             self)
+        self.reloadLibraryButton.setObjectName('reloadLibrary')
 
         self.libraryFilterButton = QtWidgets.QToolButton(self)
         self.libraryFilterButton.setIcon(image_factory.get_image('view-readermode'))
