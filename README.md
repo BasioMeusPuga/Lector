@@ -31,6 +31,7 @@ Bitcoin: 17jaxj26vFJNqQ2hEVerbBV5fpTusfqFro
 
 ## Support
 When reporting issues:
+* Run with `$EXECUTABLEPATH debug`.
 * Include the log `~/.local/share/Lector/Lector.log` AND terminal output.
 * If you're having trouble with a book while the rest of the application / other books work, please link to a copy of the book itself.
 * If nothing is working, please make sure the requirements mentioned above are all installed, and are at least at the version mentioned.
