@@ -53,7 +53,7 @@ class EPUB:
             self.zip_file = zipfile.ZipFile(
                 self.filename, mode='r', allowZip64=True)
         except (KeyError, AttributeError, zipfile.BadZipFile):
-            print('Cannot parse ' + self.filename)
+            logger.error('Malformed zip file ' + self.filename)
             return
 
     def parse_xml(self, filename, parser):
@@ -61,7 +61,8 @@ class EPUB:
             this_xml = self.zip_file.read(filename).decode()
         except KeyError:
             short_filename = os.path.basename(self.filename)
-            print(f'{str(filename)} not found in {short_filename}')
+            warning_string = f'{str(filename)} not found in {short_filename}'
+            logger.warning(warning_string)
             return
 
         root = BeautifulSoup(this_xml, parser)
@@ -82,7 +83,8 @@ class EPUB:
                 try:
                     return root_item.get('full-path')
                 except AttributeError:
-                    print(f'ePub module: {self.filename} has a malformed container.xml')
+                    error_string = f'ePub module: {self.filename} has a malformed container.xml'
+                    logger.error(error_string)
                     return None
 
             possible_filenames = ('content.opf', 'package.opf')
@@ -107,7 +109,7 @@ class EPUB:
             if file_path_actual:
                 return self.zip_file.read(file_path_actual)
             else:
-                print('ePub module can\'t find ' + filename)
+                logger.error('ePub module can\'t find ' + filename)
 
     #______________________________________________________
 

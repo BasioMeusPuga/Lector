@@ -124,9 +124,10 @@ class BackGroundBookSearch(QtCore.QThread):
 
         if self.valid_directories:
             initiate_threads()
-            print(len(self.valid_files), 'books found')
+            info_string = str(len(self.valid_files)) + ' books found'
+            logger.info(info_string)
         else:
-            print('No valid directories')
+            logger.error('No valid directories')
 
 
 class BackGroundCacheRefill(QtCore.QThread):

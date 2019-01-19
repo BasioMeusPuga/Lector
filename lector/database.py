@@ -26,7 +26,6 @@ logger = logging.getLogger(__name__)
 
 class DatabaseInit:
     def __init__(self, location_prefix):
-        os.makedirs(location_prefix, exist_ok=True)
         self.database_path = os.path.join(location_prefix, 'Lector.db')
 
         self.books_table_columns = {

@@ -177,7 +177,8 @@ class BookSorter:
                     or os.path.exists(self.hashes_and_paths[file_md5])):
 
                 if not self.hashes_and_paths[file_md5] == filename:
-                    print(f'{os.path.basename(filename)} is already in database')
+                    warning_string = f'{os.path.basename(filename)} is already in database'
+                    logger.warning(warning_string)
                 return
 
         # This allows for eliminating issues with filenames that have
@@ -190,7 +191,7 @@ class BookSorter:
                 break
 
         if not valid_extension:
-            print(filename + ' has an unsupported extension')
+            logger.error(filename + ' has an unsupported extension')
             return
 
         book_ref = sorter[file_extension](filename, self.temp_dir, file_md5)
@@ -317,7 +318,7 @@ class BookSorter:
 
         del self.processed_books
         processing_time = str(time.time() - start_time)
-        logger.info('Finished processing in:' + processing_time)
+        logger.info('Finished processing in ' + processing_time)
         return return_books
 
 

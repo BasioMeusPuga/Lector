@@ -50,7 +50,7 @@ class Library:
                     'LIKE')
 
             if not books:
-                logger.error('Database returned nothing')
+                logger.warning('Database returned nothing')
                 return
 
         elif mode == 'addition':

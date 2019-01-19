@@ -192,7 +192,7 @@ class SettingsUI(QtWidgets.QDialog, settingswindow.Ui_Dialog):
         self.main_window.generate_library_filter_menu(paths)
         directory_data = {}
         if not paths:
-            logger.error('Database: No paths for settings...')
+            logger.warning('No paths saved for books')
         else:
             # Convert to the dictionary format that is
             # to be fed into the QFileSystemModel
