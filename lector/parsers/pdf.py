@@ -20,77 +20,85 @@
 
 import io
 import os
-import logging
 
-from PyQt5 import QtCore
-from bs4 import BeautifulSoup
-
-import popplerqt5
-
-logger = logging.getLogger(__name__)
+import fitz
+from PyQt5 import QtCore, QtGui
 
 
 class ParsePDF:
     def __init__(self, filename, *args):
         self.filename = filename
         self.book = None
-        self.metadata = None
 
     def read_book(self):
-        self.book = popplerqt5.Poppler.Document.load(self.filename)
-        if not self.book:
+        try:
+            self.book = fitz.open(self.filename)
+            return True
+        except RuntimeError:
             return False
 
-        self.metadata = BeautifulSoup(self.book.metadata(), 'xml')
-        return True
-
     def get_title(self):
-        try:
-            title = self.metadata.find('title').text
-            return title.replace('\n', '')
-        except AttributeError:
-            return os.path.splitext(os.path.basename(self.filename))[0]
+        title = self.book.metadata['title']
+        if not title:
+            title = os.path.splitext(os.path.basename(self.filename))[0]
+        return title
 
     def get_author(self):
-        try:
-            author = self.metadata.find('creator').text
-            return author.replace('\n', '')
-        except AttributeError:
-            return 'Unknown'
+        author = self.book.metadata['author']
+        if not author:
+            author = 'Unknown'
+        return author
 
     def get_year(self):
+        creation_date = self.book.metadata['creationDate']
         try:
-            year = self.metadata.find('MetadataDate').text
-            return int(year.replace('\n', '')[:4])
-        except (AttributeError, ValueError):
-            return 9999
+            year = creation_date.split(':')[1][:4]
+        except (ValueError, AttributeError):
+            year = 9999
+        return year
 
     def get_cover_image(self):
-        self.book.setRenderHint(
-            popplerqt5.Poppler.Document.Antialiasing
-            and popplerqt5.Poppler.Document.TextAntialiasing)
+        # TODO
+        # See if there's any way to stop this roundabout way of
+        # getting a smaller QImage from a larger Pixmap
+        cover_page = self.book.loadPage(0)
+        coverPixmap = cover_page.getPixmap()
+        imageFormat = QtGui.QImage.Format_RGB888
+        if coverPixmap.alpha:
+            imageFormat = QtGui.QImage.Format_RGBA8888
+        coverQImage = QtGui.QImage(
+            coverPixmap.samples,
+            coverPixmap.width,
+            coverPixmap.height,
+            coverPixmap.stride,
+            imageFormat)
 
-        try:
-            cover_page = self.book.page(0)
-            cover_image = cover_page.renderToImage(300, 300)
-            return resize_image(cover_image)
-        except AttributeError:
-            return None
+        return resize_image(coverQImage)
 
     def get_isbn(self):
         return None
 
     def get_tags(self):
-        try:
-            tags = self.metadata.find('Keywords').text
-            return tags.replace('\n', '')
-        except AttributeError:
-            return None
+        tags = self.book.metadata['keywords']
+        return tags  # Fine if it returns None
 
     def get_contents(self):
-        file_settings = {'images_only': True}
-        contents = [(f'Page {i + 1}', i) for i in range(self.book.numPages())]
+        # Contents are to be returned as:
+        # Level, Title, Page Number
+        # Increasing the level number means the
+        # title is one level up in the tree
 
+        # TODO
+        # Better parsing of TOC
+        # contents = self.book.getToC()
+        # if not contents:
+        #     contents = [
+        #         (1, f'Page {i + 1}', i) for i in range(self.book.pageCount)]
+
+        # return contents, file_settings
+
+        file_settings = {'images_only': True}
+        contents = [(f'Page {i + 1}', i) for i in range(self.book.pageCount)]
         return contents, file_settings
 
 
@@ -106,3 +114,30 @@ def resize_image(cover_image):
     cover_image_final = io.BytesIO(byte_array)
     cover_image_final.seek(0)
     return cover_image_final.getvalue()
+
+
+def render_pdf_page(page_data):
+    # Draw page contents on to a pixmap
+    pixmap = QtGui.QPixmap()
+    zoom_matrix = fitz.Matrix(4, 4)  # Sets render quality
+    pagePixmap = page_data.getPixmap(
+        matrix=zoom_matrix)
+    imageFormat = QtGui.QImage.Format_RGB888
+    if pagePixmap.alpha:
+        imageFormat = QtGui.QImage.Format_RGBA8888
+    pageQImage = QtGui.QImage(
+        pagePixmap.samples,
+        pagePixmap.width,
+        pagePixmap.height,
+        pagePixmap.stride,
+        imageFormat)
+    pixmap.convertFromImage(pageQImage)
+
+    # Draw page background
+    # Currently going with White - any color should be possible
+    finalPixmap = QtGui.QPixmap(pixmap.size())
+    finalPixmap.fill(QtGui.QColor(QtCore.Qt.white))
+    imagePainter = QtGui.QPainter(finalPixmap)
+    imagePainter.drawPixmap(0, 0, pixmap)
+
+    return finalPixmap

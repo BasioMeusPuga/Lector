@@ -62,13 +62,13 @@ sorter = {
     'cbr': ParseCOMIC}
 
 # Check what dependencies are installed
-# python-poppler-qt5 - Optional
-poppler_check = importlib.util.find_spec('popplerqt5')
-if poppler_check:
+# pymupdf - Optional
+mupdf_check = importlib.util.find_spec('fitz')
+if mupdf_check:
     from lector.parsers.pdf import ParsePDF
     sorter['pdf'] = ParsePDF
 else:
-    error_string = 'python-poppler-qt5 is not installed. Will be unable to load PDFs.'
+    error_string = 'pymupdf is not installed. Will be unable to load PDFs.'
     print(error_string)
     logger.error(error_string)
 

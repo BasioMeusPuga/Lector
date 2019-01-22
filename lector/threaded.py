@@ -18,12 +18,13 @@ import os
 import re
 import logging
 import pathlib
-
 from multiprocessing.dummy import Pool
+
 from PyQt5 import QtCore, QtGui
 
 from lector import sorter
 from lector import database
+from lector.parsers.pdf import render_pdf_page
 
 logger = logging.getLogger(__name__)
 
@@ -149,16 +150,17 @@ class BackGroundCacheRefill(QtCore.QThread):
 
     def run(self):
         def load_page(current_page):
-            image_pixmap = QtGui.QPixmap()
+            pixmap = QtGui.QPixmap()
 
             if self.filetype in ('cbz', 'cbr'):
                 page_data = self.book.read(current_page)
-                image_pixmap.loadFromData(page_data)
+                pixmap.loadFromData(page_data)
+
             elif self.filetype == 'pdf':
-                page_data = self.book.page(current_page)
-                page_qimage = page_data.renderToImage(400, 400)  # TODO Readjust
-                image_pixmap.convertFromImage(page_qimage)
-            return image_pixmap
+                page_data = self.book.loadPage(current_page)
+                pixmap = render_pdf_page(page_data)
+
+            return pixmap
 
         remove_index = self.image_cache.index(self.remove_value)
 

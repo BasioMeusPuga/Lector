@@ -20,13 +20,14 @@ import logging
 import webbrowser
 
 try:
-    import popplerqt5
+    import fitz
 except ImportError:
     pass
 
 from PyQt5 import QtWidgets, QtGui, QtCore
 
 from lector.rarfile import rarfile
+from lector.parsers.pdf import render_pdf_page
 from lector.threaded import BackGroundCacheRefill
 from lector.annotations import AnnotationPlacement
 
@@ -40,7 +41,6 @@ class PliantQGraphicsView(QtWidgets.QGraphicsView):
         self.parent = parent
         self.main_window = main_window
 
-        self.qimage = None  # Will be needed to resize pdf
         self.image_pixmap = None
         self.image_cache = [None for _ in range(4)]
 
@@ -58,10 +58,7 @@ class PliantQGraphicsView(QtWidgets.QGraphicsView):
             self.book = rarfile.RarFile(self.filepath)
 
         elif self.filetype == 'pdf':
-            self.book = popplerqt5.Poppler.Document.load(self.filepath)
-            self.book.setRenderHint(
-                popplerqt5.Poppler.Document.Antialiasing
-                and popplerqt5.Poppler.Document.TextAntialiasing)
+            self.book = fitz.open(self.filepath)
 
         self.common_functions = PliantWidgetsCommonFunctions(
             self, self.main_window)
@@ -86,15 +83,16 @@ class PliantQGraphicsView(QtWidgets.QGraphicsView):
 
         def load_page(current_page):
             def page_loader(page):
-                # TODO Maybe pdf image res needs a setting?
                 pixmap = QtGui.QPixmap()
+
                 if self.filetype in ('cbz', 'cbr'):
                     page_data = self.book.read(page)
                     pixmap.loadFromData(page_data)
+
                 elif self.filetype == 'pdf':
-                    page_data = self.book.page(current_page)
-                    page_qimage = page_data.renderToImage(400, 400)
-                    pixmap.convertFromImage(page_qimage)
+                    page_data = self.book.loadPage(page)
+                    pixmap = render_pdf_page(page_data)
+
                 return pixmap
 
             firstPixmap = page_loader(current_page)

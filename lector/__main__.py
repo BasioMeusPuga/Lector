@@ -1051,9 +1051,9 @@ def main():
         QtCore.QLocale.system(), ':/translations/translations_bin/Lector_')
     app.installTranslator(translator)
 
-    translations_out_string = '(Translations found)'
+    translations_out_string = ' (Translations found)'
     if not translations_found:
-        translations_out_string = '(No translations found)'
+        translations_out_string = ' (No translations found)'
     print(f'Locale: {QtCore.QLocale.system().name()}' + translations_out_string)
 
     form = MainUI()
