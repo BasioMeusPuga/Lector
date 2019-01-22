@@ -18,11 +18,10 @@
 # Error handling
 # TOC parsing
 
-import io
 import os
 
 import fitz
-from PyQt5 import QtCore, QtGui
+from PyQt5 import QtGui
 
 
 class ParsePDF:
@@ -58,22 +57,13 @@ class ParsePDF:
         return year
 
     def get_cover_image(self):
-        # TODO
-        # See if there's any way to stop this roundabout way of
-        # getting a smaller QImage from a larger Pixmap
+        # This is a little roundabout for the cover
+        # and I'm sure it's taking a performance hit
+        # But it is simple. So there's that.
         cover_page = self.book.loadPage(0)
-        coverPixmap = cover_page.getPixmap()
-        imageFormat = QtGui.QImage.Format_RGB888
-        if coverPixmap.alpha:
-            imageFormat = QtGui.QImage.Format_RGBA8888
-        coverQImage = QtGui.QImage(
-            coverPixmap.samples,
-            coverPixmap.width,
-            coverPixmap.height,
-            coverPixmap.stride,
-            imageFormat)
 
-        return resize_image(coverQImage)
+        # Disabling scaling gets the covers much faster
+        return render_pdf_page(cover_page, True)
 
     def get_isbn(self):
         return None
@@ -90,6 +80,7 @@ class ParsePDF:
 
         # TODO
         # Better parsing of TOC
+        # file_settings = {'images_only': True}
         # contents = self.book.getToC()
         # if not contents:
         #     contents = [
@@ -102,42 +93,30 @@ class ParsePDF:
         return contents, file_settings
 
 
-def resize_image(cover_image):
-    cover_image = cover_image.scaled(
-        420, 600, QtCore.Qt.IgnoreAspectRatio)
-
-    byte_array = QtCore.QByteArray()
-    buffer = QtCore.QBuffer(byte_array)
-    buffer.open(QtCore.QIODevice.WriteOnly)
-    cover_image.save(buffer, 'jpg', 75)
-
-    cover_image_final = io.BytesIO(byte_array)
-    cover_image_final.seek(0)
-    return cover_image_final.getvalue()
-
-
-def render_pdf_page(page_data):
+def render_pdf_page(page_data, for_cover=False):
     # Draw page contents on to a pixmap
-    pixmap = QtGui.QPixmap()
-    zoom_matrix = fitz.Matrix(4, 4)  # Sets render quality
+    # and then return that pixmap
+
+    # Render quality is set by the following
+    zoom_matrix = fitz.Matrix(4, 4)
+    if for_cover:
+        zoom_matrix = fitz.Matrix(1, 1)
+
     pagePixmap = page_data.getPixmap(
-        matrix=zoom_matrix)
-    imageFormat = QtGui.QImage.Format_RGB888
-    if pagePixmap.alpha:
-        imageFormat = QtGui.QImage.Format_RGBA8888
+        matrix=zoom_matrix,
+        alpha=False)  # Sets background to White
+    imageFormat = QtGui.QImage.Format_RGB888  # Set to Format_RGB888 if alpha
     pageQImage = QtGui.QImage(
         pagePixmap.samples,
         pagePixmap.width,
         pagePixmap.height,
         pagePixmap.stride,
         imageFormat)
+
+    # The cover page doesn't require conversion into a Pixmap
+    if for_cover:
+        return pageQImage
+
+    pixmap = QtGui.QPixmap()
     pixmap.convertFromImage(pageQImage)
-
-    # Draw page background
-    # Currently going with White - any color should be possible
-    finalPixmap = QtGui.QPixmap(pixmap.size())
-    finalPixmap.fill(QtGui.QColor(QtCore.Qt.white))
-    imagePainter = QtGui.QPainter(finalPixmap)
-    imagePainter.drawPixmap(0, 0, pixmap)
-
-    return finalPixmap
+    return pixmap

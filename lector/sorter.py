@@ -344,8 +344,14 @@ def progress_object_generator():
 
 
 def resize_image(cover_image_raw):
-    cover_image = QtGui.QImage()
-    cover_image.loadFromData(cover_image_raw)
+    if isinstance(cover_image_raw, QtGui.QImage):
+        cover_image = cover_image_raw
+    else:
+        cover_image = QtGui.QImage()
+        cover_image.loadFromData(cover_image_raw)
+
+    # Resize image to what literally everyone
+    # agrees is an acceptable cover size
     cover_image = cover_image.scaled(
         420, 600, QtCore.Qt.IgnoreAspectRatio)
 
