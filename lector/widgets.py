@@ -24,9 +24,9 @@ import logging
 
 from PyQt5 import QtWidgets, QtGui, QtCore
 
-from lector.models import BookmarkProxyModel
 from lector.sorter import resize_image
 from lector.threaded import BackGroundTextSearch
+from lector.dockwidgets import PliantDockWidget, populate_sideDock
 from lector.contentwidgets import PliantQGraphicsView, PliantQTextBrowser
 
 logger = logging.getLogger(__name__)
@@ -138,90 +138,9 @@ class Tab(QtWidgets.QWidget):
                 QtCore.Qt.ScrollBarAsNeeded)
 
         # Create a common dock for annotations and bookmarks
-        # And add a vertical layout to it for requisite widgets
+        # It is populated by the following method
         self.sideDock = PliantDockWidget(self.main_window, False, self.contentView)
-        self.sideDock.setFeatures(QtWidgets.QDockWidget.DockWidgetClosable)
-        self.sideDock.setTitleBarWidget(QtWidgets.QWidget())
-        self.sideDockTabWidget = QtWidgets.QTabWidget()
-        self.sideDock.setWidget(self.sideDockTabWidget)
-
-        # Bookmark tree view and model
-        self.bookmarkTreeView = QtWidgets.QTreeView()
-        self.bookmarkTreeView.setHeaderHidden(True)
-        self.bookmarkTreeView.setContextMenuPolicy(QtCore.Qt.CustomContextMenu)
-        self.bookmarkTreeView.customContextMenuRequested.connect(
-            self.generate_bookmark_context_menu)
-        self.bookmarkTreeView.clicked.connect(self.navigate_to_bookmark)
-        bookmarks_string = self._translate('Tab', 'Bookmarks')
-        self.sideDockTabWidget.addTab(self.bookmarkTreeView, bookmarks_string)
-
-        self.bookmarkModel = QtGui.QStandardItemModel(self)
-        self.bookmarkProxyModel = BookmarkProxyModel(self)
-        self.generate_bookmark_model()
-
-        # Annotation list view and model
-        self.annotationListView = QtWidgets.QListView()
-        self.annotationListView.setEditTriggers(QtWidgets.QListView.NoEditTriggers)
-        self.annotationListView.doubleClicked.connect(self.contentView.toggle_annotation_mode)
-        annotations_string = self._translate('Tab', 'Annotations')
-        if not self.are_we_doing_images_only:
-            self.sideDockTabWidget.addTab(self.annotationListView, annotations_string)
-
-        self.annotationModel = QtGui.QStandardItemModel(self)
-        self.generate_annotation_model()
-
-        # Search view and model
-        self.searchLineEdit = QtWidgets.QLineEdit()
-        self.searchLineEdit.setFocusPolicy(QtCore.Qt.StrongFocus)
-        self.searchLineEdit.setClearButtonEnabled(True)
-        search_string = self._translate('Tab', 'Search')
-        self.searchLineEdit.setPlaceholderText(search_string)
-
-        search_book_string = self._translate('Tab', 'Search entire book')
-        self.searchBookButton = QtWidgets.QToolButton()
-        self.searchBookButton.setIcon(
-            self.main_window.QImageFactory.get_image('view-readermode'))
-        self.searchBookButton.setToolTip(search_book_string)
-        self.searchBookButton.setCheckable(True)
-        self.searchBookButton.setAutoRaise(True)
-
-        case_sensitive_string = self._translate('Tab', 'Match case')
-        self.caseSensitiveSearchButton = QtWidgets.QToolButton()
-        self.caseSensitiveSearchButton.setIcon(
-            self.main_window.QImageFactory.get_image('search-case'))
-        self.caseSensitiveSearchButton.setToolTip(case_sensitive_string)
-        self.caseSensitiveSearchButton.setCheckable(True)
-        self.caseSensitiveSearchButton.setAutoRaise(True)
-
-        match_word_string = self._translate('Tab', 'Match word')
-        self.matchWholeWordButton = QtWidgets.QToolButton()
-        self.matchWholeWordButton.setIcon(
-            self.main_window.QImageFactory.get_image('search-word'))
-        self.matchWholeWordButton.setToolTip(match_word_string)
-        self.matchWholeWordButton.setCheckable(True)
-        self.matchWholeWordButton.setAutoRaise(True)
-
-        self.searchOptionsLayout = QtWidgets.QHBoxLayout()
-        self.searchOptionsLayout.setContentsMargins(0, 3, 0, 0)
-        self.searchOptionsLayout.addWidget(self.searchLineEdit)
-        self.searchOptionsLayout.addWidget(self.searchBookButton)
-        self.searchOptionsLayout.addWidget(self.caseSensitiveSearchButton)
-        self.searchOptionsLayout.addWidget(self.matchWholeWordButton)
-
-        self.searchResultsTreeView = QtWidgets.QTreeView()
-        self.searchResultsTreeView.setHeaderHidden(True)
-        self.searchResultsTreeView.setEditTriggers(QtWidgets.QTreeView.NoEditTriggers)
-        self.searchResultsTreeView.clicked.connect(self.navigate_to_search_result)
-
-        self.searchTabLayout = QtWidgets.QVBoxLayout()
-        self.searchTabLayout.addLayout(self.searchOptionsLayout)
-        self.searchTabLayout.addWidget(self.searchResultsTreeView)
-        self.searchTabLayout.setContentsMargins(0, 0, 0, 0)
-        self.searchTabWidget = QtWidgets.QWidget()
-        self.searchTabWidget.setLayout(self.searchTabLayout)
-
-        if not self.are_we_doing_images_only:
-            self.sideDockTabWidget.addTab(self.searchTabWidget, search_string)
+        populate_sideDock(self)
 
         # Create the annotation notes dock
         self.annotationNoteDock = PliantDockWidget(self.main_window, True, self.contentView)
@@ -947,54 +866,6 @@ class PliantLabelWidget(QtWidgets.QLabel):
     def mousePressEvent(self, QMouseEvent):
         self.navigate_to_search_result(self.index)
         QtWidgets.QLabel.mousePressEvent(self, QMouseEvent)
-
-
-class PliantDockWidget(QtWidgets.QDockWidget):
-    def __init__(self, main_window, notes_only, contentView, parent=None):
-        super(PliantDockWidget, self).__init__()
-        self.main_window = main_window
-        self.notes_only = notes_only
-        self.contentView = contentView
-        self.current_annotation = None
-
-    def showEvent(self, event=None):
-        viewport_topRight = self.contentView.mapToGlobal(
-            self.contentView.viewport().rect().topRight())
-
-        desktop_size = QtWidgets.QDesktopWidget().screenGeometry()
-        dock_y = viewport_topRight.y()
-        dock_height = self.contentView.viewport().size().height()
-
-        if self.notes_only:
-            dock_width = dock_height = desktop_size.width() // 5.5
-            dock_x = QtGui.QCursor.pos().x()
-            dock_y = QtGui.QCursor.pos().y()
-        else:
-            dock_width = desktop_size.width() // 5
-            dock_x = viewport_topRight.x() - dock_width + 1
-
-        self.main_window.active_docks.append(self)
-        self.setGeometry(dock_x, dock_y, dock_width, dock_height)
-
-    def hideEvent(self, event=None):
-        if self.notes_only:
-            annotationNoteEdit = self.findChild(QtWidgets.QTextEdit)
-            if self.current_annotation:
-                self.current_annotation['note'] = annotationNoteEdit.toPlainText()
-
-        try:
-            self.main_window.active_docks.remove(self)
-        except ValueError:
-            pass
-
-    def set_annotation(self, annotation):
-        self.current_annotation = annotation
-
-    def closeEvent(self, event):
-        self.hide()
-
-        # Ignoring this event prevents application closure when everything is fullscreened
-        event.ignore()
 
 
 class PliantQGraphicsScene(QtWidgets.QGraphicsScene):
