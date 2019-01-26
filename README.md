@@ -10,14 +10,13 @@ Currently supports:
 * azw / azw3 / azw4
 * cbr / cbz
 
-## Donate to support development
+## Contribute
 Bitcoin: 17jaxj26vFJNqQ2hEVerbBV5fpTusfqFro
 
 ## Requirements
 ### Needed
 | Package | Version tested |
 | --- | --- |
-| Qt5 | 5.10.1 |
 | Python | 3.6 |
 | PyQt5 | 5.10.1 |
 | python-lxml | 4.3.0 |
@@ -26,11 +25,11 @@ Bitcoin: 17jaxj26vFJNqQ2hEVerbBV5fpTusfqFro
 ### Optional
 | Package | Version tested |
 | --- | --- |
-| poppler-qt5 | 0.61.1 |
-| python-poppler-qt5 | 0.24.2 |
+| python-pymupdf | 1.14.5 |
 
 ## Support
 When reporting issues:
+* Make sure you're at the latest commit
 * Run with `$EXECUTABLEPATH debug`.
 * Include the log `~/.local/share/Lector/Lector.log` AND terminal output.
 * If you're having trouble with a book while the rest of the application / other books work, please link to a copy of the book itself.
