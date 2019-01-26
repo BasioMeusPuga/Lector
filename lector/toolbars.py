@@ -289,11 +289,15 @@ class BookToolBar(QtWidgets.QToolBar):
         for i in self.comicActions:
             i.setVisible(False)
 
-        # Sorter
+        # Table of contents Combo Box
+        # Has to have a QTreeview associated with it
         self.tocBox = FixedComboBox(self)
-        self.tocBox.setObjectName('sortingBox')
         self.tocBox.setToolTip(
             self._translate('BookToolBar', 'Table of Contents'))
+        self.tocTreeView = QtWidgets.QTreeView(self.tocBox)
+        self.tocBox.setView(self.tocTreeView)
+        self.tocTreeView.setItemsExpandable(False)
+        self.tocTreeView.setRootIsDecorated(False)
 
         # All of these will be put after the spacer
         # This means that the buttons in the left side of
@@ -326,17 +330,16 @@ class BookToolBar(QtWidgets.QToolBar):
             self.customize_view_off()
 
     def customize_view_on(self):
-        if self.parent().tabWidget.widget(
-                self.parent().tabWidget.currentIndex()).metadata['images_only']:
-
-            # The following might seem redundant,
-            # but it's necessary for tab switching
-
+        images_only = self.parent().tabWidget.currentWidget().are_we_doing_images_only
+        # The following might seem redundant,
+        # but it's necessary for tab switching
+        if images_only:
             for i in self.comicActions:
                 i.setVisible(True)
 
             for i in self.fontActions:
                 i.setVisible(False)
+
         else:
             for i in self.fontActions:
                 i.setVisible(True)
@@ -368,7 +371,6 @@ class LibraryToolBar(QtWidgets.QToolBar):
         self.setIconSize(QtCore.QSize(22, 22))
         self.setFloatable(False)
         self.setContextMenuPolicy(QtCore.Qt.PreventContextMenu)
-        self.setObjectName("LibraryToolBar")
 
         image_factory = self.window().QImageFactory
 
@@ -443,7 +445,6 @@ class LibraryToolBar(QtWidgets.QToolBar):
             self._translate('LibraryToolBar', 'Search for Title, Author, Tags...'))
         self.searchBar.setSizePolicy(sizePolicy)
         self.searchBar.setContentsMargins(0, 0, 10, 0)
-        self.searchBar.setObjectName('searchBar')
 
         # Sorter
         title_string = self._translate('LibraryToolBar', 'Title')
@@ -458,8 +459,6 @@ class LibraryToolBar(QtWidgets.QToolBar):
 
         self.sortingBox = FixedComboBox(self)
         self.sortingBox.addItems(sorting_choices)
-        self.sortingBox.setObjectName('sortingBox')
-        self.sortingBox.setSizePolicy(sizePolicy)
         self.sortingBox.setMinimumContentsLength(10)
         self.sortingBox.setToolTip(self._translate('LibraryToolBar', 'Sort by'))
 
@@ -479,7 +478,7 @@ class FixedComboBox(QtWidgets.QComboBox):
     def __init__(self, parent=None):
         super(FixedComboBox, self).__init__(parent)
         screen_width = QtWidgets.QDesktopWidget().screenGeometry().width()
-        self.adjusted_size = screen_width // 4.8
+        self.adjusted_size = screen_width // 4.5
 
     def sizeHint(self):
         # This and the one below should adjust to screen size
@@ -490,7 +489,7 @@ class FixedLineEdit(QtWidgets.QLineEdit):
     def __init__(self, parent=None):
         super(FixedLineEdit, self).__init__(parent)
         screen_width = QtWidgets.QDesktopWidget().screenGeometry().width()
-        self.adjusted_size = screen_width // 4.8
+        self.adjusted_size = screen_width // 4.5
 
     def sizeHint(self):
         return QtCore.QSize(self.adjusted_size, 22)

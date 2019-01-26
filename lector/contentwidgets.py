@@ -73,12 +73,12 @@ class PliantQGraphicsView(QtWidgets.QGraphicsView):
             self.generate_graphicsview_context_menu)
 
     def loadImage(self, current_page):
-        all_pages = [i[1] for i in self.parent.metadata['content']]
+        all_pages = self.parent.metadata['content']
         current_page_index = all_pages.index(current_page)
 
         double_page_mode = False
         if (self.main_window.settings['double_page_mode']
-                and (current_page_index != 0 and current_page_index != len(all_pages) - 1)):
+                and (current_page_index not in (0, len(all_pages) - 1))):
             double_page_mode = True
 
         def load_page(current_page):
@@ -492,7 +492,7 @@ class PliantQTextBrowser(QtWidgets.QTextBrowser):
             selected_index = self.parent.annotationListView.currentIndex()
             self.current_annotation = self.parent.annotationModel.data(
                 selected_index, QtCore.Qt.UserRole)
-            logger.info('Selected annotation: ' + + self.current_annotation['name'])
+            logger.info('Selected annotation: ' + self.current_annotation['name'])
 
     def mouseReleaseEvent(self, event):
         # This takes care of annotation placement
@@ -716,37 +716,34 @@ class PliantWidgetsCommonFunctions:
                     self.change_chapter(-1)
 
     def change_chapter(self, direction, was_button_pressed=None):
-        current_toc_index = self.main_window.bookToolBar.tocBox.currentIndex()
-        max_toc_index = self.main_window.bookToolBar.tocBox.count() - 1
+        current_tab = self.pw.parent
+        current_position = current_tab.metadata['position']['current_chapter']
 
-        if (current_toc_index < max_toc_index and direction == 1) or (
-                current_toc_index > 0 and direction == -1):
+        # Special cases for double page view
+        # Page limits are taken care of by the set_content method
+        def get_modifier():
+            if (not self.main_window.settings['double_page_mode']
+                    or not self.are_we_doing_images_only):
+                return 0
 
-            # Special cases for double page view
-            def get_modifier():
-                if (not self.main_window.settings['double_page_mode']
-                        or not self.are_we_doing_images_only):
-                    return 0
+            if (current_position == 0 or current_position % 2 == 0):
+                return 0
 
-                if (current_toc_index == 0
-                        or current_toc_index % 2 == 0
-                        or current_toc_index == max_toc_index):
-                    return 0
-                if current_toc_index % 2 == 1:
-                    return direction
+            if current_position % 2 == 1:
+                return direction
 
-            self.main_window.bookToolBar.tocBox.setCurrentIndex(
-                current_toc_index + direction + get_modifier())
+        current_tab.set_content(
+            current_position + direction + get_modifier(), True)
 
-            # Set page position depending on if the chapter number is increasing or decreasing
-            if direction == 1 or was_button_pressed:
-                self.pw.verticalScrollBar().setValue(0)
-            else:
-                self.pw.verticalScrollBar().setValue(
-                    self.pw.verticalScrollBar().maximum())
+        # Set page position depending on if the chapter number is increasing or decreasing
+        if direction == 1 or was_button_pressed:
+            self.pw.verticalScrollBar().setValue(0)
+        else:
+            self.pw.verticalScrollBar().setValue(
+                self.pw.verticalScrollBar().maximum())
 
-            if not was_button_pressed:
-                self.pw.ignore_wheel_event = True
+        if not was_button_pressed:
+            self.pw.ignore_wheel_event = True
 
     def load_annotations(self, chapter):
         try:
@@ -849,14 +846,27 @@ class PliantWidgetsCommonFunctions:
     def generate_combo_box_action(self, contextMenu):
         contextMenu.addSeparator()
 
-        tocCombobox = QtWidgets.QComboBox()
-        toc_data = [i[0] for i in self.pw.parent.metadata['content']]
-        tocCombobox.addItems(toc_data)
-        tocCombobox.setCurrentIndex(
-            self.pw.main_window.bookToolBar.tocBox.currentIndex())
-        tocCombobox.currentIndexChanged.connect(
-            self.pw.main_window.bookToolBar.tocBox.setCurrentIndex)
+        def set_toc_position(tocTree):
+            currentIndex = tocTree.currentIndex()
+            required_position = currentIndex.data(QtCore.Qt.UserRole)
+            self.pw.parent.set_content(required_position, True)
+
+        # Create the Combobox / Treeview combination
+        tocComboBox = QtWidgets.QComboBox()
+        tocTree = QtWidgets.QTreeView()
+        tocComboBox.setView(tocTree)
+        tocComboBox.setModel(self.pw.parent.tocModel)
+        tocTree.setRootIsDecorated(False)
+        tocTree.setItemsExpandable(False)
+        tocTree.expandAll()
+
+        # Set the position of the QComboBox
+        self.pw.parent.set_tocBox_index(None, tocComboBox)
+
+        # Make clicking do something
+        tocComboBox.currentIndexChanged.connect(
+            lambda: set_toc_position(tocTree))
 
         comboboxAction = QtWidgets.QWidgetAction(self.pw)
-        comboboxAction.setDefaultWidget(tocCombobox)
+        comboboxAction.setDefaultWidget(tocComboBox)
         contextMenu.addAction(comboboxAction)

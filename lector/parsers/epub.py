@@ -63,6 +63,12 @@ class ParseEPUB:
 
         self.book_ref.parse_toc()
         self.book_ref.parse_chapters(temp_dir=self.extract_path)
-        file_settings = {
-            'images_only': False}
-        return self.book['book_list'], file_settings
+
+        toc = []
+        content = []
+        for count, i in enumerate(self.book['book_list']):
+            toc.append((1, i[0], count + 1))
+            content.append(i[1])
+
+        # Return toc, content, images_only
+        return toc, content, False

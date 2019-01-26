@@ -222,15 +222,16 @@ class BackGroundTextSearch(QtCore.QThread):
         # through it looking for hits
 
         for i in self.search_content:
-            chapter = i[0]
+            chapter_title = i[0]
             chapterDocument = QtGui.QTextDocument()
             chapterDocument.setHtml(i[1])
+            chapter_number = i[2]
 
             findFlags = QtGui.QTextDocument.FindFlags(0)
-            if self.case_sensitive:
-                findFlags = findFlags | QtGui.QTextDocument.FindCaseSensitively
             if self.match_words:
                 findFlags = findFlags | QtGui.QTextDocument.FindWholeWords
+            if self.case_sensitive:
+                findFlags = findFlags | QtGui.QTextDocument.FindCaseSensitively
 
             findResultCursor = chapterDocument.find(self.search_text, 0, findFlags)
             while not findResultCursor.isNull():
@@ -252,12 +253,13 @@ class BackGroundTextSearch(QtCore.QThread):
                 surrounding_text = replace_pattern.sub(
                     f'<b>{self.search_text}</b>', surrounding_text)
 
+                result_tuple = (
+                    result_position, surrounding_text, self.search_text, chapter_number)
+
                 try:
-                    self.search_results[chapter].append(
-                        (result_position, surrounding_text, self.search_text))
+                    self.search_results[chapter_title].append(result_tuple)
                 except KeyError:
-                    self.search_results[chapter] = [
-                        (result_position, surrounding_text, self.search_text)]
+                    self.search_results[chapter_title] = [result_tuple]
 
                 new_position = result_position + len(self.search_text)
                 findResultCursor = chapterDocument.find(

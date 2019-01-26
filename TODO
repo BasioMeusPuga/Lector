@@ -94,6 +94,8 @@ TODO
         Colors aren't loaded properly for annotation previews
         Last line in QTextBrowser should never be cut off
         Something is wrong with image alignment
+        Scrolling the toc Combobox does nothing
+        fb2 images need a newline preceding them
 
     Secondary:
         Graphical themes

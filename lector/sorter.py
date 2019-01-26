@@ -217,6 +217,8 @@ class BookSorter:
             return
 
         if book_ref.book:
+            # TODO
+            # For the love of God clean this up. It's junk.
 
             this_book = {}
             this_book[file_md5] = {
@@ -246,18 +248,13 @@ class BookSorter:
                 this_book[file_md5]['addition_mode'] = self.addition_mode
 
             if self.work_mode == 'reading':
-                all_content = book_ref.get_contents()
+                # All books must return the following list
+                # Indices are as described below
+                book_breakdown = book_ref.get_contents()
 
-                # get_contents() returns a tuple. Index 1 is a collection of
-                # special settings that depend on the kind of data being parsed.
-                # Currently, this includes:
-                # Only images included      images_only     BOOL    Book contains only images
-
-                content = all_content[0]
-                images_only = all_content[1]['images_only']
-
-                if not content:
-                    content = [('Invalid', 'Something went horribly wrong')]
+                toc = book_breakdown[0]
+                content = book_breakdown[1]
+                images_only = book_breakdown[2]
 
                 book_data = self.database_entry_for_book(file_md5)
                 title = book_data[0]
@@ -272,6 +269,7 @@ class BookSorter:
 
                 this_book[file_md5]['position'] = position
                 this_book[file_md5]['bookmarks'] = bookmarks
+                this_book[file_md5]['toc'] = toc
                 this_book[file_md5]['content'] = content
                 this_book[file_md5]['images_only'] = images_only
                 this_book[file_md5]['cover'] = cover

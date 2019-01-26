@@ -83,11 +83,11 @@ class ParseCOMIC:
         return None
 
     def get_contents(self):
-        file_settings = {'images_only': True}
-        contents = [(f'Page {count + 1}', i) for count, i in enumerate(self.image_list)]
+        image_number = len(self.image_list)
+        toc = [(1, f'Page {i + 1}', i + 1) for i in range(image_number)]
 
-        return contents, file_settings
-
+        # Return toc, content, images_only
+        return toc, self.image_list, True
 
 def is_image(filename):
     valid_image_extensions = ['.png', '.jpg', '.bmp']

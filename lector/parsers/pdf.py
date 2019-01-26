@@ -73,24 +73,13 @@ class ParsePDF:
         return tags  # Fine if it returns None
 
     def get_contents(self):
-        # Contents are to be returned as:
-        # Level, Title, Page Number
-        # Increasing the level number means the
-        # title is one level up in the tree
+        content = list(range(self.book.pageCount))
+        toc = self.book.getToC()
+        if not toc:
+            toc = [(1, f'Page {i + 1}', i + 1) for i in range(self.book.pageCount)]
 
-        # TODO
-        # Better parsing of TOC
-        # file_settings = {'images_only': True}
-        # contents = self.book.getToC()
-        # if not contents:
-        #     contents = [
-        #         (1, f'Page {i + 1}', i) for i in range(self.book.pageCount)]
-
-        # return contents, file_settings
-
-        file_settings = {'images_only': True}
-        contents = [(f'Page {i + 1}', i) for i in range(self.book.pageCount)]
-        return contents, file_settings
+        # Return toc, content, images_only
+        return toc, content, True
 
 
 def render_pdf_page(page_data, for_cover=False):

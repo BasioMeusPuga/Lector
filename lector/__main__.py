@@ -637,14 +637,15 @@ class MainUI(QtWidgets.QMainWindow, mainwindow.Ui_MainWindow):
 
         self.current_tab = self.tabWidget.currentIndex()
 
-        # Hide bookmark and annotation widgets
+        # Hide all side docks whenever a tab is switched
         for i in range(1, self.tabWidget.count()):
             self.tabWidget.widget(i).sideDock.setVisible(False)
 
+        # If library
         if self.tabWidget.currentIndex() == 0:
-
             self.resizeEvent()
             self.start_culling_timer()
+
             if self.settings['show_bars']:
                 self.bookToolBar.hide()
                 self.libraryToolBar.show()
@@ -660,45 +661,34 @@ class MainUI(QtWidgets.QMainWindow, mainwindow.Ui_MainWindow):
                 self.statusBar.setVisible(True)
 
         else:
-
             if self.settings['show_bars']:
                 self.bookToolBar.show()
                 self.libraryToolBar.hide()
 
             current_tab = self.tabWidget.currentWidget()
-            current_metadata = current_tab.metadata
+            self.bookToolBar.tocBox.setModel(current_tab.tocModel)
+            self.bookToolBar.tocTreeView.expandAll()
+            current_tab.set_tocBox_index(None, None)
+
+            # Needed to set the contentView widget background
+            # on first run. Subsequent runs might be redundant,
+            # but it doesn't seem to visibly affect performance
+            self.profile_functions.format_contentView()
+            self.statusBar.setVisible(False)
 
             if self.bookToolBar.fontButton.isChecked():
                 self.bookToolBar.customize_view_on()
-
-            # Disable irrelevant buttons in image view mode
-            if current_tab.are_we_doing_images_only:
-                self.bookToolBar.searchButton.setVisible(False)
-                self.bookToolBar.annotationButton.setVisible(False)
-                self.bookToolBar.bookSeparator2.setVisible(False)
-                self.bookToolBar.bookSeparator3.setVisible(False)
             else:
-                self.bookToolBar.searchButton.setVisible(True)
-                self.bookToolBar.annotationButton.setVisible(True)
-                self.bookToolBar.bookSeparator2.setVisible(True)
-                self.bookToolBar.bookSeparator3.setVisible(True)
-
-            current_position = current_metadata['position']
-            current_toc = [i[0] for i in current_metadata['content']]
-
-            self.bookToolBar.tocBox.blockSignals(True)
-            self.bookToolBar.tocBox.clear()
-            self.bookToolBar.tocBox.addItems(current_toc)
-            if current_position:
-                self.bookToolBar.tocBox.setCurrentIndex(
-                    current_position['current_chapter'] - 1)
-                if not current_metadata['images_only']:
-                    current_tab.hiddenButton.animateClick(25)
-            self.bookToolBar.tocBox.blockSignals(False)
-
-            self.profile_functions.format_contentView()
-
-            self.statusBar.setVisible(False)
+                if current_tab.are_we_doing_images_only:
+                    self.bookToolBar.searchButton.setVisible(False)
+                    self.bookToolBar.annotationButton.setVisible(False)
+                    self.bookToolBar.bookSeparator2.setVisible(False)
+                    self.bookToolBar.bookSeparator3.setVisible(False)
+                else:
+                    self.bookToolBar.searchButton.setVisible(True)
+                    self.bookToolBar.annotationButton.setVisible(True)
+                    self.bookToolBar.bookSeparator2.setVisible(True)
+                    self.bookToolBar.bookSeparator3.setVisible(True)
 
     def tab_close(self, tab_index=None):
         if not tab_index:
@@ -726,18 +716,15 @@ class MainUI(QtWidgets.QMainWindow, mainwindow.Ui_MainWindow):
             self.tabWidget.setMovable(True)
 
     def set_toc_position(self, event=None):
+        currentIndex = self.bookToolBar.tocTreeView.currentIndex()
+        required_position = currentIndex.data(QtCore.Qt.UserRole)
+        if not required_position:
+            return  # Initial startup might return a None
+
+        # The set_content method is universal
+        # It's going to do position tracking
         current_tab = self.tabWidget.currentWidget()
-
-        current_tab.metadata[
-            'position']['current_chapter'] = event + 1
-        current_tab.metadata[
-            'position']['is_read'] = False
-
-        # Go on to change the value of the Table of Contents box
-        current_tab.change_chapter_tocBox()
-        current_tab.contentView.record_position()
-
-        self.profile_functions.format_contentView()
+        current_tab.set_content(required_position)
 
     def set_fullscreen(self):
         self.tabWidget.currentWidget().go_fullscreen()
@@ -808,12 +795,11 @@ class MainUI(QtWidgets.QMainWindow, mainwindow.Ui_MainWindow):
         # current state of each of the toolbar buttons
         self.settings['double_page_mode'] = self.bookToolBar.doublePageButton.isChecked()
         self.settings['manga_mode'] = self.bookToolBar.mangaModeButton.isChecked()
-        chapter_number = self.bookToolBar.tocBox.currentIndex()
 
         # Switch page to whatever index is selected in the tocBox
         current_tab = self.tabWidget.currentWidget()
-        required_content = current_tab.metadata['content'][chapter_number][1]
-        current_tab.contentView.loadImage(required_content)
+        chapter_number = current_tab.metadata['position']['current_chapter']
+        current_tab.set_content(chapter_number, False)
 
     def generate_library_context_menu(self, position):
         index = self.sender().indexAt(position)
