@@ -108,7 +108,7 @@ class FB2:
             image_name = i.get('id')
             image_path = os.path.join(temp_dir, image_name)
             image_string = f'<image l:href="#{image_name}"'
-            replacement_string = f'<img src=\"{image_path}\"'
+            replacement_string = f'<p></p><img src=\"{image_path}\"'
 
             for j in self.book['book_list']:
                 j[1] = j[1].replace(

@@ -67,6 +67,8 @@ class PliantDockWidget(QtWidgets.QDockWidget):
         event.ignore()
 
 
+# TODO
+# Maybe subclass PliantDockWidget for this
 def populate_sideDock(tabWidget):
     tabWidget.sideDock.setFeatures(QtWidgets.QDockWidget.DockWidgetClosable)
     tabWidget.sideDock.setTitleBarWidget(QtWidgets.QWidget())
@@ -88,18 +90,17 @@ def populate_sideDock(tabWidget):
     tabWidget.generate_bookmark_model()
 
     # Annotation list view and model
-    tabWidget.annotationListView = QtWidgets.QListView(tabWidget)
+    # Leave this without a parent or it shows up in the image viewer
+    tabWidget.annotationListView = QtWidgets.QListView()
     tabWidget.annotationListView.setEditTriggers(QtWidgets.QListView.NoEditTriggers)
     tabWidget.annotationListView.doubleClicked.connect(tabWidget.contentView.toggle_annotation_mode)
     annotations_string = tabWidget._translate('Tab', 'Annotations')
-    if not tabWidget.are_we_doing_images_only:
-        tabWidget.sideDockTabWidget.addTab(tabWidget.annotationListView, annotations_string)
 
     tabWidget.annotationModel = QtGui.QStandardItemModel(tabWidget)
     tabWidget.generate_annotation_model()
 
     # Search view and model
-    tabWidget.searchLineEdit = QtWidgets.QLineEdit(tabWidget)
+    tabWidget.searchLineEdit = QtWidgets.QLineEdit()
     tabWidget.searchLineEdit.setFocusPolicy(QtCore.Qt.StrongFocus)
     tabWidget.searchLineEdit.setClearButtonEnabled(True)
     search_string = tabWidget._translate('Tab', 'Search')
@@ -114,7 +115,7 @@ def populate_sideDock(tabWidget):
     tabWidget.searchBookButton.setAutoRaise(True)
 
     case_sensitive_string = tabWidget._translate('Tab', 'Match case')
-    tabWidget.caseSensitiveSearchButton = QtWidgets.QToolButton(tabWidget)
+    tabWidget.caseSensitiveSearchButton = QtWidgets.QToolButton()
     tabWidget.caseSensitiveSearchButton.setIcon(
         tabWidget.main_window.QImageFactory.get_image('search-case'))
     tabWidget.caseSensitiveSearchButton.setToolTip(case_sensitive_string)
@@ -136,6 +137,7 @@ def populate_sideDock(tabWidget):
     tabWidget.searchOptionsLayout.addWidget(tabWidget.caseSensitiveSearchButton)
     tabWidget.searchOptionsLayout.addWidget(tabWidget.matchWholeWordButton)
 
+    # Leave this without a parent or it shows up in the image viewer
     tabWidget.searchResultsTreeView = QtWidgets.QTreeView()
     tabWidget.searchResultsTreeView.setHeaderHidden(True)
     tabWidget.searchResultsTreeView.setEditTriggers(QtWidgets.QTreeView.NoEditTriggers)
@@ -150,3 +152,4 @@ def populate_sideDock(tabWidget):
 
     if not tabWidget.are_we_doing_images_only:
         tabWidget.sideDockTabWidget.addTab(tabWidget.searchTabWidget, search_string)
+        tabWidget.sideDockTabWidget.addTab(tabWidget.annotationListView, annotations_string)

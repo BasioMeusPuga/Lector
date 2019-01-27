@@ -635,6 +635,16 @@ class Tab(QtWidgets.QWidget):
             self.bookmarkTreeView.setCurrentIndex(edit_index)
             self.bookmarkTreeView.edit(edit_index)
 
+        def get_chapter_name(chapter_number):
+            try:
+                chapter_name = [i[1] for i in self.metadata['toc'] if i[2] == chapter_number][0]
+            except IndexError:
+                for i in reversed(self.metadata['toc']):
+                    if i[2] < chapter_number:
+                        chapter_name = i[1]
+                        break
+            return chapter_name
+
         bookmark = QtGui.QStandardItem()
 
         bookmark.setData(False, QtCore.Qt.UserRole + 10) # Is Parent
@@ -657,8 +667,7 @@ class Tab(QtWidgets.QWidget):
         bookmarkParent = QtGui.QStandardItem()
         bookmarkParent.setData(True, QtCore.Qt.UserRole + 10)  # Is Parent
         bookmarkParent.setFlags(bookmarkParent.flags() & ~QtCore.Qt.ItemIsEditable)  # Is Editable
-        chapter_name = [i[1] for i in self.metadata['toc'] if i[2] == chapter_number][0]
-        bookmarkParent.setData(chapter_name, QtCore.Qt.DisplayRole)
+        bookmarkParent.setData(get_chapter_name(chapter_number), QtCore.Qt.DisplayRole)
         bookmarkParent.setData(chapter_number, QtCore.Qt.UserRole)
 
         bookmarkParent.appendRow(bookmark)

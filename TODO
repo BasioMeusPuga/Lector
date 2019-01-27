@@ -3,7 +3,7 @@ TODO
         ✓ Internationalization
         ✓ Application icon
         ✓ .desktop file    
-        Flatpak and maybe AppImage support    
+        Flatpak and AppImage support    
     Options:
         ✓ Automatic library management
             ✓ Recursive file addition
@@ -66,7 +66,7 @@ TODO
         ✓ Search document using QTextCursor
         Double page / column view
             ✓ For comics
-                Caching is currently non fuctional
+                Caching is currently non functional
         Annotations
             ✓ Text
             ✓ Disable buttons for annotations, search in images
@@ -93,9 +93,7 @@ TODO
         Clean up 'switch' page layout
         Colors aren't loaded properly for annotation previews
         Last line in QTextBrowser should never be cut off
-        Something is wrong with image alignment
-        Scrolling the toc Combobox does nothing
-        fb2 images need a newline preceding them
+        Does image alignment need to be centered?
 
     Secondary:
         Graphical themes
@@ -115,6 +113,7 @@ TODO
         ? Create emblem per filetype
         In application notifications
         Notification in case the filter is filtering out all files with no option in place
+        Option to fit images to viewport
 
     Need help with:
         Double page view for books

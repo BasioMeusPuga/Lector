@@ -44,8 +44,10 @@ import importlib
 # The multiprocessing module does not work correctly on Windows
 if sys.platform.startswith('win'):
     from multiprocessing.dummy import Pool, Manager
+    thread_count = 4  # This is all on one CPU thread anyway
 else:
-    from multiprocessing import Pool, Manager
+    from multiprocessing import Pool, Manager, cpu_count
+    thread_count = cpu_count()
 
 from PyQt5 import QtCore, QtGui
 from lector import database
@@ -303,7 +305,7 @@ class BookSorter:
             return None
 
         def pool_creator():
-            _pool = Pool(5)
+            _pool = Pool(thread_count)
             self.processed_books = _pool.map(
                 self.read_book, self.file_list)
 
