@@ -481,25 +481,11 @@ class Tab(QtWidgets.QWidget):
         if not current_position:
             current_position = self.metadata['position']['current_chapter']
 
-        # Just look at the variable names. They're practically sentences.
-        positions_available_in_toc = [i[2] for i in self.metadata['toc']]
-        try:
-            position_reference_index = positions_available_in_toc.index(
-                current_position)
-            position_reference = positions_available_in_toc[
-                position_reference_index]
-
-        except ValueError:  # No specific corresponding value was found
-                            # Going for nearest preceding neighbor
-            for count, i in enumerate(positions_available_in_toc):
-                try:
-                    if (positions_available_in_toc[count] <
-                            current_position <
-                            positions_available_in_toc[count + 1]):
-                        position_reference = i
-                        break
-                except IndexError:  # Set to the last chapter
-                    position_reference = positions_available_in_toc[-1]
+        position_reference = 1
+        for i in reversed(self.metadata['toc']):
+            if i[2] <= current_position:
+                position_reference = i[2]
+                break
 
         # Match the position reference to the corresponding
         # index in the QTreeView / QCombobox
@@ -512,6 +498,7 @@ class Tab(QtWidgets.QWidget):
         except IndexError:
             return
 
+        # A tocBox name is specified for the context menu
         if not tocBox:
             tocBox = self.main_window.bookToolBar.tocBox
 
@@ -636,27 +623,28 @@ class Tab(QtWidgets.QWidget):
             self.bookmarkTreeView.edit(edit_index)
 
         def get_chapter_name(chapter_number):
-            try:
-                chapter_name = [i[1] for i in self.metadata['toc'] if i[2] == chapter_number][0]
-            except IndexError:
-                for i in reversed(self.metadata['toc']):
-                    if i[2] < chapter_number:
-                        chapter_name = i[1]
-                        break
-            return chapter_name
+            for i in reversed(self.metadata['toc']):
+                if i[2] <= chapter_number:
+                    return i[1]
+            return 'Unknown'
 
         bookmark = QtGui.QStandardItem()
-
         bookmark.setData(False, QtCore.Qt.UserRole + 10) # Is Parent
         bookmark.setData(chapter_number, QtCore.Qt.UserRole)  # Chapter number
         bookmark.setData(cursor_position, QtCore.Qt.UserRole + 1)  # Cursor Position
         bookmark.setData(identifier, QtCore.Qt.UserRole + 2)  # Identifier
         bookmark.setData(description, QtCore.Qt.DisplayRole)  # Description
+        bookmark_chapter_name = get_chapter_name(chapter_number)
 
         for i in range(self.bookmarkModel.rowCount()):
             parentIndex = self.bookmarkModel.index(i, 0)
-            parent_chapter = parentIndex.data(QtCore.Qt.UserRole)
-            if parent_chapter == chapter_number:
+            parent_chapter_number = parentIndex.data(QtCore.Qt.UserRole)
+            parent_chapter_name = parentIndex.data(QtCore.Qt.DisplayRole)
+
+            # This prevents duplication of the bookmark in the new
+            # navigation model
+            if ((parent_chapter_number <= chapter_number) and
+                    (parent_chapter_name == bookmark_chapter_name)):
                 bookmarkParent = self.bookmarkModel.itemFromIndex(parentIndex)
                 bookmarkParent.appendRow(bookmark)
                 if new_bookmark:
@@ -693,18 +681,6 @@ class Tab(QtWidgets.QWidget):
             self.set_cursor_position(cursor_position)
 
     def generate_bookmark_model(self):
-        self.bookmarkModel = QtGui.QStandardItemModel(self)
-
-        if self.main_window.settings['toc_with_bookmarks']:
-            pass
-            # for chapter_number, i in enumerate(self.metadata['content']):
-            #     chapterItem = QtGui.QStandardItem()
-            #     chapterItem.setData(i[0], QtCore.Qt.DisplayRole)  # Display name
-            #     chapterItem.setData(chapter_number + 1, QtCore.Qt.UserRole)  # Chapter Number
-            #     chapterItem.setData(True, QtCore.Qt.UserRole + 10)  # Is Parent
-            #     chapterItem.setFlags(chapterItem.flags() & ~QtCore.Qt.ItemIsEditable)  # Is Editable
-            #     self.bookmarkModel.appendRow(chapterItem)
-
         for i in self.metadata['bookmarks'].items():
             description = i[1]['description']
             chapter = i[1]['chapter']

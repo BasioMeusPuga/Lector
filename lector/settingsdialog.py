@@ -99,7 +99,6 @@ class SettingsUI(QtWidgets.QDialog, settingswindow.Ui_Dialog):
         self.cachingEnabled.setChecked(self.main_window.settings['caching_enabled'])
         self.hideScrollBars.setChecked(self.main_window.settings['hide_scrollbars'])
         self.attenuateTitles.setChecked(self.main_window.settings['attenuate_titles'])
-        self.tocWithBookmarks.setChecked(self.main_window.settings['toc_with_bookmarks'])
         self.scrollSpeedSlider.setValue(self.main_window.settings['scroll_speed'])
         self.readAtPercent.setValue(self.main_window.settings['consider_read_at'])
         self.smallIncrementBox.setValue(self.main_window.settings['small_increment'])
@@ -113,7 +112,6 @@ class SettingsUI(QtWidgets.QDialog, settingswindow.Ui_Dialog):
         self.cachingEnabled.clicked.connect(self.manage_checkboxes)
         self.hideScrollBars.clicked.connect(self.manage_checkboxes)
         self.attenuateTitles.clicked.connect(self.manage_checkboxes)
-        self.tocWithBookmarks.clicked.connect(self.manage_checkboxes)
         self.scrollSpeedSlider.valueChanged.connect(self.change_scroll_speed)
         self.readAtPercent.valueChanged.connect(self.change_read_at)
         self.smallIncrementBox.valueChanged.connect(self.change_increment)
@@ -392,8 +390,7 @@ class SettingsUI(QtWidgets.QDialog, settingswindow.Ui_Dialog):
             'performCulling': 'perform_culling',
             'cachingEnabled': 'caching_enabled',
             'hideScrollBars': 'hide_scrollbars',
-            'attenuateTitles': 'attenuate_titles',
-            'tocWithBookmarks': 'toc_with_bookmarks'}
+            'attenuateTitles': 'attenuate_titles'}
 
         self.main_window.settings[
             sender_dict[sender]] = not self.main_window.settings[sender_dict[sender]]
