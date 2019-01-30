@@ -27,15 +27,11 @@ class BookmarkProxyModel(QtCore.QSortFilterProxyModel):
     def __init__(self, parent=None):
         super(BookmarkProxyModel, self).__init__(parent)
         self.parent = parent
+        self.parentTab = self.parent.parent
         self.filter_text = None
 
     def setFilterParams(self, filter_text):
         self.filter_text = filter_text
-
-    def filterAcceptsRow(self, row, parent):
-        # TODO
-        # Connect this to the search bar
-        return True
 
     def setData(self, index, value, role):
         if role == QtCore.Qt.EditRole:
@@ -43,7 +39,7 @@ class BookmarkProxyModel(QtCore.QSortFilterProxyModel):
             identifier = self.sourceModel().data(source_index, QtCore.Qt.UserRole + 2)
 
             self.sourceModel().setData(source_index, value, QtCore.Qt.DisplayRole)
-            self.parent.metadata['bookmarks'][identifier]['description'] = value
+            self.parentTab.metadata['bookmarks'][identifier]['description'] = value
 
             return True
 

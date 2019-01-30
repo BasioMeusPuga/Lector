@@ -14,9 +14,12 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
+import uuid
+
 from PyQt5 import QtWidgets, QtGui, QtCore
 
 from lector.models import BookmarkProxyModel
+from lector.threaded import BackGroundTextSearch
 
 
 class PliantDockWidget(QtWidgets.QDockWidget):
@@ -26,6 +29,27 @@ class PliantDockWidget(QtWidgets.QDockWidget):
         self.notes_only = notes_only
         self.contentView = contentView
         self.current_annotation = None
+        self.parent = parent
+
+        # Models
+        # The following models belong to the sideDock
+        # bookmarkModel, bookmarkProxyModel
+        # annotationModel
+        # searchResultsModel
+        self.bookmarkModel = None
+        self.bookmarkProxyModel = None
+        self.annotationModel = None
+        self.searchResultsModel = None
+
+        # References
+        # All widgets belong to these
+        self.bookmarks = None
+        self.annotations = None
+        self.search = None
+
+        # Widgets
+        # Except this one
+        self.sideDockTabWidget = None
 
     def showEvent(self, event=None):
         viewport_topRight = self.contentView.mapToGlobal(
@@ -60,96 +84,434 @@ class PliantDockWidget(QtWidgets.QDockWidget):
     def set_annotation(self, annotation):
         self.current_annotation = annotation
 
+    def populate(self):
+        self.setFeatures(QtWidgets.QDockWidget.DockWidgetClosable)
+        self.setTitleBarWidget(QtWidgets.QWidget(self))  # Removes titlebar
+        self.sideDockTabWidget = QtWidgets.QTabWidget(self)
+        self.setWidget(self.sideDockTabWidget)
+
+        # This order is important
+        self.bookmarkModel = QtGui.QStandardItemModel(self)
+        self.bookmarkProxyModel = BookmarkProxyModel(self)
+        self.bookmarks = Bookmarks(self)
+        self.bookmarks.generate_bookmark_model()
+
+        if not self.parent.are_we_doing_images_only:
+            self.annotationModel = QtGui.QStandardItemModel(self)
+            self.annotations = Annotations(self)
+            self.annotations.generate_annotation_model()
+
+            self.searchResultsModel = QtGui.QStandardItemModel(self)
+            self.search = Search(self)
+
     def closeEvent(self, event):
         self.hide()
-
-        # Ignoring this event prevents application closure when everything is fullscreened
+        # Ignoring this event prevents application closure
+        # when everything is fullscreened
         event.ignore()
 
 
-# TODO
-# Maybe subclass PliantDockWidget for this
-def populate_sideDock(tabWidget):
-    tabWidget.sideDock.setFeatures(QtWidgets.QDockWidget.DockWidgetClosable)
-    tabWidget.sideDock.setTitleBarWidget(QtWidgets.QWidget())
-    tabWidget.sideDockTabWidget = QtWidgets.QTabWidget()
-    tabWidget.sideDock.setWidget(tabWidget.sideDockTabWidget)
+# For the following classes, the parent is the sideDock
+# The parentTab is the parent... tab. So self.parent.parent
+class Bookmarks:
+    def __init__(self, parent):
+        self.parent = parent
+        self.parentTab = self.parent.parent
+        self.bookmarkTreeView = QtWidgets.QTreeView(self.parent)
+        self._translate = QtCore.QCoreApplication.translate
+        self.bookmarks_string = self._translate('SideDock', 'Bookmarks')
 
-    # Bookmark tree view and model
-    tabWidget.bookmarkTreeView = QtWidgets.QTreeView(tabWidget)
-    tabWidget.bookmarkTreeView.setHeaderHidden(True)
-    tabWidget.bookmarkTreeView.setContextMenuPolicy(QtCore.Qt.CustomContextMenu)
-    tabWidget.bookmarkTreeView.customContextMenuRequested.connect(
-        tabWidget.generate_bookmark_context_menu)
-    tabWidget.bookmarkTreeView.clicked.connect(tabWidget.navigate_to_bookmark)
-    bookmarks_string = tabWidget._translate('Tab', 'Bookmarks')
-    tabWidget.sideDockTabWidget.addTab(tabWidget.bookmarkTreeView, bookmarks_string)
+        self.create_widgets()
 
-    tabWidget.bookmarkModel = QtGui.QStandardItemModel(tabWidget)
-    tabWidget.bookmarkProxyModel = BookmarkProxyModel(tabWidget)
-    tabWidget.generate_bookmark_model()
+    def create_widgets(self):
+        self.bookmarkTreeView.setHeaderHidden(True)
+        self.bookmarkTreeView.setContextMenuPolicy(QtCore.Qt.CustomContextMenu)
+        self.bookmarkTreeView.customContextMenuRequested.connect(
+            self.generate_bookmark_context_menu)
+        self.bookmarkTreeView.clicked.connect(self.navigate_to_bookmark)
 
-    # Annotation list view and model
-    # Leave this without a parent or it shows up in the image viewer
-    tabWidget.annotationListView = QtWidgets.QListView()
-    tabWidget.annotationListView.setEditTriggers(QtWidgets.QListView.NoEditTriggers)
-    tabWidget.annotationListView.doubleClicked.connect(tabWidget.contentView.toggle_annotation_mode)
-    annotations_string = tabWidget._translate('Tab', 'Annotations')
+        # Add widget to side dock
+        self.parent.sideDockTabWidget.addTab(
+            self.bookmarkTreeView, self.bookmarks_string)
 
-    tabWidget.annotationModel = QtGui.QStandardItemModel(tabWidget)
-    tabWidget.generate_annotation_model()
+    def add_bookmark(self, position=None):
+        identifier = uuid.uuid4().hex[:10]
+        description = self._translate('SideDock', 'New bookmark')
 
-    # Search view and model
-    tabWidget.searchLineEdit = QtWidgets.QLineEdit()
-    tabWidget.searchLineEdit.setFocusPolicy(QtCore.Qt.StrongFocus)
-    tabWidget.searchLineEdit.setClearButtonEnabled(True)
-    search_string = tabWidget._translate('Tab', 'Search')
-    tabWidget.searchLineEdit.setPlaceholderText(search_string)
+        if self.parentTab.are_we_doing_images_only:
+            chapter = self.parentTab.metadata['position']['current_chapter']
+            cursor_position = 0
+        else:
+            chapter, cursor_position = self.parent.contentView.record_position(True)
+            if position:  # Should be the case when called from the context menu
+                cursor_position = position
 
-    search_book_string = tabWidget._translate('Tab', 'Search entire book')
-    tabWidget.searchBookButton = QtWidgets.QToolButton()
-    tabWidget.searchBookButton.setIcon(
-        tabWidget.main_window.QImageFactory.get_image('view-readermode'))
-    tabWidget.searchBookButton.setToolTip(search_book_string)
-    tabWidget.searchBookButton.setCheckable(True)
-    tabWidget.searchBookButton.setAutoRaise(True)
+        self.parentTab.metadata['bookmarks'][identifier] = {
+            'chapter': chapter,
+            'cursor_position': cursor_position,
+            'description': description}
 
-    case_sensitive_string = tabWidget._translate('Tab', 'Match case')
-    tabWidget.caseSensitiveSearchButton = QtWidgets.QToolButton()
-    tabWidget.caseSensitiveSearchButton.setIcon(
-        tabWidget.main_window.QImageFactory.get_image('search-case'))
-    tabWidget.caseSensitiveSearchButton.setToolTip(case_sensitive_string)
-    tabWidget.caseSensitiveSearchButton.setCheckable(True)
-    tabWidget.caseSensitiveSearchButton.setAutoRaise(True)
+        self.parent.setVisible(True)
+        self.parent.sideDockTabWidget.setCurrentIndex(0)
+        self.add_bookmark_to_model(
+            description, chapter, cursor_position, identifier, True)
 
-    match_word_string = tabWidget._translate('Tab', 'Match word')
-    tabWidget.matchWholeWordButton = QtWidgets.QToolButton()
-    tabWidget.matchWholeWordButton.setIcon(
-        tabWidget.main_window.QImageFactory.get_image('search-word'))
-    tabWidget.matchWholeWordButton.setToolTip(match_word_string)
-    tabWidget.matchWholeWordButton.setCheckable(True)
-    tabWidget.matchWholeWordButton.setAutoRaise(True)
+    def add_bookmark_to_model(
+            self, description, chapter_number, cursor_position,
+            identifier, new_bookmark=False):
 
-    tabWidget.searchOptionsLayout = QtWidgets.QHBoxLayout()
-    tabWidget.searchOptionsLayout.setContentsMargins(0, 3, 0, 0)
-    tabWidget.searchOptionsLayout.addWidget(tabWidget.searchLineEdit)
-    tabWidget.searchOptionsLayout.addWidget(tabWidget.searchBookButton)
-    tabWidget.searchOptionsLayout.addWidget(tabWidget.caseSensitiveSearchButton)
-    tabWidget.searchOptionsLayout.addWidget(tabWidget.matchWholeWordButton)
+        def edit_new_bookmark(parent_item):
+            new_child = parent_item.child(parent_item.rowCount() - 1, 0)
+            source_index = self.parent.bookmarkModel.indexFromItem(new_child)
+            edit_index = self.bookmarkTreeView.model().mapFromSource(source_index)
+            self.parent.activateWindow()
+            self.bookmarkTreeView.setFocus()
+            self.bookmarkTreeView.setCurrentIndex(edit_index)
+            self.bookmarkTreeView.edit(edit_index)
 
-    # Leave this without a parent or it shows up in the image viewer
-    tabWidget.searchResultsTreeView = QtWidgets.QTreeView()
-    tabWidget.searchResultsTreeView.setHeaderHidden(True)
-    tabWidget.searchResultsTreeView.setEditTriggers(QtWidgets.QTreeView.NoEditTriggers)
-    tabWidget.searchResultsTreeView.clicked.connect(tabWidget.navigate_to_search_result)
+        def get_chapter_name(chapter_number):
+            for i in reversed(self.parentTab.metadata['toc']):
+                if i[2] <= chapter_number:
+                    return i[1]
+            return 'Unknown'
 
-    tabWidget.searchTabLayout = QtWidgets.QVBoxLayout()
-    tabWidget.searchTabLayout.addLayout(tabWidget.searchOptionsLayout)
-    tabWidget.searchTabLayout.addWidget(tabWidget.searchResultsTreeView)
-    tabWidget.searchTabLayout.setContentsMargins(0, 0, 0, 0)
-    tabWidget.searchTabWidget = QtWidgets.QWidget()
-    tabWidget.searchTabWidget.setLayout(tabWidget.searchTabLayout)
+        bookmark = QtGui.QStandardItem()
+        bookmark.setData(False, QtCore.Qt.UserRole + 10) # Is Parent
+        bookmark.setData(chapter_number, QtCore.Qt.UserRole)  # Chapter number
+        bookmark.setData(cursor_position, QtCore.Qt.UserRole + 1)  # Cursor Position
+        bookmark.setData(identifier, QtCore.Qt.UserRole + 2)  # Identifier
+        bookmark.setData(description, QtCore.Qt.DisplayRole)  # Description
+        bookmark_chapter_name = get_chapter_name(chapter_number)
 
-    if not tabWidget.are_we_doing_images_only:
-        tabWidget.sideDockTabWidget.addTab(tabWidget.searchTabWidget, search_string)
-        tabWidget.sideDockTabWidget.addTab(tabWidget.annotationListView, annotations_string)
+        for i in range(self.parent.bookmarkModel.rowCount()):
+            parentIndex = self.parent.bookmarkModel.index(i, 0)
+            parent_chapter_number = parentIndex.data(QtCore.Qt.UserRole)
+            parent_chapter_name = parentIndex.data(QtCore.Qt.DisplayRole)
+
+            # This prevents duplication of the bookmark in the new
+            # navigation model
+            if ((parent_chapter_number <= chapter_number) and
+                    (parent_chapter_name == bookmark_chapter_name)):
+                bookmarkParent = self.parent.bookmarkModel.itemFromIndex(parentIndex)
+                bookmarkParent.appendRow(bookmark)
+                if new_bookmark:
+                    edit_new_bookmark(bookmarkParent)
+                return
+
+        # In case no parent item exists
+        bookmarkParent = QtGui.QStandardItem()
+        bookmarkParent.setData(True, QtCore.Qt.UserRole + 10)  # Is Parent
+        bookmarkParent.setFlags(bookmarkParent.flags() & ~QtCore.Qt.ItemIsEditable)  # Is Editable
+        bookmarkParent.setData(get_chapter_name(chapter_number), QtCore.Qt.DisplayRole)
+        bookmarkParent.setData(chapter_number, QtCore.Qt.UserRole)
+
+        bookmarkParent.appendRow(bookmark)
+        self.parent.bookmarkModel.appendRow(bookmarkParent)
+        if new_bookmark:
+            edit_new_bookmark(bookmarkParent)
+
+    def navigate_to_bookmark(self, index):
+        if not index.isValid():
+            return
+
+        is_parent = self.parent.bookmarkProxyModel.data(
+            index, QtCore.Qt.UserRole + 10)
+        if is_parent:
+            chapter_number = self.parent.bookmarkProxyModel.data(
+                index, QtCore.Qt.UserRole)
+            self.parentTab.set_content(chapter_number, True)
+            return
+
+        chapter = self.parent.bookmarkProxyModel.data(
+            index, QtCore.Qt.UserRole)
+        cursor_position = self.parent.bookmarkProxyModel.data(
+            index, QtCore.Qt.UserRole + 1)
+
+        self.parentTab.set_content(chapter, True)
+        if not self.parentTab.are_we_doing_images_only:
+            self.parentTab.set_cursor_position(cursor_position)
+
+    def generate_bookmark_model(self):
+        for i in self.parentTab.metadata['bookmarks'].items():
+            description = i[1]['description']
+            chapter = i[1]['chapter']
+            cursor_position = i[1]['cursor_position']
+            identifier = i[0]
+            self.add_bookmark_to_model(
+                description, chapter, cursor_position, identifier)
+
+        self.generate_bookmark_proxy_model()
+
+    def generate_bookmark_proxy_model(self):
+        self.parent.bookmarkProxyModel.setSourceModel(self.parent.bookmarkModel)
+        self.parent.bookmarkProxyModel.setSortCaseSensitivity(False)
+        self.parent.bookmarkProxyModel.setSortRole(QtCore.Qt.UserRole)
+        self.parent.bookmarkProxyModel.sort(0)
+        self.bookmarkTreeView.setModel(self.parent.bookmarkProxyModel)
+
+    def generate_bookmark_context_menu(self, position):
+        index = self.bookmarkTreeView.indexAt(position)
+        if not index.isValid():
+            return
+
+        is_parent = self.parent.bookmarkProxyModel.data(
+            index, QtCore.Qt.UserRole + 10)
+        if is_parent:
+            return
+
+        bookmarkMenu = QtWidgets.QMenu()
+        editAction = bookmarkMenu.addAction(
+            self.parentTab.main_window.QImageFactory.get_image('edit-rename'),
+            self._translate('Tab', 'Edit'))
+        deleteAction = bookmarkMenu.addAction(
+            self.parentTab.main_window.QImageFactory.get_image('trash-empty'),
+            self._translate('Tab', 'Delete'))
+
+        action = bookmarkMenu.exec_(
+            self.bookmarkTreeView.mapToGlobal(position))
+
+        if action == editAction:
+            self.bookmarkTreeView.edit(index)
+
+        if action == deleteAction:
+            child_index = self.parent.bookmarkProxyModel.mapToSource(index)
+            parent_index = child_index.parent()
+            child_rows = self.parent.bookmarkModel.itemFromIndex(parent_index).rowCount()
+            delete_uuid = self.parent.bookmarkModel.data(
+                child_index, QtCore.Qt.UserRole + 2)
+
+            self.parentTab.metadata['bookmarks'].pop(delete_uuid)
+
+            self.parent.bookmarkModel.removeRow(child_index.row(), child_index.parent())
+            if child_rows == 1:
+                self.parent.bookmarkModel.removeRow(parent_index.row())
+
+
+class Annotations:
+    def __init__(self, parent):
+        self.parent = parent
+        self.parentTab = self.parent.parent
+        self.annotationListView = QtWidgets.QListView(self.parent)
+        self._translate = QtCore.QCoreApplication.translate
+        self.annotations_string = self._translate('SideDock', 'Annotations')
+
+        self.create_widgets()
+
+    def create_widgets(self):
+        self.annotationListView.setEditTriggers(QtWidgets.QListView.NoEditTriggers)
+        self.annotationListView.doubleClicked.connect(
+            self.parent.contentView.toggle_annotation_mode)
+
+        # Add widget to side dock
+        self.parent.sideDockTabWidget.addTab(
+            self.annotationListView, self.annotations_string)
+
+    def generate_annotation_model(self):
+        # TODO
+        # Annotation previews will require creation of a
+        # QStyledItemDelegate
+
+        saved_annotations = self.parent.main_window.settings['annotations']
+        if not saved_annotations:
+            return
+
+        # Create annotation model
+        for i in saved_annotations:
+            item = QtGui.QStandardItem()
+            item.setText(i['name'])
+            item.setData(i, QtCore.Qt.UserRole)
+            self.parent.annotationModel.appendRow(item)
+        self.annotationListView.setModel(self.parent.annotationModel)
+
+
+class Search:
+    def __init__(self, parent):
+        self.parent = parent
+        self.parentTab = self.parent.parent
+
+        self.searchThread = BackGroundTextSearch()
+        self.searchOptionsLayout = QtWidgets.QHBoxLayout()
+        self.searchTabLayout = QtWidgets.QVBoxLayout()
+        self.searchTimer = QtCore.QTimer(self.parent)
+        self.searchLineEdit = QtWidgets.QLineEdit(self.parent)
+        self.searchBookButton = QtWidgets.QToolButton(self.parent)
+        self.caseSensitiveSearchButton = QtWidgets.QToolButton(self.parent)
+        self.matchWholeWordButton = QtWidgets.QToolButton(self.parent)
+        self.searchResultsTreeView = QtWidgets.QTreeView(self.parent)
+
+        self.create_widgets()
+
+    def create_widgets(self):
+        self.searchThread.finished.connect(self.generate_search_result_model)
+
+        self.searchTimer.setSingleShot(True)
+        self.searchTimer.timeout.connect(self.set_search_options)
+
+        self.searchLineEdit.textChanged.connect(
+            lambda: self.searchLineEdit.setStyleSheet(
+                QtWidgets.QLineEdit.styleSheet(self.parent)))
+        self.searchLineEdit.textChanged.connect(
+            lambda: self.searchTimer.start(500))
+        self.searchBookButton.clicked.connect(
+            lambda: self.searchTimer.start(100))
+        self.caseSensitiveSearchButton.clicked.connect(
+            lambda: self.searchTimer.start(100))
+        self.matchWholeWordButton.clicked.connect(
+            lambda: self.searchTimer.start(100))
+
+        self.searchLineEdit.setFocusPolicy(QtCore.Qt.StrongFocus)
+        self.searchLineEdit.setClearButtonEnabled(True)
+        self._translate = QtCore.QCoreApplication.translate
+        self.search_string = self._translate('SideDock', 'Search')
+        self.searchLineEdit.setPlaceholderText(self.search_string)
+
+        search_book_string = self._translate('SideDock', 'Search entire book')
+
+        self.searchBookButton.setIcon(
+            self.parent.main_window.QImageFactory.get_image('view-readermode'))
+        self.searchBookButton.setToolTip(search_book_string)
+        self.searchBookButton.setCheckable(True)
+        self.searchBookButton.setAutoRaise(True)
+        self.searchBookButton.setIconSize(QtCore.QSize(20, 20))
+
+        case_sensitive_string = self._translate('SideDock', 'Match case')
+
+        self.caseSensitiveSearchButton.setIcon(
+            self.parent.main_window.QImageFactory.get_image('search-case'))
+        self.caseSensitiveSearchButton.setToolTip(case_sensitive_string)
+        self.caseSensitiveSearchButton.setCheckable(True)
+        self.caseSensitiveSearchButton.setAutoRaise(True)
+        self.caseSensitiveSearchButton.setIconSize(QtCore.QSize(20, 20))
+
+        match_word_string = self._translate('SideDock', 'Match word')
+        self.matchWholeWordButton.setIcon(
+            self.parent.main_window.QImageFactory.get_image('search-word'))
+        self.matchWholeWordButton.setToolTip(match_word_string)
+        self.matchWholeWordButton.setCheckable(True)
+        self.matchWholeWordButton.setAutoRaise(True)
+        self.matchWholeWordButton.setIconSize(QtCore.QSize(20, 20))
+
+        self.searchOptionsLayout.setContentsMargins(0, 3, 0, 0)
+        self.searchOptionsLayout.addWidget(self.searchLineEdit)
+        self.searchOptionsLayout.addWidget(self.searchBookButton)
+        self.searchOptionsLayout.addWidget(self.caseSensitiveSearchButton)
+        self.searchOptionsLayout.addWidget(self.matchWholeWordButton)
+
+        self.searchResultsTreeView.setHeaderHidden(True)
+        self.searchResultsTreeView.setEditTriggers(
+            QtWidgets.QTreeView.NoEditTriggers)
+        self.searchResultsTreeView.clicked.connect(
+            self.navigate_to_search_result)
+
+        self.searchTabLayout.addLayout(self.searchOptionsLayout)
+        self.searchTabLayout.addWidget(self.searchResultsTreeView)
+        self.searchTabLayout.setContentsMargins(0, 0, 0, 0)
+        self.searchTabWidget = QtWidgets.QWidget(self.parent)
+        self.searchTabWidget.setLayout(self.searchTabLayout)
+
+        # Add widget to side dock
+        self.parent.sideDockTabWidget.addTab(
+            self.searchTabWidget, self.search_string)
+
+    def set_search_options(self):
+        def generate_title_content_pair(required_chapters):
+            title_content_list = []
+            for i in self.parentTab.metadata['toc']:
+                if i[2] in required_chapters:
+                    title_content_list.append(
+                        (i[1], self.parentTab.metadata['content'][i[2] - 1], i[2]))
+            return title_content_list
+
+        # Select either the current chapter or all chapters
+        # Function name is descriptive
+        chapter_numbers = (self.parentTab.metadata['position']['current_chapter'],)
+        if self.searchBookButton.isChecked():
+            chapter_numbers = [i + 1 for i in range(len(self.parentTab.metadata['content']))]
+        search_content = generate_title_content_pair(chapter_numbers)
+
+        self.searchThread.set_search_options(
+            search_content,
+            self.searchLineEdit.text(),
+            self.caseSensitiveSearchButton.isChecked(),
+            self.matchWholeWordButton.isChecked())
+        self.searchThread.start()
+
+    def generate_search_result_model(self):
+        self.parent.searchResultsModel.clear()
+        search_results = self.searchThread.search_results
+        for i in search_results:
+            parentItem = QtGui.QStandardItem()
+            parentItem.setData(True, QtCore.Qt.UserRole)  # Is parent?
+            parentItem.setData(i, QtCore.Qt.UserRole + 3)  # Display text for label
+
+            for j in search_results[i]:
+                childItem = QtGui.QStandardItem(parentItem)
+                childItem.setData(False, QtCore.Qt.UserRole)  # Is parent?
+                childItem.setData(j[3], QtCore.Qt.UserRole + 1)  # Chapter index
+                childItem.setData(j[0], QtCore.Qt.UserRole + 2)  # Cursor Position
+                childItem.setData(j[1], QtCore.Qt.UserRole + 3)  # Display text for label
+                childItem.setData(j[2], QtCore.Qt.UserRole + 4)  # Search term
+                parentItem.appendRow(childItem)
+            self.parent.searchResultsModel.appendRow(parentItem)
+
+        self.searchResultsTreeView.setModel(self.parent.searchResultsModel)
+        self.searchResultsTreeView.expandToDepth(1)
+
+        # Reset stylesheet in case something is found
+        if search_results:
+            self.searchLineEdit.setStyleSheet(
+                QtWidgets.QLineEdit.styleSheet(self.parent))
+
+        # Or set to Red in case nothing is found
+        if not search_results and len(self.searchLineEdit.text()) > 2:
+            self.searchLineEdit.setStyleSheet("QLineEdit {color: red;}")
+
+        # We'll be putting in labels instead of making a delegate
+        # QLabels can understand RTF, and they also have the somewhat
+        # distinct advantage of being a lot less work than a delegate
+
+        def generate_label(index):
+            label_text = self.parent.searchResultsModel.data(index, QtCore.Qt.UserRole + 3)
+            labelWidget = PliantLabelWidget(index, self.navigate_to_search_result)
+            labelWidget.setText(label_text)
+            self.searchResultsTreeView.setIndexWidget(index, labelWidget)
+
+        for parent_iter in range(self.parent.searchResultsModel.rowCount()):
+            parentItem = self.parent.searchResultsModel.item(parent_iter)
+            parentIndex = self.parent.searchResultsModel.index(parent_iter, 0)
+            generate_label(parentIndex)
+
+            for child_iter in range(parentItem.rowCount()):
+                childIndex = self.parent.searchResultsModel.index(child_iter, 0, parentIndex)
+                generate_label(childIndex)
+
+    def navigate_to_search_result(self, index):
+        if not index.isValid():
+            return
+
+        is_parent = self.parent.searchResultsModel.data(index, QtCore.Qt.UserRole)
+        if is_parent:
+            return
+
+        chapter_number = self.parent.searchResultsModel.data(index, QtCore.Qt.UserRole + 1)
+        cursor_position = self.parent.searchResultsModel.data(index, QtCore.Qt.UserRole + 2)
+        search_term = self.parent.searchResultsModel.data(index, QtCore.Qt.UserRole + 4)
+
+        self.parentTab.set_content(chapter_number, True)
+        if not self.parentTab.are_we_doing_images_only:
+            self.parentTab.set_cursor_position(
+                cursor_position, len(search_term))
+
+
+class PliantLabelWidget(QtWidgets.QLabel):
+    # This is a hack to get clickable / editable appearance
+    # search results in the tree view.
+
+    def __init__(self, index, navigate_to_search_result):
+        super(PliantLabelWidget, self).__init__()
+        self.index = index
+        self.navigate_to_search_result = navigate_to_search_result
+
+    def mousePressEvent(self, QMouseEvent):
+        self.navigate_to_search_result(self.index)
+        QtWidgets.QLabel.mousePressEvent(self, QMouseEvent)

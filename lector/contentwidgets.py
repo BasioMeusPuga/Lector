@@ -482,15 +482,15 @@ class PliantQTextBrowser(QtWidgets.QTextBrowser):
             self.parent.sideDock.setWindowOpacity(.95)
 
             self.current_annotation = None
-            self.parent.annotationListView.clearSelection()
+            self.parent.sideDock.annotations.annotationListView.clearSelection()
 
         else:
             self.annotation_mode = True
             self.viewport().setCursor(QtCore.Qt.IBeamCursor)
             self.parent.sideDock.hide()
 
-            selected_index = self.parent.annotationListView.currentIndex()
-            self.current_annotation = self.parent.annotationModel.data(
+            selected_index = self.parent.sideDock.annotations.annotationListView.currentIndex()
+            self.current_annotation = self.parent.sideDock.annotationModel.data(
                 selected_index, QtCore.Qt.UserRole)
             logger.info('Selected annotation: ' + self.current_annotation['name'])
 
@@ -619,14 +619,14 @@ class PliantQTextBrowser(QtWidgets.QTextBrowser):
         action = contextMenu.exec_(self.sender().mapToGlobal(position))
 
         if action == addBookMarkAction:
-            self.parent.add_bookmark(cursor_at_mouse.position())
+            self.parent.sideDock.bookmarks.add_bookmark(cursor_at_mouse.position())
 
         if action == defineAction:
             self.main_window.definitionDialog.find_definition(selection)
 
         if action == searchAction:
             if selection and selection != '':
-                self.parent.searchLineEdit.setText(selection)
+                self.parent.sideDock.search.searchLineEdit.setText(selection)
             self.parent.toggle_side_dock(2, True)
 
         if action == searchGoogleAction:

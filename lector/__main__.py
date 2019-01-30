@@ -462,7 +462,8 @@ class MainUI(QtWidgets.QMainWindow, mainwindow.Ui_MainWindow):
 
     def add_bookmark(self):
         if self.tabWidget.currentIndex() != 0:
-            self.tabWidget.widget(self.tabWidget.currentIndex()).add_bookmark()
+            current_tab = self.tabWidget.currentWidget()
+            current_tab.sideDock.bookmarks.add_bookmark()
 
     def resizeEvent(self, event=None):
         if event:

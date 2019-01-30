@@ -19,14 +19,12 @@
 # Double page, Continuous etc
 
 import os
-import uuid
 import logging
 
 from PyQt5 import QtWidgets, QtGui, QtCore
 
 from lector.sorter import resize_image
-from lector.threaded import BackGroundTextSearch
-from lector.dockwidgets import PliantDockWidget, populate_sideDock
+from lector.dockwidgets import PliantDockWidget
 from lector.contentwidgets import PliantQGraphicsView, PliantQTextBrowser
 
 logger = logging.getLogger(__name__)
@@ -137,13 +135,14 @@ class Tab(QtWidgets.QWidget):
             self.contentView.setVerticalScrollBarPolicy(
                 QtCore.Qt.ScrollBarAsNeeded)
 
-        # Create a common dock for annotations and bookmarks
-        # It is populated by the following method
-        self.sideDock = PliantDockWidget(self.main_window, False, self.contentView)
-        populate_sideDock(self)
+        # Create a common dock for bookmarks, annotations, and search
+        self.sideDock = PliantDockWidget(
+            self.main_window, False, self.contentView, self)
+        self.sideDock.populate()
 
         # Create the annotation notes dock
-        self.annotationNoteDock = PliantDockWidget(self.main_window, True, self.contentView)
+        self.annotationNoteDock = PliantDockWidget(
+            self.main_window, True, self.contentView, self)
         self.annotationNoteDock.setWindowTitle(self._translate('Tab', 'Note'))
         self.annotationNoteDock.setFeatures(QtWidgets.QDockWidget.DockWidgetClosable)
         self.annotationNoteDock.hide()
@@ -165,29 +164,6 @@ class Tab(QtWidgets.QWidget):
         self.annotationNoteDock.setFloating(True)
         self.annotationNoteDock.setWindowOpacity(.95)
         self.sideDock.hide()
-
-        # Create search references
-        if not self.are_we_doing_images_only:
-            self.searchResultsModel = None
-
-            self.searchThread = BackGroundTextSearch()
-            self.searchThread.finished.connect(self.generate_search_result_model)
-
-            self.searchTimer = QtCore.QTimer()
-            self.searchTimer.setSingleShot(True)
-            self.searchTimer.timeout.connect(self.set_search_options)
-
-            self.searchLineEdit.textChanged.connect(
-                lambda: self.searchLineEdit.setStyleSheet(
-                    QtWidgets.QLineEdit.styleSheet(self)))
-            self.searchLineEdit.textChanged.connect(
-                lambda: self.searchTimer.start(500))
-            self.searchBookButton.clicked.connect(
-                lambda: self.searchTimer.start(100))
-            self.caseSensitiveSearchButton.clicked.connect(
-                lambda: self.searchTimer.start(100))
-            self.matchWholeWordButton.clicked.connect(
-                lambda: self.searchTimer.start(100))
 
         # Create tab in the central tab widget
         title = self.metadata['title']
@@ -214,17 +190,17 @@ class Tab(QtWidgets.QWidget):
 
     def toggle_side_dock(self, tab_required, override_hide=False):
         if (self.sideDock.isVisible()
-                and self.sideDockTabWidget.currentIndex() == tab_required
+                and self.sideDock.sideDockTabWidget.currentIndex() == tab_required
                 and not override_hide):
             self.sideDock.hide()
         elif not self.sideDock.isVisible():
             self.sideDock.show()
             if tab_required == 2:
                 self.sideDock.activateWindow()
-                self.searchLineEdit.setFocus()
-                self.searchLineEdit.selectAll()
+                self.sideDock.search.searchLineEdit.setFocus()
+                self.sideDock.search.searchLineEdit.selectAll()
 
-        self.sideDockTabWidget.setCurrentIndex(tab_required)
+        self.sideDock.sideDockTabWidget.setCurrentIndex(tab_required)
 
     def update_last_accessed_time(self):
         self.metadata['last_accessed'] = QtCore.QDateTime().currentDateTime()
@@ -238,7 +214,8 @@ class Tab(QtWidgets.QWidget):
 
         try:
             self.main_window.lib_ref.libraryModel.setData(
-                matching_item[0], self.metadata['last_accessed'], QtCore.Qt.UserRole + 12)
+                matching_item[0],
+                self.metadata['last_accessed'], QtCore.Qt.UserRole + 12)
         except IndexError:  # The file has been deleted
             pass
 
@@ -329,17 +306,20 @@ class Tab(QtWidgets.QWidget):
 
         ksToggleBookmarks = QtWidgets.QShortcut(
             QtGui.QKeySequence('Ctrl+B'), self.contentView)
-        ksToggleBookmarks.activated.connect(lambda: self.toggle_side_dock(0))
+        ksToggleBookmarks.activated.connect(
+            lambda: self.toggle_side_dock(0))
 
         # Shortcuts not required for comic view functionality
         if not self.are_we_doing_images_only:
             ksToggleAnnotations = QtWidgets.QShortcut(
                 QtGui.QKeySequence('Ctrl+N'), self.contentView)
-            ksToggleAnnotations.activated.connect(lambda: self.toggle_side_dock(1))
+            ksToggleAnnotations.activated.connect(
+                lambda: self.toggle_side_dock(1))
 
             ksToggleSearch = QtWidgets.QShortcut(
                 QtGui.QKeySequence('Ctrl+F'), self.contentView)
-            ksToggleSearch.activated.connect(lambda: self.toggle_side_dock(2))
+            ksToggleSearch.activated.connect(
+                lambda: self.toggle_side_dock(2))
 
     def generate_toc_model(self):
         # The toc list is:
@@ -548,7 +528,8 @@ class Tab(QtWidgets.QWidget):
 
             current_index = self.main_window.bookToolBar.tocBox.currentIndex()
             if current_index == 0:
-                block_format.setAlignment(QtCore.Qt.AlignVCenter | QtCore.Qt.AlignHCenter)
+                block_format.setAlignment(
+                    QtCore.Qt.AlignVCenter | QtCore.Qt.AlignHCenter)
             else:
                 block_format.setAlignment(alignment_dict[text_alignment])
 
@@ -570,259 +551,6 @@ class Tab(QtWidgets.QWidget):
                 if old_position == new_position:
                     break
 
-    def generate_annotation_model(self):
-        # TODO
-        # Annotation previews will require creation of a
-        # QStyledItemDelegate
-
-        saved_annotations = self.main_window.settings['annotations']
-        if not saved_annotations:
-            return
-
-        # Create annotation model
-        for i in saved_annotations:
-            item = QtGui.QStandardItem()
-            item.setText(i['name'])
-            item.setData(i, QtCore.Qt.UserRole)
-            self.annotationModel.appendRow(item)
-        self.annotationListView.setModel(self.annotationModel)
-
-    def add_bookmark(self, position=None):
-        identifier = uuid.uuid4().hex[:10]
-        description = self._translate('Tab', 'New bookmark')
-
-        if self.are_we_doing_images_only:
-            chapter = self.metadata['position']['current_chapter']
-            cursor_position = 0
-        else:
-            chapter, cursor_position = self.contentView.record_position(True)
-            if position:  # Should be the case when called from the context menu
-                cursor_position = position
-
-        self.metadata['bookmarks'][identifier] = {
-            'chapter': chapter,
-            'cursor_position': cursor_position,
-            'description': description}
-
-        self.sideDock.setVisible(True)
-        self.sideDockTabWidget.setCurrentIndex(0)
-        self.add_bookmark_to_model(
-            description, chapter, cursor_position, identifier, True)
-
-    def add_bookmark_to_model(
-            self, description, chapter_number, cursor_position,
-            identifier, new_bookmark=False):
-
-        def edit_new_bookmark(parent_item):
-            new_child = parent_item.child(parent_item.rowCount() - 1, 0)
-            source_index = self.bookmarkModel.indexFromItem(new_child)
-            edit_index = self.bookmarkTreeView.model().mapFromSource(source_index)
-            self.sideDock.activateWindow()
-            self.bookmarkTreeView.setFocus()
-            self.bookmarkTreeView.setCurrentIndex(edit_index)
-            self.bookmarkTreeView.edit(edit_index)
-
-        def get_chapter_name(chapter_number):
-            for i in reversed(self.metadata['toc']):
-                if i[2] <= chapter_number:
-                    return i[1]
-            return 'Unknown'
-
-        bookmark = QtGui.QStandardItem()
-        bookmark.setData(False, QtCore.Qt.UserRole + 10) # Is Parent
-        bookmark.setData(chapter_number, QtCore.Qt.UserRole)  # Chapter number
-        bookmark.setData(cursor_position, QtCore.Qt.UserRole + 1)  # Cursor Position
-        bookmark.setData(identifier, QtCore.Qt.UserRole + 2)  # Identifier
-        bookmark.setData(description, QtCore.Qt.DisplayRole)  # Description
-        bookmark_chapter_name = get_chapter_name(chapter_number)
-
-        for i in range(self.bookmarkModel.rowCount()):
-            parentIndex = self.bookmarkModel.index(i, 0)
-            parent_chapter_number = parentIndex.data(QtCore.Qt.UserRole)
-            parent_chapter_name = parentIndex.data(QtCore.Qt.DisplayRole)
-
-            # This prevents duplication of the bookmark in the new
-            # navigation model
-            if ((parent_chapter_number <= chapter_number) and
-                    (parent_chapter_name == bookmark_chapter_name)):
-                bookmarkParent = self.bookmarkModel.itemFromIndex(parentIndex)
-                bookmarkParent.appendRow(bookmark)
-                if new_bookmark:
-                    edit_new_bookmark(bookmarkParent)
-                return
-
-        # In case no parent item exists
-        bookmarkParent = QtGui.QStandardItem()
-        bookmarkParent.setData(True, QtCore.Qt.UserRole + 10)  # Is Parent
-        bookmarkParent.setFlags(bookmarkParent.flags() & ~QtCore.Qt.ItemIsEditable)  # Is Editable
-        bookmarkParent.setData(get_chapter_name(chapter_number), QtCore.Qt.DisplayRole)
-        bookmarkParent.setData(chapter_number, QtCore.Qt.UserRole)
-
-        bookmarkParent.appendRow(bookmark)
-        self.bookmarkModel.appendRow(bookmarkParent)
-        if new_bookmark:
-            edit_new_bookmark(bookmarkParent)
-
-    def navigate_to_bookmark(self, index):
-        if not index.isValid():
-            return
-
-        is_parent = self.bookmarkProxyModel.data(index, QtCore.Qt.UserRole + 10)
-        if is_parent:
-            chapter_number = self.bookmarkProxyModel.data(index, QtCore.Qt.UserRole)
-            self.set_content(chapter_number, True)
-            return
-
-        chapter = self.bookmarkProxyModel.data(index, QtCore.Qt.UserRole)
-        cursor_position = self.bookmarkProxyModel.data(index, QtCore.Qt.UserRole + 1)
-
-        self.set_content(chapter, True)
-        if not self.are_we_doing_images_only:
-            self.set_cursor_position(cursor_position)
-
-    def generate_bookmark_model(self):
-        for i in self.metadata['bookmarks'].items():
-            description = i[1]['description']
-            chapter = i[1]['chapter']
-            cursor_position = i[1]['cursor_position']
-            identifier = i[0]
-            self.add_bookmark_to_model(
-                description, chapter, cursor_position, identifier)
-
-        self.generate_bookmark_proxy_model()
-
-    def generate_bookmark_proxy_model(self):
-        self.bookmarkProxyModel.setSourceModel(self.bookmarkModel)
-        self.bookmarkProxyModel.setSortCaseSensitivity(False)
-        self.bookmarkProxyModel.setSortRole(QtCore.Qt.UserRole)
-        self.bookmarkProxyModel.sort(0)
-        self.bookmarkTreeView.setModel(self.bookmarkProxyModel)
-
-    def generate_bookmark_context_menu(self, position):
-        index = self.bookmarkTreeView.indexAt(position)
-        if not index.isValid():
-            return
-
-        is_parent = self.bookmarkProxyModel.data(index, QtCore.Qt.UserRole + 10)
-        if is_parent:
-            return
-
-        bookmarkMenu = QtWidgets.QMenu()
-        editAction = bookmarkMenu.addAction(
-            self.main_window.QImageFactory.get_image('edit-rename'),
-            self._translate('Tab', 'Edit'))
-        deleteAction = bookmarkMenu.addAction(
-            self.main_window.QImageFactory.get_image('trash-empty'),
-            self._translate('Tab', 'Delete'))
-
-        action = bookmarkMenu.exec_(
-            self.bookmarkTreeView.mapToGlobal(position))
-
-        if action == editAction:
-            self.bookmarkTreeView.edit(index)
-
-        if action == deleteAction:
-            child_index = self.bookmarkProxyModel.mapToSource(index)
-            parent_index = child_index.parent()
-            child_rows = self.bookmarkModel.itemFromIndex(parent_index).rowCount()
-            delete_uuid = self.bookmarkModel.data(
-                child_index, QtCore.Qt.UserRole + 2)
-
-            self.metadata['bookmarks'].pop(delete_uuid)
-
-            self.bookmarkModel.removeRow(child_index.row(), child_index.parent())
-            if child_rows == 1:
-                self.bookmarkModel.removeRow(parent_index.row())
-
-    def set_search_options(self):
-        def generate_title_content_pair(required_chapters):
-            title_content_list = []
-            for i in self.metadata['toc']:
-                if i[2] in required_chapters:
-                    title_content_list.append(
-                        (i[1], self.metadata['content'][i[2] - 1], i[2]))
-            return title_content_list
-
-        # Select either the current chapter or all chapters
-        # Function name is descriptive
-        chapter_numbers = (self.metadata['position']['current_chapter'],)
-        if self.searchBookButton.isChecked():
-            chapter_numbers = [i + 1 for i in range(len(self.metadata['content']))]
-        search_content = generate_title_content_pair(chapter_numbers)
-
-        self.searchThread.set_search_options(
-            search_content,
-            self.searchLineEdit.text(),
-            self.caseSensitiveSearchButton.isChecked(),
-            self.matchWholeWordButton.isChecked())
-        self.searchThread.start()
-
-    def generate_search_result_model(self):
-        self.searchResultsModel = QtGui.QStandardItemModel()
-        search_results = self.searchThread.search_results
-        for i in search_results:
-            parentItem = QtGui.QStandardItem()
-            parentItem.setData(True, QtCore.Qt.UserRole)  # Is parent?
-            parentItem.setData(i, QtCore.Qt.UserRole + 3)  # Display text for label
-
-            for j in search_results[i]:
-                childItem = QtGui.QStandardItem(parentItem)
-                childItem.setData(False, QtCore.Qt.UserRole)  # Is parent?
-                childItem.setData(j[3], QtCore.Qt.UserRole + 1)  # Chapter index
-                childItem.setData(j[0], QtCore.Qt.UserRole + 2)  # Cursor Position
-                childItem.setData(j[1], QtCore.Qt.UserRole + 3)  # Display text for label
-                childItem.setData(j[2], QtCore.Qt.UserRole + 4)  # Search term
-                parentItem.appendRow(childItem)
-            self.searchResultsModel.appendRow(parentItem)
-
-        self.searchResultsTreeView.setModel(self.searchResultsModel)
-        self.searchResultsTreeView.expandToDepth(1)
-
-        # Reset stylesheet in case something is found
-        if search_results:
-            self.searchLineEdit.setStyleSheet(
-                QtWidgets.QLineEdit.styleSheet(self))
-
-        # Or set to Red in case nothing is found
-        if not search_results and len(self.searchLineEdit.text()) > 2:
-            self.searchLineEdit.setStyleSheet("QLineEdit {color: red;}")
-
-        # We'll be putting in labels instead of making a delegate
-        # QLabels can understand RTF, and they also have the somewhat
-        # distinct advantage of being a lot less work than a delegate
-
-        def generate_label(index):
-            label_text = self.searchResultsModel.data(index, QtCore.Qt.UserRole + 3)
-            labelWidget = PliantLabelWidget(index, self.navigate_to_search_result)
-            labelWidget.setText(label_text)
-            self.searchResultsTreeView.setIndexWidget(index, labelWidget)
-
-        for parent_iter in range(self.searchResultsModel.rowCount()):
-            parentItem = self.searchResultsModel.item(parent_iter)
-            parentIndex = self.searchResultsModel.index(parent_iter, 0)
-            generate_label(parentIndex)
-
-            for child_iter in range(parentItem.rowCount()):
-                childIndex = self.searchResultsModel.index(child_iter, 0, parentIndex)
-                generate_label(childIndex)
-
-    def navigate_to_search_result(self, index):
-        if not index.isValid():
-            return
-
-        is_parent = self.searchResultsModel.data(index, QtCore.Qt.UserRole)
-        if is_parent:
-            return
-
-        chapter_number = self.searchResultsModel.data(index, QtCore.Qt.UserRole + 1)
-        cursor_position = self.searchResultsModel.data(index, QtCore.Qt.UserRole + 2)
-        search_term = self.searchResultsModel.data(index, QtCore.Qt.UserRole + 4)
-
-        self.set_content(chapter_number, True)
-        if not self.are_we_doing_images_only:
-            self.set_cursor_position(
-                cursor_position, len(search_term))
-
     def hide_mouse(self):
         self.contentView.viewport().setCursor(QtCore.Qt.BlankCursor)
 
@@ -837,20 +565,6 @@ class Tab(QtWidgets.QWidget):
     def sneaky_exit(self):
         self.contentView.hide()
         self.main_window.closeEvent()
-
-
-class PliantLabelWidget(QtWidgets.QLabel):
-    # This is a hack to get clickable / editable appearance
-    # search results in the tree view.
-
-    def __init__(self, index, navigate_to_search_result):
-        super(PliantLabelWidget, self).__init__()
-        self.index = index
-        self.navigate_to_search_result = navigate_to_search_result
-
-    def mousePressEvent(self, QMouseEvent):
-        self.navigate_to_search_result(self.index)
-        QtWidgets.QLabel.mousePressEvent(self, QMouseEvent)
 
 
 class PliantQGraphicsScene(QtWidgets.QGraphicsScene):
@@ -933,7 +647,8 @@ class DragDropTableView(QtWidgets.QTableView):
         self.setDragDropMode(QtWidgets.QAbstractItemView.InternalMove)
         self.setFrameShape(QtWidgets.QFrame.Box)
         self.setFrameShadow(QtWidgets.QFrame.Plain)
-        self.setSizeAdjustPolicy(QtWidgets.QAbstractScrollArea.AdjustToContentsOnFirstShow)
+        self.setSizeAdjustPolicy(
+            QtWidgets.QAbstractScrollArea.AdjustToContentsOnFirstShow)
         self.setEditTriggers(
             QtWidgets.QAbstractItemView.DoubleClicked |
             QtWidgets.QAbstractItemView.EditKeyPressed |
