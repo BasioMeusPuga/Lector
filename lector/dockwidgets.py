@@ -118,8 +118,10 @@ class Bookmarks:
         self.parent = parent
         self.parentTab = self.parent.parent
         self.bookmarkTreeView = QtWidgets.QTreeView(self.parent)
+
         self._translate = QtCore.QCoreApplication.translate
         self.bookmarks_string = self._translate('SideDock', 'Bookmarks')
+        self.bookmark_default = self._translate('SideDock', 'New bookmark')
 
         self.create_widgets()
 
@@ -136,7 +138,6 @@ class Bookmarks:
 
     def add_bookmark(self, position=None):
         identifier = uuid.uuid4().hex[:10]
-        description = self._translate('SideDock', 'New bookmark')
 
         if self.parentTab.are_we_doing_images_only:
             chapter = self.parentTab.metadata['position']['current_chapter']
@@ -149,12 +150,12 @@ class Bookmarks:
         self.parentTab.metadata['bookmarks'][identifier] = {
             'chapter': chapter,
             'cursor_position': cursor_position,
-            'description': description}
+            'description': self.bookmark_default}
 
         self.parent.setVisible(True)
         self.parent.sideDockTabWidget.setCurrentIndex(0)
         self.add_bookmark_to_model(
-            description, chapter, cursor_position, identifier, True)
+            self.bookmark_default, chapter, cursor_position, identifier, True)
 
     def add_bookmark_to_model(
             self, description, chapter_number, cursor_position,
@@ -276,13 +277,15 @@ class Bookmarks:
         if action == deleteAction:
             child_index = self.parent.bookmarkProxyModel.mapToSource(index)
             parent_index = child_index.parent()
-            child_rows = self.parent.bookmarkModel.itemFromIndex(parent_index).rowCount()
+            child_rows = self.parent.bookmarkModel.itemFromIndex(
+                parent_index).rowCount()
             delete_uuid = self.parent.bookmarkModel.data(
                 child_index, QtCore.Qt.UserRole + 2)
 
             self.parentTab.metadata['bookmarks'].pop(delete_uuid)
 
-            self.parent.bookmarkModel.removeRow(child_index.row(), child_index.parent())
+            self.parent.bookmarkModel.removeRow(
+                child_index.row(), child_index.parent())
             if child_rows == 1:
                 self.parent.bookmarkModel.removeRow(parent_index.row())
 
@@ -292,6 +295,7 @@ class Annotations:
         self.parent = parent
         self.parentTab = self.parent.parent
         self.annotationListView = QtWidgets.QListView(self.parent)
+
         self._translate = QtCore.QCoreApplication.translate
         self.annotations_string = self._translate('SideDock', 'Annotations')
 
@@ -339,6 +343,12 @@ class Search:
         self.matchWholeWordButton = QtWidgets.QToolButton(self.parent)
         self.searchResultsTreeView = QtWidgets.QTreeView(self.parent)
 
+        self._translate = QtCore.QCoreApplication.translate
+        self.search_string = self._translate('SideDock', 'Search')
+        self.search_book_string = self._translate('SideDock', 'Search entire book')
+        self.case_sensitive_string = self._translate('SideDock', 'Match case')
+        self.match_word_string = self._translate('SideDock', 'Match word')
+
         self.create_widgets()
 
     def create_widgets(self):
@@ -361,32 +371,25 @@ class Search:
 
         self.searchLineEdit.setFocusPolicy(QtCore.Qt.StrongFocus)
         self.searchLineEdit.setClearButtonEnabled(True)
-        self._translate = QtCore.QCoreApplication.translate
-        self.search_string = self._translate('SideDock', 'Search')
         self.searchLineEdit.setPlaceholderText(self.search_string)
-
-        search_book_string = self._translate('SideDock', 'Search entire book')
 
         self.searchBookButton.setIcon(
             self.parent.main_window.QImageFactory.get_image('view-readermode'))
-        self.searchBookButton.setToolTip(search_book_string)
+        self.searchBookButton.setToolTip(self.search_book_string)
         self.searchBookButton.setCheckable(True)
         self.searchBookButton.setAutoRaise(True)
         self.searchBookButton.setIconSize(QtCore.QSize(20, 20))
 
-        case_sensitive_string = self._translate('SideDock', 'Match case')
-
         self.caseSensitiveSearchButton.setIcon(
             self.parent.main_window.QImageFactory.get_image('search-case'))
-        self.caseSensitiveSearchButton.setToolTip(case_sensitive_string)
+        self.caseSensitiveSearchButton.setToolTip(self.case_sensitive_string)
         self.caseSensitiveSearchButton.setCheckable(True)
         self.caseSensitiveSearchButton.setAutoRaise(True)
         self.caseSensitiveSearchButton.setIconSize(QtCore.QSize(20, 20))
 
-        match_word_string = self._translate('SideDock', 'Match word')
         self.matchWholeWordButton.setIcon(
             self.parent.main_window.QImageFactory.get_image('search-word'))
-        self.matchWholeWordButton.setToolTip(match_word_string)
+        self.matchWholeWordButton.setToolTip(self.match_word_string)
         self.matchWholeWordButton.setCheckable(True)
         self.matchWholeWordButton.setAutoRaise(True)
         self.matchWholeWordButton.setIconSize(QtCore.QSize(20, 20))

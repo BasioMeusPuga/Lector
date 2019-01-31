@@ -64,7 +64,7 @@ TODO
         ✓ Spacebar should not cut off lines at the top
         ✓ Track open bookmark windows so they can be closed quickly at exit
         ✓ Search document using QTextCursor
-        Double page / column view
+        ✓ Double page / column view
             ✓ For comics
                 Caching is currently non functional
         Annotations
@@ -73,7 +73,7 @@ TODO
         Adjust key navigation according to viewport dimensions
     Filetypes:
         ✓ pdf support
-            Parse TOC
+            ✓ Parse TOC
         ✓ epub support
             ✓ Homegrown solution please
         ✓ cbz, cbr support
@@ -90,8 +90,6 @@ TODO
         ✓ Define every widget in code
     Bugs:
         Deselecting all directories in the settings dialog also filters out manually added books
-        Clean up 'switch' page layout
-        Colors aren't loaded properly for annotation previews
         Last line in QTextBrowser should never be cut off
         Does image alignment need to be centered?
 

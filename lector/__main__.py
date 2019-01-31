@@ -29,14 +29,14 @@ install_dir = os.path.realpath(__file__)
 install_dir = pathlib.Path(install_dir).parents[1]
 sys.path.append(str(install_dir))
 
+from PyQt5 import QtWidgets, QtGui, QtCore
+
 # Init logging
 # Must be done first and at the module level
 # or it won't work properly in case of the imports below
 from lector.logger import init_logging
 logger = init_logging(sys.argv)
 logger.log(60, 'Application started')
-
-from PyQt5 import QtWidgets, QtGui, QtCore
 
 from lector import database
 from lector import sorter
@@ -178,15 +178,18 @@ class MainUI(QtWidgets.QMainWindow, mainwindow.Ui_MainWindow):
             self.libraryToolBar.tableViewButton.trigger()
 
         # Book toolbar
-        self.bookToolBar.addBookmarkButton.triggered.connect(self.add_bookmark)
+        self.bookToolBar.addBookmarkButton.triggered.connect(
+            lambda: self.tabWidget.currentWidget().sideDock.bookmarks.add_bookmark())
         self.bookToolBar.bookmarkButton.triggered.connect(
             lambda: self.tabWidget.currentWidget().toggle_side_dock(0))
         self.bookToolBar.annotationButton.triggered.connect(
             lambda: self.tabWidget.currentWidget().toggle_side_dock(1))
         self.bookToolBar.searchButton.triggered.connect(
             lambda: self.tabWidget.currentWidget().toggle_side_dock(2))
-        self.bookToolBar.distractionFreeButton.triggered.connect(self.toggle_distraction_free)
-        self.bookToolBar.fullscreenButton.triggered.connect(self.set_fullscreen)
+        self.bookToolBar.distractionFreeButton.triggered.connect(
+            self.toggle_distraction_free)
+        self.bookToolBar.fullscreenButton.triggered.connect(
+            lambda: self.tabWidget.currentWidget().go_fullscreen())
 
         self.bookToolBar.doublePageButton.triggered.connect(self.change_page_view)
         self.bookToolBar.mangaModeButton.triggered.connect(self.change_page_view)
@@ -460,11 +463,6 @@ class MainUI(QtWidgets.QMainWindow, mainwindow.Ui_MainWindow):
         if self.settings['perform_culling']:
             self.culling_timer.start(30)
 
-    def add_bookmark(self):
-        if self.tabWidget.currentIndex() != 0:
-            current_tab = self.tabWidget.currentWidget()
-            current_tab.sideDock.bookmarks.add_bookmark()
-
     def resizeEvent(self, event=None):
         if event:
             # This implies a vertical resize event only
@@ -561,7 +559,8 @@ class MainUI(QtWidgets.QMainWindow, mainwindow.Ui_MainWindow):
             delete_hashes = [
                 self.lib_ref.libraryModel.data(
                     i, QtCore.Qt.UserRole + 6) for i in selected_indexes]
-            persistent_indexes = [QtCore.QPersistentModelIndex(i) for i in selected_indexes]
+            persistent_indexes = [
+                QtCore.QPersistentModelIndex(i) for i in selected_indexes]
 
             for i in persistent_indexes:
                 self.lib_ref.libraryModel.removeRow(i.row())
@@ -726,9 +725,6 @@ class MainUI(QtWidgets.QMainWindow, mainwindow.Ui_MainWindow):
         # It's going to do position tracking
         current_tab = self.tabWidget.currentWidget()
         current_tab.set_content(required_position)
-
-    def set_fullscreen(self):
-        self.tabWidget.currentWidget().go_fullscreen()
 
     def library_doubleclick(self, index):
         sender = self.sender().objectName()

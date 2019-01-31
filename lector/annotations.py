@@ -89,6 +89,7 @@ class AnnotationsUI(QtWidgets.QDialog, annotationswindow.Ui_Dialog):
 
             if 'foregroundColor' in annotation_components:
                 self.foregroundCheck.setChecked(True)
+                self.foregroundColor = annotation_components['foregroundColor']
                 self.set_button_background_color(
                     self.foregroundColorButton, annotation_components['foregroundColor'])
             else:
@@ -96,6 +97,7 @@ class AnnotationsUI(QtWidgets.QDialog, annotationswindow.Ui_Dialog):
 
             if 'highlightColor' in annotation_components:
                 self.highlightCheck.setChecked(True)
+                self.highlightColor = annotation_components['highlightColor']
                 self.set_button_background_color(
                     self.highlightColorButton, annotation_components['highlightColor'])
             else:

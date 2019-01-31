@@ -86,9 +86,15 @@ class ParseMOBI:
 
         self.book_ref.parse_chapters(
             temp_dir=self.temp_dir, split_large_xml=self.split_large_xml)
-        file_settings = {
-            'images_only': False}
-        return self.book['book_list'], file_settings
+
+        toc = []
+        content = []
+        for count, i in enumerate(self.book['book_list']):
+            toc.append((1, i[0], count + 1))
+            content.append(i[1])
+
+        # Return toc, content, images_only
+        return toc, content, False
 
 class HidePrinting:
     def __enter__(self):
