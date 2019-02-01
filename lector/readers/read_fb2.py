@@ -92,16 +92,18 @@ class FB2:
             self.book['cover'] = None
 
     def parse_chapters(self, temp_dir):
-        # There's no need to parse the TOC separately because
-        # everything is linear
         for i in self.xml.find_all('section'):
             this_title = '<No title>'
             for j in i:
                 if j.name == 'title':
                     this_title = j.getText(separator=' ')
+                    this_title = this_title.replace('\n', '').strip()
+                    # This comes later because the tag is changed in place
+                    title_xml = j.unwrap()
+                    break
 
             self.book['book_list'].append(
-                [this_title, str(i)])
+                [this_title, str(title_xml) + str(i)])
 
         # Extract all images to the temp_dir
         for i in self.xml.find_all('binary'):

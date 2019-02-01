@@ -719,6 +719,10 @@ class PliantWidgetsCommonFunctions:
         current_tab = self.pw.parent
         current_position = current_tab.metadata['position']['current_chapter']
 
+        # Prevent scrolling below page 1
+        if current_position == 1 and direction == -1:
+            return
+
         # Special cases for double page view
         # Page limits are taken care of by the set_content method
         def get_modifier():

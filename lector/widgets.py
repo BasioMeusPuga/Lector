@@ -423,11 +423,6 @@ class Tab(QtWidgets.QWidget):
         # This function will decide how to relate
         # entries in the toc to the actual content
 
-        # Do not allow cycling below page 1
-        # Required position goes to -1 in double page view
-        if required_position <= 0:
-            return
-
         # Set the required page to the corresponding index
         # For images this is simply a page number
         # For text based books, this is the entire text of the chapter
@@ -526,8 +521,11 @@ class Tab(QtWidgets.QWidget):
                 'center': QtCore.Qt.AlignCenter,
                 'justify': QtCore.Qt.AlignJustify}
 
-            current_index = self.main_window.bookToolBar.tocBox.currentIndex()
-            if current_index == 0:
+            # Adjusted for books without covers
+            current_position = self.metadata['position']['current_chapter']
+            chapter_name = self.metadata['toc'][current_position - 1][1]
+
+            if current_position == 1 and chapter_name == 'Cover':
                 block_format.setAlignment(
                     QtCore.Qt.AlignVCenter | QtCore.Qt.AlignHCenter)
             else:

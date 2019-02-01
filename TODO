@@ -92,8 +92,10 @@ TODO
         Deselecting all directories in the settings dialog also filters out manually added books
         Last line in QTextBrowser should never be cut off
         Does image alignment need to be centered?
+        Bookmark name for a page that's not on the TOC or has nothing before
 
     Secondary:
+        The cover page needs to be marked separately
         Graphical themes
         Change focus rectangle dimensions
         Universal Ctrl + Tab
