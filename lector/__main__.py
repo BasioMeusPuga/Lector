@@ -724,7 +724,7 @@ class MainUI(QtWidgets.QMainWindow, mainwindow.Ui_MainWindow):
         # The set_content method is universal
         # It's going to do position tracking
         current_tab = self.tabWidget.currentWidget()
-        current_tab.set_content(required_position)
+        current_tab.set_content(required_position, False, True)
 
     def library_doubleclick(self, index):
         sender = self.sender().objectName()

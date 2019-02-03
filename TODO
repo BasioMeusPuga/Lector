@@ -2,8 +2,9 @@ TODO
     General:
         ✓ Internationalization
         ✓ Application icon
-        ✓ .desktop file    
-        Flatpak and AppImage support    
+        ✓ .desktop file
+        ✓ Shift to logging instead of print statements
+        Flatpak and AppImage support
     Options:
         ✓ Automatic library management
             ✓ Recursive file addition
@@ -93,9 +94,13 @@ TODO
         Last line in QTextBrowser should never be cut off
         Does image alignment need to be centered?
         Bookmark name for a page that's not on the TOC or has nothing before
+        Screen position still keeps jumping when inside a paragraph
+        Better recursion needed for fb2 toc
 
     Secondary:
-        The cover page needs to be marked separately
+        Special formatting for each chapter's title
+        Create covers for books without them
+        Signal end of chapter with some text
         Graphical themes
         Change focus rectangle dimensions
         Universal Ctrl + Tab
@@ -103,7 +108,6 @@ TODO
         Goodreads API: Ratings, Read, Recommendations
         Get ISBN using python-isbnlib
         Use embedded fonts + CSS
-        Shift to logging instead of print statements
         txt, doc, chm support
         Include icons for filetype emblems
         Comic view modes

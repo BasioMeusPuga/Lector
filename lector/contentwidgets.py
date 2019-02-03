@@ -737,7 +737,7 @@ class PliantWidgetsCommonFunctions:
                 return direction
 
         current_tab.set_content(
-            current_position + direction + get_modifier(), True)
+            current_position + direction + get_modifier(), True, True)
 
         # Set page position depending on if the chapter number is increasing or decreasing
         if direction == 1 or was_button_pressed:
@@ -853,7 +853,7 @@ class PliantWidgetsCommonFunctions:
         def set_toc_position(tocTree):
             currentIndex = tocTree.currentIndex()
             required_position = currentIndex.data(QtCore.Qt.UserRole)
-            self.pw.parent.set_content(required_position, True)
+            self.pw.parent.set_content(required_position, True, True)
 
         # Create the Combobox / Treeview combination
         tocComboBox = QtWidgets.QComboBox()

@@ -64,8 +64,8 @@ class ParseFB2:
         toc = []
         content = []
         for count, i in enumerate(self.book['book_list']):
-            toc.append((1, i[0], count + 1))
-            content.append(i[1])
+            toc.append((i[0], i[1], count + 1))
+            content.append(i[2])
 
         # Return toc, content, images_only
         return toc, content, False

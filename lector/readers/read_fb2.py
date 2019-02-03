@@ -92,18 +92,50 @@ class FB2:
             self.book['cover'] = None
 
     def parse_chapters(self, temp_dir):
-        for i in self.xml.find_all('section'):
-            this_title = '<No title>'
-            for j in i:
-                if j.name == 'title':
-                    this_title = j.getText(separator=' ')
-                    this_title = this_title.replace('\n', '').strip()
-                    # This comes later because the tag is changed in place
-                    title_xml = j.unwrap()
-                    break
+        # TODO
+        # Check what's up with recursion levels
+        # Why is the TypeError happening in get_title
 
-            self.book['book_list'].append(
-                [this_title, str(title_xml) + str(i)])
+        def get_title(element):
+            this_title = '<No title>'
+            title_xml = '<No title xml>'
+            try:
+                for i in element:
+                    if i.name == 'title':
+                        this_title = i.getText(separator=' ')
+                        this_title = this_title.replace('\n', '').strip()
+                        title_xml = str(i.unwrap())
+                        break
+            except TypeError:
+                return None, None
+            return this_title, title_xml
+
+        def recursor(level, element):
+            children = element.findChildren('section', recursive=False)
+            if not children and level != 1:
+                this_title, title_xml = get_title(element)
+                self.book['book_list'].append(
+                    [level, this_title, title_xml + str(element)])
+            else:
+                for i in children:
+                    recursor(level + 1, i)
+
+        first_element = self.xml.find('section')  # Recursive find
+        siblings = list(first_element.findNextSiblings('section', recursive=False))
+        siblings.insert(0, first_element)
+
+        for this_element in siblings:
+            this_title, title_xml = get_title(this_element)
+            # Do not add chapter content in case it has sections
+            # inside it. This prevents having large Book sections that
+            # have duplicated content
+            section_children = this_element.findChildren('section')
+            chapter_text = str(this_element)
+            if section_children:
+                chapter_text = this_title
+
+            self.book['book_list'].append([1, this_title, chapter_text])
+            recursor(1, this_element)
 
         # Extract all images to the temp_dir
         for i in self.xml.find_all('binary'):
@@ -113,7 +145,7 @@ class FB2:
             replacement_string = f'<p></p><img src=\"{image_path}\"'
 
             for j in self.book['book_list']:
-                j[1] = j[1].replace(
+                j[2] = j[2].replace(
                     image_string, replacement_string)
             try:
                 image_data = base64.decodebytes(i.text.encode())
@@ -128,4 +160,4 @@ class FB2:
             with open(cover_path, 'wb') as outimage:
                 outimage.write(self.book['cover'])
             self.book['book_list'].insert(
-                0, ('Cover', f'<center><img src="{cover_path}" alt="Cover"></center>'))
+                0, (1, 'Cover', f'<center><img src="{cover_path}" alt="Cover"></center>'))

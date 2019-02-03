@@ -109,7 +109,7 @@ class Tab(QtWidgets.QWidget):
             self.hiddenButton.clicked.connect(self.set_cursor_position)
 
         # All content must be set through this function
-        self.set_content(current_chapter, True)
+        self.set_content(current_chapter, True, False)
         if not self.are_we_doing_images_only:
             # Setting this later breaks cursor positioning for search results
             self.hiddenButton.animateClick(50)
@@ -249,7 +249,7 @@ class Tab(QtWidgets.QWidget):
 
         # Finally, to make sure the cover image isn't
         # scrolled halfway through on first open,
-        if self.main_window.bookToolBar.tocBox.currentIndex() == 0:
+        if self.metadata['position']['current_chapter'] == 1:
             self.contentView.verticalScrollBar().setValue(0)
 
     def generate_position(self, is_read=False):
@@ -266,10 +266,8 @@ class Tab(QtWidgets.QWidget):
 
         if not self.are_we_doing_images_only:
             for i in self.metadata['content']:
-                chapter_html = i[1]
-
                 textDocument = QtGui.QTextDocument(None)
-                textDocument.setHtml(chapter_html)
+                textDocument.setHtml(i)
                 block_count = textDocument.blockCount()
 
                 blocks_per_chapter.append(block_count)
@@ -418,7 +416,7 @@ class Tab(QtWidgets.QWidget):
         self.mouse_hide_timer.start(2000)
         self.contentView.setFocus()
 
-    def set_content(self, required_position, tocBox_readjust=False):
+    def set_content(self, required_position, tocBox_readjust=False, record_position=False):
         # All content changes must come through here
         # This function will decide how to relate
         # entries in the toc to the actual content
@@ -433,7 +431,8 @@ class Tab(QtWidgets.QWidget):
 
         # Update the metadata dictionary to save position
         self.metadata['position']['current_chapter'] = required_position
-        self.metadata['position']['is_read'] = False
+        if record_position:
+            self.contentView.record_position()
 
         if self.are_we_doing_images_only:
             self.contentView.loadImage(required_content)

@@ -220,7 +220,7 @@ class Bookmarks:
         if is_parent:
             chapter_number = self.parent.bookmarkProxyModel.data(
                 index, QtCore.Qt.UserRole)
-            self.parentTab.set_content(chapter_number, True)
+            self.parentTab.set_content(chapter_number, True, True)
             return
 
         chapter = self.parent.bookmarkProxyModel.data(
@@ -228,7 +228,7 @@ class Bookmarks:
         cursor_position = self.parent.bookmarkProxyModel.data(
             index, QtCore.Qt.UserRole + 1)
 
-        self.parentTab.set_content(chapter, True)
+        self.parentTab.set_content(chapter, True, True)
         if not self.parentTab.are_we_doing_images_only:
             self.parentTab.set_cursor_position(cursor_position)
 
@@ -500,7 +500,7 @@ class Search:
         cursor_position = self.parent.searchResultsModel.data(index, QtCore.Qt.UserRole + 2)
         search_term = self.parent.searchResultsModel.data(index, QtCore.Qt.UserRole + 4)
 
-        self.parentTab.set_content(chapter_number, True)
+        self.parentTab.set_content(chapter_number, True, True)
         if not self.parentTab.are_we_doing_images_only:
             self.parentTab.set_cursor_position(
                 cursor_position, len(search_term))
