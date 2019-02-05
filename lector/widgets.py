@@ -431,6 +431,7 @@ class Tab(QtWidgets.QWidget):
 
         # Update the metadata dictionary to save position
         self.metadata['position']['current_chapter'] = required_position
+        self.metadata['position']['is_read'] = False
         if record_position:
             self.contentView.record_position()
 

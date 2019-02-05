@@ -34,12 +34,14 @@
 import io
 import os
 import sys
+import json
 import time
 import pickle
 import logging
 import hashlib
 import threading
 import importlib
+import urllib.request
 
 # The multiprocessing module does not work correctly on Windows
 if sys.platform.startswith('win'):
@@ -94,7 +96,7 @@ else:
 
 available_parsers = [i for i in sorter]
 progressbar = None  # This is populated by __main__
-progress_emitter = None  # This is to be made into a global variable
+_progress_emitter = None  # This is to be made into a global variable
 
 
 class UpdateProgress(QtCore.QObject):
@@ -244,7 +246,7 @@ class BookSorter:
                 if cover_image_raw:
                     cover_image = resize_image(cover_image_raw)
                 else:
-                    cover_image = None
+                    cover_image = fetch_cover(title, author)
 
                 this_book[file_md5]['cover_image'] = cover_image
                 this_book[file_md5]['addition_mode'] = self.addition_mode
@@ -293,8 +295,9 @@ class BookSorter:
             total_number = len(self.file_list)
             completed_number = len(self.threading_completed)
 
-            if progress_emitter:  # Skip update in reading mode
-                progress_emitter.update_progress(
+            # Just for the record, this slows down book searching by about 20%
+            if _progress_emitter:  # Skip update in reading mode
+                _progress_emitter.update_progress(
                     completed_number * 100 // total_number)
 
             if total_number == completed_number:
@@ -338,9 +341,9 @@ class BookSorter:
 def progress_object_generator():
     # This has to be kept separate from the BookSorter class because
     # the QtObject inheritance disallows pickling
-    global progress_emitter
-    progress_emitter = UpdateProgress()
-    progress_emitter.connect_to_progressbar()
+    global _progress_emitter
+    _progress_emitter = UpdateProgress()
+    _progress_emitter.connect_to_progressbar()
 
 
 def resize_image(cover_image_raw):
@@ -363,3 +366,45 @@ def resize_image(cover_image_raw):
     cover_image_final = io.BytesIO(byte_array)
     cover_image_final.seek(0)
     return cover_image_final.getvalue()
+
+
+def fetch_cover(title, author):
+    # TODO
+    # Start using the author parameter
+    # Generate a cover image in case the Google API finds nothing
+    # Why is that stupid UnicodeEncodeError happening?
+
+    api_url = 'https://www.googleapis.com/books/v1/volumes?q='
+    key = '&key=' + 'AIzaSyDOferpeSS424Dshs4YWY1s-nIBA9884hE'
+    title = title.replace(' ', '+')
+    req = api_url + title + key
+
+    try:
+        response = urllib.request.urlopen(req)
+        if response.getcode() == 200:
+            response_text = response.read().decode('utf-8')
+            response_json = json.loads(response_text)
+        else:
+            return None
+
+    except (urllib.error.HTTPError, urllib.error.URLError):
+        return None
+
+    except UnicodeEncodeError:
+        logger.error('UnicodeEncodeError fetching cover for ' + title)
+        return None
+
+    try:
+        # Get cover link from json
+        cover_link = response_json['items'][0]['volumeInfo']['imageLinks']['thumbnail']
+        # Get a slightly larger version
+        cover_link = cover_link.replace('zoom=1', 'zoom=2')
+        cover_request = urllib.request.urlopen(cover_link)
+        response = cover_request.read()  # Bytes object
+        cover_image = resize_image(response)
+        logger.info('Cover found for ' + title)
+
+        return cover_image
+
+    except:
+        logger.error(f'Couldn\'t find cover for ' + title)

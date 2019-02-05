@@ -718,9 +718,14 @@ class PliantWidgetsCommonFunctions:
     def change_chapter(self, direction, was_button_pressed=None):
         current_tab = self.pw.parent
         current_position = current_tab.metadata['position']['current_chapter']
+        final_position = len(current_tab.metadata['content'])
 
         # Prevent scrolling below page 1
         if current_position == 1 and direction == -1:
+            return
+
+        # Prevent scrolling beyond last page
+        if (current_position == final_position) and direction == 1:
             return
 
         # Special cases for double page view

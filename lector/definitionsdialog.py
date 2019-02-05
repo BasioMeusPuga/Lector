@@ -27,7 +27,6 @@ try:
     multimedia_available = True
 except ImportError:
     error_string = 'QtMultimedia not found. Sounds will not play.'
-    print(error_string)
     logger.error(error_string)
     multimedia_available = False
 
