@@ -36,6 +36,7 @@ TODO
         Set focus to newly added file
     Reading:
         ✓ Drop down for TOC
+        ✓ Treeview navigation for TOC
         ✓ Override the keypress event of the textedit
         ✓ Use format* icons for toolbar buttons
         ✓ Implement book view settings with a(nother) toolbar
@@ -86,7 +87,6 @@ TODO
                 Have them save to memory
         ✓ fb2 support
             ✓ Images need to show up in their placeholders
-        djvu support
     Other:
         ✓ Define every widget in code
     Bugs:
@@ -98,8 +98,11 @@ TODO
         Better recursion needed for fb2 toc
 
     Secondary:
+        Additional Settings:
+            Disable progressbar - 20% book addition speed improvement
+            Disable cover loading when reading - Saves ~2M / book
+            Create covers for books without them - VERY SLOW
         Special formatting for each chapter's title
-        Create covers for books without them
         Signal end of chapter with some text
         Graphical themes
         Change focus rectangle dimensions
@@ -108,7 +111,7 @@ TODO
         Goodreads API: Ratings, Read, Recommendations
         Get ISBN using python-isbnlib
         Use embedded fonts + CSS
-        txt, doc, chm support
+        txt, doc, chm, djvu support
         Include icons for filetype emblems
         Comic view modes
             Continuous paging
@@ -116,7 +119,7 @@ TODO
         ? Add only one file type if multiple are present
         ? Create emblem per filetype
         In application notifications
-        Notification in case the filter is filtering out all files with no option in place
+            Notification in case the filter is filtering out all files with no option in place
         Option to fit images to viewport
 
     Need help with:

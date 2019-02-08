@@ -29,14 +29,13 @@ class ParseEPUB:
         # Maybe also include book description
         self.book_ref = None
         self.book = None
+        self.temp_dir = temp_dir
         self.filename = filename
         self.extract_path = os.path.join(temp_dir, file_md5)
 
     def read_book(self):
-        self.book_ref = EPUB(self.filename)
-        contents_found = self.book_ref.read_epub()
-        if not contents_found:
-            return False
+        self.book_ref = EPUB(self.filename, self.temp_dir)
+        self.book_ref.generate_metadata()
         self.book = self.book_ref.book
         return True
 
@@ -61,14 +60,8 @@ class ParseEPUB:
     def get_contents(self):
         zipfile.ZipFile(self.filename).extractall(self.extract_path)
 
-        self.book_ref.parse_toc()
-        self.book_ref.parse_chapters(temp_dir=self.extract_path)
-
-        toc = []
-        content = []
-        for count, i in enumerate(self.book['book_list']):
-            toc.append((1, i[0], count + 1))
-            content.append(i[1])
+        self.book_ref.generate_toc()
+        self.book_ref.generate_content()
 
         # Return toc, content, images_only
-        return toc, content, False
+        return self.book['toc'], self.book['content'], False

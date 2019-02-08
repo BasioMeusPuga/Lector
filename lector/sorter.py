@@ -150,6 +150,9 @@ class BookSorter:
                 i[0]: i[1] for i in all_hashes_and_paths}
 
     def database_entry_for_book(self, file_hash):
+        # TODO
+        # This will probably look a whole lot better with a namedtuple
+
         database_return = database.DatabaseFunctions(
             self.database_path).fetch_data(
                 ('Title', 'Author', 'Year', 'ISBN', 'Tags',
@@ -246,7 +249,10 @@ class BookSorter:
                 if cover_image_raw:
                     cover_image = resize_image(cover_image_raw)
                 else:
-                    cover_image = fetch_cover(title, author)
+                    # TODO
+                    # Needs an option
+                    # cover_image = fetch_cover(title, author)
+                    cover_image = None
 
                 this_book[file_md5]['cover_image'] = cover_image
                 this_book[file_md5]['addition_mode'] = self.addition_mode
@@ -408,3 +414,4 @@ def fetch_cover(title, author):
 
     except:
         logger.error(f'Couldn\'t find cover for ' + title)
+        return None

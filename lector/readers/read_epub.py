@@ -14,175 +14,333 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-import os
-import logging
-import zipfile
-from urllib.parse import unquote
+# TODO
+# See if inserting chapters not in the toc.ncx can be avoided
+# Missing file order is messed up
+# Account for stylesheets... eventually
+# Everything needs logging
+# Mobipocket files
 
+import os
+import zipfile
+import logging
+import collections
+
+import xmltodict
 from bs4 import BeautifulSoup
 
 logger = logging.getLogger(__name__)
 
 
 class EPUB:
-    def __init__(self, filename):
-        self.filename = filename
+    def __init__(self, book_filename, temp_dir):
+        self.book_filename = book_filename
+        self.temp_dir = temp_dir
         self.zip_file = None
+        self.file_list = None
+        self.opf_dict = None
         self.book = {}
+
+        self.generate_references()
+
+    def find_file(self, filename):
+        # First, look for the file in the root of the book
+        if filename in self.file_list:
+            return filename
+
+        # Then, search for it elsewhere
+        else:
+            file_basename = os.path.basename(filename)
+            for i in self.file_list:
+                if os.path.basename(i) == file_basename:
+                    return i
+
+        # If the file isn't found
+        logger.error(filename + ' not found')
+        return False
+
+    def generate_references(self):
+        self.zip_file = zipfile.ZipFile(
+            self.book_filename, mode='r', allowZip64=True)
+        self.file_list = self.zip_file.namelist()
+
+        # Book structure relies on parsing the .opf file
+        # in the book. Now that might be the usual content.opf
+        # or package.opf or it might be named after your favorite
+        # eldritch abomination. The point is we have to check
+        # the container.xml
+        container = self.find_file('container.xml')
+        if container:
+            container_xml = self.zip_file.read(container)
+            container_dict = xmltodict.parse(container_xml)
+            packagefile = container_dict['container']['rootfiles']['rootfile']['@full-path']
+        else:
+            presumptive_names = ('content.opf', 'package.opf')
+            for i in presumptive_names:
+                packagefile = self.find_file(i)
+                if packagefile:
+                    break
+
+        packagefile_data = self.zip_file.read(packagefile)
+        self.opf_dict = xmltodict.parse(packagefile_data)
+
+    def generate_toc(self):
+        self.book['toc'] = []
+
+        # I'm currently going with the file always being named toc.ncx
+        # But this is epub. The wild west of ebook formats.
+        tocfile = self.find_file('toc.ncx')
+        tocfile_data = self.zip_file.read(tocfile)
+        toc_dict = xmltodict.parse(tocfile_data)
+
+        def recursor(level, nav_node):
+            if isinstance(nav_node, list):
+                these_contents = [[
+                    level + 1,
+                    i['navLabel']['text'],
+                    i['content']['@src']] for i in nav_node]
+                self.book['toc'].extend(these_contents)
+                return
+
+            if 'navPoint' in nav_node.keys():
+                recursor(level, nav_node['navPoint'])
+
+            else:
+                self.book['toc'].append([
+                    level + 1,
+                    nav_node['navLabel']['text'],
+                    nav_node['content']['@src']])
+
+        navpoints = toc_dict['ncx']['navMap']['navPoint']
+        for top_level_nav in navpoints:
+            self.book['toc'].append([
+                1,
+                top_level_nav['navLabel']['text'],
+                top_level_nav['content']['@src']])
+
+            if 'navPoint' in top_level_nav.keys():
+                recursor(1, top_level_nav)
+
+    def get_chapter_content(self, chapter_file):
+        this_file = self.find_file(chapter_file)
+        if this_file:
+            return self.zip_file.read(this_file).decode()
+        else:
+            print('Not found: ' + chapter_file)
+            return chapter_file
+
+    def parse_split_chapters(self, chapters_with_split_content):
         self.book['split_chapters'] = {}
 
-    def read_epub(self):
-        # This is the function that should error out in
-        # case the module cannot process the file
-        try:
-            self.load_zip()
-            contents_path = self.get_file_path(
-                None, True)
+        # For split chapters, get the whole chapter first, then split
+        # between ids using their anchors, then "heal" the resultant text
+        # by creating a BeautifulSoup object. Write its str to the content
+        for i in chapters_with_split_content.items():
+            chapter_file = i[0]
+            self.book['split_chapters'][chapter_file] = {}
 
-            if not contents_path:
-                return False  # No (valid) opf was found so processing cannot continue
+            chapter_content = self.get_chapter_content(chapter_file)
+            soup = BeautifulSoup(chapter_content, 'lxml')
 
-            self.generate_book_metadata(contents_path)
-        except:  # Not specifying an exception type here may be justified
-            return False
+            split_anchors = i[1]
+            for this_anchor in reversed(split_anchors):
+                this_tag = soup.find(
+                    attrs={"id":lambda x: x == this_anchor})
 
-        return True
+                markup_split = str(soup).split(str(this_tag))
+                soup = BeautifulSoup(markup_split[0], 'lxml')
+                this_markup = BeautifulSoup(
+                    str(this_tag) + markup_split[1], 'lxml')
 
-    def load_zip(self):
-        try:
-            self.zip_file = zipfile.ZipFile(
-                self.filename, mode='r', allowZip64=True)
-        except (KeyError, AttributeError, zipfile.BadZipFile):
-            logger.error('Malformed zip file ' + self.filename)
-            return
+                self.book['split_chapters'][chapter_file][this_anchor] = str(this_markup)
 
-    def parse_xml(self, filename, parser):
-        try:
-            this_xml = self.zip_file.read(filename).decode()
-        except KeyError:
-            short_filename = os.path.basename(self.filename)
-            warning_string = f'{str(filename)} not found in {short_filename}'
-            logger.warning(warning_string)
-            return
+            # Remaining markup is assigned here
+            self.book['split_chapters'][chapter_file]['top_level'] = str(soup)
 
-        root = BeautifulSoup(this_xml, parser)
-        return root
+    def generate_content(self):
+        # Find all the chapters mentioned in the opf spine
+        # These are simply ids that correspond to the actual item
+        # as mentioned in the manifest - which is a comprehensive
+        # list of files
+        chapters_in_spine = [
+            i['@idref']
+            for i in self.opf_dict['package']['spine']['itemref']]
 
-    def get_file_path(self, filename, is_content_file=False):
-        # Use this to get the location of the content.opf file
-        # And maybe some other file that has a more well formatted
-        # idea of the TOC
-        # We're going to all this trouble because there really is
-        # no going forward without a toc
-        if is_content_file:
-            container_location = self.get_file_path('container.xml')
-            xml = self.parse_xml(container_location, 'xml')
+        # Next, find items and ids from the manifest
+        chapters_from_manifest = {
+            i['@id']: i['@href']
+            for i in self.opf_dict['package']['manifest']['item']}
 
-            if xml:
-                root_item = xml.find('rootfile')
+        # Finally, check which items are supposed to be in the spine
+        # on the basis of the id and change the toc accordingly
+        spine_final = []
+        for i in chapters_in_spine:
+            try:
+                spine_final.append(chapters_from_manifest.pop(i))
+            except KeyError:
+                pass
+
+        # TODO
+        # Check what happens in case missing chapters are either
+        # at the beginning or the end of the book
+        chapter_title = 1
+        toc_chapters = [i[2] for i in self.book['toc']]
+        last_valid_index = 0
+        for i in spine_final:
+            if not i in toc_chapters:
+                previous_chapter = spine_final[spine_final.index(i) - 1]
                 try:
-                    return root_item.get('full-path')
-                except AttributeError:
-                    error_string = f'ePub module: {self.filename} has a malformed container.xml'
+                    previous_chapter_toc_index = toc_chapters.index(previous_chapter)
+                    # In case of 2+ consecutive missing chapters
+                    last_valid_index = previous_chapter_toc_index
+                except ValueError:
+                    last_valid_index += 1
+                self.book['toc'].insert(
+                    last_valid_index + 1,
+                    [1, str(chapter_title), i])
+                chapter_title += 1
+
+        # Parse split chapters as below
+        # They can be picked up during the iteration through the toc
+        chapters_with_split_content = {}
+        for i in self.book['toc']:
+            if '#' in i[2]:
+                this_split = i[2].split('#')
+                chapter = this_split[0]
+                anchor = this_split[1]
+
+                try:
+                    chapters_with_split_content[chapter].append(anchor)
+                except KeyError:
+                    chapters_with_split_content[chapter] = []
+                    chapters_with_split_content[chapter].append(anchor)
+
+        self.parse_split_chapters(chapters_with_split_content)
+
+        # Now we iterate over the ToC as presented in the toc.ncx
+        # and add chapters to the content list
+        # In case a split chapter is encountered, get its content
+        # from the split_chapters dictionary
+        # What could possibly go wrong?
+
+        # The content list is separated from the toc list because
+        # the mupdf library returns its own toc a certain way and
+        # this keeps things uniform
+        split_chapters = self.book['split_chapters']
+        toc_copy = self.book['toc'][:]
+        self.book['content'] = []
+
+        # Put the book into the book
+        for count, i in enumerate(toc_copy):
+            chapter_file = i[2]
+
+            # Get split content according to its corresponding id attribute
+            if '#' in chapter_file:
+                this_split = chapter_file.split('#')
+                chapter_file_proper = this_split[0]
+                this_anchor = this_split[1]
+
+                try:
+                    chapter_content = (
+                        split_chapters[chapter_file_proper][this_anchor])
+                except KeyError:
+                    chapter_content = 'Parse Error'
+                    error_string = (
+                        f'Error parsing {self.book_filename}: {chapter_file_proper}')
                     logger.error(error_string)
-                    return None
 
-            possible_filenames = ('content.opf', 'package.opf')
-            for i in possible_filenames:
-                presumptive_location = self.get_file_path(i)
-                if presumptive_location:
-                    return presumptive_location
+            # Get content that remained at the end of the pillaging above
+            elif chapter_file in split_chapters.keys():
+                try:
+                    chapter_content = split_chapters[chapter_file]['top_level']
+                except KeyError:
+                    chapter_content = 'Parse Error'
+                    error_string = (
+                        f'Error parsing {self.book_filename}: {chapter_file}')
+                    logger.error(error_string)
 
-        for i in self.zip_file.filelist:
-            if os.path.basename(i.filename) == os.path.basename(filename):
-                return i.filename
-
-        return None
-
-    def read_from_zip(self, filename):
-        filename = unquote(filename)
-        try:
-            file_data = self.zip_file.read(filename)
-            return file_data
-        except KeyError:
-            file_path_actual = self.get_file_path(filename)
-            if file_path_actual:
-                return self.zip_file.read(file_path_actual)
+            # Vanilla non split chapters
             else:
-                logger.error('ePub module can\'t find ' + filename)
+                chapter_content = self.get_chapter_content(chapter_file)
 
-    #______________________________________________________
+            # The count + 2 is an adjustment due to the cover being inserted below
+            self.book['toc'][count][2] = count + 2
+            self.book['content'].append(chapter_content)
 
-    def generate_book_metadata(self, contents_path):
-        self.book['title'] = os.path.splitext(
-            os.path.basename(self.filename))[0]
-        self.book['author'] = 'Unknown'
-        self.book['isbn'] = None
-        self.book['tags'] = None
-        self.book['cover'] = None
-        self.book['toc_file'] = 'toc.ncx'  # Overwritten if another one exists
+        self.generate_book_cover()
+        if self.book['cover']:
+            cover_path = os.path.join(
+                self.temp_dir, os.path.basename(self.book_filename)) + '- cover'
+            with open(cover_path, 'wb') as cover_temp:
+                cover_temp.write(self.book['cover'])
 
-        # Parse XML
-        xml = self.parse_xml(contents_path, 'xml')
+            self.book['toc'].insert(0, (1, 'Cover', 1))
+            self.book['content'].insert(
+                0, (f'<center><img src="{cover_path}" alt="Cover"></center>'))
 
-        # Parse metadata
-        item_dict = {
-            'title': 'title',
-            'author': 'creator',
-            'year': 'date'}
+    def generate_metadata(self):
+        metadata = self.opf_dict['package']['metadata']
 
-        for i in item_dict.items():
-            item = xml.find(i[1])
-            if item:
-                self.book[i[0]] = item.text
+        # There are no exception types specified below
+        # This is on purpose and makes me long for the days
+        # of simpler, happier things.
 
+        # Book title
         try:
-            self.book['year'] = int(self.book['year'][:4])
-        except (TypeError, KeyError, IndexError, ValueError):
+            self.book['title'] = metadata['dc:title']
+            if isinstance(self.book['title'], collections.OrderedDict):
+                self.book['title'] = metadata['dc:title']['#text']
+        except:
+            print('Title parse error')
+            self.book['title'] = os.path.splitext(
+                os.path.basename(self.book_filename))[0]
+
+        # Book author
+        try:
+            self.book['author'] = metadata['dc:creator']['#text']
+        except:
+            self.book['author'] = 'Unknown'
+
+        # Book year
+        try:
+            self.book['year'] = int(metadata['dc:date'][:4])
+        except:
             self.book['year'] = 9999
 
-        # Get identifier
-        identifier_items = xml.find_all('identifier')
-        for i in identifier_items:
-            scheme = i.get('scheme')
-            try:
-                if scheme.lower() == 'isbn':
-                    self.book['isbn'] = i.text
-            except AttributeError:
-                self.book['isbn'] = None
+        # Book isbn
+        self.book['isbn'] = None
+        try:
+            for i in metadata['dc:identifier']:
+                if i['@opf:scheme'].lower() == 'isbn':
+                    self.book['isbn'] = i['#text']
+        except:
+            pass
 
-        # Tags
-        tag_items = xml.find_all('subject')
-        tag_list = [i.text for i in tag_items]
-        self.book['tags'] = tag_list
+        # Book tags
+        try:
+            self.book['tags'] = metadata['dc:subject']
+        except:
+            self.book['tags'] = []
 
-        # Get items
-        self.book['content_dict'] = {}
-        all_items = xml.find_all('item')
-        for i in all_items:
-            media_type = i.get('media-type')
-            this_id = i.get('id')
+        # Book cover
+        self.generate_book_cover()
 
-            if media_type == 'application/xhtml+xml' or media_type == 'text/html':
-                self.book['content_dict'][this_id] = i.get('href')
+    def generate_book_cover(self):
+        # This is separate because the book cover needs to
+        # be found and extracted both during addition / reading
+        self.book['cover'] = None
+        try:
+            cover_image = [
+                i['@href'] for i in self.opf_dict['package']['manifest']['item']
+                if i['@media-type'].split('/')[0] == 'image' and
+                'cover' in i['@id']][0]
+            self.book['cover'] = self.zip_file.read(
+                self.find_file(cover_image))
+        except:
+            pass
 
-            if media_type == 'application/x-dtbncx+xml':
-                self.book['toc_file'] = i.get('href')
-
-            # Cover image
-            if 'cover' in this_id and media_type.split('/')[0] == 'image':
-                cover_href = i.get('href')
-                try:
-                    self.book['cover'] = self.zip_file.read(cover_href)
-                except KeyError:
-                    # The cover cannot be found according to the
-                    # path specified in the content reference
-                    self.book['cover'] = self.zip_file.read(
-                        self.get_file_path(cover_href))
-
+        # Find book cover the hard way
         if not self.book['cover']:
-            # If no cover is located the conventional way,
-            # we go looking for the largest image in the book
             biggest_image_size = 0
             biggest_image = None
             for j in self.zip_file.filelist:
@@ -192,139 +350,5 @@ class EPUB:
                         biggest_image_size = j.file_size
 
             if biggest_image:
-                self.book['cover'] = self.read_from_zip(biggest_image)
-            else:
-                logger.error('No cover found for: ' + self.filename)
-
-        # Parse spine and arrange chapter paths acquired from the opf
-        # according to the order IN THE SPINE
-        spine_items = xml.find_all('itemref')
-        spine_order = []
-        for i in spine_items:
-            spine_order.append(i.get('idref'))
-
-        self.book['chapters_in_order'] = []
-        for i in spine_order:
-            chapter_path = self.book['content_dict'][i]
-            self.book['chapters_in_order'].append(chapter_path)
-
-    def parse_toc(self):
-        # This has no bearing on the actual order
-        # We're just using this to get chapter names
-        self.book['navpoint_dict'] = {}
-
-        toc_file = self.book['toc_file']
-        if toc_file:
-            toc_file = self.get_file_path(toc_file)
-
-        xml = self.parse_xml(toc_file, 'xml')
-        if not xml:
-            return
-
-        navpoints = xml.find_all('navPoint')
-
-        for i in navpoints:
-            chapter_title = i.find('text').text
-            chapter_source = i.find('content').get('src')
-            chapter_source_file = unquote(chapter_source.split('#')[0])
-
-            if '#' in chapter_source:
-                try:
-                    self.book['split_chapters'][chapter_source_file].append(
-                        (chapter_source.split('#')[1], chapter_title))
-                except KeyError:
-                    self.book['split_chapters'][chapter_source_file] = []
-                    self.book['split_chapters'][chapter_source_file].append(
-                        (chapter_source.split('#')[1], chapter_title))
-
-            self.book['navpoint_dict'][chapter_source_file] = chapter_title
-
-    def parse_chapters(self, temp_dir=None, split_large_xml=False):
-        no_title_chapter = 0
-        self.book['book_list'] = []
-
-        for i in self.book['chapters_in_order']:
-            chapter_data = self.read_from_zip(i).decode()
-
-            if i in self.book['split_chapters'] and not split_large_xml:
-                split_chapters = get_split_content(
-                    chapter_data, self.book['split_chapters'][i])
-                self.book['book_list'].extend(split_chapters)
-
-            elif split_large_xml:
-                # https://stackoverflow.com/questions/14444732/how-to-split-a-html-page-to-multiple-pages-using-python-and-beautiful-soup
-                markup = BeautifulSoup(chapter_data, 'xml')
-                chapters = []
-                pagebreaks = markup.find_all('pagebreak')
-
-                def next_element(elem):
-                    while elem is not None:
-                        elem = elem.next_sibling
-                        if hasattr(elem, 'name'):
-                            return elem
-
-                for pbreak in pagebreaks:
-                    chapter = [str(pbreak)]
-                    elem = next_element(pbreak)
-                    while elem and elem.name != 'pagebreak':
-                        chapter.append(str(elem))
-                        elem = next_element(elem)
-                    chapters.append('\n'.join(chapter))
-
-                for this_chapter in chapters:
-                    fallback_title = str(no_title_chapter)
-                    self.book['book_list'].append(
-                        (fallback_title, this_chapter + ('<br/>' * 8)))
-                    no_title_chapter += 1
-            else:
-                try:
-                    self.book['book_list'].append(
-                        (self.book['navpoint_dict'][i], chapter_data + ('<br/>' * 8)))
-                except KeyError:
-                    fallback_title = str(no_title_chapter)
-                    self.book['book_list'].append(
-                        (fallback_title, chapter_data))
-                no_title_chapter += 1
-
-        cover_path = os.path.join(temp_dir, os.path.basename(self.filename)) + '- cover'
-        if self.book['cover']:
-            with open(cover_path, 'wb') as cover_temp:
-                cover_temp.write(self.book['cover'])
-
-            try:
-                self.book['book_list'][0] = (
-                    'Cover', f'<center><img src="{cover_path}" alt="Cover"></center>')
-            except IndexError:
-                pass
-
-def get_split_content(chapter_data, split_by):
-    split_anchors = [i[0] for i in split_by]
-    chapter_titles = [i[1] for i in split_by]
-    return_list = []
-
-    xml = BeautifulSoup(chapter_data, 'lxml')
-    xml_string = xml.body.prettify()
-
-    for count, i in enumerate(split_anchors):
-        this_split = xml_string.split(i)
-        current_chapter = this_split[0]
-
-        bs_obj = BeautifulSoup(current_chapter, 'lxml')
-        # Since tags correspond to data following them, the first
-        # chunk will be ignored
-        # As will all empty chapters
-        if bs_obj.text == '\n' or bs_obj.text == '' or count == 0:
-            continue
-        bs_obj_string = str(bs_obj).replace('"&gt;', '', 1) + ('<br/>' * 8)
-
-        return_list.append(
-            (chapter_titles[count - 1], bs_obj_string))
-
-        xml_string = ''.join(this_split[1:])
-
-    bs_obj = BeautifulSoup(xml_string, 'lxml')
-    bs_obj_string = str(bs_obj).replace('"&gt;', '', 1) + ('<br/>' * 8)
-    return_list.append(
-        (chapter_titles[-1], bs_obj_string))
-
-    return return_list
+                self.book['cover'] = self.zip_file.read(
+                    self.find_file(biggest_image))
