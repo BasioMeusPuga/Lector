@@ -15,7 +15,8 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 # INSTRUCTIONS
-# Every parser is supposed to have the following methods. None returns are not allowed.
+# Every parser is supposed to have the following methods.
+# Exceptions will be caught - but that's just bad practice
 # read_book() - Initialize book
 # generate_metadata() - For addition
 # generate_content() - For reading
@@ -67,6 +68,7 @@ else:
 
 # python-lxml - Required for everything except comics
 lxml_check = importlib.util.find_spec('lxml')
+xmltodict_check = importlib.util.find_spec('xmltodict')
 if lxml_check:
     lxml_dependent = {
         'epub': ParseEPUB,
@@ -79,7 +81,7 @@ if lxml_check:
         'fb2.zip': ParseFB2}
     sorter.update(lxml_dependent)
 else:
-    critical_sting = 'python-lxml is not installed. Only comics will load.'
+    critical_sting = 'python-lxml / xmltodict is not installed. Only comics will load.'
     print(critical_sting)
     logger.critical(critical_sting)
 
@@ -122,8 +124,8 @@ class BookSorter:
         self.queue = Manager().Queue()
         self.processed_books = []
 
-        if self.work_mode == 'addition':
-            progress_object_generator()
+        # if self.work_mode == 'addition':
+        progress_object_generator()
 
     def database_hashes(self):
         all_hashes_and_paths = database.DatabaseFunctions(
@@ -134,7 +136,6 @@ class BookSorter:
                 'LIKE')
 
         if all_hashes_and_paths:
-            # self.hashes = [i[0] for i in all_hashes]
             self.hashes_and_paths = {
                 i[0]: i[1] for i in all_hashes_and_paths}
 
@@ -205,6 +206,12 @@ class BookSorter:
 
         book_ref = sorter[file_extension](filename, self.temp_dir, file_md5)
 
+        # None of the following have an exception type specified
+        # This will keep everything from crashing, but will make
+        # troubleshooting difficult
+        # TODO
+        # In application notifications
+
         try:
             book_ref.read_book()
         except:
@@ -248,7 +255,7 @@ class BookSorter:
         if self.work_mode == 'reading':
             try:
                 book_breakdown = book_ref.generate_content()
-            except:
+            except KeyboardInterrupt:
                 logger.error('Content generation error: ' + filename)
                 return
 

@@ -6,7 +6,7 @@ from __future__ import unicode_literals, division, absolute_import, print_functi
 
 import os
 
-__path__ = ["lib", os.path.dirname(__file__), "kindleunpack"]
+__path__ = ["lib", os.path.dirname(os.path.realpath(__file__)), "kindleunpack"]
 
 import sys
 import codecs
@@ -140,6 +140,8 @@ if PY2:
 #  0.76   pre-release version only fix name related issues in opf by not using original file name in mobi7
 #  0.77   bug fix for unpacking HDImages with included Fonts
 #  0.80   converted to work with both python 2.7 and Python 3.3 and later
+#  0.81   various fixes
+#  0.82   Handle calibre-generated mobis that can have skeletons with no fragments
 
 DUMP = False
 """ Set to True to dump all possible information. """
@@ -847,7 +849,7 @@ def process_all_mobi_headers(files, apnxfile, sect, mhlst, K8Boundary, k8only=Fa
     return
 
 
-def unpackBook(infile, outdir, apnxfile=None, epubver='2', use_hd=True, dodump=False, dowriteraw=False, dosplitcombos=False):
+def unpackBook(infile, outdir, apnxfile=None, epubver='2', use_hd=False, dodump=False, dowriteraw=False, dosplitcombos=False):
     global DUMP
     global WRITE_RAW_DATA
     global SPLIT_COMBO_MOBIS
@@ -949,7 +951,7 @@ def main(argv=unicode_argv()):
     global WRITE_RAW_DATA
     global SPLIT_COMBO_MOBIS
 
-    print("KindleUnpack v0.80")
+    print("KindleUnpack v0.82")
     print("   Based on initial mobipocket version Copyright © 2009 Charles M. Hannum <root@ihack.net>")
     print("   Extensive Extensions and Improvements Copyright © 2009-2014 ")
     print("       by:  P. Durrant, K. Hendricks, S. Siebert, fandrieu, DiapDealer, nickredding, tkeo.")

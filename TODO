@@ -93,12 +93,14 @@ TODO
         Deselecting all directories in the settings dialog also filters out manually added books
         Last line in QTextBrowser should never be cut off
         Does image alignment need to be centered?
-        Bookmark name for a page that's not on the TOC or has nothing before
+        Bookmark name for a page that's not on the TOC and has nothing before
         Screen position still keeps jumping when inside a paragraph
         Better recursion needed for fb2 toc
         Initial sort by author in tableview
         Last column not filling up tableview
         Comic view mode changing does not work for newly added books
+        Ctrl + A reports 10 times the number of books selected for deletion
+        Ordering for non TOC chapters is beyond borked
 
     Secondary:
         Tab tooltip

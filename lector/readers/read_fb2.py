@@ -148,7 +148,7 @@ class FB2:
         cover_image = self.generate_book_cover()
         if cover_image:
             cover_path = os.path.join(
-                temp_dir, os.path.basename(self.filename)) + '- cover'
+                temp_dir, os.path.basename(self.filename)) + ' - cover'
             with open(cover_path, 'wb') as cover_temp:
                 cover_temp.write(cover_image)
 

@@ -14,8 +14,9 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-# This module parses Amazon ebooks using KindleUnpack to first create an
-# epub that is then read the usual way
+# TODO
+# See if it's possible to just feed the
+# unzipped mobi7 file into the EPUB parser module
 
 import os
 import sys
@@ -30,72 +31,52 @@ logger = logging.getLogger(__name__)
 
 
 class ParseMOBI:
+    # This module parses Amazon ebooks using KindleUnpack to first create an
+    # epub and then read the usual way
+
     def __init__(self, filename, temp_dir, file_md5):
-        self.book_ref = None
         self.book = None
         self.filename = filename
         self.epub_filepath = None
-        self.split_large_xml = False
         self.temp_dir = temp_dir
-        self.extract_dir = os.path.join(temp_dir, file_md5)
+        self.extract_path = os.path.join(temp_dir, file_md5)
 
     def read_book(self):
         with HidePrinting():
-            KindleUnpack.unpackBook(self.filename, self.extract_dir)
+            KindleUnpack.unpackBook(self.filename, self.extract_path)
 
         epub_filename = os.path.splitext(
             os.path.basename(self.filename))[0] + '.epub'
-
         self.epub_filepath = os.path.join(
-            self.extract_dir, 'mobi8', epub_filename)
+            self.extract_path, 'mobi8', epub_filename)
+
         if not os.path.exists(self.epub_filepath):
-            zip_dir = os.path.join(self.extract_dir, 'mobi7')
+            zip_dir = os.path.join(self.extract_path, 'mobi7')
             zip_file = os.path.join(
-                self.extract_dir, epub_filename)
+                self.extract_path, epub_filename)
             self.epub_filepath = shutil.make_archive(zip_file, 'zip', zip_dir)
-            self.split_large_xml = True
 
-        self.book_ref = EPUB(self.epub_filepath, self.temp_dir)
-        self.book_ref.generate_metadata()
-        self.book_ref.generate_toc()
-        self.book_ref.generate_content()
-        self.book = self.book_ref.book
-        return True
+        self.book = EPUB(self.epub_filepath, self.temp_dir)
 
-    def get_title(self):
-        return self.book['title']
+    def generate_metadata(self):
+        self.book.generate_metadata()
+        return self.book.metadata
 
-    def get_author(self):
-        return self.book['author']
+    def generate_content(self):
+        zipfile.ZipFile(self.epub_filepath).extractall(self.extract_path)
 
-    def get_year(self):
-        return self.book['year']
-
-    def get_cover_image(self):
-        return self.book['cover']
-
-    def get_isbn(self):
-        return self.book['isbn']
-
-    def get_tags(self):
-        return self.book['tags']
-
-    def get_contents(self):
-        return
-        extract_path = os.path.join(self.extract_dir)
-        zipfile.ZipFile(self.epub_filepath).extractall(extract_path)
-
-        self.book_ref.parse_chapters(
-            temp_dir=self.temp_dir, split_large_xml=self.split_large_xml)
+        self.book.generate_toc()
+        self.book.generate_content()
 
         toc = []
         content = []
-        for count, i in enumerate(self.book['book_list']):
-            toc.append((1, i[0], count + 1))
-            content.append(i[1])
+        for count, i in enumerate(self.book.content):
+            toc.append((1, i[1], count + 1))
+            content.append(i[2])
 
         # Return toc, content, images_only
         return toc, content, False
+
 
 class HidePrinting:
     def __enter__(self):

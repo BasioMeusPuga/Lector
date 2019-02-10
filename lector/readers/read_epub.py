@@ -18,7 +18,6 @@
 # See if inserting chapters not in the toc.ncx can be avoided
 # Account for stylesheets... eventually
 # Everything needs logging
-# Mobipocket files
 
 import os
 import zipfile
@@ -68,6 +67,7 @@ class EPUB:
             for i in presumptive_names:
                 packagefile = self.find_file(i)
                 if packagefile:
+                    logger.info('Using presumptive package file: ' + self.book_filename)
                     break
 
         packagefile_data = self.zip_file.read(packagefile)
@@ -218,11 +218,19 @@ class EPUB:
         # These are simply ids that correspond to the actual item
         # as mentioned in the manifest - which is a comprehensive
         # list of files
-        chapters_in_spine = [
-            i['@idref']
-            for i in self.opf_dict['package']['spine']['itemref']]
+        try:
+            # Multiple chapters
+            chapters_in_spine = [
+                i['@idref']
+                for i in self.opf_dict['package']['spine']['itemref']]
+        except TypeError:
+            # Single chapter - Large xml
+            chapters_in_spine = [
+                self.opf_dict['package']['spine']['itemref']['@idref']]
 
         # Next, find items and ids from the manifest
+        # This might error out in case there's only one item in
+        # the manifest. Remember that for later.
         chapters_from_manifest = {
             i['@id']: i['@href']
             for i in self.opf_dict['package']['manifest']['item']}
@@ -236,9 +244,11 @@ class EPUB:
             except KeyError:
                 pass
 
-        chapter_title = 1
         toc_chapters = [
             unquote(i[2].split('#')[0]) for i in self.content]
+
+        # TODO
+        # This totally borks the order
 
         last_valid_index = -2  # Yes, but why?
         for i in spine_final:
@@ -251,10 +261,11 @@ class EPUB:
                 except ValueError:
                     last_valid_index += 1
 
+                # Chapters are currently named None
+                # Blank chapters will later be removed
+                # and the None will be replaced by a number
                 self.content.insert(
-                    last_valid_index + 1,
-                    [1, str(chapter_title), i])
-                chapter_title += 1
+                    last_valid_index + 1, [1, None, i])
 
         # Parse split chapters as below
         # They can be picked up during the iteration through the toc
@@ -316,13 +327,28 @@ class EPUB:
             self.content[count][2] = chapter_content
 
         # Cleanup content by removing null chapters
-        self.content = [
-            i for i in self.content if i[2]]
+        unnamed_chapter_title = 1
+        content_copy = []
+        for i in self.content:
+            if i[2]:
+                chapter_title = i[1]
+                if not chapter_title:
+                    chapter_title = unnamed_chapter_title
+                    unnamed_chapter_title += 1
+                content_copy.append((
+                    i[0], str(chapter_title), i[2]))
+        self.content = content_copy
 
+        # TODO
+        # This can probably be circumvented by shifting the extraction
+        # to this module and simply getting the path to the cover
+
+        # Get cover image and put it in its place
+        # I imagine this involves saying nasty things to it
         cover_image = self.generate_book_cover()
         if cover_image:
             cover_path = os.path.join(
-                self.temp_dir, os.path.basename(self.book_filename)) + '- cover'
+                self.temp_dir, os.path.basename(self.book_filename)) + ' - cover'
             with open(cover_path, 'wb') as cover_temp:
                 cover_temp.write(cover_image)
 
@@ -389,7 +415,6 @@ class EPUB:
                     break
             except:
                 logger.warning('ISBN not found: ' + self.book_filename)
-                pass
 
         # Book tags
         try:
