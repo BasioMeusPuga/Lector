@@ -55,10 +55,10 @@ class ParseMOBI:
             self.epub_filepath = shutil.make_archive(zip_file, 'zip', zip_dir)
             self.split_large_xml = True
 
-        self.book_ref = EPUB(self.epub_filepath)
-        contents_found = self.book_ref.read_epub()
-        if not contents_found:
-            return False
+        self.book_ref = EPUB(self.epub_filepath, self.temp_dir)
+        self.book_ref.generate_metadata()
+        self.book_ref.generate_toc()
+        self.book_ref.generate_content()
         self.book = self.book_ref.book
         return True
 
@@ -81,6 +81,7 @@ class ParseMOBI:
         return self.book['tags']
 
     def get_contents(self):
+        return
         extract_path = os.path.join(self.extract_dir)
         zipfile.ZipFile(self.epub_filepath).extractall(extract_path)
 

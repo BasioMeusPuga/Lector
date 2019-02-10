@@ -16,7 +16,6 @@
 
 # TODO
 # See if inserting chapters not in the toc.ncx can be avoided
-# Missing file order is messed up
 # Account for stylesheets... eventually
 # Everything needs logging
 # Mobipocket files
@@ -25,8 +24,10 @@ import os
 import zipfile
 import logging
 import collections
+from urllib.parse import unquote
 
 import xmltodict
+from PyQt5 import QtGui
 from bs4 import BeautifulSoup
 
 logger = logging.getLogger(__name__)
@@ -44,11 +45,14 @@ class EPUB:
         self.generate_references()
 
     def find_file(self, filename):
+        # Get rid of special characters
+        filename = unquote(filename)
+
         # First, look for the file in the root of the book
         if filename in self.file_list:
             return filename
 
-        # Then, search for it elsewhere
+        # Then search for it elsewhere
         else:
             file_basename = os.path.basename(filename)
             for i in self.file_list:
@@ -56,7 +60,7 @@ class EPUB:
                     return i
 
         # If the file isn't found
-        logger.error(filename + ' not found')
+        logging.error(filename + ' not found in ' + self.book_filename)
         return False
 
     def generate_references(self):
@@ -75,7 +79,7 @@ class EPUB:
             container_dict = xmltodict.parse(container_xml)
             packagefile = container_dict['container']['rootfiles']['rootfile']['@full-path']
         else:
-            presumptive_names = ('content.opf', 'package.opf')
+            presumptive_names = ('content.opf', 'package.opf', 'volume.opf')
             for i in presumptive_names:
                 packagefile = self.find_file(i)
                 if packagefile:
@@ -85,11 +89,42 @@ class EPUB:
         self.opf_dict = xmltodict.parse(packagefile_data)
 
     def generate_toc(self):
-        self.book['toc'] = []
+        self.book['content'] = []
 
-        # I'm currently going with the file always being named toc.ncx
-        # But this is epub. The wild west of ebook formats.
-        tocfile = self.find_file('toc.ncx')
+        def find_alternative_toc():
+            toc_filename = None
+            toc_filename_alternative = None
+            manifest = self.opf_dict['package']['manifest']['item']
+
+            for i in manifest:
+                # Behold the burning hoops we're jumping through
+                if i['@id'] == 'ncx':
+                    toc_filename = i['@href']
+                if ('ncx' in i['@id']) or ('toc' in i['@id']):
+                    toc_filename_alternative = i['@href']
+                if toc_filename and toc_filename_alternative:
+                    break
+
+            if not toc_filename:
+                if not toc_filename_alternative:
+                    logger.error('No ToC found for: ' + self.book_filename)
+                else:
+                    toc_filename = toc_filename_alternative
+
+            logger.info('Using alternate ToC for: ' + self.book_filename)
+            return toc_filename
+
+        # Find the toc.ncx file from the manifest
+        # EPUBs will name literally anything, anything so try
+        # a less stringent approach if the first one doesn't work
+        # The idea is to prioritize 'toc.ncx' since this should work
+        # for the vast majority of books
+        toc_filename = 'toc.ncx'
+        does_toc_exist = self.find_file(toc_filename)
+        if not does_toc_exist:
+            toc_filename = find_alternative_toc()
+
+        tocfile = self.find_file(toc_filename)
         tocfile_data = self.zip_file.read(tocfile)
         toc_dict = xmltodict.parse(tocfile_data)
 
@@ -99,21 +134,30 @@ class EPUB:
                     level + 1,
                     i['navLabel']['text'],
                     i['content']['@src']] for i in nav_node]
-                self.book['toc'].extend(these_contents)
+                self.book['content'].extend(these_contents)
                 return
 
             if 'navPoint' in nav_node.keys():
                 recursor(level, nav_node['navPoint'])
 
             else:
-                self.book['toc'].append([
+                self.book['content'].append([
                     level + 1,
                     nav_node['navLabel']['text'],
                     nav_node['content']['@src']])
 
         navpoints = toc_dict['ncx']['navMap']['navPoint']
         for top_level_nav in navpoints:
-            self.book['toc'].append([
+            # Just one chapter
+            if isinstance(top_level_nav, str):
+                self.book['content'].append([
+                    1,
+                    navpoints['navLabel']['text'],
+                    navpoints['content']['@src']])
+                break
+
+            # Multiple chapters
+            self.book['content'].append([
                 1,
                 top_level_nav['navLabel']['text'],
                 top_level_nav['content']['@src']])
@@ -124,10 +168,19 @@ class EPUB:
     def get_chapter_content(self, chapter_file):
         this_file = self.find_file(chapter_file)
         if this_file:
-            return self.zip_file.read(this_file).decode()
+            chapter_content = self.zip_file.read(this_file).decode()
+
+            # Generate a None return for a blank chapter
+            # These will be removed from the contents later
+            contentDocument = QtGui.QTextDocument(None)
+            contentDocument.setHtml(chapter_content)
+            contentText = contentDocument.toPlainText().replace('\n', '')
+            if contentText == '':
+                chapter_content = None
+
+            return chapter_content
         else:
-            print('Not found: ' + chapter_file)
-            return chapter_file
+            return 'Possible parse error: ' + chapter_file
 
     def parse_split_chapters(self, chapters_with_split_content):
         self.book['split_chapters'] = {}
@@ -149,10 +202,13 @@ class EPUB:
 
                 markup_split = str(soup).split(str(this_tag))
                 soup = BeautifulSoup(markup_split[0], 'lxml')
-                this_markup = BeautifulSoup(
-                    str(this_tag) + markup_split[1], 'lxml')
 
-                self.book['split_chapters'][chapter_file][this_anchor] = str(this_markup)
+                # If the tag is None, it probably means the content is overlapping
+                # Skipping the insert is the way forward
+                if this_tag:
+                    this_markup = BeautifulSoup(
+                        str(this_tag).strip() + markup_split[1], 'lxml')
+                    self.book['split_chapters'][chapter_file][this_anchor] = str(this_markup)
 
             # Remaining markup is assigned here
             self.book['split_chapters'][chapter_file]['top_level'] = str(soup)
@@ -180,12 +236,11 @@ class EPUB:
             except KeyError:
                 pass
 
-        # TODO
-        # Check what happens in case missing chapters are either
-        # at the beginning or the end of the book
         chapter_title = 1
-        toc_chapters = [i[2] for i in self.book['toc']]
-        last_valid_index = 0
+        toc_chapters = [
+            unquote(i[2].split('#')[0]) for i in self.book['content']]
+
+        last_valid_index = -2  # Yes, but why?
         for i in spine_final:
             if not i in toc_chapters:
                 previous_chapter = spine_final[spine_final.index(i) - 1]
@@ -195,7 +250,8 @@ class EPUB:
                     last_valid_index = previous_chapter_toc_index
                 except ValueError:
                     last_valid_index += 1
-                self.book['toc'].insert(
+
+                self.book['content'].insert(
                     last_valid_index + 1,
                     [1, str(chapter_title), i])
                 chapter_title += 1
@@ -203,7 +259,7 @@ class EPUB:
         # Parse split chapters as below
         # They can be picked up during the iteration through the toc
         chapters_with_split_content = {}
-        for i in self.book['toc']:
+        for i in self.book['content']:
             if '#' in i[2]:
                 this_split = i[2].split('#')
                 chapter = this_split[0]
@@ -222,13 +278,8 @@ class EPUB:
         # In case a split chapter is encountered, get its content
         # from the split_chapters dictionary
         # What could possibly go wrong?
-
-        # The content list is separated from the toc list because
-        # the mupdf library returns its own toc a certain way and
-        # this keeps things uniform
         split_chapters = self.book['split_chapters']
-        toc_copy = self.book['toc'][:]
-        self.book['content'] = []
+        toc_copy = self.book['content'][:]
 
         # Put the book into the book
         for count, i in enumerate(toc_copy):
@@ -263,9 +314,11 @@ class EPUB:
             else:
                 chapter_content = self.get_chapter_content(chapter_file)
 
-            # The count + 2 is an adjustment due to the cover being inserted below
-            self.book['toc'][count][2] = count + 2
-            self.book['content'].append(chapter_content)
+            self.book['content'][count][2] = chapter_content
+
+        # Cleanup content by removing null chapters
+        self.book['content'] = [
+            i for i in self.book['content'] if i[2]]
 
         self.generate_book_cover()
         if self.book['cover']:
@@ -274,12 +327,26 @@ class EPUB:
             with open(cover_path, 'wb') as cover_temp:
                 cover_temp.write(self.book['cover'])
 
-            self.book['toc'].insert(0, (1, 'Cover', 1))
+            # There's probably some rationale to doing an insert here
+            # But a replacement seems... neater
             self.book['content'].insert(
-                0, (f'<center><img src="{cover_path}" alt="Cover"></center>'))
+                0, (1, 'Cover', f'<center><img src="{cover_path}" alt="Cover"></center>'))
 
     def generate_metadata(self):
         metadata = self.opf_dict['package']['metadata']
+
+        def flattener(this_object):
+            if isinstance(this_object, collections.OrderedDict):
+                return this_object['#text']
+
+            if isinstance(this_object, list):
+                if isinstance(this_object[0], collections.OrderedDict):
+                    return this_object[0]['#text']
+                else:
+                    return this_object[0]
+
+            if isinstance(this_object, str):
+                return this_object
 
         # There are no exception types specified below
         # This is on purpose and makes me long for the days
@@ -287,38 +354,45 @@ class EPUB:
 
         # Book title
         try:
-            self.book['title'] = metadata['dc:title']
-            if isinstance(self.book['title'], collections.OrderedDict):
-                self.book['title'] = metadata['dc:title']['#text']
+            self.book['title'] = flattener(metadata['dc:title'])
         except:
-            print('Title parse error')
             self.book['title'] = os.path.splitext(
                 os.path.basename(self.book_filename))[0]
 
         # Book author
         try:
-            self.book['author'] = metadata['dc:creator']['#text']
+            self.book['author'] = flattener(metadata['dc:creator'])
         except:
             self.book['author'] = 'Unknown'
 
         # Book year
         try:
-            self.book['year'] = int(metadata['dc:date'][:4])
+            self.book['year'] = int(flattener(metadata['dc:date'])[:4])
         except:
             self.book['year'] = 9999
 
         # Book isbn
+        # Both one and multiple schema
         self.book['isbn'] = None
         try:
-            for i in metadata['dc:identifier']:
-                if i['@opf:scheme'].lower() == 'isbn':
-                    self.book['isbn'] = i['#text']
-        except:
-            pass
+            scheme = metadata['dc:identifier']['@opf:scheme'].lower()
+            if scheme.lower() == 'isbn':
+                self.book['isbn'] = metadata['dc:identifier']['#text']
+
+        except (TypeError, KeyError):
+            try:
+                for i in metadata['dc:identifier']:
+                    if i['@opf:scheme'].lower() == 'isbn':
+                        self.book['isbn'] = i['#text']
+                    break
+            except:
+                pass
 
         # Book tags
         try:
             self.book['tags'] = metadata['dc:subject']
+            if isinstance(self.book['tags'], str):
+                self.book['tags'] = [self.book['tags']]
         except:
             self.book['tags'] = []
 

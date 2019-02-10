@@ -96,8 +96,11 @@ TODO
         Bookmark name for a page that's not on the TOC or has nothing before
         Screen position still keeps jumping when inside a paragraph
         Better recursion needed for fb2 toc
+        Initial sort by author in tableview
+        Last column not filling up tableview
 
     Secondary:
+        Tab tooltip
         Additional Settings:
             Disable progressbar - 20% book addition speed improvement
             Disable cover loading when reading - Saves ~2M / book

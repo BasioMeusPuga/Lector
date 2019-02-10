@@ -63,5 +63,11 @@ class ParseEPUB:
         self.book_ref.generate_toc()
         self.book_ref.generate_content()
 
+        toc = []
+        content = []
+        for count, i in enumerate(self.book['content']):
+            toc.append((i[0], i[1], count + 1))
+            content.append(i[2])
+
         # Return toc, content, images_only
-        return self.book['toc'], self.book['content'], False
+        return toc, content, False
