@@ -14,11 +14,8 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-# TODO
-# Error handling
-# TOC parsing
-
 import os
+import collections
 
 import fitz
 from PyQt5 import QtGui
@@ -36,43 +33,39 @@ class ParsePDF:
         except RuntimeError:
             return False
 
-    def get_title(self):
+    def generate_metadata(self):
         title = self.book.metadata['title']
         if not title:
             title = os.path.splitext(os.path.basename(self.filename))[0]
-        return title
 
-    def get_author(self):
         author = self.book.metadata['author']
         if not author:
             author = 'Unknown'
-        return author
 
-    def get_year(self):
         creation_date = self.book.metadata['creationDate']
         try:
             year = creation_date.split(':')[1][:4]
         except (ValueError, AttributeError):
             year = 9999
-        return year
 
-    def get_cover_image(self):
+        isbn = None
+
+        tags = self.book.metadata['keywords']
+        if not tags:
+            tags = []
+
         # This is a little roundabout for the cover
         # and I'm sure it's taking a performance hit
         # But it is simple. So there's that.
         cover_page = self.book.loadPage(0)
-
         # Disabling scaling gets the covers much faster
-        return render_pdf_page(cover_page, True)
+        cover = render_pdf_page(cover_page, True)
 
-    def get_isbn(self):
-        return None
+        Metadata = collections.namedtuple(
+            'Metadata', ['title', 'author', 'year', 'isbn', 'tags', 'cover'])
+        return Metadata(title, author, year, isbn, tags, cover)
 
-    def get_tags(self):
-        tags = self.book.metadata['keywords']
-        return tags  # Fine if it returns None
-
-    def get_contents(self):
+    def generate_content(self):
         content = list(range(self.book.pageCount))
         toc = self.book.getToC()
         if not toc:

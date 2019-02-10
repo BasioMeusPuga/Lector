@@ -18,6 +18,7 @@ import os
 import base64
 import zipfile
 import logging
+import collections
 
 from bs4 import BeautifulSoup
 
@@ -28,70 +29,59 @@ class FB2:
     def __init__(self, filename):
         self.filename = filename
         self.zip_file = None
-        self.book = {}
         self.xml = None
 
-    def read_fb2(self):
-        try:
-            if self.filename.endswith('.fb2.zip'):
-                this_book = zipfile.ZipFile(
-                    self.filename, mode='r', allowZip64=True)
-                for i in this_book.filelist:
-                    if os.path.splitext(i.filename)[1] == '.fb2':
-                        book_text = this_book.read(i.filename)
-                        break
-            else:
-                with open(self.filename, 'r') as book_file:
-                    book_text = book_file.read()
+        self.metadata = None
+        self.content = []
 
-            self.xml = BeautifulSoup(book_text, 'lxml')
-            self.generate_book_metadata()
-        except:  # Not specifying an exception type here may be justified
-            return False
+        self.generate_references()
 
-        return True
+    def generate_references(self):
+        if self.filename.endswith('.fb2.zip'):
+            this_book = zipfile.ZipFile(
+                self.filename, mode='r', allowZip64=True)
+            for i in this_book.filelist:
+                if os.path.splitext(i.filename)[1] == '.fb2':
+                    book_text = this_book.read(i.filename)
+                    break
 
-    def generate_book_metadata(self):
-        self.book['isbn'] = None
-        self.book['tags'] = None
-        self.book['book_list'] = []
+        else:
+            with open(self.filename, 'r') as book_file:
+                book_text = book_file.read()
 
+        self.xml = BeautifulSoup(book_text, 'lxml')
+
+    def generate_metadata(self):
         # All metadata can be parsed in one pass
         all_tags = self.xml.find('description')
 
-        self.book['title'] = all_tags.find('book-title').text
-        if self.book['title'] == '' or self.book['title'] is None:
-            self.book['title'] = os.path.splitext(
+        title = all_tags.find('book-title').text
+        if title == '' or title is None:
+            title = os.path.splitext(
                 os.path.basename(self.filename))[0]
 
-        self.book['author'] = all_tags.find(
+        author = all_tags.find(
             'author').getText(separator=' ').replace('\n', ' ')
-        if self.book['author'] == '' or self.book['author'] is None:
-            self.book['author'] = 'Unknown'
+        if author == '' or author is None:
+            author = '<Unknown>'
 
         # TODO
         # Account for other date formats
         try:
-            self.book['year'] = int(all_tags.find('date').text)
+            year = int(all_tags.find('date').text)
         except ValueError:
-            self.book['year'] = 9999
+            year = 9999
 
-        # Cover Image
-        try:
-            cover_image_xml = self.xml.find('coverpage')
-            for i in cover_image_xml:
-                cover_image_name = i.get('l:href')
+        isbn = None
+        tags = None
 
-            cover_image_data = self.xml.find_all('binary')
-            for i in cover_image_data:
-                if cover_image_name.endswith(i.get('id')):
-                    self.book['cover'] = base64.decodebytes(i.text.encode())
-        except (AttributeError, TypeError):
-            # Catch TypeError in case no images exist in the book
-            logger.error('No cover found for: ' + self.filename)
-            self.book['cover'] = None
+        cover = self.generate_book_cover()
 
-    def parse_chapters(self, temp_dir):
+        Metadata = collections.namedtuple(
+            'Metadata', ['title', 'author', 'year', 'isbn', 'tags', 'cover'])
+        self.metadata = Metadata(title, author, year, isbn, tags, cover)
+
+    def generate_content(self, temp_dir):
         # TODO
         # Check what's up with recursion levels
         # Why is the TypeError happening in get_title
@@ -114,7 +104,7 @@ class FB2:
             children = element.findChildren('section', recursive=False)
             if not children and level != 1:
                 this_title, title_xml = get_title(element)
-                self.book['book_list'].append(
+                self.content.append(
                     [level, this_title, title_xml + str(element)])
             else:
                 for i in children:
@@ -134,7 +124,7 @@ class FB2:
             if section_children:
                 chapter_text = this_title
 
-            self.book['book_list'].append([1, this_title, chapter_text])
+            self.content.append([1, this_title, chapter_text])
             recursor(1, this_element)
 
         # Extract all images to the temp_dir
@@ -144,7 +134,7 @@ class FB2:
             image_string = f'<image l:href="#{image_name}"'
             replacement_string = f'<p></p><img src=\"{image_path}\"'
 
-            for j in self.book['book_list']:
+            for j in self.content:
                 j[2] = j[2].replace(
                     image_string, replacement_string)
             try:
@@ -155,9 +145,30 @@ class FB2:
                 pass
 
         # Insert the book cover at the beginning
-        if self.book['cover']:
-            cover_path = os.path.join(temp_dir, 'cover')
-            with open(cover_path, 'wb') as outimage:
-                outimage.write(self.book['cover'])
-            self.book['book_list'].insert(
+        cover_image = self.generate_book_cover()
+        if cover_image:
+            cover_path = os.path.join(
+                temp_dir, os.path.basename(self.filename)) + '- cover'
+            with open(cover_path, 'wb') as cover_temp:
+                cover_temp.write(cover_image)
+
+            self.content.insert(
                 0, (1, 'Cover', f'<center><img src="{cover_path}" alt="Cover"></center>'))
+
+    def generate_book_cover(self):
+        cover = None
+
+        try:
+            cover_image_xml = self.xml.find('coverpage')
+            for i in cover_image_xml:
+                cover_image_name = i.get('l:href')
+
+            cover_image_data = self.xml.find_all('binary')
+            for i in cover_image_data:
+                if cover_image_name.endswith(i.get('id')):
+                    cover = base64.decodebytes(i.text.encode())
+        except (AttributeError, TypeError):
+            # Catch TypeError in case no images exist in the book
+            logger.warning('Cover not found: ' + self.filename)
+
+        return cover

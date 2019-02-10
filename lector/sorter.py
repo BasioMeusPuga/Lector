@@ -16,20 +16,9 @@
 
 # INSTRUCTIONS
 # Every parser is supposed to have the following methods. None returns are not allowed.
-# read_book()
-# get_title()
-# get_author()
-# get_year()
-# get_cover_image()
-# get_isbn()
-# get_tags()
-# get_contents() - Should return a tuple with 0: TOC 1: special_settings (dict)
-# Parsers for files containing only images need to return only images_only = True
-
-# TODO
-# Maybe shift to insert or replace instead of hash checking
-# See if you want to include a hash of the book's name and author
-# Change thread niceness
+# read_book() - Initialize book
+# generate_metadata() - For addition
+# generate_content() - For reading
 
 import io
 import os
@@ -211,87 +200,88 @@ class BookSorter:
                 break
 
         if not valid_extension:
-            logger.error(filename + ' has an unsupported extension')
+            logger.error('Unsupported extension: ' + filename)
             return
 
         book_ref = sorter[file_extension](filename, self.temp_dir, file_md5)
 
-        # Everything following this is standard
-        # None values are accounted for here
-        is_valid = book_ref.read_book()
-        if not is_valid:
-            logger.error('Cannot parse:' + filename)
+        try:
+            book_ref.read_book()
+        except:
+            logger.error('Error initializing: ' + filename)
             return
 
-        if book_ref.book:
-            # TODO
-            # For the love of God clean this up. It's junk.
+        this_book = {}
+        this_book[file_md5] = {
+            'hash': file_md5,
+            'path': filename}
 
-            this_book = {}
-            this_book[file_md5] = {
-                'hash': file_md5,
-                'path': filename}
+        # Different modes require different values
+        if self.work_mode == 'addition':
+            try:
+                metadata = book_ref.generate_metadata()
+            except:
+                logger.error('Metadata generation error: ' + filename)
+                return
 
-            # Different modes require different values
-            if self.work_mode == 'addition':
-                # Reduce the size of the incoming image
-                # if one is found
-                title = book_ref.get_title()
-                author = book_ref.get_author()
-                year = book_ref.get_year()
-                isbn = book_ref.get_isbn()
+            title = metadata.title
+            author = metadata.author
+            year = metadata.year
+            isbn = metadata.isbn
 
-                tags = None
-                if self.auto_tags:
-                    tags = book_ref.get_tags()
+            tags = None
+            if self.auto_tags:
+                tags = metadata.tags
 
-                cover_image_raw = book_ref.get_cover_image()
-                if cover_image_raw:
-                    cover_image = resize_image(cover_image_raw)
-                else:
-                    # TODO
-                    # Needs an option
-                    # cover_image = fetch_cover(title, author)
-                    cover_image = None
+            cover_image_raw = metadata.cover
+            if cover_image_raw:
+                cover_image = resize_image(cover_image_raw)
+            else:
+                # TODO
+                # Needs an option
+                # cover_image = fetch_cover(title, author)
+                cover_image = None
 
-                this_book[file_md5]['cover_image'] = cover_image
-                this_book[file_md5]['addition_mode'] = self.addition_mode
+            this_book[file_md5]['cover_image'] = cover_image
+            this_book[file_md5]['addition_mode'] = self.addition_mode
 
-            if self.work_mode == 'reading':
-                # All books must return the following list
-                # Indices are as described below
-                book_breakdown = book_ref.get_contents()
+        if self.work_mode == 'reading':
+            try:
+                book_breakdown = book_ref.generate_content()
+            except:
+                logger.error('Content generation error: ' + filename)
+                return
 
-                toc = book_breakdown[0]
-                content = book_breakdown[1]
-                images_only = book_breakdown[2]
+            toc = book_breakdown[0]
+            content = book_breakdown[1]
+            images_only = book_breakdown[2]
 
-                book_data = self.database_entry_for_book(file_md5)
-                title = book_data[0]
-                author = book_data[1]
-                year = book_data[2]
-                isbn = book_data[3]
-                tags = book_data[4]
-                position = book_data[5]
-                bookmarks = book_data[6]
-                cover = book_data[7]
-                annotations = book_data[8]
+            book_data = self.database_entry_for_book(file_md5)
+            title = book_data[0]
+            author = book_data[1]
+            year = book_data[2]
+            isbn = book_data[3]
+            tags = book_data[4]
+            position = book_data[5]
+            bookmarks = book_data[6]
+            cover = book_data[7]
+            annotations = book_data[8]
 
-                this_book[file_md5]['position'] = position
-                this_book[file_md5]['bookmarks'] = bookmarks
-                this_book[file_md5]['toc'] = toc
-                this_book[file_md5]['content'] = content
-                this_book[file_md5]['images_only'] = images_only
-                this_book[file_md5]['cover'] = cover
-                this_book[file_md5]['annotations'] = annotations
+            this_book[file_md5]['position'] = position
+            this_book[file_md5]['bookmarks'] = bookmarks
+            this_book[file_md5]['toc'] = toc
+            this_book[file_md5]['content'] = content
+            this_book[file_md5]['images_only'] = images_only
+            this_book[file_md5]['cover'] = cover
+            this_book[file_md5]['annotations'] = annotations
 
-            this_book[file_md5]['title'] = title
-            this_book[file_md5]['author'] = author
-            this_book[file_md5]['year'] = year
-            this_book[file_md5]['isbn'] = isbn
-            this_book[file_md5]['tags'] = tags
+        this_book[file_md5]['title'] = title
+        this_book[file_md5]['author'] = author
+        this_book[file_md5]['year'] = year
+        this_book[file_md5]['isbn'] = isbn
+        this_book[file_md5]['tags'] = tags
 
-            return this_book
+        return this_book
 
     def read_progress(self):
         while True:

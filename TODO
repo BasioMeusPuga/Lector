@@ -98,6 +98,7 @@ TODO
         Better recursion needed for fb2 toc
         Initial sort by author in tableview
         Last column not filling up tableview
+        Comic view mode changing does not work for newly added books
 
     Secondary:
         Tab tooltip

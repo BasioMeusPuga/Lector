@@ -37,31 +37,16 @@ class EPUB:
     def __init__(self, book_filename, temp_dir):
         self.book_filename = book_filename
         self.temp_dir = temp_dir
+
         self.zip_file = None
         self.file_list = None
         self.opf_dict = None
-        self.book = {}
+        self.split_chapters = {}
+
+        self.metadata = None
+        self.content = []
 
         self.generate_references()
-
-    def find_file(self, filename):
-        # Get rid of special characters
-        filename = unquote(filename)
-
-        # First, look for the file in the root of the book
-        if filename in self.file_list:
-            return filename
-
-        # Then search for it elsewhere
-        else:
-            file_basename = os.path.basename(filename)
-            for i in self.file_list:
-                if os.path.basename(i) == file_basename:
-                    return i
-
-        # If the file isn't found
-        logging.error(filename + ' not found in ' + self.book_filename)
-        return False
 
     def generate_references(self):
         self.zip_file = zipfile.ZipFile(
@@ -88,9 +73,26 @@ class EPUB:
         packagefile_data = self.zip_file.read(packagefile)
         self.opf_dict = xmltodict.parse(packagefile_data)
 
-    def generate_toc(self):
-        self.book['content'] = []
+    def find_file(self, filename):
+        # Get rid of special characters
+        filename = unquote(filename)
 
+        # First, look for the file in the root of the book
+        if filename in self.file_list:
+            return filename
+
+        # Then search for it elsewhere
+        else:
+            file_basename = os.path.basename(filename)
+            for i in self.file_list:
+                if os.path.basename(i) == file_basename:
+                    return i
+
+        # If the file isn't found
+        logging.error(filename + ' not found in ' + self.book_filename)
+        return False
+
+    def generate_toc(self):
         def find_alternative_toc():
             toc_filename = None
             toc_filename_alternative = None
@@ -134,14 +136,14 @@ class EPUB:
                     level + 1,
                     i['navLabel']['text'],
                     i['content']['@src']] for i in nav_node]
-                self.book['content'].extend(these_contents)
+                self.content.extend(these_contents)
                 return
 
             if 'navPoint' in nav_node.keys():
                 recursor(level, nav_node['navPoint'])
 
             else:
-                self.book['content'].append([
+                self.content.append([
                     level + 1,
                     nav_node['navLabel']['text'],
                     nav_node['content']['@src']])
@@ -150,14 +152,14 @@ class EPUB:
         for top_level_nav in navpoints:
             # Just one chapter
             if isinstance(top_level_nav, str):
-                self.book['content'].append([
+                self.content.append([
                     1,
                     navpoints['navLabel']['text'],
                     navpoints['content']['@src']])
                 break
 
             # Multiple chapters
-            self.book['content'].append([
+            self.content.append([
                 1,
                 top_level_nav['navLabel']['text'],
                 top_level_nav['content']['@src']])
@@ -183,14 +185,12 @@ class EPUB:
             return 'Possible parse error: ' + chapter_file
 
     def parse_split_chapters(self, chapters_with_split_content):
-        self.book['split_chapters'] = {}
-
         # For split chapters, get the whole chapter first, then split
         # between ids using their anchors, then "heal" the resultant text
         # by creating a BeautifulSoup object. Write its str to the content
         for i in chapters_with_split_content.items():
             chapter_file = i[0]
-            self.book['split_chapters'][chapter_file] = {}
+            self.split_chapters[chapter_file] = {}
 
             chapter_content = self.get_chapter_content(chapter_file)
             soup = BeautifulSoup(chapter_content, 'lxml')
@@ -208,10 +208,10 @@ class EPUB:
                 if this_tag:
                     this_markup = BeautifulSoup(
                         str(this_tag).strip() + markup_split[1], 'lxml')
-                    self.book['split_chapters'][chapter_file][this_anchor] = str(this_markup)
+                    self.split_chapters[chapter_file][this_anchor] = str(this_markup)
 
             # Remaining markup is assigned here
-            self.book['split_chapters'][chapter_file]['top_level'] = str(soup)
+            self.split_chapters[chapter_file]['top_level'] = str(soup)
 
     def generate_content(self):
         # Find all the chapters mentioned in the opf spine
@@ -238,7 +238,7 @@ class EPUB:
 
         chapter_title = 1
         toc_chapters = [
-            unquote(i[2].split('#')[0]) for i in self.book['content']]
+            unquote(i[2].split('#')[0]) for i in self.content]
 
         last_valid_index = -2  # Yes, but why?
         for i in spine_final:
@@ -251,7 +251,7 @@ class EPUB:
                 except ValueError:
                     last_valid_index += 1
 
-                self.book['content'].insert(
+                self.content.insert(
                     last_valid_index + 1,
                     [1, str(chapter_title), i])
                 chapter_title += 1
@@ -259,7 +259,7 @@ class EPUB:
         # Parse split chapters as below
         # They can be picked up during the iteration through the toc
         chapters_with_split_content = {}
-        for i in self.book['content']:
+        for i in self.content:
             if '#' in i[2]:
                 this_split = i[2].split('#')
                 chapter = this_split[0]
@@ -278,8 +278,7 @@ class EPUB:
         # In case a split chapter is encountered, get its content
         # from the split_chapters dictionary
         # What could possibly go wrong?
-        split_chapters = self.book['split_chapters']
-        toc_copy = self.book['content'][:]
+        toc_copy = self.content[:]
 
         # Put the book into the book
         for count, i in enumerate(toc_copy):
@@ -293,7 +292,7 @@ class EPUB:
 
                 try:
                     chapter_content = (
-                        split_chapters[chapter_file_proper][this_anchor])
+                        self.split_chapters[chapter_file_proper][this_anchor])
                 except KeyError:
                     chapter_content = 'Parse Error'
                     error_string = (
@@ -301,9 +300,9 @@ class EPUB:
                     logger.error(error_string)
 
             # Get content that remained at the end of the pillaging above
-            elif chapter_file in split_chapters.keys():
+            elif chapter_file in self.split_chapters.keys():
                 try:
-                    chapter_content = split_chapters[chapter_file]['top_level']
+                    chapter_content = self.split_chapters[chapter_file]['top_level']
                 except KeyError:
                     chapter_content = 'Parse Error'
                     error_string = (
@@ -314,26 +313,26 @@ class EPUB:
             else:
                 chapter_content = self.get_chapter_content(chapter_file)
 
-            self.book['content'][count][2] = chapter_content
+            self.content[count][2] = chapter_content
 
         # Cleanup content by removing null chapters
-        self.book['content'] = [
-            i for i in self.book['content'] if i[2]]
+        self.content = [
+            i for i in self.content if i[2]]
 
-        self.generate_book_cover()
-        if self.book['cover']:
+        cover_image = self.generate_book_cover()
+        if cover_image:
             cover_path = os.path.join(
                 self.temp_dir, os.path.basename(self.book_filename)) + '- cover'
             with open(cover_path, 'wb') as cover_temp:
-                cover_temp.write(self.book['cover'])
+                cover_temp.write(cover_image)
 
             # There's probably some rationale to doing an insert here
             # But a replacement seems... neater
-            self.book['content'].insert(
+            self.content.insert(
                 0, (1, 'Cover', f'<center><img src="{cover_path}" alt="Cover"></center>'))
 
     def generate_metadata(self):
-        metadata = self.opf_dict['package']['metadata']
+        book_metadata = self.opf_dict['package']['metadata']
 
         def flattener(this_object):
             if isinstance(this_object, collections.OrderedDict):
@@ -354,67 +353,76 @@ class EPUB:
 
         # Book title
         try:
-            self.book['title'] = flattener(metadata['dc:title'])
+            title = flattener(book_metadata['dc:title'])
         except:
-            self.book['title'] = os.path.splitext(
+            logger.warning('Title not found: ' + self.book_filename)
+            title = os.path.splitext(
                 os.path.basename(self.book_filename))[0]
 
         # Book author
         try:
-            self.book['author'] = flattener(metadata['dc:creator'])
+            author = flattener(book_metadata['dc:creator'])
         except:
-            self.book['author'] = 'Unknown'
+            logger.warning('Author not found: ' + self.book_filename)
+            author = 'Unknown'
 
         # Book year
         try:
-            self.book['year'] = int(flattener(metadata['dc:date'])[:4])
+            year = int(flattener(book_metadata['dc:date'])[:4])
         except:
-            self.book['year'] = 9999
+            logger.warning('Year not found: ' + self.book_filename)
+            year = 9999
 
         # Book isbn
         # Both one and multiple schema
-        self.book['isbn'] = None
+        isbn = None
         try:
-            scheme = metadata['dc:identifier']['@opf:scheme'].lower()
+            scheme = book_metadata['dc:identifier']['@opf:scheme'].lower()
             if scheme.lower() == 'isbn':
-                self.book['isbn'] = metadata['dc:identifier']['#text']
+                isbn = book_metadata['dc:identifier']['#text']
 
         except (TypeError, KeyError):
             try:
-                for i in metadata['dc:identifier']:
+                for i in book_metadata['dc:identifier']:
                     if i['@opf:scheme'].lower() == 'isbn':
-                        self.book['isbn'] = i['#text']
+                        isbn = i['#text']
                     break
             except:
+                logger.warning('ISBN not found: ' + self.book_filename)
                 pass
 
         # Book tags
         try:
-            self.book['tags'] = metadata['dc:subject']
-            if isinstance(self.book['tags'], str):
-                self.book['tags'] = [self.book['tags']]
+            tags = book_metadata['dc:subject']
+            if isinstance(tags, str):
+                tags = [tags]
         except:
-            self.book['tags'] = []
+            tags = []
 
         # Book cover
-        self.generate_book_cover()
+        cover = self.generate_book_cover()
+
+        # Named tuple? Named tuple.
+        Metadata = collections.namedtuple(
+            'Metadata', ['title', 'author', 'year', 'isbn', 'tags', 'cover'])
+        self.metadata = Metadata(title, author, year, isbn, tags, cover)
 
     def generate_book_cover(self):
         # This is separate because the book cover needs to
         # be found and extracted both during addition / reading
-        self.book['cover'] = None
+        book_cover = None
+
         try:
             cover_image = [
                 i['@href'] for i in self.opf_dict['package']['manifest']['item']
                 if i['@media-type'].split('/')[0] == 'image' and
                 'cover' in i['@id']][0]
-            self.book['cover'] = self.zip_file.read(
-                self.find_file(cover_image))
+            book_cover = self.zip_file.read(self.find_file(cover_image))
         except:
             pass
 
         # Find book cover the hard way
-        if not self.book['cover']:
+        if not book_cover:
             biggest_image_size = 0
             biggest_image = None
             for j in self.zip_file.filelist:
@@ -424,5 +432,10 @@ class EPUB:
                         biggest_image_size = j.file_size
 
             if biggest_image:
-                self.book['cover'] = self.zip_file.read(
+                book_cover = self.zip_file.read(
                     self.find_file(biggest_image))
+
+        if not book_cover:
+            logger.warning('Cover not found: ' + self.book_filename)
+
+        return book_cover

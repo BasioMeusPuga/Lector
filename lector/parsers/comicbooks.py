@@ -21,6 +21,7 @@ import os
 import time
 import logging
 import zipfile
+import collections
 
 from lector.rarfile import rarfile
 
@@ -35,54 +36,36 @@ class ParseCOMIC:
         self.book_extension = os.path.splitext(self.filename)
 
     def read_book(self):
-        try:
-            if self.book_extension[1] == '.cbz':
-                self.book = zipfile.ZipFile(
-                    self.filename, mode='r', allowZip64=True)
-                self.image_list = [
-                    i.filename for i in self.book.infolist()
-                    if not i.is_dir() and is_image(i.filename)]
+        if self.book_extension[1] == '.cbz':
+            self.book = zipfile.ZipFile(
+                self.filename, mode='r', allowZip64=True)
+            self.image_list = [
+                i.filename for i in self.book.infolist()
+                if not i.is_dir() and is_image(i.filename)]
 
-            elif self.book_extension[1] == '.cbr':
-                self.book = rarfile.RarFile(self.filename)
-                self.image_list = [
-                    i.filename for i in self.book.infolist()
-                    if not i.isdir() and is_image(i.filename)]
+        elif self.book_extension[1] == '.cbr':
+            self.book = rarfile.RarFile(self.filename)
+            self.image_list = [
+                i.filename for i in self.book.infolist()
+                if not i.isdir() and is_image(i.filename)]
 
-            self.image_list.sort()
-            if not self.image_list:
-                return False
+        self.image_list.sort()
 
-            return True
-
-        except: # Specifying no exception here is warranted
-            return False
-
-    def get_title(self):
+    def generate_metadata(self):
         title = os.path.basename(self.book_extension[0]).strip(' ')
-        return title
+        author = '<Unknown>'
+        isbn = None
+        tags = []
+        cover = self.book.read(self.image_list[0])
 
-    def get_author(self):
-        return 'Unknown'
-
-    def get_year(self):
         creation_time = time.ctime(os.path.getctime(self.filename))
-        creation_year = creation_time.split()[-1]
-        return creation_year
+        year = creation_time.split()[-1]
 
-    def get_cover_image(self):
-        # The first image in the archive may not be the cover
-        # It is implied, however, that the first image in order
-        # will be the cover
-        return self.book.read(self.image_list[0])
+        Metadata = collections.namedtuple(
+            'Metadata', ['title', 'author', 'year', 'isbn', 'tags', 'cover'])
+        return Metadata(title, author, year, isbn, tags, cover)
 
-    def get_isbn(self):
-        return None
-
-    def get_tags(self):
-        return None
-
-    def get_contents(self):
+    def generate_content(self):
         image_number = len(self.image_list)
         toc = [(1, f'Page {i + 1}', i + 1) for i in range(image_number)]
 

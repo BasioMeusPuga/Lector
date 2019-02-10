@@ -14,6 +14,9 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
+# TODO
+# Maybe also include book description
+
 import os
 import logging
 
@@ -24,46 +27,24 @@ logger = logging.getLogger(__name__)
 
 class ParseFB2:
     def __init__(self, filename, temp_dir, file_md5):
-        # TODO
-        # Maybe also include book description
-        self.book_ref = None
         self.book = None
         self.filename = filename
         self.extract_path = os.path.join(temp_dir, file_md5)
 
     def read_book(self):
-        self.book_ref = FB2(self.filename)
-        contents_found = self.book_ref.read_fb2()
-        if not contents_found:
-            return False
-        self.book = self.book_ref.book
-        return True
+        self.book = FB2(self.filename)
 
-    def get_title(self):
-        return self.book['title']
+    def generate_metadata(self):
+        self.book.generate_metadata()
+        return self.book.metadata
 
-    def get_author(self):
-        return self.book['author']
-
-    def get_year(self):
-        return self.book['year']
-
-    def get_cover_image(self):
-        return self.book['cover']
-
-    def get_isbn(self):
-        return self.book['isbn']
-
-    def get_tags(self):
-        return self.book['tags']
-
-    def get_contents(self):
+    def generate_content(self):
         os.makedirs(self.extract_path, exist_ok=True)  # Manual creation is required here
-        self.book_ref.parse_chapters(temp_dir=self.extract_path)
+        self.book.generate_content(temp_dir=self.extract_path)
 
         toc = []
         content = []
-        for count, i in enumerate(self.book['book_list']):
+        for count, i in enumerate(self.book.content):
             toc.append((i[0], i[1], count + 1))
             content.append(i[2])
 
