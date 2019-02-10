@@ -124,8 +124,8 @@ class BookSorter:
         self.queue = Manager().Queue()
         self.processed_books = []
 
-        # if self.work_mode == 'addition':
-        progress_object_generator()
+        if self.work_mode == 'addition':
+            progress_object_generator()
 
     def database_hashes(self):
         all_hashes_and_paths = database.DatabaseFunctions(
@@ -140,9 +140,6 @@ class BookSorter:
                 i[0]: i[1] for i in all_hashes_and_paths}
 
     def database_entry_for_book(self, file_hash):
-        # TODO
-        # This will probably look a whole lot better with a namedtuple
-
         database_return = database.DatabaseFunctions(
             self.database_path).fetch_data(
                 ('Title', 'Author', 'Year', 'ISBN', 'Tags',
@@ -187,7 +184,8 @@ class BookSorter:
                     or os.path.exists(self.hashes_and_paths[file_md5])):
 
                 if not self.hashes_and_paths[file_md5] == filename:
-                    warning_string = f'{os.path.basename(filename)} is already in database'
+                    warning_string = (
+                        f'{os.path.basename(filename)} is already in database')
                     logger.warning(warning_string)
                 return
 
@@ -214,8 +212,9 @@ class BookSorter:
 
         try:
             book_ref.read_book()
-        except:
-            logger.error('Error initializing: ' + filename)
+        except Exception as e:
+            this_error = f'Error initializing: {filename} {type(e).__name__} Arguments: {e.args}'
+            logger.exception(this_error)
             return
 
         this_book = {}
@@ -227,8 +226,10 @@ class BookSorter:
         if self.work_mode == 'addition':
             try:
                 metadata = book_ref.generate_metadata()
-            except:
-                logger.error('Metadata generation error: ' + filename)
+            except Exception as e:
+                this_error = (
+                    f'Metadata generation error: {filename} {type(e).__name__} Arguments: {e.args}')
+                logger.exception(this_error)
                 return
 
             title = metadata.title
@@ -255,16 +256,24 @@ class BookSorter:
         if self.work_mode == 'reading':
             try:
                 book_breakdown = book_ref.generate_content()
-            except KeyboardInterrupt:
-                logger.error('Content generation error: ' + filename)
+            except Exception as e:
+                this_error = (
+                    f'Content generation error: {filename} {type(e).__name__} Arguments: {e.args}')
+                logger.exception(this_error)
                 return
 
             toc = book_breakdown[0]
             content = book_breakdown[1]
             images_only = book_breakdown[2]
 
-            book_data = self.database_entry_for_book(file_md5)
-            title = book_data[0]
+            try:
+                book_data = self.database_entry_for_book(file_md5)
+            except TypeError:
+                logger.error(
+                    f'Database error: {filename}. Re-add book to program')
+                return
+
+            title = book_data[0].replace('&', '&&')
             author = book_data[1]
             year = book_data[2]
             isbn = book_data[3]

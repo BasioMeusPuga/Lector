@@ -17,7 +17,6 @@
 # TODO
 # See if inserting chapters not in the toc.ncx can be avoided
 # Account for stylesheets... eventually
-# Everything needs logging
 
 import os
 import zipfile
@@ -40,6 +39,7 @@ class EPUB:
         self.zip_file = None
         self.file_list = None
         self.opf_dict = None
+        self.cover_image_name = None
         self.split_chapters = {}
 
         self.metadata = None
@@ -89,7 +89,7 @@ class EPUB:
                     return i
 
         # If the file isn't found
-        logging.error(filename + ' not found in ' + self.book_filename)
+        logger.error(filename + ' not found in ' + self.book_filename)
         return False
 
     def generate_toc(self):
@@ -247,25 +247,19 @@ class EPUB:
         toc_chapters = [
             unquote(i[2].split('#')[0]) for i in self.content]
 
-        # TODO
-        # This totally borks the order
-
-        last_valid_index = -2  # Yes, but why?
         for i in spine_final:
             if not i in toc_chapters:
-                previous_chapter = spine_final[spine_final.index(i) - 1]
-                try:
+                spine_index = spine_final.index(i)
+                if spine_index == 0:  # Or chapter insertion circles back to the end
+                    previous_chapter_toc_index = -1
+                else:
+                    previous_chapter = spine_final[spine_final.index(i) - 1]
                     previous_chapter_toc_index = toc_chapters.index(previous_chapter)
-                    # In case of 2+ consecutive missing chapters
-                    last_valid_index = previous_chapter_toc_index
-                except ValueError:
-                    last_valid_index += 1
 
-                # Chapters are currently named None
-                # Blank chapters will later be removed
-                # and the None will be replaced by a number
+                toc_chapters.insert(
+                    previous_chapter_toc_index + 1, i)
                 self.content.insert(
-                    last_valid_index + 1, [1, None, i])
+                    previous_chapter_toc_index + 1, [1, None, i])
 
         # Parse split chapters as below
         # They can be picked up during the iteration through the toc
@@ -334,28 +328,42 @@ class EPUB:
                 chapter_title = i[1]
                 if not chapter_title:
                     chapter_title = unnamed_chapter_title
-                    unnamed_chapter_title += 1
                 content_copy.append((
                     i[0], str(chapter_title), i[2]))
+            unnamed_chapter_title += 1
         self.content = content_copy
-
-        # TODO
-        # This can probably be circumvented by shifting the extraction
-        # to this module and simply getting the path to the cover
 
         # Get cover image and put it in its place
         # I imagine this involves saying nasty things to it
+        # There's no point shifting this to the parser
+        # The performance increase is negligible
         cover_image = self.generate_book_cover()
+
         if cover_image:
             cover_path = os.path.join(
                 self.temp_dir, os.path.basename(self.book_filename)) + ' - cover'
             with open(cover_path, 'wb') as cover_temp:
                 cover_temp.write(cover_image)
 
-            # There's probably some rationale to doing an insert here
-            # But a replacement seems... neater
-            self.content.insert(
-                0, (1, 'Cover', f'<center><img src="{cover_path}" alt="Cover"></center>'))
+            # This is probably stupid, but I can't stand the idea of
+            # having to look at two book covers
+            cover_replacement_conditions = (
+                self.cover_image_name.lower() + '.jpg' in self.content[0][2].lower(),
+                self.cover_image_name.lower() + '.png' in self.content[0][2].lower(),
+                'cover' in self.content[0][1].lower())
+
+            if True in cover_replacement_conditions:
+                logger.info(
+                    f'Replacing cover {cover_replacement_conditions}: {self.book_filename}')
+                self.content[0] = (
+                    1, 'Cover',
+                    f'<center><img src="{cover_path}" alt="Cover"></center>')
+            else:
+                logger.info('Adding cover: ' + self.book_filename)
+                self.content.insert(
+                    0,
+                    (1, 'Cover',
+                     f'<center><img src="{cover_path}" alt="Cover"></center>'))
 
     def generate_metadata(self):
         book_metadata = self.opf_dict['package']['metadata']
@@ -443,6 +451,8 @@ class EPUB:
                 if i['@media-type'].split('/')[0] == 'image' and
                 'cover' in i['@id']][0]
             book_cover = self.zip_file.read(self.find_file(cover_image))
+            self.cover_image_name = os.path.splitext(
+                os.path.basename(cover_image))[0]
         except:
             pass
 

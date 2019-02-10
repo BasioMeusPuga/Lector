@@ -27,11 +27,7 @@ class ParsePDF:
         self.book = None
 
     def read_book(self):
-        try:
-            self.book = fitz.open(self.filename)
-            return True
-        except RuntimeError:
-            return False
+        self.book = fitz.open(self.filename)
 
     def generate_metadata(self):
         title = self.book.metadata['title']

@@ -521,30 +521,37 @@ class Tab(QtWidgets.QWidget):
                 'center': QtCore.Qt.AlignCenter,
                 'justify': QtCore.Qt.AlignJustify}
 
-            # Adjusted for books without covers
-            current_position = self.metadata['position']['current_chapter']
-            chapter_name = self.metadata['toc'][current_position - 1][1]
-
-            if current_position == 1 and chapter_name == 'Cover':
-                block_format.setAlignment(
-                    QtCore.Qt.AlignVCenter | QtCore.Qt.AlignHCenter)
-            else:
-                block_format.setAlignment(alignment_dict[text_alignment])
-
             # Also for padding
             # Using setViewPortMargins for this disables scrolling in the margins
             block_format.setLeftMargin(padding)
             block_format.setRightMargin(padding)
 
             this_cursor = self.contentView.textCursor()
-            this_cursor.movePosition(QtGui.QTextCursor.Start, 0, 1)
+            this_cursor.setPosition(QtGui.QTextCursor.Start)
 
-            # Iterate over the entire document block by block
-            # The document ends when the cursor position can no longer be incremented
             while True:
+                # So this fixes the stupid repetitive iteration
+                # I was doing over the entire thing
+                # It also allows for all images to be center aligned.
+                # Magic. *jazz hands*
+                block_text = this_cursor.block().text().strip()
+                try:
+                    # Object replacement char - Seems to work with images
+                    if ord(block_text) == 65532:
+                        block_format.setAlignment(
+                            QtCore.Qt.AlignVCenter | QtCore.Qt.AlignHCenter)
+                    else:
+                        raise TypeError
+                except TypeError:
+                    block_format.setAlignment(alignment_dict[text_alignment])
+
+                # Iterate over the entire document block by block
+                # The document ends when the cursor position can no longer be incremented
                 old_position = this_cursor.position()
                 this_cursor.mergeBlockFormat(block_format)
-                this_cursor.movePosition(QtGui.QTextCursor.NextBlock, 0, 1)
+                this_cursor.movePosition(
+                    QtGui.QTextCursor.NextBlock, QtGui.QTextCursor.MoveAnchor)
+
                 new_position = this_cursor.position()
                 if old_position == new_position:
                     break

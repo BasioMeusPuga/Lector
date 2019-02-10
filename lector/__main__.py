@@ -302,9 +302,10 @@ class MainUI(QtWidgets.QMainWindow, mainwindow.Ui_MainWindow):
             for count, i in enumerate(self.settings['main_window_headers']):
                 self.tableView.horizontalHeader().resizeSection(count, int(i))
         self.tableView.horizontalHeader().resizeSection(5, 30)
-        self.tableView.horizontalHeader().setStretchLastSection(False)
+        self.tableView.horizontalHeader().setStretchLastSection(True)
         self.tableView.horizontalHeader().sectionClicked.connect(
             self.lib_ref.tableProxyModel.sort_table_columns)
+        self.lib_ref.tableProxyModel.sort_table_columns(2)
         self.tableView.setContextMenuPolicy(QtCore.Qt.CustomContextMenu)
         self.tableView.customContextMenuRequested.connect(
             self.generate_library_context_menu)
@@ -360,7 +361,6 @@ class MainUI(QtWidgets.QMainWindow, mainwindow.Ui_MainWindow):
     def process_post_hoc_files(self, file_list, open_files_after_processing):
         # Takes care of both dragged and dropped files
         # As well as files sent as command line arguments
-
         file_list = [i for i in file_list if os.path.exists(i)]
         if not file_list:
             return
@@ -390,7 +390,6 @@ class MainUI(QtWidgets.QMainWindow, mainwindow.Ui_MainWindow):
         # This allows for threading file opening
         # Which should speed up multiple file opening
         # especially @ application start
-
         file_paths = [i for i in path_hash_dictionary]
 
         for filename in path_hash_dictionary.items():
@@ -520,15 +519,15 @@ class MainUI(QtWidgets.QMainWindow, mainwindow.Ui_MainWindow):
         self.thread.finished.connect(self.move_on)
         self.thread.start()
 
-    def get_selection(self, library_widget):
+    def get_selection(self):
         selected_indexes = None
 
-        if library_widget == self.listView:
+        if self.listView.isVisible():
             selected_books = self.lib_ref.itemProxyModel.mapSelectionToSource(
                 self.listView.selectionModel().selection())
             selected_indexes = [i.indexes()[0] for i in selected_books]
 
-        elif library_widget == self.tableView:
+        elif self.tableView.isVisible():
             selected_books = self.tableView.selectionModel().selectedRows()
             selected_indexes = [
                 self.lib_ref.tableProxyModel.mapToSource(i) for i in selected_books]
@@ -536,16 +535,10 @@ class MainUI(QtWidgets.QMainWindow, mainwindow.Ui_MainWindow):
         return selected_indexes
 
     def delete_books(self, selected_indexes=None):
-        if not selected_indexes:
-            # Get a list of QItemSelection objects
-            # What we're interested in is the indexes()[0] in each of them
-            # That gives a list of indexes from the view model
-            if self.listView.isVisible():
-                selected_indexes = self.get_selection(self.listView)
-
-            elif self.tableView.isVisible():
-                selected_indexes = self.get_selection(self.tableView)
-
+        # Get a list of QItemSelection objects
+        # What we're interested in is the indexes()[0] in each of them
+        # That gives a list of indexes from the view model
+        selected_indexes = self.get_selection()
         if not selected_indexes:
             return
 
@@ -572,10 +565,9 @@ class MainUI(QtWidgets.QMainWindow, mainwindow.Ui_MainWindow):
             self.thread.start()
 
         # Generate a message box to confirm deletion
-        selected_number = len(selected_indexes)
         confirm_deletion = QtWidgets.QMessageBox()
         deletion_prompt = self._translate(
-            'Main_UI', f'Delete {selected_number} book(s)?')
+            'Main_UI', f'Delete book(s)?')
         confirm_deletion.setText(deletion_prompt)
         confirm_deletion.setIcon(QtWidgets.QMessageBox.Question)
         confirm_deletion.setWindowTitle(self._translate('Main_UI', 'Confirm deletion'))
@@ -770,6 +762,7 @@ class MainUI(QtWidgets.QMainWindow, mainwindow.Ui_MainWindow):
             signal_sender = None
         else:
             signal_sender = self.sender().objectName()
+
         self.profile_functions.modify_comic_view(
             signal_sender, key_pressed)
 
@@ -805,7 +798,7 @@ class MainUI(QtWidgets.QMainWindow, mainwindow.Ui_MainWindow):
 
         # It's worth remembering that these are indexes of the libraryModel
         # and NOT of the proxy models
-        selected_indexes = self.get_selection(self.sender())
+        selected_indexes = self.get_selection()
 
         context_menu = QtWidgets.QMenu()
 

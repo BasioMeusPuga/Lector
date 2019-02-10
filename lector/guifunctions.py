@@ -241,6 +241,7 @@ class ViewProfileModification:
         self.format_contentView()
 
     def modify_comic_view(self, signal_sender, key_pressed):
+        comic_profile = self.main_window.comic_profile
         current_tab = self.tabWidget.widget(self.tabWidget.currentIndex())
 
         self.bookToolBar.fitWidth.setChecked(False)
@@ -248,34 +249,35 @@ class ViewProfileModification:
         self.bookToolBar.originalSize.setChecked(False)
 
         if signal_sender == 'zoomOut' or key_pressed == QtCore.Qt.Key_Minus:
-            self.comic_profile['zoom_mode'] = 'manualZoom'
-            self.comic_profile['padding'] += 50
+            comic_profile['zoom_mode'] = 'manualZoom'
+            comic_profile['padding'] += 50
 
             # This prevents infinite zoom out
-            if self.comic_profile['padding'] * 2 > current_tab.contentView.viewport().width():
-                self.comic_profile['padding'] -= 50
+            if comic_profile['padding'] * 2 > current_tab.contentView.viewport().width():
+                comic_profile['padding'] -= 50
 
-        if signal_sender == 'zoomIn' or key_pressed in (QtCore.Qt.Key_Plus, QtCore.Qt.Key_Equal):
-            self.comic_profile['zoom_mode'] = 'manualZoom'
-            self.comic_profile['padding'] -= 50
+        if signal_sender == 'zoomIn' or key_pressed in (
+                QtCore.Qt.Key_Plus, QtCore.Qt.Key_Equal):
+            comic_profile['zoom_mode'] = 'manualZoom'
+            comic_profile['padding'] -= 50
 
             # This prevents infinite zoom in
-            if self.comic_profile['padding'] < 0:
-                self.comic_profile['padding'] = 0
+            if comic_profile['padding'] < 0:
+                comic_profile['padding'] = 0
 
         if signal_sender == 'fitWidth' or key_pressed == QtCore.Qt.Key_W:
-            self.comic_profile['zoom_mode'] = 'fitWidth'
-            self.comic_profile['padding'] = 0
+            comic_profile['zoom_mode'] = 'fitWidth'
+            comic_profile['padding'] = 0
             self.bookToolBar.fitWidth.setChecked(True)
 
         # Padding in the following cases is decided by
         # the image pixmap loaded by the widget
         if signal_sender == 'bestFit' or key_pressed == QtCore.Qt.Key_B:
-            self.comic_profile['zoom_mode'] = 'bestFit'
+            comic_profile['zoom_mode'] = 'bestFit'
             self.bookToolBar.bestFit.setChecked(True)
 
         if signal_sender == 'originalSize' or key_pressed == QtCore.Qt.Key_O:
-            self.comic_profile['zoom_mode'] = 'originalSize'
+            comic_profile['zoom_mode'] = 'originalSize'
             self.bookToolBar.originalSize.setChecked(True)
 
         self.format_contentView()
@@ -290,7 +292,6 @@ class ViewProfileModification:
 
         if current_metadata['images_only']:
             background = self.comic_profile['background']
-            padding = self.comic_profile['padding']
             zoom_mode = self.comic_profile['zoom_mode']
 
             if zoom_mode == 'fitWidth':
@@ -304,7 +305,7 @@ class ViewProfileModification:
                 'background-color: %s' % background.name())
 
             current_tab.format_view(
-                None, None, None, background, padding, None, None)
+                None, None, None, background, None, None, None)
 
         else:
             profile_index = self.bookToolBar.profileBox.currentIndex()

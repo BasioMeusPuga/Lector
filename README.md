@@ -21,6 +21,7 @@ Bitcoin: 17jaxj26vFJNqQ2hEVerbBV5fpTusfqFro
 | PyQt5 | 5.10.1 |
 | python-lxml | 4.3.0 |
 | python-beautifulsoup4 | 4.6.0 |
+| python-xmltodict | 0.11.0 |
 
 ### Optional
 | Package | Version tested |
