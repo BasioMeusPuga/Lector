@@ -12,6 +12,7 @@ Currently supports:
 
 ## Contribute
 [Paypal](https://www.paypal.me/supportlector)
+
 Bitcoin: 17jaxj26vFJNqQ2hEVerbBV5fpTusfqFro
 
 ## Requirements
@@ -31,7 +32,7 @@ Bitcoin: 17jaxj26vFJNqQ2hEVerbBV5fpTusfqFro
 
 ## Support
 When reporting issues:
-* Make sure you're at the latest commit
+* Make sure you're at the latest commit.
 * Run with `$EXECUTABLEPATH debug`.
 * Include the log `~/.local/share/Lector/Lector.log` AND terminal output.
 * If you're having trouble with a book while the rest of the application / other books work, please link to a copy of the book itself.
