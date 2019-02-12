@@ -64,6 +64,8 @@ class FB2:
             'author').getText(separator=' ').replace('\n', ' ')
         if author == '' or author is None:
             author = '<Unknown>'
+        else:
+            author = author.strip()
 
         # TODO
         # Account for other date formats

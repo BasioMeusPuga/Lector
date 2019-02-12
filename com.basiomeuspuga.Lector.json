@@ -1,7 +1,7 @@
 {
 	"app-id":"com.basiomeuspuga.Lector",
 	"runtime":"org.kde.Platform",
-	"runtime-version":"5.10",
+	"runtime-version":"5.12",
 	"sdk":"org.kde.Sdk",
 	"command":"lector",
 	"rename-icon":"Lector",
@@ -21,74 +21,107 @@
 	},
 	"modules":[
 		{
-            "name": "python",
-            "sources": [
-                {
-                    "type": "archive",
-                    "url": "https://www.python.org/ftp/python/3.6.4/Python-3.6.4.tar.xz",
-                    "sha256": "159b932bf56aeaa76fd66e7420522d8c8853d486b8567c459b84fe2ed13bcaba"
-                }
-            ]
-        },
-		  {
-            "name": "pyqt5",
+            "name": "PyQt5",
             "buildsystem": "simple",
             "build-commands": [
-                "pip3 install --prefix=/app PyQt5-5.10.1-5.10.1-cp35.cp36.cp37.cp38-abi3-manylinux1_x86_64.whl"
+                "pip3 install --prefix=/app PyQt5-5.12-5.12.1-cp35.cp36.cp37.cp38-abi3-manylinux1_x86_64.whl"
 			],
 			"modules":[
 				{
-					"name":"sip",
+					"name":"PyQt5-sip",
 					"sources":[
 						{
 							"type":"file",
-							"url":"https://pypi.python.org/packages/8a/ea/d317ce5696dda4df7c156cd60447cda22833b38106c98250eae1451f03ec/sip-4.19.8-cp36-cp36m-manylinux1_x86_64.whl",
-							"sha256":"cf98150a99e43fda7ae22abe655b6f202e491d6291486548daa56cb15a2fcf85"
+							"url":"https://files.pythonhosted.org/packages/ae/9c/74fba0b62a0756d214f9aded5b0184130f7866def7532fa68823f34feefa/PyQt5_sip-4.19.14-cp37-cp37m-manylinux1_x86_64.whl",
+							"sha256":"04bd0bb8b6f8fa03c2dfbdfff0c8c9bfb3f46a21dd4cac73983dae93bf949523"
 						}
 					],
 					"buildsystem":"simple",
 					"build-commands":[
-						"pip3 install --prefix=/app sip-4.19.8-cp36-cp36m-manylinux1_x86_64.whl"
+						"pip3 install --prefix=/app PyQt5_sip-4.19.14-cp37-cp37m-manylinux1_x86_64.whl"
 					]
 				}
 			],
             "sources": [
                 {
                     "type": "file",
-                    "url": "https://pypi.python.org/packages/e4/15/4e2e49f64884edbab6f833c6fd3add24d7938f2429aec1f2883e645d4d8f/PyQt5-5.10.1-5.10.1-cp35.cp36.cp37.cp38-abi3-manylinux1_x86_64.whl",
-                    "sha256": "1e652910bd1ffd23a3a48c510ecad23a57a853ed26b782cd54b16658e6f271ac"
+                    "url": "https://files.pythonhosted.org/packages/5e/91/9ac8827d0af428e756f461a3aa7bcbc53d6450edfe026e27569f5ff3689e/PyQt5-5.12-5.12.1-cp35.cp36.cp37.cp38-abi3-manylinux1_x86_64.whl",
+                    "sha256": "fd5946795b39922f971cf92dec799aadc7544b7fa993a79b9f6059f13d817e6e"
                 }
             ]
         },
 		{
-			"name":"beautifulsoup",
+			"name":"beautifulsoup4",
 			"buildsystem":"simple",
 			"sources":[
 				{
-					"type":"archive",
-					"url":"https://pypi.python.org/packages/fa/8d/1d14391fdaed5abada4e0f63543fef49b8331a34ca60c88bd521bcf7f782/beautifulsoup4-4.6.0.tar.gz",
-					"sha256":"808b6ac932dccb0a4126558f7dfdcf41710dd44a4ef497a0bb59a77f9f078e89"
+					"type":"file",
+					"url":"https://files.pythonhosted.org/packages/1d/5d/3260694a59df0ec52f8b4883f5d23b130bc237602a1411fa670eae12351e/beautifulsoup4-4.7.1-py3-none-any.whl",
+					"sha256":"034740f6cb549b4e932ae1ab975581e6103ac8f942200a0e9759065984391858"
+				}
+			],
+			"modules":[
+				{
+					"name": "soupsieve",
+					"sources":[
+						{
+							"type":"file",
+							"url":"https://files.pythonhosted.org/packages/bf/b3/2473abf05c4950c6a829ed5dcbc40d8b56d4351d15d6939c8ffb7c6b1a14/soupsieve-1.7.3-py2.py3-none-any.whl",
+							"sha256":"466910df7561796a60748826781ebe9a888f7a1668a636ae86783f44d10aae73"
+						}
+					],
+					"buildsystem":"simple",
+					"build-commands":[
+						"pip3 install --prefix=/app soupsieve-1.7.3-py2.py3-none-any.whl"
+					]
 				}
 			],
 			"build-commands":[
-				"python3 setup.py build",
-				"python3 setup.py install --prefix=/app"
+				"pip3 install --prefix=/app beautifulsoup4-4.7.1-py3-none-any.whl"
 			]
 		},
-        {
-            "name": "lxml",
-            "buildsystem": "simple",
+		{
+			"name":"xmltodict",
+			"buildsystem":"simple",
+			"sources":[
+				{
+					"type": "file",
+					"url":"https://files.pythonhosted.org/packages/28/fd/30d5c1d3ac29ce229f6bdc40bbc20b28f716e8b363140c26eff19122d8a5/xmltodict-0.12.0-py2.py3-none-any.whl",
+					"sha256":"8bbcb45cc982f48b2ca8fe7e7827c5d792f217ecf1792626f808bf41c3b86051"
+				}
+			],
+			"build-commands":[
+				"pip3 install --prefix=/app xmltodict-0.12.0-py2.py3-none-any.whl"
+			]
+		},
+		{
+            "name":"PyMuPDF",
+            "buildsystem":"simple",
             "build-commands": [
-                "pip3 install --prefix=/app lxml-4.2.1-cp36-cp36m-manylinux1_x86_64.whl"
+                "pip3 install --prefix=/app PyMuPDF-1.14.8-cp37-cp37m-manylinux1_x86_64.whl"
             ],
-            "sources": [
+            "sources":[
                 {
                     "type": "file",
-                    "url": "https://pypi.python.org/packages/a7/b9/ccf46cea0f698b40bca2a9c1a44039c336fe1988b82de4f7353be7a8396a/lxml-4.2.1-cp36-cp36m-manylinux1_x86_64.whl",
-                    "sha256": "0e3cd94c95d30ba9ca3cff40e9b2a14e1a10a4fd8131105b86c6b61648f57e4b"
+                    "url": "https://files.pythonhosted.org/packages/3c/df/4bfaee2631b505d502c2ba64aa437799f0a64125edb1d4c4c38044ad1ecc/PyMuPDF-1.14.8-cp37-cp37m-manylinux1_x86_64.whl",
+                    "sha256": "a49798b58cce00e09b8a4431a5f64a400b11a0959f29507187c471208ce040a5"
                 }
             ]
         },
+        {
+			"name":"lxml",
+			"buildsystem":"simple",
+			"sources":[
+				{
+					"type":"file",
+					"url":"https://files.pythonhosted.org/packages/08/f2/04bf04e42c070f65b64dbde02d2c94851251f19f5e9f803cc8f8bc61ac77/lxml-4.3.1-cp37-cp37m-manylinux1_x86_64.whl",
+					"sha256":"c0a7751ba1a4bfbe7831920d98cee3ce748007eab8dfda74593d44079568219a"
+				}
+			],
+			"build-commands":[
+				"pip3 install --prefix=/app lxml-4.3.1-cp37-cp37m-manylinux1_x86_64.whl"
+			]
+		},
 		{
 			"name":"lector",
 			"buildsystem":"simple",

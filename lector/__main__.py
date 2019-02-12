@@ -165,7 +165,10 @@ class MainUI(QtWidgets.QMainWindow, mainwindow.Ui_MainWindow):
         self.libraryToolBar.reloadLibraryButton.triggered.connect(
             self.settingsDialog.start_library_scan)
         self.libraryToolBar.colorButton.triggered.connect(self.get_color)
-        self.libraryToolBar.settingsButton.triggered.connect(self.show_settings)
+        self.libraryToolBar.settingsButton.triggered.connect(
+            lambda: self.show_settings(0))
+        self.libraryToolBar.aboutButton.triggered.connect(
+            lambda: self.show_settings(3))
         self.libraryToolBar.searchBar.textChanged.connect(self.lib_ref.update_proxymodels)
         self.libraryToolBar.sortingBox.activated.connect(self.lib_ref.update_proxymodels)
         self.libraryToolBar.libraryFilterButton.setPopupMode(QtWidgets.QToolButton.InstantPopup)
@@ -369,7 +372,7 @@ class MainUI(QtWidgets.QMainWindow, mainwindow.Ui_MainWindow):
             file_list,
             ('addition', 'manual'),
             self.database_path,
-            self.settings['auto_tags'],
+            self.settings,
             self.temp_dir.path())
 
         parsed_books = books.initiate_threads()
@@ -423,7 +426,7 @@ class MainUI(QtWidgets.QMainWindow, mainwindow.Ui_MainWindow):
             file_paths,
             ('reading', None),
             self.database_path,
-            True,
+            self.settings,
             self.temp_dir.path()).initiate_threads()
 
         # TODO
@@ -739,9 +742,15 @@ class MainUI(QtWidgets.QMainWindow, mainwindow.Ui_MainWindow):
             else:
                 self.statusBar.setVisible(True)
 
-    def show_settings(self):
+    def show_settings(self, stacked_widget_index):
         if not self.settingsDialog.isVisible():
             self.settingsDialog.show()
+            self.settingsDialog.okButton.setVisible(False)
+            index = self.settingsDialog.listModel.index(
+                stacked_widget_index, 0)
+            self.settingsDialog.listView.setCurrentIndex(index)
+            self.settingsDialog.stackedWidget.setCurrentIndex(
+                stacked_widget_index)
         else:
             self.settingsDialog.hide()
 

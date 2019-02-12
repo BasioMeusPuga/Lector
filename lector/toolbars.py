@@ -383,16 +383,6 @@ class LibraryToolBar(QtWidgets.QToolBar):
             image_factory.get_image('remove'),
             self._translate('LibraryToolBar', 'Delete book'),
             self)
-        self.colorButton = QtWidgets.QAction(
-            image_factory.get_image('color-picker'),
-            self._translate('LibraryToolBar', 'Library background color'),
-            self)
-        self.colorButton.setObjectName('libraryBackground')
-        self.settingsButton = QtWidgets.QAction(
-            image_factory.get_image('settings'),
-            self._translate('LibraryToolBar', 'Settings'),
-            self)
-        self.settingsButton.setCheckable(True)
 
         self.coverViewButton = QtWidgets.QAction(
             image_factory.get_image('view-grid'),
@@ -416,6 +406,22 @@ class LibraryToolBar(QtWidgets.QToolBar):
         self.libraryFilterButton.setToolTip(
             self._translate('LibraryToolBar', 'Filter library'))
 
+        self.colorButton = QtWidgets.QAction(
+            image_factory.get_image('color-picker'),
+            self._translate('LibraryToolBar', 'Library background color'),
+            self)
+        self.colorButton.setObjectName('libraryBackground')
+        self.settingsButton = QtWidgets.QAction(
+            image_factory.get_image('settings'),
+            self._translate('LibraryToolBar', 'Settings'),
+            self)
+        self.settingsButton.setCheckable(True)
+
+        self.aboutButton = QtWidgets.QAction(
+            image_factory.get_image('about'),
+            self._translate('LibraryToolBar', 'About'),
+            self)
+
         # Auto unchecks the other QToolButton in case of clicking
         self.viewButtons = QtWidgets.QActionGroup(self)
         self.viewButtons.setExclusive(True)
@@ -434,6 +440,7 @@ class LibraryToolBar(QtWidgets.QToolBar):
         self.addSeparator()
         self.addAction(self.colorButton)
         self.addAction(self.settingsButton)
+        self.addAction(self.aboutButton)
 
         # Filter
         sizePolicy = QtWidgets.QSizePolicy(

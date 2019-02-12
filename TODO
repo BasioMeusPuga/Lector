@@ -33,6 +33,8 @@ TODO
         ✓ Include (action) icons with the applications
         ✓ Drag and drop support for the library
         ✓ Tab reordering
+        Additional Settings:
+           ✓ Create covers for books without them - VERY SLOW
         Set focus to newly added file
     Reading:
         ✓ Drop down for TOC
@@ -101,7 +103,6 @@ TODO
         Additional Settings:
             Disable progressbar - 20% book addition speed improvement
             Disable cover loading when reading - Saves ~2M / book
-            Create covers for books without them - VERY SLOW
         Special formatting for each chapter's title
         Signal end of chapter with some text
         Graphical themes
