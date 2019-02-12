@@ -429,15 +429,15 @@ class MainUI(QtWidgets.QMainWindow, mainwindow.Ui_MainWindow):
         logger.info(
             'Attempting to open: ' + ', '.join(file_paths))
 
-        contents = sorter.BookSorter(
+        contents, errors = sorter.BookSorter(
             file_paths,
             ('reading', None),
             self.database_path,
             self.settings,
             self.temp_dir.path()).initiate_threads()
 
-        # TODO
-        # Notification feedback in case all books return nothing
+        if errors:
+            self.display_error_notification(errors)
 
         if not contents:
             logger.error('No parseable files found')
