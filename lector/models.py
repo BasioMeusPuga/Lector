@@ -343,4 +343,3 @@ class MostExcellentFileSystemModel(QtWidgets.QFileSystemModel):
 
         for i in deletable:
             del self.tag_data[i]
-

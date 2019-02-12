@@ -55,6 +55,7 @@ class BackGroundBookAddition(QtCore.QThread):
         self.database_path = database_path
         self.addition_mode = addition_mode
         self.main_window = main_window
+        self.errors = []
 
         self.prune_required = True
         if self.addition_mode == 'manual':
@@ -68,7 +69,7 @@ class BackGroundBookAddition(QtCore.QThread):
             self.main_window.settings,
             self.main_window.temp_dir.path())
 
-        parsed_books = books.initiate_threads()
+        parsed_books, self.errors = books.initiate_threads()
         self.main_window.lib_ref.generate_model('addition', parsed_books, False)
         database.DatabaseFunctions(self.database_path).add_to_database(parsed_books)
 

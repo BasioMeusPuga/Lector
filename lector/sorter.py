@@ -123,6 +123,7 @@ class BookSorter:
 
         self.threading_completed = []
         self.queue = Manager().Queue()
+        self.errors = Manager().list()
         self.processed_books = []
 
         if self.work_mode == 'addition':
@@ -214,8 +215,9 @@ class BookSorter:
         try:
             book_ref.read_book()
         except Exception as e:
-            this_error = f'Error initializing: {filename} {type(e).__name__} Arguments: {e.args}'
-            logger.exception(this_error)
+            this_error = f'Error initializing: {filename}'
+            self.errors.append(this_error)
+            logger.exception(this_error + f' {type(e).__name__} Arguments: {e.args}')
             return
 
         this_book = {}
@@ -228,9 +230,9 @@ class BookSorter:
             try:
                 metadata = book_ref.generate_metadata()
             except Exception as e:
-                this_error = (
-                    f'Metadata generation error: {filename} {type(e).__name__} Arguments: {e.args}')
-                logger.exception(this_error)
+                this_error = f'Metadata generation error: {filename}'
+                self.errors.append(this_error)
+                logger.exception(this_error + f' {type(e).__name__} Arguments: {e.args}')
                 return
 
             title = metadata.title
@@ -257,9 +259,9 @@ class BookSorter:
             try:
                 book_breakdown = book_ref.generate_content()
             except Exception as e:
-                this_error = (
-                    f'Content generation error: {filename} {type(e).__name__} Arguments: {e.args}')
-                logger.exception(this_error)
+                this_error = f'Content generation error: {filename}'
+                self.errors.append(this_error)
+                logger.exception(this_error + f' {type(e).__name__} Arguments: {e.args}')
                 return
 
             toc = book_breakdown[0]
@@ -347,7 +349,8 @@ class BookSorter:
         del self.processed_books
         processing_time = str(time.time() - start_time)
         logger.info('Finished processing in ' + processing_time)
-        return return_books
+
+        return return_books, self.errors
 
 
 def progress_object_generator():

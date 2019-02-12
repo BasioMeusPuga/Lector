@@ -34,9 +34,9 @@ from PyQt5 import QtWidgets, QtGui, QtCore
 # Init logging
 # Must be done first and at the module level
 # or it won't work properly in case of the imports below
-from lector.logger import init_logging
+from lector.logger import init_logging, VERSION
 logger = init_logging(sys.argv)
-logger.log(60, 'Application started')
+logger.log(60, f'Lector {VERSION} - Application started')
 
 from lector import database
 from lector import sorter
@@ -127,6 +127,13 @@ class MainUI(QtWidgets.QMainWindow, mainwindow.Ui_MainWindow):
         # Statusbar widgets
         self.statusMessage.setObjectName('statusMessage')
         self.statusBar.addPermanentWidget(self.statusMessage)
+        self.errorButton = QtWidgets.QPushButton(self.statusBar)
+        self.errorButton.setIcon(QtGui.QIcon(':/images/error.svg'))
+        self.errorButton.setFlat(True)
+        self.errorButton.setVisible(False)
+        self.errorButton.setToolTip('What hast thou done?')
+        self.errorButton.clicked.connect(self.show_errors)
+        self.statusBar.addPermanentWidget(self.errorButton)
         self.sorterProgress = QtWidgets.QProgressBar()
         self.sorterProgress.setMaximumWidth(300)
         self.sorterProgress.setObjectName('sorterProgress')
@@ -375,7 +382,7 @@ class MainUI(QtWidgets.QMainWindow, mainwindow.Ui_MainWindow):
             self.settings,
             self.temp_dir.path())
 
-        parsed_books = books.initiate_threads()
+        parsed_books, errors = books.initiate_threads()
         if not parsed_books and not open_files_after_processing:
             return
 
@@ -386,7 +393,7 @@ class MainUI(QtWidgets.QMainWindow, mainwindow.Ui_MainWindow):
         if open_files_after_processing:
             self.open_files(file_dict)
 
-        self.move_on()
+        self.move_on(errors)
 
     def open_files(self, path_hash_dictionary):
         # file_paths is expected to be a dictionary
@@ -461,45 +468,6 @@ class MainUI(QtWidgets.QMainWindow, mainwindow.Ui_MainWindow):
 
         self.tabWidget.setCurrentIndex(self.tabWidget.count() - 1)
 
-    def start_culling_timer(self):
-        if self.settings['perform_culling']:
-            self.culling_timer.start(30)
-
-    def resizeEvent(self, event=None):
-        if event:
-            # This implies a vertical resize event only
-            # We ain't about that lifestyle
-            if event.oldSize().width() == event.size().width():
-                return
-
-        # The hackiness of this hack is just...
-        default_size = 170  # This is size of the QIcon (160 by default) +
-                            # minimum margin needed between thumbnails
-
-        # for n icons, the n + 1th icon will appear at > n +1.11875
-        # First, calculate the number of images per row
-        i = self.listView.viewport().width() / default_size
-        rem = i - int(i)
-        if rem >= .21875 and rem <= .9999:
-            num_images = int(i)
-        else:
-            num_images = int(i) - 1
-
-        # The rest is illustrated using informative variable names
-        space_occupied = num_images * default_size
-        # 12 is the scrollbar width
-        # Larger numbers keep reduce flickering but also increase
-        # the distance from the scrollbar
-        space_left = (
-            self.listView.viewport().width() - space_occupied - 19)
-        try:
-            layout_extra_space_per_image = space_left // num_images
-            self.listView.setGridSize(
-                QtCore.QSize(default_size + layout_extra_space_per_image, 250))
-            self.start_culling_timer()
-        except ZeroDivisionError:  # Initial resize is ignored
-            return
-
     def add_books(self):
         dialog_prompt = self._translate('Main_UI', 'Add books to database')
         ebooks_string = self._translate('Main_UI', 'eBooks')
@@ -519,7 +487,8 @@ class MainUI(QtWidgets.QMainWindow, mainwindow.Ui_MainWindow):
         self.statusMessage.setText(self._translate('Main_UI', 'Adding books...'))
         self.thread = BackGroundBookAddition(
             opened_files[0], self.database_path, 'manual', self)
-        self.thread.finished.connect(self.move_on)
+        self.thread.finished.connect(
+            lambda: self.move_on(self.thread.errors))
         self.thread.start()
 
     def get_selection(self):
@@ -584,7 +553,7 @@ class MainUI(QtWidgets.QMainWindow, mainwindow.Ui_MainWindow):
         if self.tabWidget.currentIndex() == 0:
             self.delete_books()
 
-    def move_on(self):
+    def move_on(self, errors=None):
         self.settingsDialog.okButton.setEnabled(True)
         self.settingsDialog.okButton.setToolTip(
             self._translate('Main_UI', 'Save changes and start library scan'))
@@ -593,8 +562,13 @@ class MainUI(QtWidgets.QMainWindow, mainwindow.Ui_MainWindow):
         self.sorterProgress.setVisible(False)
         self.sorterProgress.setValue(0)
 
-        if self.libraryToolBar.searchBar.text() == '':
-            self.statusBar.setVisible(False)
+        # The errors argument is a list and will only be present
+        # in case of addition and reading
+        if errors:
+            self.display_error_notification(errors)
+        else:
+            if self.libraryToolBar.searchBar.text() == '':
+                self.statusBar.setVisible(False)
 
         self.lib_ref.update_proxymodels()
         self.lib_ref.generate_library_tags()
@@ -735,6 +709,20 @@ class MainUI(QtWidgets.QMainWindow, mainwindow.Ui_MainWindow):
 
         self.open_files(path)
 
+    def display_error_notification(self, errors):
+        self.statusBar.setVisible(True)
+        self.errorButton.setVisible(True)
+
+    def show_errors(self):
+        # TODO
+        # Create a separate viewing area for errors
+        # before showing the log
+
+        self.show_settings(3)
+        self.settingsDialog.aboutTabWidget.setCurrentIndex(1)
+        self.errorButton.setVisible(False)
+        self.statusBar.setVisible(False)
+
     def statusbar_visibility(self):
         if self.sender() == self.libraryToolBar.searchBar:
             if self.libraryToolBar.searchBar.text() == '':
@@ -745,12 +733,9 @@ class MainUI(QtWidgets.QMainWindow, mainwindow.Ui_MainWindow):
     def show_settings(self, stacked_widget_index):
         if not self.settingsDialog.isVisible():
             self.settingsDialog.show()
-            self.settingsDialog.okButton.setVisible(False)
             index = self.settingsDialog.listModel.index(
                 stacked_widget_index, 0)
             self.settingsDialog.listView.setCurrentIndex(index)
-            self.settingsDialog.stackedWidget.setCurrentIndex(
-                stacked_widget_index)
         else:
             self.settingsDialog.hide()
 
@@ -982,6 +967,45 @@ class MainUI(QtWidgets.QMainWindow, mainwindow.Ui_MainWindow):
                 not self.bookToolBar.isVisible())
 
         self.start_culling_timer()
+
+    def start_culling_timer(self):
+        if self.settings['perform_culling']:
+            self.culling_timer.start(30)
+
+    def resizeEvent(self, event=None):
+        if event:
+            # This implies a vertical resize event only
+            # We ain't about that lifestyle
+            if event.oldSize().width() == event.size().width():
+                return
+
+        # The hackiness of this hack is just...
+        default_size = 170  # This is size of the QIcon (160 by default) +
+                            # minimum margin needed between thumbnails
+
+        # for n icons, the n + 1th icon will appear at > n +1.11875
+        # First, calculate the number of images per row
+        i = self.listView.viewport().width() / default_size
+        rem = i - int(i)
+        if rem >= .21875 and rem <= .9999:
+            num_images = int(i)
+        else:
+            num_images = int(i) - 1
+
+        # The rest is illustrated using informative variable names
+        space_occupied = num_images * default_size
+        # 12 is the scrollbar width
+        # Larger numbers keep reduce flickering but also increase
+        # the distance from the scrollbar
+        space_left = (
+            self.listView.viewport().width() - space_occupied - 19)
+        try:
+            layout_extra_space_per_image = space_left // num_images
+            self.listView.setGridSize(
+                QtCore.QSize(default_size + layout_extra_space_per_image, 250))
+            self.start_culling_timer()
+        except ZeroDivisionError:  # Initial resize is ignored
+            return
 
     def closeEvent(self, event=None):
         if event:

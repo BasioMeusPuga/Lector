@@ -1,13 +1,9 @@
 import codecs
 from os import path
 from setuptools import setup, find_packages
+from lector.logger import VERSION
 
 HERE = path.abspath(path.dirname(__file__))
-
-MAJOR_VERSION = '0'
-MINOR_VERSION = '4'
-MICRO_VERSION = '1'
-VERSION = "{}.{}.{}".format(MAJOR_VERSION, MINOR_VERSION, MICRO_VERSION)
 
 # Get the long description from the README file
 with codecs.open(path.join(HERE, 'README.md'), encoding='utf-8') as f:
@@ -73,6 +69,6 @@ setup(
     extras_require={
         'dev': DEV_DEPS,
         'test': TEST_DEPS,
-        'PDF':  ['python-poppler-qt5']
+        'PDF':  ['pymupdf']
     },
 )

@@ -30,6 +30,7 @@ from lector.models import MostExcellentFileSystemModel
 from lector.threaded import BackGroundBookSearch, BackGroundBookAddition
 from lector.resources import settingswindow
 from lector.settings import Settings
+from lector.logger import logger_filename, VERSION
 
 logger = logging.getLogger(__name__)
 
@@ -55,7 +56,10 @@ class SettingsUI(QtWidgets.QDialog, settingswindow.Ui_Dialog):
         install_dir = pathlib.Path(install_dir).parents[1]
         aboutfile_path = os.path.join(install_dir, 'lector', 'resources', 'about.html')
         with open(aboutfile_path) as about_html:
-            self.aboutBox.setHtml(about_html.read())
+            html = about_html.readlines()
+            html.insert(
+                8, f'<h3 style="text-align: center;">v{VERSION}</h3>\n')
+            self.aboutBox.setHtml(''.join(html))
 
         self.paths = None
         self.thread = None
@@ -120,7 +124,7 @@ class SettingsUI(QtWidgets.QDialog, settingswindow.Ui_Dialog):
         self.largeIncrementBox.valueChanged.connect(self.change_increment)
 
         # Generate the QStandardItemModel for the listView
-        self.listModel = QtGui.QStandardItemModel()
+        self.listModel = QtGui.QStandardItemModel(self.listView)
 
         library_string = self._translate('SettingsUI', 'Library')
         switches_string = self._translate('SettingsUI', 'Switches')
@@ -143,7 +147,9 @@ class SettingsUI(QtWidgets.QDialog, settingswindow.Ui_Dialog):
                 self.main_window.QImageFactory.get_image(this_icon))
             self.listModel.appendRow(item)
         self.listView.setModel(self.listModel)
-        self.listView.clicked.connect(self.page_switch)
+
+        # Custom signal to account for page changes
+        self.listView.newIndexSignal.connect(self.list_index_changed)
 
         # Annotation related buttons
         # Icon names
@@ -175,10 +181,36 @@ class SettingsUI(QtWidgets.QDialog, settingswindow.Ui_Dialog):
         # Generate the filesystem treeView
         self.generate_tree()
 
+        # About... About
+        self.aboutTabWidget.setDocumentMode(True)
+        self.aboutTabWidget.setContentsMargins(0, 0, 0, 0)
+        self.logBox.setReadOnly(True)
+
+        # About buttons
+        self.resetButton.clicked.connect(self.delete_database)
+        self.clearLogButton.clicked.connect(self.clear_log)
+
         # Hide the image annotation tab
         # TODO
         # Maybe get off your lazy ass and write something for this
+        self.tabWidget.setContentsMargins(0, 0, 0, 0)
         self.tabWidget.tabBar().setVisible(False)
+
+    def list_index_changed(self, index):
+        switch_to = index.row()
+        self.stackedWidget.setCurrentIndex(switch_to)
+
+        valid_buttons = {
+            0: (self.okButton,),
+            3: (self.resetButton, self.clearLogButton),}
+
+        for i in valid_buttons:
+            if i == switch_to:
+                for j in valid_buttons[i]:
+                    j.setVisible(True)
+            else:
+                for j in valid_buttons[i]:
+                    j.setVisible(False)
 
     def generate_tree(self):
         # Fetch all directories in the database
@@ -203,7 +235,8 @@ class SettingsUI(QtWidgets.QDialog, settingswindow.Ui_Dialog):
                     'check_state': i[3]}
 
         self.filesystemModel = MostExcellentFileSystemModel(directory_data)
-        self.filesystemModel.setFilter(QtCore.QDir.NoDotAndDotDot | QtCore.QDir.Dirs)
+        self.filesystemModel.setFilter(
+            QtCore.QDir.NoDotAndDotDot | QtCore.QDir.Dirs)
         self.treeView.setModel(self.filesystemModel)
 
         # TODO
@@ -216,7 +249,8 @@ class SettingsUI(QtWidgets.QDialog, settingswindow.Ui_Dialog):
 
         # Set the treeView and QFileSystemModel to its desired state
         selected_paths = [
-            i for i in directory_data if directory_data[i]['check_state'] == QtCore.Qt.Checked]
+            i for i in directory_data
+            if directory_data[i]['check_state'] == QtCore.Qt.Checked]
         expand_paths = set()
         for i in selected_paths:
 
@@ -270,7 +304,6 @@ class SettingsUI(QtWidgets.QDialog, settingswindow.Ui_Dialog):
                     self.show()
                     treeViewIndex = self.listModel.index(0, 0)
                     self.listView.setCurrentIndex(treeViewIndex)
-                    self.page_switch(treeViewIndex)
                     return
             except AttributeError:
                 pass
@@ -317,15 +350,9 @@ class SettingsUI(QtWidgets.QDialog, settingswindow.Ui_Dialog):
         # We now create a new thread to put those files into the database
         self.thread = BackGroundBookAddition(
             self.thread.valid_files, self.database_path, 'automatic', self.main_window)
-        self.thread.finished.connect(self.main_window.move_on)
+        self.thread.finished.connect(
+            lambda: self.main_window.move_on(self.thread.errors))
         self.thread.start()
-
-    def page_switch(self, index):
-        self.stackedWidget.setCurrentIndex(index.row())
-        if index.row() == 0:
-            self.okButton.setVisible(True)
-        else:
-            self.okButton.setVisible(False)
 
     def cancel_pressed(self):
         self.filesystemModel.tag_data = copy.deepcopy(self.tag_data_copy)
@@ -336,8 +363,15 @@ class SettingsUI(QtWidgets.QDialog, settingswindow.Ui_Dialog):
         event.accept()
 
     def showEvent(self, event):
+        # Load log into the plainTextEdit
+        with open(logger_filename) as infile:
+            log_text = infile.read()
+            self.logBox.setPlainText(log_text)
+        # Annotation preview
         self.format_preview()
+        # Make copy of tags in case of a nope.jpg
         self.tag_data_copy = copy.deepcopy(self.filesystemModel.tag_data)
+
         event.accept()
 
     def no_more_settings(self):
@@ -497,3 +531,30 @@ class SettingsUI(QtWidgets.QDialog, settingswindow.Ui_Dialog):
             annotations_out.append(annotation_data)
 
         self.main_window.settings['annotations'] = annotations_out
+
+    def delete_database(self):
+        def ifcontinue(box_button):
+            if box_button.text() != '&Yes':
+                return
+
+            database_filename = os.path.join(
+                self.main_window.database_path, 'Lector.db')
+            os.remove(database_filename)
+            QtWidgets.qApp.exit()
+
+        # Generate a message box to confirm deletion
+        confirm_deletion = QtWidgets.QMessageBox()
+        deletion_prompt = self._translate(
+            'SettingsUI', f'Delete database and exit?')
+        confirm_deletion.setText(deletion_prompt)
+        confirm_deletion.setIcon(QtWidgets.QMessageBox.Critical)
+        confirm_deletion.setWindowTitle(self._translate('SettingsUI', 'Confirm'))
+        confirm_deletion.setStandardButtons(
+            QtWidgets.QMessageBox.Yes | QtWidgets.QMessageBox.No)
+        confirm_deletion.buttonClicked.connect(ifcontinue)
+        confirm_deletion.show()
+        confirm_deletion.exec_()
+
+    def clear_log(self):
+        self.logBox.clear()
+        open(logger_filename, 'w').close()

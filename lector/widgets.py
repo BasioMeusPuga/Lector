@@ -683,3 +683,19 @@ class DragDropTableView(QtWidgets.QTableView):
             event.acceptProposedAction()
         else:
             super(DragDropTableView, self).dropEvent(event)
+
+
+class SaysHelloWhenClicked(QtWidgets.QListView):
+    # Signal declarations must be outside the constructor
+    # The argument is the type of the data emitted
+    newIndexSignal = QtCore.pyqtSignal(QtCore.QModelIndex)
+
+    def __init__(self, parent):
+        super(SaysHelloWhenClicked, self).__init__(parent)
+        self.parent = parent
+
+    def currentChanged(self, index, previous_index):
+        if not index.isValid():
+            return
+
+        self.newIndexSignal.emit(index)

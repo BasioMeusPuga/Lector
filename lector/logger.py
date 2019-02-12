@@ -14,20 +14,24 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
+VERSION = '0.4.nowGIT'
+
 import os
 import logging
 
 from PyQt5 import QtCore
 
+location_prefix = os.path.join(
+    QtCore.QStandardPaths.writableLocation(QtCore.QStandardPaths.AppDataLocation),
+    'Lector')
+logger_filename = os.path.join(location_prefix, 'Lector.log')
+
 
 def init_logging(cli_arguments):
     # This needs a separate 'Lector' in the os.path.join because
     # application name isn't explicitly set in this module
-    location_prefix = os.path.join(
-        QtCore.QStandardPaths.writableLocation(QtCore.QStandardPaths.AppDataLocation),
-        'Lector')
+
     os.makedirs(location_prefix, exist_ok=True)
-    logger_filename = os.path.join(location_prefix, 'Lector.log')
 
     log_level = 30  # Warning and above
     # Set log level according to command line arguments
