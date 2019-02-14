@@ -21,13 +21,13 @@ import webbrowser
 
 try:
     import fitz
+    from lector.parsers.pdf import render_pdf_page
 except ImportError:
     pass
 
 from PyQt5 import QtWidgets, QtGui, QtCore
 
 from lector.rarfile import rarfile
-from lector.parsers.pdf import render_pdf_page
 from lector.threaded import BackGroundCacheRefill
 from lector.annotations import AnnotationPlacement
 
@@ -501,13 +501,17 @@ class PliantQTextBrowser(QtWidgets.QTextBrowser):
             QtWidgets.QTextBrowser.mouseReleaseEvent(self, event)
             return
 
+        self.place_annotation(self.current_annotation)
+        self.toggle_annotation_mode()
+
+    def place_annotation(self, annotation):
         current_chapter = self.parent.metadata['position']['current_chapter']
         cursor = self.textCursor()
         cursor_start = cursor.selectionStart()
         cursor_end = cursor.selectionEnd()
         annotation_type = 'text_markup'
         applicable_to = 'text'
-        annotation_components = self.current_annotation['components']
+        annotation_components = annotation['components']
 
         self.annotator.set_current_annotation(
             annotation_type, annotation_components)
@@ -520,7 +524,7 @@ class PliantQTextBrowser(QtWidgets.QTextBrowser):
         # Maybe use annotation name for a consolidated annotation list
 
         this_annotation = {
-            'name': self.current_annotation['name'],
+            'name': annotation['name'],
             'applicable_to': applicable_to,
             'type': annotation_type,
             'cursor': (cursor_start, cursor_end),
@@ -532,8 +536,6 @@ class PliantQTextBrowser(QtWidgets.QTextBrowser):
         except KeyError:
             self.annotation_dict[current_chapter] = []
             self.annotation_dict[current_chapter].append(this_annotation)
-
-        self.toggle_annotation_mode()
 
     def generate_textbrowser_context_menu(self, position):
         selection = self.textCursor().selection()
@@ -552,6 +554,7 @@ class PliantQTextBrowser(QtWidgets.QTextBrowser):
         searchWikipediaAction = searchYoutubeAction = 'Does anyone know something funny in Latin?'
         searchAction = searchGoogleAction = bookmarksToggleAction = 'TODO Insert Latin Joke'
         deleteAnnotationAction = editAnnotationNoteAction = 'Latin quote 2. Electric Boogaloo.'
+        annotationActions = []
 
         if self.parent.is_fullscreen:
             fsToggleAction = contextMenu.addAction(
@@ -566,13 +569,18 @@ class PliantQTextBrowser(QtWidgets.QTextBrowser):
 
         if selection and selection != '':
             first_selected_word = selection.split()[0]
+            elided_selection = selection
+            if len(elided_selection) > 15:
+                elided_selection = elided_selection[:15] + '...'
+
             define_string = self._translate('PliantQTextBrowser', 'Define')
             defineAction = contextMenu.addAction(
                 self.main_window.QImageFactory.get_image('view-readermode'),
                 f'{define_string} "{first_selected_word}"')
 
             search_submenu_string = self._translate('PliantQTextBrowser', 'Search for')
-            searchSubMenu = contextMenu.addMenu(search_submenu_string + f' "{selection}"')
+            searchSubMenu = contextMenu.addMenu(
+                search_submenu_string + f' "{elided_selection}"')
             searchSubMenu.setIcon(self.main_window.QImageFactory.get_image('search'))
 
             searchAction = searchSubMenu.addAction(
@@ -588,6 +596,26 @@ class PliantQTextBrowser(QtWidgets.QTextBrowser):
             searchYoutubeAction = searchSubMenu.addAction(
                 QtGui.QIcon(':/images/Youtube.png'),
                 'Youtube')
+
+            # Allow adding new annotation from the context menu
+            if not annotation_is_present:
+                annotation_string = self._translate('PliantQTextBrowser', 'Annotate')
+                annotationSubmenu = contextMenu.addMenu(annotation_string)
+                annotationSubmenu.setIcon(
+                    self.main_window.QImageFactory.get_image('annotate'))
+
+                saved_annotations = self.parent.main_window.settings['annotations']
+                if not saved_annotations:
+                    nope = annotationSubmenu.addAction('<No annotations set>')
+                    nope.setEnabled(False)
+
+                for i in saved_annotations:
+                    this_action = QtWidgets.QAction(i['name'])
+                    # Does not require / support a role
+                    this_action.setData(i)
+                    annotationActions.append(this_action)
+                    annotationSubmenu.addAction(this_action)
+
         else:
             searchAction = contextMenu.addAction(
                 self.main_window.QImageFactory.get_image('search'),
@@ -639,10 +667,12 @@ class PliantQTextBrowser(QtWidgets.QTextBrowser):
             webbrowser.open_new_tab(
                 f'https://www.youtube.com/results?search_query={selection}')
 
+        if action in annotationActions:
+            self.place_annotation(action.data())
+
         if action == editAnnotationNoteAction:
             self.common_functions.annotation_specific(
                 'note', 'text', current_chapter, cursor_at_mouse.position())
-
         if action == deleteAnnotationAction:
             self.common_functions.annotation_specific(
                 'delete', 'text', current_chapter, cursor_at_mouse.position())

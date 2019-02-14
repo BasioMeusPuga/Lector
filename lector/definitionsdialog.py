@@ -86,12 +86,15 @@ class DefinitionsUI(QtWidgets.QDialog, definitions.Ui_Dialog):
             if response.getcode() == 200:
                 return_json = json.loads(response.read())
                 return return_json
-        except (urllib.error.HTTPError, urllib.error.URLError):
+        except Exception as e:
+            this_error = f'API access error'
+            logger.exception(this_error + f' {type(e).__name__} Arguments: {e.args}')
             return None
 
     def find_definition(self, word):
         word_root_json = self.api_call(self.root_url, word)
         if not word_root_json:
+            logger.error('Word root json noped out: ' + word)
             self.set_text(word, None, None, True)
             return
 
@@ -100,6 +103,7 @@ class DefinitionsUI(QtWidgets.QDialog, definitions.Ui_Dialog):
 
         definition_json = self.api_call(self.define_url, word_root)
         if not definition_json:
+            logger.error('Definition json noped out: ' + word_root)
             self.set_text(word, None, None, True)
             return
 
@@ -118,7 +122,7 @@ class DefinitionsUI(QtWidgets.QDialog, definitions.Ui_Dialog):
                     this_definition = j['definitions'][0].capitalize()
                 except KeyError:
                     # The API also reports crossReferenceMarkers here
-                    pass
+                    this_definition = '<Not found>'
 
                 try:
                     definitions[category].add(this_definition)
@@ -163,10 +167,21 @@ class DefinitionsUI(QtWidgets.QDialog, definitions.Ui_Dialog):
             self.parent.get_color()
             background = self.parent.settings['dialog_background']
 
+        # Calculate inverse color for the background so that
+        # the text doesn't look blank
+        r, g, b, alpha = background.getRgb()
+        inv_average = 255 - (r + g + b) // 3
+        if 100 < inv_average < 150:
+            inv_average = 255
+
+        foreground = QtGui.QColor(
+            inv_average, inv_average, inv_average, alpha)
+
         self.setStyleSheet(
             "QDialog {{background-color: {0}}}".format(background.name()))
         self.definitionView.setStyleSheet(
-            "QTextBrowser {{background-color: {0}}}".format(background.name()))
+            "QTextBrowser {{color:{0}; background-color: {1}}}".format(
+                foreground.name(), background.name()))
 
         if not set_initial:
             self.show()

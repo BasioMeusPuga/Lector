@@ -450,6 +450,8 @@ class Tab(QtWidgets.QWidget):
         if tocBox_readjust:
             self.set_tocBox_index(required_position, None)
 
+        self.contentView.setFocus()
+
     def set_tocBox_index(self, current_position=None, tocBox=None):
         # Get current position from the metadata dictionary
         # in case it isn't specified

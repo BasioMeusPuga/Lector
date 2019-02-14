@@ -210,8 +210,9 @@ class DatabaseFunctions:
             else:
                 return None
 
-        except (KeyError, sqlite3.OperationalError):
-            logger.critical('SQLite is in wretched rebellion @ data fetching handling')
+        except Exception as e:
+            error_string = 'SQLite is in wretched rebellion @ data fetching handling'
+            logger.critical(error_string + f' {type(e).__name__} Arguments: {e.args}')
 
     def fetch_covers_only(self, hash_list):
         parameter_marks = ','.join(['?' for i in hash_list])
@@ -243,8 +244,9 @@ class DatabaseFunctions:
         try:
             self.database.execute(
                 sql_command, update_data)
-        except sqlite3.OperationalError:
-            logger.critical('SQLite is in wretched rebellion @ metadata handling')
+        except sqlite3.OperationalError as e:
+            error_string = 'SQLite is in wretched rebellion @ metadata handling'
+            logger.critical(error_string + f' {type(e).__name__} Arguments: {e.args}')
 
         self.database.commit()
         self.database.close()

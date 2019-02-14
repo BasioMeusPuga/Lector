@@ -24,7 +24,11 @@ from PyQt5 import QtCore, QtGui
 
 from lector import sorter
 from lector import database
-from lector.parsers.pdf import render_pdf_page
+
+try:
+    from lector.parsers.pdf import render_pdf_page
+except ImportError:
+    pass
 
 logger = logging.getLogger(__name__)
 
