@@ -24,6 +24,7 @@ Bitcoin: 17jaxj26vFJNqQ2hEVerbBV5fpTusfqFro
 | python-lxml | 4.3.0 |
 | python-beautifulsoup4 | 4.6.0 |
 | python-xmltodict | 0.11.0 |
+| python-setuptools | 40.8.0 |
 
 ### Optional
 | Package | Version tested |
@@ -43,9 +44,8 @@ When reporting issues:
 0. Install dependencies - I recommend using your package manager for this.
 1. Clone repository
 2. Type the following in the root directory:
-
-        $ python setup.py build
-        # python setup.py install
+        $ python3 setup.py build
+        # python3 setup.py install
 3. OR launch with `lector/__main__.py`
 
 ### Available packages
@@ -54,6 +54,18 @@ When reporting issues:
 * [Gentoo (unofficial)](https://bitbucket.org/szymonsz/gen2-overlay/src/master/app-text/lector/)
 * [Fedora (unofficial)](https://copr.fedorainfracloud.org/coprs/bugzy/lector/)
 * [openSUSE](https://software.opensuse.org/package/lector)
+
+### Ubuntu Setup
+```shell
+sudo apt update
+sudo apt -y upgrade
+python3 -V
+sudo apt install -y python3-pip python3-dev python3-pyqt5 git
+pip3 install pyqt5 lxml beautifulsoup4 xmltodict pymupdf setuptools
+cd ~ && git clone https://github.com/BasioMeusPuga/Lector.git
+cd Lector && python3 setup.py build
+sudo python3 setup.py install
+```
 
 ## Translations
 1. There is a `SAMPLE.ts` file [here](https://github.com/BasioMeusPuga/Lector/tree/master/lector/resources/translations). Open it in `Qt Linguist`.
