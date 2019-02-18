@@ -89,6 +89,7 @@ class DefinitionsUI(QtWidgets.QDialog, definitions.Ui_Dialog):
         except Exception as e:
             this_error = f'API access error'
             logger.exception(this_error + f' {type(e).__name__} Arguments: {e.args}')
+            self.parent.display_error_notification(None)
             return None
 
     def find_definition(self, word):

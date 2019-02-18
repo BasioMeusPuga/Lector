@@ -1,5 +1,7 @@
 <RCC>
   <qresource prefix="images">
+    <file>DarkIcons/invert.svg</file>
+    <file>LightIcons/invert.svg</file>
     <file>DarkIcons/manga-mode.svg</file>
     <file>LightIcons/manga-mode.svg</file>
     <file>DarkIcons/search-word.svg</file>

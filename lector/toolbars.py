@@ -227,6 +227,13 @@ class BookToolBar(QtWidgets.QToolBar):
         self.mangaModeButton.setObjectName('mangaModeButton')
         self.mangaModeButton.setCheckable(True)
 
+        self.invertButton = QtWidgets.QAction(
+            image_factory.get_image('invert'),
+            self._translate('BookToolBar', 'Invert page colors'),
+            self)
+        self.invertButton.setObjectName('mangaModeButton')
+        self.invertButton.setCheckable(True)
+
         self.zoomIn = QtWidgets.QAction(
             image_factory.get_image('zoom-in'),
             self._translate('BookToolBar', 'Zoom in (+)'),
@@ -264,6 +271,7 @@ class BookToolBar(QtWidgets.QToolBar):
         self.comicSeparator1 = self.addSeparator()
         self.addAction(self.doublePageButton)
         self.addAction(self.mangaModeButton)
+        self.addAction(self.invertButton)
         self.comicSeparator2 = self.addSeparator()
         self.addAction(self.zoomIn)
         self.addAction(self.zoomOut)
@@ -276,6 +284,7 @@ class BookToolBar(QtWidgets.QToolBar):
         self.comicActions = [
             self.doublePageButton,
             self.mangaModeButton,
+            self.invertButton,
             self.comicBGColorAction,
             self.zoomIn,
             self.zoomOut,

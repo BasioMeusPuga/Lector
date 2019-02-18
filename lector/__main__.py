@@ -203,10 +203,13 @@ class MainUI(QtWidgets.QMainWindow, mainwindow.Ui_MainWindow):
 
         self.bookToolBar.doublePageButton.triggered.connect(self.change_page_view)
         self.bookToolBar.mangaModeButton.triggered.connect(self.change_page_view)
+        self.bookToolBar.invertButton.triggered.connect(self.change_page_view)
         if self.settings['double_page_mode']:
             self.bookToolBar.doublePageButton.setChecked(True)
         if self.settings['manga_mode']:
             self.bookToolBar.mangaModeButton.setChecked(True)
+        if self.settings['invert_colors']:
+            self.bookToolBar.invertButton.setChecked(True)
 
         for count, i in enumerate(self.display_profiles):
             self.bookToolBar.profileBox.setItemData(count, i, QtCore.Qt.UserRole)
@@ -765,7 +768,9 @@ class MainUI(QtWidgets.QMainWindow, mainwindow.Ui_MainWindow):
     def change_page_view(self, key_pressed=False):
         # Set zoom mode to best fit to
         # make the transition less jarring
-        self.comic_profile['zoom_mode'] = 'bestFit'
+        # if the sender isn't the invert colors button
+        if self.sender() != self.bookToolBar.invertButton:
+            self.comic_profile['zoom_mode'] = 'bestFit'
 
         # Toggle Double page mode / manga mode on keypress
         if key_pressed == QtCore.Qt.Key_D:
@@ -779,6 +784,7 @@ class MainUI(QtWidgets.QMainWindow, mainwindow.Ui_MainWindow):
         # current state of each of the toolbar buttons
         self.settings['double_page_mode'] = self.bookToolBar.doublePageButton.isChecked()
         self.settings['manga_mode'] = self.bookToolBar.mangaModeButton.isChecked()
+        self.settings['invert_colors'] = self.bookToolBar.invertButton.isChecked()
 
         # Switch page to whatever index is selected in the tocBox
         current_tab = self.tabWidget.currentWidget()

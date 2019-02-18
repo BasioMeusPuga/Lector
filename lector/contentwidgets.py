@@ -175,6 +175,14 @@ class PliantQGraphicsView(QtWidgets.QGraphicsView):
         else:
             return_pixmap = load_page(current_page)
 
+        if self.main_window.settings['invert_colors']:
+            qImg = return_pixmap.toImage()
+            qImg.invertPixels()
+            if qImg:  # Will return None if conversion doesn't work
+                return_pixmap = QtGui.QPixmap().fromImage(qImg)
+            else:
+                logger.error('Color inversion failed: ' + current_page)
+
         self.image_pixmap = return_pixmap
         self.resizeEvent()
 

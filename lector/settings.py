@@ -134,6 +134,8 @@ class Settings:
             'doublePageMode', 'False').capitalize())
         self.parent.settings['manga_mode'] = literal_eval(self.settings.value(
             'mangaMode', 'False').capitalize())
+        self.parent.settings['invert_colors'] = literal_eval(self.settings.value(
+            'invertColors', 'False').capitalize())
         self.settings.endGroup()
 
         self.settings.beginGroup('dialogSettings')
@@ -216,8 +218,9 @@ class Settings:
         self.settings.setValue('autoCover', str(current_settings['auto_cover']))
         self.settings.setValue('scrollSpeed', current_settings['scroll_speed'])
         self.settings.setValue('considerReadAt', current_settings['consider_read_at'])
-        self.settings.setValue('mangaMode', str(current_settings['manga_mode']))
         self.settings.setValue('doublePageMode', str(current_settings['double_page_mode']))
+        self.settings.setValue('mangaMode', str(current_settings['manga_mode']))
+        self.settings.setValue('invertColors', str(current_settings['invert_colors']))
         self.settings.setValue('smallIncrement', current_settings['small_increment'])
         self.settings.setValue('largeIncrement', current_settings['large_increment'])
         self.settings.endGroup()
