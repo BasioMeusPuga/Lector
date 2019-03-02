@@ -8,7 +8,7 @@
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../annotations.py" line="124"/>
+        <location filename="../../annotations.py" line="126"/>
         <source>New annotation</source>
         <translation type="unfinished"></translation>
     </message>
@@ -76,7 +76,7 @@
         <translation>对齐文本</translation>
     </message>
     <message>
-        <location filename="../../toolbars.py" line="261"/>
+        <location filename="../../toolbars.py" line="268"/>
         <source>Background color</source>
         <translation>背景色</translation>
     </message>
@@ -111,7 +111,7 @@
         <translation type="obsolete">搜索...</translation>
     </message>
     <message>
-        <location filename="../../toolbars.py" line="295"/>
+        <location filename="../../toolbars.py" line="304"/>
         <source>Table of Contents</source>
         <translation>目录</translation>
     </message>
@@ -156,35 +156,40 @@
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../toolbars.py" line="230"/>
+        <location filename="../../toolbars.py" line="237"/>
         <source>Zoom in (+)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../toolbars.py" line="235"/>
+        <location filename="../../toolbars.py" line="242"/>
         <source>Zoom Out (-)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../toolbars.py" line="241"/>
+        <location filename="../../toolbars.py" line="248"/>
         <source>Fit Width (W)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../toolbars.py" line="247"/>
+        <location filename="../../toolbars.py" line="254"/>
         <source>Best Fit (B)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../toolbars.py" line="253"/>
+        <location filename="../../toolbars.py" line="260"/>
         <source>Original size (O)</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../toolbars.py" line="230"/>
+        <source>Invert page colors</source>
         <translation type="unfinished"></translation>
     </message>
 </context>
 <context>
     <name>DefinitionsUI</name>
     <message>
-        <location filename="../../definitionsdialog.py" line="140"/>
+        <location filename="../../definitionsdialog.py" line="144"/>
         <source>No definitions found in</source>
         <translation>没有找到定义</translation>
     </message>
@@ -207,67 +212,67 @@
         <translation>播放词根的发音</translation>
     </message>
     <message>
-        <location filename="../settingswindow.py" line="332"/>
+        <location filename="../settingswindow.py" line="358"/>
         <source>Settings</source>
         <translation>设置</translation>
     </message>
     <message>
-        <location filename="../settingswindow.py" line="333"/>
+        <location filename="../settingswindow.py" line="359"/>
         <source>Library</source>
         <translation>书库</translation>
     </message>
     <message>
-        <location filename="../settingswindow.py" line="341"/>
+        <location filename="../settingswindow.py" line="367"/>
         <source>Startup: Refresh library</source>
         <translation>启动：刷新书库</translation>
     </message>
     <message>
-        <location filename="../settingswindow.py" line="342"/>
+        <location filename="../settingswindow.py" line="368"/>
         <source>Remember open files</source>
         <translation>记住打开文件</translation>
     </message>
     <message>
-        <location filename="../settingswindow.py" line="346"/>
+        <location filename="../settingswindow.py" line="372"/>
         <source>Generate tags from files</source>
         <translation>从文件生成标签</translation>
     </message>
     <message>
-        <location filename="../settingswindow.py" line="343"/>
+        <location filename="../settingswindow.py" line="369"/>
         <source>Cover shadows</source>
         <translation>封面阴影</translation>
     </message>
     <message>
-        <location filename="../settingswindow.py" line="344"/>
+        <location filename="../settingswindow.py" line="370"/>
         <source>Enabling reduces startup time and memory usage</source>
         <translation>开启减少启动时间和内存占用</translation>
     </message>
     <message>
-        <location filename="../settingswindow.py" line="345"/>
+        <location filename="../settingswindow.py" line="371"/>
         <source>Load covers only when needed</source>
         <translation>只在必要时加载封面</translation>
     </message>
     <message>
-        <location filename="../settingswindow.py" line="352"/>
+        <location filename="../settingswindow.py" line="380"/>
         <source>Greatly reduces page transition time at the cost of more memory</source>
         <translation>当需要更多内存时显著减少页面过度时间</translation>
     </message>
     <message>
-        <location filename="../settingswindow.py" line="353"/>
+        <location filename="../settingswindow.py" line="381"/>
         <source>Cache comic / pdf pages</source>
         <translation>缓存漫画 / pdf 文件</translation>
     </message>
     <message>
-        <location filename="../settingswindow.py" line="336"/>
+        <location filename="../settingswindow.py" line="362"/>
         <source>Icon theme: </source>
         <translation>图标主题：</translation>
     </message>
     <message>
-        <location filename="../settingswindow.py" line="370"/>
+        <location filename="../settingswindow.py" line="401"/>
         <source>Scan Library</source>
         <translation>扫描书库</translation>
     </message>
     <message>
-        <location filename="../settingswindow.py" line="371"/>
+        <location filename="../settingswindow.py" line="402"/>
         <source>Close</source>
         <translation>关闭</translation>
     </message>
@@ -317,49 +322,49 @@
         <translation>取消</translation>
     </message>
     <message>
-        <location filename="../settingswindow.py" line="349"/>
+        <location filename="../settingswindow.py" line="377"/>
         <source>Horizontal scrolling with Alt + Scroll
 Reopen book to see changes</source>
         <translation>按 Alt + Scroll 横向滚动
 再次打开书籍时生效</translation>
     </message>
     <message>
-        <location filename="../settingswindow.py" line="351"/>
+        <location filename="../settingswindow.py" line="379"/>
         <source>Hide scrollbars when reading</source>
         <translation>阅读时隐藏滚动条</translation>
     </message>
     <message>
-        <location filename="../settingswindow.py" line="339"/>
+        <location filename="../settingswindow.py" line="365"/>
         <source>Restart application to see changes</source>
         <translation>重启程序生效</translation>
     </message>
     <message>
-        <location filename="../settingswindow.py" line="338"/>
+        <location filename="../settingswindow.py" line="364"/>
         <source>&amp;Dark</source>
         <translation>&amp;暗</translation>
     </message>
     <message>
-        <location filename="../settingswindow.py" line="340"/>
+        <location filename="../settingswindow.py" line="366"/>
         <source>L&amp;ight</source>
         <translation>亮</translation>
     </message>
     <message>
-        <location filename="../settingswindow.py" line="348"/>
+        <location filename="../settingswindow.py" line="376"/>
         <source>Reading</source>
         <translation>阅读</translation>
     </message>
     <message>
-        <location filename="../settingswindow.py" line="334"/>
+        <location filename="../settingswindow.py" line="360"/>
         <source>Consider book read at percent</source>
         <translation>标记为读完，当读至百分</translation>
     </message>
     <message>
-        <location filename="../settingswindow.py" line="361"/>
+        <location filename="../settingswindow.py" line="388"/>
         <source>Dictionary language</source>
         <translation>字典语言</translation>
     </message>
     <message>
-        <location filename="../settingswindow.py" line="362"/>
+        <location filename="../settingswindow.py" line="389"/>
         <source>Scroll speed</source>
         <translation>滚动速度</translation>
     </message>
@@ -409,7 +414,7 @@ Reopen book to see changes</source>
         <translation type="obsolete">下划线</translation>
     </message>
     <message>
-        <location filename="../settingswindow.py" line="368"/>
+        <location filename="../settingswindow.py" line="395"/>
         <source>Text</source>
         <translation>文本</translation>
     </message>
@@ -419,63 +424,88 @@ Reopen book to see changes</source>
         <translation type="obsolete">漫画 / PDF</translation>
     </message>
     <message>
-        <location filename="../settingswindow.py" line="347"/>
+        <location filename="../settingswindow.py" line="373"/>
         <source>Shrink long book titles</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../settingswindow.py" line="363"/>
+        <location filename="../settingswindow.py" line="390"/>
         <source>New</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../settingswindow.py" line="364"/>
+        <location filename="../settingswindow.py" line="391"/>
         <source>Delete</source>
         <translation type="unfinished">删除</translation>
     </message>
     <message>
-        <location filename="../settingswindow.py" line="365"/>
+        <location filename="../settingswindow.py" line="392"/>
         <source>Edit</source>
         <translation type="unfinished">编辑</translation>
     </message>
     <message>
-        <location filename="../settingswindow.py" line="366"/>
+        <location filename="../settingswindow.py" line="393"/>
         <source>Move Up</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../settingswindow.py" line="367"/>
+        <location filename="../settingswindow.py" line="394"/>
         <source>Move Down</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../settingswindow.py" line="369"/>
+        <location filename="../settingswindow.py" line="396"/>
         <source>Image</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../settingswindow.py" line="354"/>
-        <source>Show TOC with Bookmarks</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../settingswindow.py" line="357"/>
+        <location filename="../settingswindow.py" line="384"/>
         <source>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;UP/DOWN ARROW - Steps to take before turning comicbook page&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../settingswindow.py" line="356"/>
+        <location filename="../settingswindow.py" line="383"/>
         <source>Small increment</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../settingswindow.py" line="360"/>
+        <location filename="../settingswindow.py" line="387"/>
         <source>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;SPACEBAR - Steps to take before turning comicbook page&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../settingswindow.py" line="359"/>
+        <location filename="../settingswindow.py" line="386"/>
         <source>Large increment</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../settingswindow.py" line="374"/>
+        <source>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Attempt to download missing book covers from Google books - SLOW&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../settingswindow.py" line="375"/>
+        <source>Download missing covers</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../settingswindow.py" line="397"/>
+        <source>About</source>
+        <translation type="unfinished">关于</translation>
+    </message>
+    <message>
+        <location filename="../settingswindow.py" line="398"/>
+        <source>Log</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../settingswindow.py" line="399"/>
+        <source>Reset Application</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../settingswindow.py" line="400"/>
+        <source>Clear Log</source>
         <translation type="unfinished"></translation>
     </message>
 </context>
@@ -505,84 +535,89 @@ Reopen book to see changes</source>
 <context>
     <name>LibraryToolBar</name>
     <message>
-        <location filename="../../toolbars.py" line="378"/>
+        <location filename="../../toolbars.py" line="387"/>
         <source>Add book</source>
         <translation>添加书籍</translation>
     </message>
     <message>
-        <location filename="../../toolbars.py" line="382"/>
+        <location filename="../../toolbars.py" line="391"/>
         <source>Delete book</source>
         <translation>删除书籍</translation>
     </message>
     <message>
-        <location filename="../../toolbars.py" line="386"/>
+        <location filename="../../toolbars.py" line="418"/>
         <source>Library background color</source>
         <translation>书库背景色</translation>
     </message>
     <message>
-        <location filename="../../toolbars.py" line="391"/>
+        <location filename="../../toolbars.py" line="423"/>
         <source>Settings</source>
         <translation>设置</translation>
     </message>
     <message>
-        <location filename="../../toolbars.py" line="397"/>
+        <location filename="../../toolbars.py" line="396"/>
         <source>View as covers</source>
         <translation>封面查看</translation>
     </message>
     <message>
-        <location filename="../../toolbars.py" line="402"/>
+        <location filename="../../toolbars.py" line="401"/>
         <source>View as table</source>
         <translation>列表查看</translation>
     </message>
     <message>
-        <location filename="../../toolbars.py" line="416"/>
+        <location filename="../../toolbars.py" line="415"/>
         <source>Filter library</source>
         <translation>过滤书库</translation>
     </message>
     <message>
-        <location filename="../../toolbars.py" line="444"/>
+        <location filename="../../toolbars.py" line="460"/>
         <source>Search for Title, Author, Tags...</source>
         <translation>查找标题，作者，标签...</translation>
     </message>
     <message>
-        <location filename="../../toolbars.py" line="463"/>
+        <location filename="../../toolbars.py" line="479"/>
         <source>Sort by</source>
         <translation>排序按照</translation>
     </message>
     <message>
-        <location filename="../../toolbars.py" line="408"/>
+        <location filename="../../toolbars.py" line="407"/>
         <source>Scan Library</source>
         <translation>扫描书库</translation>
     </message>
     <message>
-        <location filename="../../toolbars.py" line="450"/>
+        <location filename="../../toolbars.py" line="466"/>
         <source>Title</source>
         <translation>标题</translation>
     </message>
     <message>
-        <location filename="../../toolbars.py" line="451"/>
+        <location filename="../../toolbars.py" line="467"/>
         <source>Author</source>
         <translation>作者</translation>
     </message>
     <message>
-        <location filename="../../toolbars.py" line="452"/>
+        <location filename="../../toolbars.py" line="468"/>
         <source>Year</source>
         <translation>年份</translation>
     </message>
     <message>
-        <location filename="../../toolbars.py" line="453"/>
+        <location filename="../../toolbars.py" line="469"/>
         <source>Newest</source>
         <translation>最新</translation>
     </message>
     <message>
-        <location filename="../../toolbars.py" line="454"/>
+        <location filename="../../toolbars.py" line="470"/>
         <source>Last Read</source>
         <translation>最近阅读</translation>
     </message>
     <message>
-        <location filename="../../toolbars.py" line="455"/>
+        <location filename="../../toolbars.py" line="471"/>
         <source>Progress</source>
         <translation>进度</translation>
+    </message>
+    <message>
+        <location filename="../../toolbars.py" line="429"/>
+        <source>About</source>
+        <translation type="unfinished">关于</translation>
     </message>
 </context>
 <context>
@@ -609,77 +644,77 @@ Reopen book to see changes</source>
 <context>
     <name>Main_UI</name>
     <message>
-        <location filename="../../__main__.py" line="503"/>
+        <location filename="../../__main__.py" line="475"/>
         <source>Add books to database</source>
         <translation>将书籍加入数据库</translation>
     </message>
     <message>
-        <location filename="../../__main__.py" line="504"/>
+        <location filename="../../__main__.py" line="476"/>
         <source>eBooks</source>
         <translation>电子书</translation>
     </message>
     <message>
-        <location filename="../../__main__.py" line="518"/>
+        <location filename="../../__main__.py" line="490"/>
         <source>Adding books...</source>
         <translation>正在添加书籍...</translation>
     </message>
     <message>
-        <location filename="../../__main__.py" line="581"/>
+        <location filename="../../__main__.py" line="548"/>
         <source>Confirm deletion</source>
         <translation>确认删除</translation>
     </message>
     <message>
-        <location filename="../../__main__.py" line="594"/>
+        <location filename="../../__main__.py" line="561"/>
         <source>Save changes and start library scan</source>
         <translation>保存修改开始扫描书库</translation>
     </message>
     <message>
-        <location filename="../../__main__.py" line="656"/>
+        <location filename="../../__main__.py" line="628"/>
         <source> Books</source>
         <translation> 书籍</translation>
     </message>
     <message>
-        <location filename="../../__main__.py" line="815"/>
+        <location filename="../../__main__.py" line="805"/>
         <source>Start reading</source>
         <translation>开始阅读</translation>
     </message>
     <message>
-        <location filename="../../__main__.py" line="821"/>
+        <location filename="../../__main__.py" line="811"/>
         <source>Edit</source>
         <translation>编辑</translation>
     </message>
     <message>
-        <location filename="../../__main__.py" line="825"/>
+        <location filename="../../__main__.py" line="815"/>
         <source>Delete</source>
         <translation>删除</translation>
     </message>
     <message>
-        <location filename="../../__main__.py" line="828"/>
+        <location filename="../../__main__.py" line="818"/>
         <source>Mark read</source>
         <translation>标记为已读</translation>
     </message>
     <message>
-        <location filename="../../__main__.py" line="831"/>
+        <location filename="../../__main__.py" line="821"/>
         <source>Mark unread</source>
         <translation>标记为未读</translation>
     </message>
     <message>
-        <location filename="../../__main__.py" line="933"/>
+        <location filename="../../__main__.py" line="923"/>
         <source>Manually Added</source>
         <translation>手动添加的</translation>
     </message>
     <message>
-        <location filename="../../__main__.py" line="607"/>
+        <location filename="../../__main__.py" line="579"/>
         <source> books</source>
         <translation> 书籍</translation>
     </message>
     <message>
-        <location filename="../../contentwidgets.py" line="362"/>
+        <location filename="../../contentwidgets.py" line="370"/>
         <source>Save page as...</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../contentwidgets.py" line="363"/>
+        <location filename="../../contentwidgets.py" line="371"/>
         <source>Images</source>
         <translation type="unfinished">图片</translation>
     </message>
@@ -700,12 +735,12 @@ Reopen book to see changes</source>
 <context>
     <name>PliantQGraphicsScene</name>
     <message>
-        <location filename="../../widgets.py" line="890"/>
+        <location filename="../../widgets.py" line="587"/>
         <source>Select new cover</source>
         <translation>选择新封面</translation>
     </message>
     <message>
-        <location filename="../../widgets.py" line="891"/>
+        <location filename="../../widgets.py" line="588"/>
         <source>Images</source>
         <translation>图片</translation>
     </message>
@@ -713,62 +748,62 @@ Reopen book to see changes</source>
 <context>
     <name>PliantQGraphicsView</name>
     <message>
-        <location filename="../../contentwidgets.py" line="291"/>
+        <location filename="../../contentwidgets.py" line="299"/>
         <source>Exit fullscreen</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../contentwidgets.py" line="295"/>
+        <location filename="../../contentwidgets.py" line="303"/>
         <source>Exit Distraction Free mode</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../contentwidgets.py" line="302"/>
+        <location filename="../../contentwidgets.py" line="310"/>
         <source>Save page as...</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../contentwidgets.py" line="306"/>
+        <location filename="../../contentwidgets.py" line="314"/>
         <source>View</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../contentwidgets.py" line="311"/>
+        <location filename="../../contentwidgets.py" line="319"/>
         <source>Double page mode (D)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../contentwidgets.py" line="318"/>
+        <location filename="../../contentwidgets.py" line="326"/>
         <source>Manga mode (M)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../contentwidgets.py" line="326"/>
+        <location filename="../../contentwidgets.py" line="334"/>
         <source>Zoom in (+)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../contentwidgets.py" line="330"/>
+        <location filename="../../contentwidgets.py" line="338"/>
         <source>Zoom out (-)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../contentwidgets.py" line="334"/>
+        <location filename="../../contentwidgets.py" line="342"/>
         <source>Fit width (W)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../contentwidgets.py" line="338"/>
+        <location filename="../../contentwidgets.py" line="346"/>
         <source>Best fit (B)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../contentwidgets.py" line="342"/>
+        <location filename="../../contentwidgets.py" line="350"/>
         <source>Original size (O)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../contentwidgets.py" line="348"/>
+        <location filename="../../contentwidgets.py" line="356"/>
         <source>Bookmarks</source>
         <translation type="unfinished">书签</translation>
     </message>
@@ -776,112 +811,160 @@ Reopen book to see changes</source>
 <context>
     <name>PliantQTextBrowser</name>
     <message>
-        <location filename="../../contentwidgets.py" line="557"/>
+        <location filename="../../contentwidgets.py" line="568"/>
         <source>Exit fullscreen</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../contentwidgets.py" line="561"/>
+        <location filename="../../contentwidgets.py" line="572"/>
         <source>Exit Distraction Free mode</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../contentwidgets.py" line="569"/>
+        <location filename="../../contentwidgets.py" line="584"/>
         <source>Define</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../contentwidgets.py" line="574"/>
+        <location filename="../../contentwidgets.py" line="589"/>
         <source>Search for</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../contentwidgets.py" line="578"/>
+        <location filename="../../contentwidgets.py" line="594"/>
         <source>In this book</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../contentwidgets.py" line="592"/>
+        <location filename="../../contentwidgets.py" line="628"/>
         <source>Search</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../contentwidgets.py" line="600"/>
+        <location filename="../../contentwidgets.py" line="636"/>
         <source>Edit note</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../contentwidgets.py" line="603"/>
+        <location filename="../../contentwidgets.py" line="639"/>
         <source>Delete annotation</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../contentwidgets.py" line="607"/>
+        <location filename="../../contentwidgets.py" line="643"/>
         <source>Add Bookmark</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../contentwidgets.py" line="613"/>
+        <location filename="../../contentwidgets.py" line="649"/>
         <source>Bookmarks</source>
         <translation type="unfinished">书签</translation>
+    </message>
+    <message>
+        <location filename="../../contentwidgets.py" line="610"/>
+        <source>Annotate</source>
+        <translation type="unfinished"></translation>
     </message>
 </context>
 <context>
     <name>SettingsUI</name>
     <message>
-        <location filename="../../settingsdialog.py" line="65"/>
+        <location filename="../../settingsdialog.py" line="69"/>
         <source>English</source>
         <translation>英语</translation>
     </message>
     <message>
-        <location filename="../../settingsdialog.py" line="66"/>
+        <location filename="../../settingsdialog.py" line="70"/>
         <source>Spanish</source>
         <translation>西班牙语</translation>
     </message>
     <message>
-        <location filename="../../settingsdialog.py" line="67"/>
+        <location filename="../../settingsdialog.py" line="71"/>
         <source>Hindi</source>
         <translation>印地语</translation>
     </message>
     <message>
-        <location filename="../../settingsdialog.py" line="80"/>
+        <location filename="../../settingsdialog.py" line="84"/>
         <source>Save changes and start library scan</source>
         <translation>保存修改开始扫描书库</translation>
     </message>
     <message>
-        <location filename="../../settingsdialog.py" line="294"/>
+        <location filename="../../settingsdialog.py" line="327"/>
         <source>Library scan in progress...</source>
         <translation>正在扫描书库</translation>
     </message>
     <message>
-        <location filename="../../settingsdialog.py" line="298"/>
+        <location filename="../../settingsdialog.py" line="331"/>
         <source>Checking library folders</source>
         <translation>正在检查书库文件夹</translation>
     </message>
     <message>
-        <location filename="../../settingsdialog.py" line="314"/>
+        <location filename="../../settingsdialog.py" line="347"/>
         <source>Parsing files</source>
         <translation>正在解析文件</translation>
     </message>
     <message>
-        <location filename="../../settingsdialog.py" line="125"/>
+        <location filename="../../settingsdialog.py" line="129"/>
         <source>Library</source>
         <translation>书库</translation>
     </message>
     <message>
-        <location filename="../../settingsdialog.py" line="126"/>
+        <location filename="../../settingsdialog.py" line="130"/>
         <source>Switches</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../../settingsdialog.py" line="128"/>
+        <location filename="../../settingsdialog.py" line="132"/>
         <source>About</source>
         <translation>关于</translation>
     </message>
     <message>
-        <location filename="../../settingsdialog.py" line="127"/>
+        <location filename="../../settingsdialog.py" line="131"/>
         <source>Annotations</source>
         <translation>注释</translation>
+    </message>
+    <message>
+        <location filename="../../settingsdialog.py" line="551"/>
+        <source>Confirm</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
+    <name>SideDock</name>
+    <message>
+        <location filename="../../dockwidgets.py" line="123"/>
+        <source>Bookmarks</source>
+        <translation type="unfinished">书签</translation>
+    </message>
+    <message>
+        <location filename="../../dockwidgets.py" line="124"/>
+        <source>New bookmark</source>
+        <translation type="unfinished">新书签</translation>
+    </message>
+    <message>
+        <location filename="../../dockwidgets.py" line="300"/>
+        <source>Annotations</source>
+        <translation type="unfinished">注释</translation>
+    </message>
+    <message>
+        <location filename="../../dockwidgets.py" line="347"/>
+        <source>Search</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../dockwidgets.py" line="348"/>
+        <source>Search entire book</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../dockwidgets.py" line="349"/>
+        <source>Match case</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../dockwidgets.py" line="350"/>
+        <source>Match word</source>
+        <translation type="unfinished"></translation>
     </message>
 </context>
 <context>
@@ -889,78 +972,58 @@ Reopen book to see changes</source>
     <message>
         <location filename="../../dockwidgets.py" line="85"/>
         <source>Bookmarks</source>
-        <translation>书签</translation>
+        <translation type="obsolete">书签</translation>
     </message>
     <message>
         <location filename="../../widgets.py" line="605"/>
         <source>New bookmark</source>
-        <translation>新书签</translation>
+        <translation type="obsolete">新书签</translation>
     </message>
     <message>
-        <location filename="../../widgets.py" line="735"/>
+        <location filename="../../dockwidgets.py" line="264"/>
         <source>Edit</source>
         <translation>编辑</translation>
     </message>
     <message>
-        <location filename="../../widgets.py" line="738"/>
+        <location filename="../../dockwidgets.py" line="267"/>
         <source>Delete</source>
         <translation>删除</translation>
     </message>
     <message>
         <location filename="../../dockwidgets.py" line="97"/>
         <source>Annotations</source>
-        <translation type="unfinished">注释</translation>
+        <translation type="obsolete">注释</translation>
     </message>
     <message>
-        <location filename="../../widgets.py" line="147"/>
+        <location filename="../../widgets.py" line="146"/>
         <source>Note</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../../dockwidgets.py" line="106"/>
-        <source>Search</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../../dockwidgets.py" line="109"/>
-        <source>Search entire book</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../../dockwidgets.py" line="117"/>
-        <source>Match case</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../../dockwidgets.py" line="125"/>
-        <source>Match word</source>
         <translation type="unfinished"></translation>
     </message>
 </context>
 <context>
     <name>TableProxyModel</name>
     <message>
-        <location filename="../../models.py" line="75"/>
+        <location filename="../../models.py" line="71"/>
         <source>Title</source>
         <translation>标题</translation>
     </message>
     <message>
-        <location filename="../../models.py" line="76"/>
+        <location filename="../../models.py" line="72"/>
         <source>Author</source>
         <translation>作者</translation>
     </message>
     <message>
-        <location filename="../../models.py" line="77"/>
+        <location filename="../../models.py" line="73"/>
         <source>Year</source>
         <translation>年份</translation>
     </message>
     <message>
-        <location filename="../../models.py" line="78"/>
+        <location filename="../../models.py" line="74"/>
         <source>Last Read</source>
         <translation>最后阅读</translation>
     </message>
     <message>
-        <location filename="../../models.py" line="79"/>
+        <location filename="../../models.py" line="75"/>
         <source>Tags</source>
         <translation>标签</translation>
     </message>
