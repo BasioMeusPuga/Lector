@@ -1059,6 +1059,8 @@ def main():
     app = QtWidgets.QApplication(sys.argv)
     app.setApplicationName('Lector')  # This is needed for QStandardPaths
                                       # and my own hubris
+    # Make icons sharp in HiDPI screen
+    app.setAttribute(QtCore.Qt.AA_UseHighDpiPixmaps, True)
 
     # Internationalization support
     translator = QtCore.QTranslator()
