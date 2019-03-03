@@ -43,10 +43,6 @@ else:
 
 from PyQt5 import QtCore, QtGui
 from lector import database
-
-from lector.parsers.epub import ParseEPUB
-from lector.parsers.mobi import ParseMOBI
-from lector.parsers.fb2 import ParseFB2
 from lector.parsers.comicbooks import ParseCOMIC
 
 logger = logging.getLogger(__name__)
@@ -69,7 +65,11 @@ else:
 # python-lxml - Required for everything except comics
 lxml_check = importlib.util.find_spec('lxml')
 xmltodict_check = importlib.util.find_spec('xmltodict')
-if lxml_check:
+if lxml_check and xmltodict_check:
+    from lector.parsers.epub import ParseEPUB
+    from lector.parsers.mobi import ParseMOBI
+    from lector.parsers.fb2 import ParseFB2
+
     lxml_dependent = {
         'epub': ParseEPUB,
         'mobi': ParseMOBI,
@@ -81,7 +81,7 @@ if lxml_check:
         'fb2.zip': ParseFB2}
     sorter.update(lxml_dependent)
 else:
-    critical_sting = 'python-lxml / xmltodict is not installed. Only comics will load.'
+    critical_sting = 'lxml / xmltodict is not installed. Only comics will load.'
     print(critical_sting)
     logger.critical(critical_sting)
 
