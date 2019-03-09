@@ -201,7 +201,9 @@ class BookSorter:
                 break
 
         if not valid_extension:
-            logger.error('Unsupported extension: ' + filename)
+            this_error = 'Unsupported extension: ' + filename
+            self.errors.append(this_error)
+            logger.error(this_error)
             return
 
         book_ref = sorter[file_extension](filename, self.temp_dir, file_md5)

@@ -476,7 +476,7 @@ class MainUI(QtWidgets.QMainWindow, mainwindow.Ui_MainWindow):
         ebooks_string = self._translate('Main_UI', 'eBooks')
         opened_files = QtWidgets.QFileDialog.getOpenFileNames(
             self, dialog_prompt, self.settings['last_open_path'],
-            f'{ebooks_string} ({self.available_parsers})')
+            f'{ebooks_string}({self.available_parsers})')
 
         if not opened_files[0]:
             return
@@ -742,7 +742,7 @@ class MainUI(QtWidgets.QMainWindow, mainwindow.Ui_MainWindow):
         else:
             self.settingsDialog.hide()
 
-    #____________________________________________
+    #==================================================================
     # The contentView modification functions are in the guifunctions
     # module. self.profile_functions is the reference here.
 
@@ -763,7 +763,7 @@ class MainUI(QtWidgets.QMainWindow, mainwindow.Ui_MainWindow):
         self.profile_functions.modify_comic_view(
             signal_sender, key_pressed)
 
-    #____________________________________________
+    #=================================================================
 
     def change_page_view(self, key_pressed=False):
         # Set zoom mode to best fit to

@@ -101,18 +101,7 @@ class Library:
             position = i[5]
             if position:
                 position = pickle.loads(position)
-                if position['is_read']:
-                    position_perc = 1
-                else:
-                    try:
-                        position_perc = (
-                            position['current_block'] / position['total_blocks'])
-                    except (KeyError, ZeroDivisionError):
-                        try:
-                            position_perc = (
-                                position['current_chapter'] / position['total_chapters'])
-                        except KeyError:
-                            position_perc = None
+                position_perc = generate_position_percentage(position)
 
             try:
                 file_exists = os.path.exists(path)
@@ -339,3 +328,23 @@ class Library:
         # Remove invalid paths from the database as well
         database.DatabaseFunctions(
             self.main_window.database_path).delete_from_database('Path', invalid_paths)
+
+
+def generate_position_percentage(position):
+    if not position:
+        return None
+
+    if position['is_read']:
+        position_perc = 1
+    else:
+        try:
+            position_perc = (
+                position['current_block'] / position['total_blocks'])
+        except (KeyError, ZeroDivisionError):
+            try:
+                position_perc = (
+                    position['current_chapter'] / position['total_chapters'])
+            except KeyError:
+                position_perc = None
+
+    return position_perc
