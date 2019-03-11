@@ -451,26 +451,28 @@ class EPUB:
                 if i['@media-type'].split('/')[0] == 'image' and
                 'cover' in i['@id']][0]
             book_cover = self.zip_file.read(self.find_file(cover_image))
-            self.cover_image_name = os.path.splitext(
-                os.path.basename(cover_image))[0]
         except:
-            pass
+            logger.warning('Cover not found in opf: ' + self.book_filename)
 
         # Find book cover the hard way
         if not book_cover:
             biggest_image_size = 0
-            biggest_image = None
+            cover_image = None
             for j in self.zip_file.filelist:
                 if os.path.splitext(j.filename)[1] in ['.jpg', '.jpeg', '.png', '.gif']:
                     if j.file_size > biggest_image_size:
-                        biggest_image = j.filename
+                        cover_image = j.filename
                         biggest_image_size = j.file_size
 
-            if biggest_image:
+            if cover_image:
                 book_cover = self.zip_file.read(
-                    self.find_file(biggest_image))
+                    self.find_file(cover_image))
 
         if not book_cover:
+            self.cover_image_name = ''
             logger.warning('Cover not found: ' + self.book_filename)
+        else:
+            self.cover_image_name = os.path.splitext(
+                os.path.basename(cover_image))[0]
 
         return book_cover
