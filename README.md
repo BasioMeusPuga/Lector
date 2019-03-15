@@ -5,6 +5,7 @@ Qt based ebook reader
 Currently supports:
 * pdf
 * epub
+* djvu
 * fb2
 * mobi
 * azw / azw3 / azw4
@@ -26,9 +27,11 @@ Bitcoin: 17jaxj26vFJNqQ2hEVerbBV5fpTusfqFro
 | python-xmltodict | 0.11.0 |
 
 ### Optional
-| Package | Version tested |
-| --- | --- |
-| python-pymupdf | 1.14.5 |
+| Package | Version tested | Required for |
+| --- | --- | --- |
+| python-pymupdf | 1.14.5 | PDF support |
+| python-numpy | 1.16.2 | DjVu support |
+| python-djvulibre | 0.8.4 | DjVu support |
 
 ## Support
 When reporting issues:
