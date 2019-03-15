@@ -891,9 +891,12 @@ class MainUI(QtWidgets.QMainWindow, mainwindow.Ui_MainWindow):
                     last_accessed_time = QtCore.QDateTime().currentDateTime()
                     position_perc = 1
 
-                self.lib_ref.libraryModel.setData(i, metadata, QtCore.Qt.UserRole + 3)
-                self.lib_ref.libraryModel.setData(i, position_perc, QtCore.Qt.UserRole + 7)
-                self.lib_ref.libraryModel.setData(i, last_accessed_time, QtCore.Qt.UserRole + 12)
+                self.lib_ref.libraryModel.setData(
+                    i, metadata, QtCore.Qt.UserRole + 3)
+                self.lib_ref.libraryModel.setData(
+                    i, position_perc, QtCore.Qt.UserRole + 7)
+                self.lib_ref.libraryModel.setData(
+                    i, last_accessed_time, QtCore.Qt.UserRole + 12)
                 self.lib_ref.update_proxymodels()
 
                 database_dict = {

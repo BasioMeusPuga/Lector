@@ -58,7 +58,18 @@ if mupdf_check:
     from lector.parsers.pdf import ParsePDF
     sorter['pdf'] = ParsePDF
 else:
-    error_string = 'pymupdf is not installed. Will be unable to load PDFs.'
+    error_string = 'pymupdf is not installed. Will be unable to load PDF files.'
+    print(error_string)
+    logger.error(error_string)
+
+# numpy and djvu - Optional
+numpy_check = importlib.util.find_spec('numpy')
+djvu_check = importlib.util.find_spec('djvu.decode')
+if numpy_check and djvu_check:
+    from lector.parsers.djvu import ParseDJVU
+    sorter['djvu'] = ParseDJVU
+else:
+    error_string = 'numpy / djvulibre is not installed. Will be unable to load Djvu files.'
     print(error_string)
     logger.error(error_string)
 
@@ -211,8 +222,6 @@ class BookSorter:
         # None of the following have an exception type specified
         # This will keep everything from crashing, but will make
         # troubleshooting difficult
-        # TODO
-        # In application notifications
 
         try:
             book_ref.read_book()

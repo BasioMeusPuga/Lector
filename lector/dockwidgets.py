@@ -51,6 +51,12 @@ class PliantDockWidget(QtWidgets.QDockWidget):
         # Except this one
         self.sideDockTabWidget = None
 
+        # Animate appearance
+        self.animation = QtCore.QPropertyAnimation(self, b'windowOpacity')
+        self.animation.setStartValue(0)
+        self.animation.setEndValue(1)
+        self.animation.setDuration(200)
+
     def showEvent(self, event=None):
         viewport_topRight = self.contentView.mapToGlobal(
             self.contentView.viewport().rect().topRight())
@@ -69,6 +75,7 @@ class PliantDockWidget(QtWidgets.QDockWidget):
 
         self.main_window.active_docks.append(self)
         self.setGeometry(dock_x, dock_y, dock_width, dock_height)
+        self.animation.start()
 
     def hideEvent(self, event=None):
         if self.notes_only:

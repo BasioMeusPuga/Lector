@@ -100,8 +100,10 @@ TODO
         Search results should ignore punctuation
         Keep text size for annotations
         Sort by new is not working
+        Drag and drop is acting out
 
     Secondary:
+        Navbar
         Text to speech
         Definitions dialog needs to respond to escape
         Zoom slider for comics

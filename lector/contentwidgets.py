@@ -25,6 +25,12 @@ try:
 except ImportError:
     pass
 
+try:
+    import djvu.decode
+    from lector.parsers.djvu import render_djvu_page
+except ImportError:
+    pass
+
 from PyQt5 import QtWidgets, QtGui, QtCore
 
 from lector.rarfile import rarfile
@@ -60,6 +66,11 @@ class PliantQGraphicsView(QtWidgets.QGraphicsView):
         elif self.filetype == 'pdf':
             self.book = fitz.open(self.filepath)
 
+        elif self.filetype == 'djvu':
+            self.book = djvu.decode.Context().new_document(
+                djvu.decode.FileURI(self.filepath))
+            self.book.decoding_job.wait()
+
         self.common_functions = PliantWidgetsCommonFunctions(
             self, self.main_window)
 
@@ -92,6 +103,10 @@ class PliantQGraphicsView(QtWidgets.QGraphicsView):
                 elif self.filetype == 'pdf':
                     page_data = self.book.loadPage(page)
                     pixmap = render_pdf_page(page_data)
+
+                elif self.filetype == 'djvu':
+                    page_data = self.book.pages[page]
+                    pixmap = render_djvu_page(page_data, '/tmp')
 
                 return pixmap
 
@@ -168,7 +183,15 @@ class PliantQGraphicsView(QtWidgets.QGraphicsView):
 
         # TODO
         # Get caching working for double page view
-        if not double_page_mode and self.main_window.settings['caching_enabled']:
+        # Get caching working for DjVu files
+
+        # All of these must be True
+        caching_conditions = (
+            not double_page_mode,
+            not self.filetype == 'djvu',
+            self.main_window.settings['caching_enabled'])
+
+        if False not in caching_conditions:
             return_pixmap = None
             while not return_pixmap:
                 return_pixmap = check_cache(current_page)
