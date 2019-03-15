@@ -17,26 +17,14 @@
 import os
 import collections
 
-import numpy
 import djvu.decode
 from PyQt5 import QtGui
 
-djvu_pixel_format = djvu.decode.PixelFormatRgbMask(0xFF0000, 0xFF00, 0xFF, bpp=32)
-djvu_pixel_format.rows_top_to_bottom = 1
-djvu_pixel_format.y_top_to_bottom = 0
-
 
 class ParseDJVU:
-    def __init__(self, filename, temp_dir, file_md5):
+    def __init__(self, filename, *args):
         self.book = None
         self.filename = filename
-
-        # Create the temporary directory where
-        # rendered pngs will be stored
-        # This may be skipped in case QImage to QPixmap conversion
-        # stops segfaulting
-        self.extract_dir = os.path.join(temp_dir, file_md5)
-        os.makedirs(self.extract_dir, exist_ok=True)
 
     def read_book(self):
         self.book = djvu.decode.Context().new_document(
@@ -44,6 +32,8 @@ class ParseDJVU:
         self.book.decoding_job.wait()
 
     def generate_metadata(self):
+        # TODO
+        # What even is this?
         title = os.path.basename(self.filename)
         author = 'Unknown'
         year = 9999
@@ -51,7 +41,7 @@ class ParseDJVU:
         tags = []
 
         cover_page = self.book.pages[0]
-        cover = render_djvu_page(cover_page, self.extract_dir, True)
+        cover = render_djvu_page(cover_page, True)
 
         Metadata = collections.namedtuple(
             'Metadata', ['title', 'author', 'year', 'isbn', 'tags', 'cover'])
@@ -60,46 +50,49 @@ class ParseDJVU:
     def generate_content(self):
         # TODO
         # See if it's possible to generate a more involved ToC
-
         content = list(range(len(self.book.pages)))
         toc = [(1, f'Page {i + 1}', i + 1) for i in content]
 
         # Return toc, content, images_only
         return toc, content, True
 
-def render_djvu_page(page, extract_dir, for_cover=False):
 
+def render_djvu_page(page, for_cover=False):
     # TODO
     # Figure out how to calculate image stride
-    bytes_per_line = 13200
+    # and if it impacts row_alignment in the render
+    # method below
+    # bytes_per_line = 13200
 
-    # Yes, but why?
+    djvu_pixel_format = djvu.decode.PixelFormatRgbMask(
+        0xFF0000, 0xFF00, 0xFF, bpp=32)
+    djvu_pixel_format.rows_top_to_bottom = 1
+    djvu_pixel_format.y_top_to_bottom = 0
+
+    # ¯\_(ツ)_/¯
     mode = 0
 
     page_job = page.decode(wait=True)
     width, height = page_job.size
     rect = (0, 0, width, height)
-    color_buffer = numpy.zeros((height, bytes_per_line), dtype=numpy.uint32)
-    page_job.render(
-        mode, rect, rect, djvu_pixel_format,
-        row_alignment=bytes_per_line,
-        buffer=color_buffer)
-    color_buffer ^= 0xFF000000
+    output = page_job.render(
+        mode, rect, rect, djvu_pixel_format)
+        # row_alignment=bytes_per_line)
 
     imageFormat = QtGui.QImage.Format_RGB32
-    pageQImage = QtGui.QImage(color_buffer, width, height, imageFormat)
+    pageQImage = QtGui.QImage(output, width, height, imageFormat)
+
+    # Format conversion not only keeps the damn thing from
+    # segfaulting when converting from QImage to QPixmap,
+    # but it also allows for the double page mode to keep
+    # working properly. We like format conversion.
+    pageQImage = pageQImage.convertToFormat(
+        QtGui.QImage.Format_ARGB32_Premultiplied)
 
     if for_cover:
         return pageQImage
 
-    # TODO
-    # Converting from the QImage to the QPixmap directly
-    # outright segfaults sometimes.
-    # This damages caching, speed and my ego
-
-    outfile = os.path.join(extract_dir, 'temporaryPNG.png')
-    pageQImage.save(outfile)
     pixmap = QtGui.QPixmap()
-    pixmap.load(outfile)
+    pixmap.convertFromImage(pageQImage)
 
     return pixmap

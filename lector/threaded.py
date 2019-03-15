@@ -25,8 +25,14 @@ from PyQt5 import QtCore, QtGui
 from lector import sorter
 from lector import database
 
+# The following have to be separate
 try:
     from lector.parsers.pdf import render_pdf_page
+except ImportError:
+    pass
+
+try:
+    from lector.parsers.djvu import render_djvu_page
 except ImportError:
     pass
 
@@ -164,6 +170,10 @@ class BackGroundCacheRefill(QtCore.QThread):
             elif self.filetype == 'pdf':
                 page_data = self.book.loadPage(current_page)
                 pixmap = render_pdf_page(page_data)
+
+            elif self.filetype == 'djvu':
+                page_data = self.book.pages[current_page]
+                pixmap = render_djvu_page(page_data)
 
             return pixmap
 

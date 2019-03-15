@@ -106,7 +106,7 @@ class PliantQGraphicsView(QtWidgets.QGraphicsView):
 
                 elif self.filetype == 'djvu':
                     page_data = self.book.pages[page]
-                    pixmap = render_djvu_page(page_data, '/tmp')
+                    pixmap = render_djvu_page(page_data)
 
                 return pixmap
 
@@ -183,12 +183,10 @@ class PliantQGraphicsView(QtWidgets.QGraphicsView):
 
         # TODO
         # Get caching working for double page view
-        # Get caching working for DjVu files
 
         # All of these must be True
         caching_conditions = (
             not double_page_mode,
-            not self.filetype == 'djvu',
             self.main_window.settings['caching_enabled'])
 
         if False not in caching_conditions:

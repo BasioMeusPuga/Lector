@@ -89,6 +89,7 @@ TODO
                 Have them save to memory
         ✓ fb2 support
             ✓ Images need to show up in their placeholders
+        ✓ djvu support
     Other:
         ✓ Define every widget in code
     Bugs:
@@ -121,10 +122,11 @@ TODO
         Goodreads API: Ratings, Read, Recommendations
         Get ISBN using python-isbnlib
         Use embedded fonts + CSS
-        txt, doc, chm, djvu support
+        txt, doc, chm, markdown support
         Include icons for filetype emblems
         Comic view modes
             Continuous paging
+            Image rotation
         Ignore a / the / numbers for sorting purposes
         ? Add only one file type if multiple are present
         ? Create emblem per filetype

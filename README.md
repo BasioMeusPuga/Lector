@@ -30,7 +30,6 @@ Bitcoin: 17jaxj26vFJNqQ2hEVerbBV5fpTusfqFro
 | Package | Version tested | Required for |
 | --- | --- | --- |
 | python-pymupdf | 1.14.5 | PDF support |
-| python-numpy | 1.16.2 | DjVu support |
 | python-djvulibre | 0.8.4 | DjVu support |
 
 ## Support

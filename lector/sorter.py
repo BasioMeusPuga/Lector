@@ -62,14 +62,13 @@ else:
     print(error_string)
     logger.error(error_string)
 
-# numpy and djvu - Optional
-numpy_check = importlib.util.find_spec('numpy')
+# djvu - Optional
 djvu_check = importlib.util.find_spec('djvu.decode')
-if numpy_check and djvu_check:
+if djvu_check:
     from lector.parsers.djvu import ParseDJVU
     sorter['djvu'] = ParseDJVU
 else:
-    error_string = 'numpy / djvulibre is not installed. Will be unable to load Djvu files.'
+    error_string = 'djvulibre is not installed. Will be unable to load Djvu files.'
     print(error_string)
     logger.error(error_string)
 

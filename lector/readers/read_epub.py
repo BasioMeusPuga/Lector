@@ -89,7 +89,7 @@ class EPUB:
                     return i
 
         # If the file isn't found
-        logger.error(filename + ' not found in ' + self.book_filename)
+        logger.warning(filename + ' not found in ' + self.book_filename)
         return False
 
     def generate_toc(self):
@@ -109,7 +109,7 @@ class EPUB:
 
             if not toc_filename:
                 if not toc_filename_alternative:
-                    logger.error('No ToC found for: ' + self.book_filename)
+                    logger.warning('No ToC found for: ' + self.book_filename)
                 else:
                     toc_filename = toc_filename_alternative
 
