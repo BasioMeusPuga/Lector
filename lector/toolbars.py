@@ -513,7 +513,10 @@ class FixedComboBox(QtWidgets.QComboBox):
 
     def sizeHint(self):
         # This and the one below should adjust to screen size
-        return QtCore.QSize(self.adjusted_size, 22)
+        return self.minimumSizeHint()
+
+    def minimumSizeHint(self):
+        return QtCore.QSize(self.adjusted_size, 32)
 
     def wheelEvent(self, QWheelEvent):
         # Disable mouse wheel scrolling in the ComboBox
@@ -526,7 +529,10 @@ class FixedLineEdit(QtWidgets.QLineEdit):
         self.adjusted_size = screen_width // 4.5
 
     def sizeHint(self):
-        return QtCore.QSize(self.adjusted_size, 22)
+        return self.minimumSizeHint()
+
+    def minimumSizeHint(self):
+        return QtCore.QSize(self.adjusted_size, 32)
 
     def keyReleaseEvent(self, event):
         if event.key() == QtCore.Qt.Key_Escape:

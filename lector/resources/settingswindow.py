@@ -390,7 +390,7 @@ class Ui_Dialog(object):
         self.performCulling.setText(_translate("Dialog", "Load covers only when needed"))
         self.autoTags.setText(_translate("Dialog", "Generate tags from files"))
         self.attenuateTitles.setText(_translate("Dialog", "Shrink long book titles"))
-        self.navBarVisible.setText(_translate("Dialog", "Show NavBar"))
+        self.navBarVisible.setText(_translate("Dialog", "Show navigation bar"))
         self.autoCover.setToolTip(_translate("Dialog", "<html><head/><body><p>Attempt to download missing book covers from Google books - SLOW</p></body></html>"))
         self.autoCover.setText(_translate("Dialog", "Download missing covers"))
         self.groupBox_2.setTitle(_translate("Dialog", "Reading"))

@@ -72,6 +72,7 @@ class PliantDockWidget(QtWidgets.QDockWidget):
         else:
             dock_width = desktop_size.width() // 5
             dock_x = viewport_topRight.x() - dock_width + 1
+            self.parent.navBar.hide()
 
         self.main_window.active_docks.append(self)
         self.setGeometry(dock_x, dock_y, dock_width, dock_height)
@@ -534,51 +535,72 @@ class PliantNavBarWidget(QtWidgets.QDockWidget):
         self.contentView = contentView
         self.parent = parent
 
+        self.setWindowTitle('Navigation')
+
         # Animate appearance
         self.animation = QtCore.QPropertyAnimation(self, b'windowOpacity')
         self.animation.setDuration(200)
         self.animation.setStartValue(0)
-        self.animation.setEndValue(1)
+        self.animation.setEndValue(.9)
 
         background = self.main_window.settings['dialog_background']
         self.setStyleSheet(
             "QDockWidget {{background-color: {0}}}".format(background.name()))
 
-        self.backButton = QtWidgets.QPushButton('Previous')
-        self.nextButton = QtWidgets.QPushButton('Next')
-        self.tocBox = QtWidgets.QComboBox()
+        self.backButton = QtWidgets.QPushButton()
+        self.backButton.setFlat(True)
+        icon = QtGui.QIcon()
+        icon.addPixmap(
+            QtGui.QPixmap(":/images/previous.png"),
+            QtGui.QIcon.Normal, QtGui.QIcon.Off)
+        self.backButton.setIcon(icon)
+        self.backButton.setIconSize(QtCore.QSize(24, 24))
+
+        self.nextButton = QtWidgets.QPushButton()
+        self.nextButton.setFlat(True)
+        icon = QtGui.QIcon()
+        icon.addPixmap(
+            QtGui.QPixmap(":/images/next.png"),
+            QtGui.QIcon.Normal, QtGui.QIcon.Off)
+        self.nextButton.setIcon(icon)
+        self.nextButton.setIconSize(QtCore.QSize(24, 24))
+
+        self.backButton.clicked.connect(lambda: self.button_click(-1))
+        self.nextButton.clicked.connect(lambda: self.button_click(1))
+
+        self.tocComboBox = FixedComboBox(self)
+        self.populate_combo_box()
 
         self.navLayout = QtWidgets.QHBoxLayout()
         self.navLayout.addWidget(self.backButton)
-        self.navLayout.addWidget(self.tocBox)
+        self.navLayout.addWidget(self.tocComboBox)
         self.navLayout.addWidget(self.nextButton)
         self.navWidget = QtWidgets.QWidget()
         self.navWidget.setLayout(self.navLayout)
 
         self.setWidget(self.navWidget)
 
-    def showEvent(self, event):
+    def showEvent(self, event=None):
         # TODO
         # See what happens when the size of the viewport is smaller
         # than the size of the dock
 
-        viewport_bottomLeft = self.contentView.mapToGlobal(
-            self.contentView.viewport().rect().bottomLeft())
-        viewport_width = self.contentView.viewport().width()
+        viewport_bottomRight = self.contentView.mapToGlobal(
+            self.contentView.viewport().rect().bottomRight())
 
         # Dock dimensions
         desktop_size = QtWidgets.QDesktopWidget().screenGeometry()
-        dock_width = desktop_size.width() // 4
-        dock_height = 60
+        dock_width = desktop_size.width() // 4.5
+        dock_height = 30
 
-        dock_x = viewport_bottomLeft.x() + (viewport_width - dock_width) // 2
-        dock_y = viewport_bottomLeft.y() - 100
+        dock_x = viewport_bottomRight.x() - dock_width - 30
+        dock_y = viewport_bottomRight.y() - 70
 
         self.main_window.active_docks.append(self)
         self.setGeometry(dock_x, dock_y, dock_width, dock_height)
 
         # Rounded
-        radius = 15
+        radius = 20
         path = QtGui.QPainterPath()
         path.addRoundedRect(QtCore.QRectF(self.rect()), radius, radius)
         try:
@@ -588,3 +610,53 @@ class PliantNavBarWidget(QtWidgets.QDockWidget):
             pass
 
         self.animation.start()
+
+    def populate_combo_box(self):
+        def set_toc_position(tocTree):
+            currentIndex = tocTree.currentIndex()
+            required_position = currentIndex.data(QtCore.Qt.UserRole)
+            self.return_focus()
+            self.parent.set_content(required_position, True, True)
+
+        # Create the Combobox / Treeview combination
+        tocTree = QtWidgets.QTreeView()
+        self.tocComboBox.setView(tocTree)
+        self.tocComboBox.setModel(self.parent.tocModel)
+        tocTree.setRootIsDecorated(False)
+        tocTree.setItemsExpandable(False)
+        tocTree.expandAll()
+
+        # Set the position of the QComboBox
+        self.parent.set_tocBox_index(None, self.tocComboBox)
+
+        # Make clicking do something
+        self.tocComboBox.currentIndexChanged.connect(
+            lambda: set_toc_position(tocTree))
+
+    def button_click(self, change):
+        self.contentView.common_functions.change_chapter(change)
+        self.return_focus()
+
+    def return_focus(self):
+        # The NavBar needs to be hidden after clicking
+        self.parent.activateWindow()
+        self.parent.contentView.setFocus()
+        self.parent.mouseHideTimer.start()
+
+
+class FixedComboBox(QtWidgets.QComboBox):
+    def __init__(self, parent=None):
+        super(FixedComboBox, self).__init__(parent)
+        screen_width = QtWidgets.QDesktopWidget().screenGeometry().width()
+        self.adjusted_size = screen_width // 6
+
+    def sizeHint(self):
+        # This and the one below should adjust to screen size
+        return self.minimumSizeHint()
+
+    def minimumSizeHint(self):
+        return QtCore.QSize(self.adjusted_size, 32)
+
+    def wheelEvent(self, QWheelEvent):
+        # Disable mouse wheel scrolling in the ComboBox
+        return

@@ -192,9 +192,9 @@ class Tab(QtWidgets.QWidget):
             this_tab_index, QtGui.QIcon(cover_icon))
 
         # Hide mouse cursor timer
-        self.mouse_hide_timer = QtCore.QTimer()
-        self.mouse_hide_timer.setSingleShot(True)
-        self.mouse_hide_timer.timeout.connect(self.hide_mouse)
+        self.mouseHideTimer = QtCore.QTimer()
+        self.mouseHideTimer.setSingleShot(True)
+        self.mouseHideTimer.timeout.connect(self.hide_mouse)
 
         # Hide the tab bar in case distraction free mode is active
         if not self.main_window.settings['show_bars']:
@@ -403,7 +403,7 @@ class Tab(QtWidgets.QWidget):
         if not self.are_we_doing_images_only:
             self.hiddenButton.animateClick(50)
 
-        self.mouse_hide_timer.start(2000)
+        self.mouseHideTimer.start(2000)
         self.is_fullscreen = True
 
     def exit_fullscreen(self):
@@ -436,7 +436,8 @@ class Tab(QtWidgets.QWidget):
         if not self.main_window.settings['show_bars']:
             self.main_window.toggle_distraction_free()
 
-        self.mouse_hide_timer.start(2000)
+        self.navBar.hide()
+        self.mouseHideTimer.start(2000)
         self.contentView.setFocus()
 
     def set_content(self, required_position, tocBox_readjust=False, record_position=False):
@@ -472,6 +473,13 @@ class Tab(QtWidgets.QWidget):
         # that calls set_position must specify if it needs this adjustment
         if tocBox_readjust:
             self.set_tocBox_index(required_position, None)
+
+            # The NavBar doesn't get declared until later
+            try:
+                self.set_tocBox_index(
+                    required_position, self.navBar.tocComboBox)
+            except AttributeError:
+                pass
 
         self.contentView.setFocus()
 
@@ -583,7 +591,9 @@ class Tab(QtWidgets.QWidget):
 
     def hide_mouse(self):
         self.contentView.viewport().setCursor(QtCore.Qt.BlankCursor)
-        self.navBar.hide()
+
+        if self.contentView.hasFocus():
+            self.navBar.hide()
 
     def sneaky_change(self):
         direction = -1

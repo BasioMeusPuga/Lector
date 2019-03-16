@@ -196,7 +196,7 @@
                   <item>
                    <widget class="QCheckBox" name="navBarVisible">
                     <property name="text">
-                     <string>Show NavBar</string>
+                     <string>Show navigation bar</string>
                     </property>
                    </widget>
                   </item>

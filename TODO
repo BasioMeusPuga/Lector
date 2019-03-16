@@ -37,6 +37,7 @@ TODO
            ✓ Create covers for books without them - VERY SLOW
         Set focus to newly added file
     Reading:
+        ✓ Navbar
         ✓ Drop down for TOC
         ✓ Treeview navigation for TOC
         ✓ Override the keypress event of the textedit
@@ -64,6 +65,7 @@ TODO
         ✓ Paragraph indentation
         ✓ Comic view keyboard shortcuts
         ✓ Comic view context menu
+        ✓ Image rotation
         ✓ Make the bookmark dock float over the reading area
         ✓ Spacebar should not cut off lines at the top
         ✓ Track open bookmark windows so they can be closed quickly at exit
@@ -90,6 +92,7 @@ TODO
         ✓ fb2 support
             ✓ Images need to show up in their placeholders
         ✓ djvu support
+        ✓ markdown support
     Other:
         ✓ Define every widget in code
     Bugs:
@@ -104,7 +107,6 @@ TODO
         Drag and drop is acting out
 
     Secondary:
-        Navbar
         Text to speech
         Definitions dialog needs to respond to escape
         Zoom slider for comics
@@ -122,11 +124,10 @@ TODO
         Goodreads API: Ratings, Read, Recommendations
         Get ISBN using python-isbnlib
         Use embedded fonts + CSS
-        txt, doc, chm, markdown support
+        txt, doc, chm support
         Include icons for filetype emblems
         Comic view modes
             Continuous paging
-            Image rotation
         Ignore a / the / numbers for sorting purposes
         ? Add only one file type if multiple are present
         ? Create emblem per filetype

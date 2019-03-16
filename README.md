@@ -10,6 +10,7 @@ Currently supports:
 * mobi
 * azw / azw3 / azw4
 * cbr / cbz
+* md
 
 ## Contribute
 [Paypal](https://www.paypal.me/supportlector)
@@ -31,6 +32,7 @@ Bitcoin: 17jaxj26vFJNqQ2hEVerbBV5fpTusfqFro
 | --- | --- | --- |
 | python-pymupdf | 1.14.5 | PDF support |
 | python-djvulibre | 0.8.4 | DjVu support |
+| python-markdown | 3.0.1 | Markdown support |
 
 ## Support
 When reporting issues:

@@ -323,7 +323,7 @@ class PliantQGraphicsView(QtWidgets.QGraphicsView):
             return
 
         current_position = event.pos()
-        if current_position == self.mousePosition:
+        if current_position == self.mousePosition or self.parent.sideDock.isVisible():
             return
         else:
             self.mousePosition = event.pos()
@@ -333,7 +333,7 @@ class PliantQGraphicsView(QtWidgets.QGraphicsView):
                 self.viewport().setCursor(QtCore.Qt.OpenHandCursor)
             else:
                 self.viewport().setCursor(QtCore.Qt.ClosedHandCursor)
-            self.parent.mouse_hide_timer.start(2000)
+            self.parent.mouseHideTimer.start(2000)
 
     def generate_graphicsview_context_menu(self, position):
         contextMenu = QtWidgets.QMenu()
@@ -762,7 +762,7 @@ class PliantQTextBrowser(QtWidgets.QTextBrowser):
             return
 
         current_position = event.pos()
-        if current_position == self.mousePosition:
+        if current_position == self.mousePosition or self.parent.sideDock.isVisible():
             return
         else:
             self.mousePosition = event.pos()
@@ -772,7 +772,7 @@ class PliantQTextBrowser(QtWidgets.QTextBrowser):
                 self.viewport().setCursor(QtCore.Qt.IBeamCursor)
             else:
                 self.viewport().setCursor(QtCore.Qt.ArrowCursor)
-            self.parent.mouse_hide_timer.start(2000)
+            self.parent.mouseHideTimer.start(2000)
 
 
 class PliantWidgetsCommonFunctions:

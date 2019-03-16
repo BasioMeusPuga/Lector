@@ -698,7 +698,7 @@ class MainUI(QtWidgets.QMainWindow, mainwindow.Ui_MainWindow):
         # The set_content method is universal
         # It's going to do position tracking
         current_tab = self.tabWidget.currentWidget()
-        current_tab.set_content(required_position, False, True)
+        current_tab.set_content(required_position, True, True)
 
     def library_doubleclick(self, index):
         sender = self.sender().objectName()
@@ -993,7 +993,7 @@ class MainUI(QtWidgets.QMainWindow, mainwindow.Ui_MainWindow):
 
     def start_culling_timer(self):
         if self.settings['perform_culling']:
-            self.culling_timer.start(30)
+            self.culling_timer.start(90)
 
     def resizeEvent(self, event=None):
         if event:
