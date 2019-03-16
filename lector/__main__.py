@@ -265,7 +265,7 @@ class MainUI(QtWidgets.QMainWindow, mainwindow.Ui_MainWindow):
 
         # Get list of available parsers
         self.available_parsers = '*.' + ' *.'.join(sorter.available_parsers)
-        logger.info('Available parsers: ' + self.available_parsers)
+        logger.log(60, 'Available parsers: ' + self.available_parsers)
 
         # The Library tab gets no button
         self.tabWidget.tabBar().setTabButton(

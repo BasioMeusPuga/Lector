@@ -72,6 +72,16 @@ else:
     print(error_string)
     logger.error(error_string)
 
+# markdown - Optional
+markdown_check = importlib.util.find_spec('markdown')
+if markdown_check:
+    from lector.parsers.markdown import ParseMD
+    sorter['md'] = ParseMD
+else:
+    error_string = 'markdown is not installed. Will be unable to load Markdown files.'
+    print(error_string)
+    logger.error(error_string)
+
 # python-lxml - Required for everything except comics
 lxml_check = importlib.util.find_spec('lxml')
 xmltodict_check = importlib.util.find_spec('xmltodict')
