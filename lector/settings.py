@@ -124,6 +124,8 @@ class Settings:
             'hideScrollBars', 'False').capitalize())
         self.parent.settings['auto_cover'] = literal_eval(self.settings.value(
             'autoCover', 'False').capitalize())
+        self.parent.settings['nav_bar'] = literal_eval(self.settings.value(
+            'navBar', 'False').capitalize())
         self.parent.settings['scroll_speed'] = int(self.settings.value('scrollSpeed', 7))
         self.parent.settings['consider_read_at'] = int(self.settings.value('considerReadAt', 95))
         self.parent.settings['small_increment'] = int(self.settings.value('smallIncrement', 4))
@@ -215,6 +217,7 @@ class Settings:
         self.settings.setValue('cachingEnabled', str(current_settings['caching_enabled']))
         self.settings.setValue('hideScrollBars', str(current_settings['hide_scrollbars']))
         self.settings.setValue('attenuateTitles', str(current_settings['attenuate_titles']))
+        self.settings.setValue('navBar', str(current_settings['nav_bar']))
         self.settings.setValue('autoCover', str(current_settings['auto_cover']))
         self.settings.setValue('scrollSpeed', current_settings['scroll_speed'])
         self.settings.setValue('considerReadAt', current_settings['consider_read_at'])

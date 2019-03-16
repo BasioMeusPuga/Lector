@@ -24,7 +24,7 @@ import logging
 from PyQt5 import QtWidgets, QtGui, QtCore
 
 from lector.sorter import resize_image
-from lector.dockwidgets import PliantDockWidget
+from lector.dockwidgets import PliantDockWidget, PliantNavBarWidget
 from lector.contentwidgets import PliantQGraphicsView, PliantQTextBrowser
 
 logger = logging.getLogger(__name__)
@@ -135,6 +135,19 @@ class Tab(QtWidgets.QWidget):
                 QtCore.Qt.ScrollBarAsNeeded)
             self.contentView.setVerticalScrollBarPolicy(
                 QtCore.Qt.ScrollBarAsNeeded)
+
+        # Create a NavBar widget
+        if self.main_window.settings['nav_bar']:
+            self.navBar = PliantNavBarWidget(
+                self.main_window, self.contentView, self)
+            self.navBar.setFloating(True)
+            self.navBar.setTitleBarWidget(QtWidgets.QWidget(self))
+            self.navBar.hide()
+        else:
+            # This keeps from having to set visibility conditions
+            # everywhere
+            self.navBar = QtWidgets.QWidget()
+            self.navBar.setFixedSize(0, 0)
 
         # Create a common dock for bookmarks, annotations, and search
         self.sideDock = PliantDockWidget(
@@ -570,6 +583,7 @@ class Tab(QtWidgets.QWidget):
 
     def hide_mouse(self):
         self.contentView.viewport().setCursor(QtCore.Qt.BlankCursor)
+        self.navBar.hide()
 
     def sneaky_change(self):
         direction = -1

@@ -103,6 +103,7 @@ class SettingsUI(QtWidgets.QDialog, settingswindow.Ui_Dialog):
         self.cachingEnabled.setChecked(self.main_window.settings['caching_enabled'])
         self.hideScrollBars.setChecked(self.main_window.settings['hide_scrollbars'])
         self.attenuateTitles.setChecked(self.main_window.settings['attenuate_titles'])
+        self.navBarVisible.setChecked(self.main_window.settings['nav_bar'])
         self.autoCover.setChecked(self.main_window.settings['auto_cover'])
         self.scrollSpeedSlider.setValue(self.main_window.settings['scroll_speed'])
         self.readAtPercent.setValue(self.main_window.settings['consider_read_at'])
@@ -117,6 +118,7 @@ class SettingsUI(QtWidgets.QDialog, settingswindow.Ui_Dialog):
         self.cachingEnabled.clicked.connect(self.manage_checkboxes)
         self.hideScrollBars.clicked.connect(self.manage_checkboxes)
         self.attenuateTitles.clicked.connect(self.manage_checkboxes)
+        self.navBarVisible.clicked.connect(self.manage_checkboxes)
         self.autoCover.clicked.connect(self.manage_checkboxes)
         self.scrollSpeedSlider.valueChanged.connect(self.change_scroll_speed)
         self.readAtPercent.valueChanged.connect(self.change_read_at)
@@ -427,6 +429,7 @@ class SettingsUI(QtWidgets.QDialog, settingswindow.Ui_Dialog):
             'cachingEnabled': 'caching_enabled',
             'hideScrollBars': 'hide_scrollbars',
             'attenuateTitles': 'attenuate_titles',
+            'navBarVisible': 'nav_bar',
             'autoCover': 'auto_cover'}
 
         self.main_window.settings[

@@ -76,6 +76,7 @@ class PliantQGraphicsView(QtWidgets.QGraphicsView):
 
         self.ignore_wheel_event = False
         self.ignore_wheel_event_number = 0
+        self.mousePosition = None
         self.setMouseTracking(True)
         self.setDragMode(QtWidgets.QGraphicsView.ScrollHandDrag)
 
@@ -313,12 +314,26 @@ class PliantQGraphicsView(QtWidgets.QGraphicsView):
         self.common_functions.update_model()
 
     def mouseMoveEvent(self, event):
-        if QtWidgets.QApplication.mouseButtons() == QtCore.Qt.NoButton:
-            self.viewport().setCursor(QtCore.Qt.OpenHandCursor)
-        else:
-            self.viewport().setCursor(QtCore.Qt.ClosedHandCursor)
-        self.parent.mouse_hide_timer.start(2000)
+        # Compare mouse positions
+        # This allows to filter out scrolling
+        # from a normal mouseEvent
         QtWidgets.QGraphicsView.mouseMoveEvent(self, event)
+        if not self.mousePosition:
+            self.mousePosition = event.pos()
+            return
+
+        current_position = event.pos()
+        if current_position == self.mousePosition:
+            return
+        else:
+            self.mousePosition = event.pos()
+
+            self.parent.navBar.show()
+            if QtWidgets.QApplication.mouseButtons() == QtCore.Qt.NoButton:
+                self.viewport().setCursor(QtCore.Qt.OpenHandCursor)
+            else:
+                self.viewport().setCursor(QtCore.Qt.ClosedHandCursor)
+            self.parent.mouse_hide_timer.start(2000)
 
     def generate_graphicsview_context_menu(self, position):
         contextMenu = QtWidgets.QMenu()
@@ -465,6 +480,7 @@ class PliantQTextBrowser(QtWidgets.QTextBrowser):
         self.setMouseTracking(True)
         self.verticalScrollBar().sliderMoved.connect(
             self.record_position)
+        self.mousePosition = None
         self.ignore_wheel_event = False
         self.ignore_wheel_event_number = 0
 
@@ -736,12 +752,27 @@ class PliantQTextBrowser(QtWidgets.QTextBrowser):
         self.main_window.closeEvent()
 
     def mouseMoveEvent(self, event):
-        if self.annotation_mode:
-            self.viewport().setCursor(QtCore.Qt.IBeamCursor)
-        else:
-            self.viewport().setCursor(QtCore.Qt.ArrowCursor)
-        self.parent.mouse_hide_timer.start(2000)
+        # Compare mouse positions
+        # This allows to filter out scrolling
+        # from a normal mouseEvent
+
         QtWidgets.QTextBrowser.mouseMoveEvent(self, event)
+        if not self.mousePosition:
+            self.mousePosition = event.pos()
+            return
+
+        current_position = event.pos()
+        if current_position == self.mousePosition:
+            return
+        else:
+            self.mousePosition = event.pos()
+
+            self.parent.navBar.show()
+            if self.annotation_mode:
+                self.viewport().setCursor(QtCore.Qt.IBeamCursor)
+            else:
+                self.viewport().setCursor(QtCore.Qt.ArrowCursor)
+            self.parent.mouse_hide_timer.start(2000)
 
 
 class PliantWidgetsCommonFunctions:

@@ -71,6 +71,22 @@
                      </widget>
                     </item>
                     <item>
+                     <spacer name="horizontalSpacer_3">
+                      <property name="orientation">
+                       <enum>Qt::Horizontal</enum>
+                      </property>
+                      <property name="sizeType">
+                       <enum>QSizePolicy::Minimum</enum>
+                      </property>
+                      <property name="sizeHint" stdset="0">
+                       <size>
+                        <width>40</width>
+                        <height>20</height>
+                       </size>
+                      </property>
+                     </spacer>
+                    </item>
+                    <item>
                      <widget class="QSpinBox" name="readAtPercent">
                       <property name="minimum">
                        <number>90</number>
@@ -178,6 +194,13 @@
                 <item>
                  <layout class="QHBoxLayout" name="horizontalLayout_16">
                   <item>
+                   <widget class="QCheckBox" name="navBarVisible">
+                    <property name="text">
+                     <string>Show NavBar</string>
+                    </property>
+                   </widget>
+                  </item>
+                  <item>
                    <widget class="QCheckBox" name="autoCover">
                     <property name="toolTip">
                      <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Attempt to download missing book covers from Google books - SLOW&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
@@ -242,6 +265,22 @@ Reopen book to see changes</string>
                      </widget>
                     </item>
                     <item>
+                     <spacer name="horizontalSpacer_4">
+                      <property name="orientation">
+                       <enum>Qt::Horizontal</enum>
+                      </property>
+                      <property name="sizeType">
+                       <enum>QSizePolicy::Minimum</enum>
+                      </property>
+                      <property name="sizeHint" stdset="0">
+                       <size>
+                        <width>40</width>
+                        <height>20</height>
+                       </size>
+                      </property>
+                     </spacer>
+                    </item>
+                    <item>
                      <widget class="QSpinBox" name="smallIncrementBox">
                       <property name="toolTip">
                        <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;UP/DOWN ARROW - Steps to take before turning comicbook page&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
@@ -266,6 +305,22 @@ Reopen book to see changes</string>
                        <string>Large increment</string>
                       </property>
                      </widget>
+                    </item>
+                    <item>
+                     <spacer name="horizontalSpacer_5">
+                      <property name="orientation">
+                       <enum>Qt::Horizontal</enum>
+                      </property>
+                      <property name="sizeType">
+                       <enum>QSizePolicy::Minimum</enum>
+                      </property>
+                      <property name="sizeHint" stdset="0">
+                       <size>
+                        <width>40</width>
+                        <height>20</height>
+                       </size>
+                      </property>
+                     </spacer>
                     </item>
                     <item>
                      <widget class="QSpinBox" name="largeIncrementBox">
@@ -308,7 +363,30 @@ Reopen book to see changes</string>
                      </widget>
                     </item>
                     <item>
-                     <widget class="QComboBox" name="languageBox"/>
+                     <spacer name="horizontalSpacer_2">
+                      <property name="orientation">
+                       <enum>Qt::Horizontal</enum>
+                      </property>
+                      <property name="sizeType">
+                       <enum>QSizePolicy::Preferred</enum>
+                      </property>
+                      <property name="sizeHint" stdset="0">
+                       <size>
+                        <width>40</width>
+                        <height>20</height>
+                       </size>
+                      </property>
+                     </spacer>
+                    </item>
+                    <item>
+                     <widget class="QComboBox" name="languageBox">
+                      <property name="sizePolicy">
+                       <sizepolicy hsizetype="Minimum" vsizetype="Fixed">
+                        <horstretch>0</horstretch>
+                        <verstretch>0</verstretch>
+                       </sizepolicy>
+                      </property>
+                     </widget>
                     </item>
                    </layout>
                   </item>
@@ -326,6 +404,22 @@ Reopen book to see changes</string>
                        <string>Scroll speed</string>
                       </property>
                      </widget>
+                    </item>
+                    <item>
+                     <spacer name="horizontalSpacer_6">
+                      <property name="orientation">
+                       <enum>Qt::Horizontal</enum>
+                      </property>
+                      <property name="sizeType">
+                       <enum>QSizePolicy::Minimum</enum>
+                      </property>
+                      <property name="sizeHint" stdset="0">
+                       <size>
+                        <width>40</width>
+                        <height>20</height>
+                       </size>
+                      </property>
+                     </spacer>
                     </item>
                     <item>
                      <widget class="QSlider" name="scrollSpeedSlider">

@@ -525,3 +525,66 @@ class PliantLabelWidget(QtWidgets.QLabel):
     def mousePressEvent(self, QMouseEvent):
         self.navigate_to_search_result(self.index)
         QtWidgets.QLabel.mousePressEvent(self, QMouseEvent)
+
+
+class PliantNavBarWidget(QtWidgets.QDockWidget):
+    def __init__(self, main_window, contentView, parent):
+        super(PliantNavBarWidget, self).__init__(parent)
+        self.main_window = main_window
+        self.contentView = contentView
+        self.parent = parent
+
+        # Animate appearance
+        self.animation = QtCore.QPropertyAnimation(self, b'windowOpacity')
+        self.animation.setDuration(200)
+        self.animation.setStartValue(0)
+        self.animation.setEndValue(1)
+
+        background = self.main_window.settings['dialog_background']
+        self.setStyleSheet(
+            "QDockWidget {{background-color: {0}}}".format(background.name()))
+
+        self.backButton = QtWidgets.QPushButton('Previous')
+        self.nextButton = QtWidgets.QPushButton('Next')
+        self.tocBox = QtWidgets.QComboBox()
+
+        self.navLayout = QtWidgets.QHBoxLayout()
+        self.navLayout.addWidget(self.backButton)
+        self.navLayout.addWidget(self.tocBox)
+        self.navLayout.addWidget(self.nextButton)
+        self.navWidget = QtWidgets.QWidget()
+        self.navWidget.setLayout(self.navLayout)
+
+        self.setWidget(self.navWidget)
+
+    def showEvent(self, event):
+        # TODO
+        # See what happens when the size of the viewport is smaller
+        # than the size of the dock
+
+        viewport_bottomLeft = self.contentView.mapToGlobal(
+            self.contentView.viewport().rect().bottomLeft())
+        viewport_width = self.contentView.viewport().width()
+
+        # Dock dimensions
+        desktop_size = QtWidgets.QDesktopWidget().screenGeometry()
+        dock_width = desktop_size.width() // 4
+        dock_height = 60
+
+        dock_x = viewport_bottomLeft.x() + (viewport_width - dock_width) // 2
+        dock_y = viewport_bottomLeft.y() - 100
+
+        self.main_window.active_docks.append(self)
+        self.setGeometry(dock_x, dock_y, dock_width, dock_height)
+
+        # Rounded
+        radius = 15
+        path = QtGui.QPainterPath()
+        path.addRoundedRect(QtCore.QRectF(self.rect()), radius, radius)
+        try:
+            mask = QtGui.QRegion(path.toFillPolygon().toPolygon())
+            self.setMask(mask)
+        except TypeError:  # Required for older versions of Qt
+            pass
+
+        self.animation.start()

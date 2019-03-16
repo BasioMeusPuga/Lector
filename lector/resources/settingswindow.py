@@ -2,11 +2,12 @@
 
 # Form implementation generated from reading ui file 'raw/settings.ui'
 #
-# Created by: PyQt5 UI code generator 5.11.3
+# Created by: PyQt5 UI code generator 5.12
 #
 # WARNING! All changes made in this file will be lost!
 
 from PyQt5 import QtCore, QtGui, QtWidgets
+
 
 class Ui_Dialog(object):
     def setupUi(self, Dialog):
@@ -60,6 +61,8 @@ class Ui_Dialog(object):
         self.readAtLabel.setAlignment(QtCore.Qt.AlignLeading|QtCore.Qt.AlignLeft|QtCore.Qt.AlignVCenter)
         self.readAtLabel.setObjectName("readAtLabel")
         self.horizontalLayout_14.addWidget(self.readAtLabel)
+        spacerItem = QtWidgets.QSpacerItem(40, 20, QtWidgets.QSizePolicy.Minimum, QtWidgets.QSizePolicy.Minimum)
+        self.horizontalLayout_14.addItem(spacerItem)
         self.readAtPercent = QtWidgets.QSpinBox(self.groupBox)
         self.readAtPercent.setMinimum(90)
         self.readAtPercent.setProperty("value", 95)
@@ -108,6 +111,9 @@ class Ui_Dialog(object):
         self.verticalLayout_2.addLayout(self.horizontalLayout_9)
         self.horizontalLayout_16 = QtWidgets.QHBoxLayout()
         self.horizontalLayout_16.setObjectName("horizontalLayout_16")
+        self.navBarVisible = QtWidgets.QCheckBox(self.groupBox)
+        self.navBarVisible.setObjectName("navBarVisible")
+        self.horizontalLayout_16.addWidget(self.navBarVisible)
         self.autoCover = QtWidgets.QCheckBox(self.groupBox)
         self.autoCover.setObjectName("autoCover")
         self.horizontalLayout_16.addWidget(self.autoCover)
@@ -136,6 +142,8 @@ class Ui_Dialog(object):
         self.smallIncrementLabel = QtWidgets.QLabel(self.groupBox_2)
         self.smallIncrementLabel.setObjectName("smallIncrementLabel")
         self.horizontalLayout_15.addWidget(self.smallIncrementLabel)
+        spacerItem1 = QtWidgets.QSpacerItem(40, 20, QtWidgets.QSizePolicy.Minimum, QtWidgets.QSizePolicy.Minimum)
+        self.horizontalLayout_15.addItem(spacerItem1)
         self.smallIncrementBox = QtWidgets.QSpinBox(self.groupBox_2)
         self.smallIncrementBox.setMinimum(4)
         self.smallIncrementBox.setMaximum(10)
@@ -145,6 +153,8 @@ class Ui_Dialog(object):
         self.largeIncrementLabel = QtWidgets.QLabel(self.groupBox_2)
         self.largeIncrementLabel.setObjectName("largeIncrementLabel")
         self.horizontalLayout_15.addWidget(self.largeIncrementLabel)
+        spacerItem2 = QtWidgets.QSpacerItem(40, 20, QtWidgets.QSizePolicy.Minimum, QtWidgets.QSizePolicy.Minimum)
+        self.horizontalLayout_15.addItem(spacerItem2)
         self.largeIncrementBox = QtWidgets.QSpinBox(self.groupBox_2)
         self.largeIncrementBox.setMinimum(1)
         self.largeIncrementBox.setMaximum(10)
@@ -166,7 +176,14 @@ class Ui_Dialog(object):
         self.languageLabel.setAlignment(QtCore.Qt.AlignLeading|QtCore.Qt.AlignLeft|QtCore.Qt.AlignVCenter)
         self.languageLabel.setObjectName("languageLabel")
         self.horizontalLayout_5.addWidget(self.languageLabel)
+        spacerItem3 = QtWidgets.QSpacerItem(40, 20, QtWidgets.QSizePolicy.Preferred, QtWidgets.QSizePolicy.Minimum)
+        self.horizontalLayout_5.addItem(spacerItem3)
         self.languageBox = QtWidgets.QComboBox(self.groupBox_2)
+        sizePolicy = QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.Minimum, QtWidgets.QSizePolicy.Fixed)
+        sizePolicy.setHorizontalStretch(0)
+        sizePolicy.setVerticalStretch(0)
+        sizePolicy.setHeightForWidth(self.languageBox.sizePolicy().hasHeightForWidth())
+        self.languageBox.setSizePolicy(sizePolicy)
         self.languageBox.setObjectName("languageBox")
         self.horizontalLayout_5.addWidget(self.languageBox)
         self.horizontalLayout_8.addLayout(self.horizontalLayout_5)
@@ -180,6 +197,8 @@ class Ui_Dialog(object):
         self.scrollSpeedLabel.setSizePolicy(sizePolicy)
         self.scrollSpeedLabel.setObjectName("scrollSpeedLabel")
         self.horizontalLayout.addWidget(self.scrollSpeedLabel)
+        spacerItem4 = QtWidgets.QSpacerItem(40, 20, QtWidgets.QSizePolicy.Minimum, QtWidgets.QSizePolicy.Minimum)
+        self.horizontalLayout.addItem(spacerItem4)
         self.scrollSpeedSlider = QtWidgets.QSlider(self.groupBox_2)
         sizePolicy = QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.Preferred, QtWidgets.QSizePolicy.Fixed)
         sizePolicy.setHorizontalStretch(0)
@@ -196,8 +215,8 @@ class Ui_Dialog(object):
         self.gridLayout_3.addLayout(self.verticalLayout_3, 2, 0, 1, 1)
         self.verticalLayout.addWidget(self.groupBox_2)
         self.gridLayout_2.addLayout(self.verticalLayout, 0, 0, 1, 1)
-        spacerItem = QtWidgets.QSpacerItem(20, 40, QtWidgets.QSizePolicy.Minimum, QtWidgets.QSizePolicy.Expanding)
-        self.gridLayout_2.addItem(spacerItem, 1, 0, 1, 1)
+        spacerItem5 = QtWidgets.QSpacerItem(20, 40, QtWidgets.QSizePolicy.Minimum, QtWidgets.QSizePolicy.Expanding)
+        self.gridLayout_2.addItem(spacerItem5, 1, 0, 1, 1)
         self.stackedWidget.addWidget(self.switchPage)
         self.annotationsPage = QtWidgets.QWidget()
         self.annotationsPage.setObjectName("annotationsPage")
@@ -215,8 +234,8 @@ class Ui_Dialog(object):
         self.horizontalLayout_11.setObjectName("horizontalLayout_11")
         self.verticalLayout_6 = QtWidgets.QVBoxLayout()
         self.verticalLayout_6.setObjectName("verticalLayout_6")
-        spacerItem1 = QtWidgets.QSpacerItem(20, 40, QtWidgets.QSizePolicy.Minimum, QtWidgets.QSizePolicy.Expanding)
-        self.verticalLayout_6.addItem(spacerItem1)
+        spacerItem6 = QtWidgets.QSpacerItem(20, 40, QtWidgets.QSizePolicy.Minimum, QtWidgets.QSizePolicy.Expanding)
+        self.verticalLayout_6.addItem(spacerItem6)
         self.newAnnotation = QtWidgets.QPushButton(self.textTab)
         sizePolicy = QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.Preferred, QtWidgets.QSizePolicy.Fixed)
         sizePolicy.setHorizontalStretch(0)
@@ -272,8 +291,8 @@ class Ui_Dialog(object):
         self.moveDown.setText("")
         self.moveDown.setObjectName("moveDown")
         self.verticalLayout_6.addWidget(self.moveDown)
-        spacerItem2 = QtWidgets.QSpacerItem(20, 40, QtWidgets.QSizePolicy.Minimum, QtWidgets.QSizePolicy.Expanding)
-        self.verticalLayout_6.addItem(spacerItem2)
+        spacerItem7 = QtWidgets.QSpacerItem(20, 40, QtWidgets.QSizePolicy.Minimum, QtWidgets.QSizePolicy.Expanding)
+        self.verticalLayout_6.addItem(spacerItem7)
         self.horizontalLayout_11.addLayout(self.verticalLayout_6)
         self.annotationsList = QtWidgets.QListView(self.textTab)
         self.annotationsList.setEditTriggers(QtWidgets.QAbstractItemView.NoEditTriggers)
@@ -337,8 +356,8 @@ class Ui_Dialog(object):
         self.clearLogButton = QtWidgets.QPushButton(Dialog)
         self.clearLogButton.setObjectName("clearLogButton")
         self.horizontalLayout_10.addWidget(self.clearLogButton)
-        spacerItem3 = QtWidgets.QSpacerItem(40, 20, QtWidgets.QSizePolicy.Expanding, QtWidgets.QSizePolicy.Minimum)
-        self.horizontalLayout_10.addItem(spacerItem3)
+        spacerItem8 = QtWidgets.QSpacerItem(40, 20, QtWidgets.QSizePolicy.Expanding, QtWidgets.QSizePolicy.Minimum)
+        self.horizontalLayout_10.addItem(spacerItem8)
         self.okButton = QtWidgets.QPushButton(Dialog)
         self.okButton.setObjectName("okButton")
         self.horizontalLayout_10.addWidget(self.okButton)
@@ -371,6 +390,7 @@ class Ui_Dialog(object):
         self.performCulling.setText(_translate("Dialog", "Load covers only when needed"))
         self.autoTags.setText(_translate("Dialog", "Generate tags from files"))
         self.attenuateTitles.setText(_translate("Dialog", "Shrink long book titles"))
+        self.navBarVisible.setText(_translate("Dialog", "Show NavBar"))
         self.autoCover.setToolTip(_translate("Dialog", "<html><head/><body><p>Attempt to download missing book covers from Google books - SLOW</p></body></html>"))
         self.autoCover.setText(_translate("Dialog", "Download missing covers"))
         self.groupBox_2.setTitle(_translate("Dialog", "Reading"))
@@ -400,5 +420,6 @@ class Ui_Dialog(object):
         self.clearLogButton.setText(_translate("Dialog", "Clear Log"))
         self.okButton.setText(_translate("Dialog", "Scan Library"))
         self.cancelButton.setText(_translate("Dialog", "Close"))
+
 
 from lector.widgets import SaysHelloWhenClicked
