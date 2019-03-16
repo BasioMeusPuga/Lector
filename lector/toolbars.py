@@ -234,6 +234,15 @@ class BookToolBar(QtWidgets.QToolBar):
         self.invertButton.setObjectName('mangaModeButton')
         self.invertButton.setCheckable(True)
 
+        self.rotateRightButton = QtWidgets.QAction(
+            image_factory.get_image('rotate-right'),
+            self._translate('BookToolBar', 'Rotate image clockwise'),
+            self)
+        self.rotateLeftButton = QtWidgets.QAction(
+            image_factory.get_image('rotate-left'),
+            self._translate('BookToolBar', 'Rotate image anti-clockwise'),
+            self)
+
         self.zoomIn = QtWidgets.QAction(
             image_factory.get_image('zoom-in'),
             self._translate('BookToolBar', 'Zoom in (+)'),
@@ -273,12 +282,15 @@ class BookToolBar(QtWidgets.QToolBar):
         self.addAction(self.mangaModeButton)
         self.addAction(self.invertButton)
         self.comicSeparator2 = self.addSeparator()
+        self.addAction(self.rotateRightButton)
+        self.addAction(self.rotateLeftButton)
+        self.comicSeparator3 = self.addSeparator()
         self.addAction(self.zoomIn)
         self.addAction(self.zoomOut)
         self.addAction(self.fitWidth)
         self.addAction(self.bestFit)
         self.addAction(self.originalSize)
-        self.comicSeparator3 = self.addSeparator()
+        self.comicSeparator4 = self.addSeparator()
         self.comicBGColorAction = self.addWidget(self.comicBGColor)
 
         self.comicActions = [
@@ -286,6 +298,8 @@ class BookToolBar(QtWidgets.QToolBar):
             self.mangaModeButton,
             self.invertButton,
             self.comicBGColorAction,
+            self.rotateLeftButton,
+            self.rotateRightButton,
             self.zoomIn,
             self.zoomOut,
             self.fitWidth,
@@ -293,7 +307,8 @@ class BookToolBar(QtWidgets.QToolBar):
             self.originalSize,
             self.comicSeparator1,
             self.comicSeparator2,
-            self.comicSeparator3]
+            self.comicSeparator3,
+            self.comicSeparator4]
 
         for i in self.comicActions:
             i.setVisible(False)

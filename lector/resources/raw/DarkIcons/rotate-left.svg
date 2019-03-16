@@ -12,7 +12,7 @@
    viewBox="0 0 22 22"
    version="1.1"
    id="svg7"
-   sodipodi:docname="invert.svg"
+   sodipodi:docname="rotate-left.svg"
    inkscape:version="0.92.4 5da689c313, 2019-01-14">
   <metadata
      id="metadata11">
@@ -50,13 +50,13 @@
     <style
        id="current-color-scheme"
        type="text/css">
-   .ColorScheme-Text { color:#444444; } .ColorScheme-Highlight { color:#5294e2; }
+   .ColorScheme-Text { color:#444444; } .ColorScheme-Highlight { color:#4285f4; }
   </style>
   </defs>
   <path
      style="fill:#5c616c;fill-opacity:1"
      class="ColorScheme-Text"
-     d="M 2 1 L 2 15 L 9 15 L 9 13 A 5 5 0 0 1 4 8 A 5 5 0 0 1 9 3 L 9 1 L 2 1 z M 9 3 L 9 13 C 11.7614 13 14 10.7614 14 8 C 14 5.2386 11.7614 3 9 3 z"
+     d="M 8.0292969 0.001953125 L 4.0292969 3.0019531 L 8.0292969 6.0019531 L 8.0292969 4.0019531 C 10.238397 4.0019531 12.029297 5.7928531 12.029297 8.0019531 C 12.029297 10.211053 10.238397 12.001953 8.0292969 12.001953 C 5.8201969 12.001953 4.0292969 10.211053 4.0292969 8.0019531 A 1 1 0 0 0 3.0292969 7.0019531 A 1 1 0 0 0 2.0292969 8.0019531 A 1 1 0 0 0 2.0351562 8.1015625 C 2.0889563 11.368762 4.7491969 14.001953 8.0292969 14.001953 C 11.342997 14.001953 14.029297 11.315653 14.029297 8.0019531 C 14.029297 4.6882531 11.342997 2.0019531 8.0292969 2.0019531 L 8.0292969 0.001953125 z"
      transform="translate(3 3)"
      id="path5" />
 </svg>

@@ -196,6 +196,8 @@ class PliantQGraphicsView(QtWidgets.QGraphicsView):
         else:
             return_pixmap = load_page(current_page)
 
+        # Final pixmap transformations may take place here
+        ## Color inversion
         if self.main_window.settings['invert_colors']:
             qImg = return_pixmap.toImage()
             qImg.invertPixels()
@@ -203,6 +205,12 @@ class PliantQGraphicsView(QtWidgets.QGraphicsView):
                 return_pixmap = QtGui.QPixmap().fromImage(qImg)
             else:
                 logger.error('Color inversion failed: ' + current_page)
+
+        ## Image rotation
+        if not self.parent.image_rotation == 0:
+            transformation = QtGui.QTransform()
+            transformation.rotate(self.parent.image_rotation)
+            return_pixmap = return_pixmap.transformed(transformation)
 
         self.image_pixmap = return_pixmap
         self.resizeEvent()
@@ -350,6 +358,14 @@ class PliantQGraphicsView(QtWidgets.QGraphicsView):
         mangaModeAction.setCheckable(True)
         mangaModeAction.setChecked(
             self.main_window.bookToolBar.mangaModeButton.isChecked())
+
+        invertColorsAction = viewSubMenu.addAction(
+            self.main_window.QImageFactory.get_image('invert'),
+            self._translate('PliantQGraphicsView', 'Invert page colors'))
+        invertColorsAction.setCheckable(True)
+        invertColorsAction.setChecked(
+            self.main_window.bookToolBar.invertButton.isChecked())
+
         viewSubMenu.addSeparator()
 
         zoominAction = viewSubMenu.addAction(
@@ -386,6 +402,8 @@ class PliantQGraphicsView(QtWidgets.QGraphicsView):
             self.main_window.bookToolBar.doublePageButton.trigger()
         if action == mangaModeAction:
             self.main_window.bookToolBar.mangaModeButton.trigger()
+        if action == invertColorsAction:
+            self.main_window.bookToolBar.invertButton.trigger()
 
         if action == saveAction:
             dialog_prompt = self._translate('Main_UI', 'Save page as...')

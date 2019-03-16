@@ -131,7 +131,8 @@ class CoverLoadingAndCulling:
             img_pixmap.loadFromData(cover)
         else:
             img_pixmap.load(':/images/NotFound.png')
-        img_pixmap = img_pixmap.scaled(420, 600, QtCore.Qt.IgnoreAspectRatio)
+        img_pixmap = img_pixmap.scaled(
+            420, 600, QtCore.Qt.IgnoreAspectRatio)
         item.setIcon(QtGui.QIcon(img_pixmap))
         item.setData(True, QtCore.Qt.UserRole + 8)
 

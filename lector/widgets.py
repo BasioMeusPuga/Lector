@@ -78,6 +78,7 @@ class Tab(QtWidgets.QWidget):
         if self.are_we_doing_images_only:
             self.contentView = PliantQGraphicsView(
                 self.metadata['path'], self.main_window, self)
+            self.image_rotation = 0
 
         else:
             self.contentView = PliantQTextBrowser(
@@ -201,6 +202,15 @@ class Tab(QtWidgets.QWidget):
                 self.sideDock.search.searchLineEdit.selectAll()
 
         self.sideDock.sideDockTabWidget.setCurrentIndex(tab_required)
+
+    def generate_rotation(self, delta_angle):
+        self.image_rotation += delta_angle
+
+        # Set bounds for rotation angle
+        if self.image_rotation == 360:
+            self.image_rotation = 0
+        if self.image_rotation == -90:
+            self.image_rotation = 270
 
     def update_last_accessed_time(self):
         self.metadata['last_accessed'] = QtCore.QDateTime().currentDateTime()

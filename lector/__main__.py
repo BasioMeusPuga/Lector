@@ -204,6 +204,8 @@ class MainUI(QtWidgets.QMainWindow, mainwindow.Ui_MainWindow):
         self.bookToolBar.doublePageButton.triggered.connect(self.change_page_view)
         self.bookToolBar.mangaModeButton.triggered.connect(self.change_page_view)
         self.bookToolBar.invertButton.triggered.connect(self.change_page_view)
+        self.bookToolBar.rotateRightButton.triggered.connect(self.change_page_view)
+        self.bookToolBar.rotateLeftButton.triggered.connect(self.change_page_view)
         if self.settings['double_page_mode']:
             self.bookToolBar.doublePageButton.setChecked(True)
         if self.settings['manga_mode']:
@@ -766,11 +768,26 @@ class MainUI(QtWidgets.QMainWindow, mainwindow.Ui_MainWindow):
     #=================================================================
 
     def change_page_view(self, key_pressed=False):
+        # Switch page to whatever index is selected in the tocBox
+        current_tab = self.tabWidget.currentWidget()
+        chapter_number = current_tab.metadata['position']['current_chapter']
+
         # Set zoom mode to best fit to
         # make the transition less jarring
         # if the sender isn't the invert colors button
         if self.sender() != self.bookToolBar.invertButton:
             self.comic_profile['zoom_mode'] = 'bestFit'
+
+        # Rotate the image left or right
+        # The double page mode is incompatible with this
+        if self.sender() == self.bookToolBar.rotateLeftButton:
+            current_tab.generate_rotation(-90)
+            self.bookToolBar.doublePageButton.setChecked(False)
+        if self.sender() == self.bookToolBar.rotateRightButton:
+            current_tab.generate_rotation(90)
+            self.bookToolBar.doublePageButton.setChecked(False)
+        if self.sender() == self.bookToolBar.doublePageButton:
+            current_tab.image_rotation = 0
 
         # Toggle Double page mode / manga mode on keypress
         if key_pressed == QtCore.Qt.Key_D:
@@ -786,9 +803,6 @@ class MainUI(QtWidgets.QMainWindow, mainwindow.Ui_MainWindow):
         self.settings['manga_mode'] = self.bookToolBar.mangaModeButton.isChecked()
         self.settings['invert_colors'] = self.bookToolBar.invertButton.isChecked()
 
-        # Switch page to whatever index is selected in the tocBox
-        current_tab = self.tabWidget.currentWidget()
-        chapter_number = current_tab.metadata['position']['current_chapter']
         current_tab.set_content(chapter_number, False)
 
     def generate_library_context_menu(self, position):
