@@ -541,7 +541,7 @@ class PliantNavBarWidget(QtWidgets.QDockWidget):
         self.animation = QtCore.QPropertyAnimation(self, b'windowOpacity')
         self.animation.setDuration(200)
         self.animation.setStartValue(0)
-        self.animation.setEndValue(.9)
+        self.animation.setEndValue(.8)
 
         background = self.main_window.settings['dialog_background']
         self.setStyleSheet(
@@ -651,7 +651,6 @@ class FixedComboBox(QtWidgets.QComboBox):
         self.adjusted_size = screen_width // 6
 
     def sizeHint(self):
-        # This and the one below should adjust to screen size
         return self.minimumSizeHint()
 
     def minimumSizeHint(self):

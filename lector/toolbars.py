@@ -217,7 +217,7 @@ class BookToolBar(QtWidgets.QToolBar):
             image_factory.get_image('page-double'),
             self._translate('BookToolBar', 'Double page mode (D)'),
             self)
-        self.doublePageButton.setObjectName('doublePageButton')            
+        self.doublePageButton.setObjectName('doublePageButton')
         self.doublePageButton.setCheckable(True)
 
         self.mangaModeButton = QtWidgets.QAction(

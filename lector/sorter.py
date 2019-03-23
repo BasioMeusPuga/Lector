@@ -63,7 +63,7 @@ else:
     logger.error(error_string)
 
 # djvu - Optional
-djvu_check = importlib.util.find_spec('djvu.decode')
+djvu_check = importlib.util.find_spec('djvu')
 if djvu_check:
     from lector.parsers.djvu import ParseDJVU
     sorter['djvu'] = ParseDJVU
