@@ -465,6 +465,18 @@ class PliantQTextBrowser(QtWidgets.QTextBrowser):
         self.parent = parent
         self.main_window = main_window
 
+        # Available modes:
+        # flow - default
+        # singlePage
+        # doublePage
+        self.text_mode = 'flow'
+
+        # New pages will be generated following a resize
+        # This is timed so as not to drive the processor nuts
+        self.resizeTimer = QtCore.QTimer()
+        self.resizeTimer.setSingleShot(True)
+        self.resizeTimer.timeout.connect(self.create_pages)
+
         self.annotation_mode = False
         self.annotator = AnnotationPlacement()
         self.current_annotation = None
@@ -485,14 +497,25 @@ class PliantQTextBrowser(QtWidgets.QTextBrowser):
         self.ignore_wheel_event_number = 0
 
         self.at_end = False
+        self.page_cursors = []
+        self.page_number = 0
 
     def wheelEvent(self, event):
+        if self.text_mode in ('singlePage', 'doublePage'):
+            vertical_pdelta = event.pixelDelta().y()
+            direction = -1
+            if vertical_pdelta < 0:
+                direction = 1
+
+            self.turn_page(direction)
+            return
+
         self.record_position()
         self.common_functions.wheelEvent(event)
 
     def keyPressEvent(self, event):
-        QtWidgets.QTextEdit.keyPressEvent(self, event)
         if event.key() == QtCore.Qt.Key_Space:
+            QtWidgets.QTextEdit.keyPressEvent(self, event)
             if self.verticalScrollBar().value() == self.verticalScrollBar().maximum():
                 if self.at_end:  # This makes sure the last lines of the chapter don't get skipped
                     self.common_functions.change_chapter(1, True)
@@ -500,15 +523,132 @@ class PliantQTextBrowser(QtWidgets.QTextBrowser):
             else:
                 self.at_end = False
                 self.set_top_line_cleanly()
-        self.record_position()
+            return
+
+        if self.text_mode == 'singlePage':
+            if event.key() == QtCore.Qt.Key_Down:
+                self.turn_page(1)
+            if event.key() == QtCore.Qt.Key_Up:
+                self.turn_page(-1)
+            self.record_position()
+            return
+
+        QtWidgets.QTextEdit.keyPressEvent(self, event)
+
+    def move_to_cursor(self, cursor):
+        self.setTextCursor(cursor)
+        self.verticalScrollBar().setValue(
+            self.verticalScrollBar().maximum())
+        self.ensureCursorVisible()
 
     def set_top_line_cleanly(self):
         # Find the cursor position of the top line and move to it
-        find_cursor = self.cursorForPosition(QtCore.QPoint(0, 0))
-        find_cursor.movePosition(
-            find_cursor.position(), QtGui.QTextCursor.KeepAnchor)
-        self.setTextCursor(find_cursor)
-        self.ensureCursorVisible()
+        cursorTop = self.cursorForPosition(QtCore.QPoint(0, 0))
+        self.move_to_cursor(cursorTop)
+
+    def resizeEvent(self, event=None):
+        QtWidgets.QTextBrowser.resizeEvent(self, event)
+        self.resizeTimer.start(100)
+
+    def create_pages(self, text_mode=None):
+        # Return to this value after page calcuation is done
+        cursorTop = self.cursorForPosition(QtCore.QPoint(0, 0))
+
+        # No changes in mode
+        # if text_mode == self.text_mode:
+        #     return
+
+        # Account for resizeEvent
+        if not text_mode:
+            if self.text_mode == 'flow':
+                return
+            text_mode = self.text_mode
+
+        # Single Page mode
+        page_width = self.viewport().size().width()
+        page_height = self.viewport().size().height()
+
+        # Flow mode
+        if text_mode == 'flow':
+            page_height = -1
+
+        # TODO
+        # See what's an appropriate value to pad the text with
+        # profile_index = self.bookToolBar.profileBox.currentIndex()
+        # current_profile = self.bookToolBar.profileBox.itemData(
+        #     profile_index, QtCore.Qt.UserRole)
+        # padding = 20
+        # Double page mode
+        if text_mode == 'doublePage':
+            page_width = page_width // 2 - 10
+
+        self.text_mode = text_mode
+
+        self.document().setPageSize(
+            QtCore.QSizeF(page_width, page_height))
+
+        self.generate_page_positions()
+        self.set_page(cursorTop)
+
+    def generate_page_positions(self):
+        self.verticalScrollBar().setValue(0)
+
+        cursorEnd = QtGui.QTextCursor(self.document())
+        cursorEnd.movePosition(QtGui.QTextCursor.End)
+
+        self.page_cursors = []
+
+        while True:
+            cursorTopLeft = self.cursorForPosition(
+                self.viewport().rect().topLeft())
+            cursorBottomLeft = self.cursorForPosition(
+                self.viewport().rect().bottomLeft())
+            cursorBottomRight = self.cursorForPosition(
+                self.viewport().rect().bottomRight())
+
+            self.page_cursors.append(
+                (cursorTopLeft.position(), cursorBottomRight.position()))
+
+            self.move_to_cursor(cursorBottomRight)
+
+            # TODO
+            # See if this requires a failsafe per number of iterations
+            if cursorEnd.position() == cursorBottomRight.position():
+                break
+
+    def set_page(self, originalCursor):
+        required_position = originalCursor.position()
+
+        if self.text_mode == 'flow':
+            page_start = required_position
+
+        if self.text_mode == 'singlePage':
+            for count, i in enumerate(self.page_cursors):
+                if i[0] <= required_position < i[1]:
+                    page_start = i[0]
+                    self.page_number = count
+                    break
+
+        cursorGoTo = QtGui.QTextCursor(self.document())
+        cursorGoTo.setPosition(page_start)
+        self.move_to_cursor(cursorGoTo)
+
+    def turn_page(self, direction):
+        self.page_number += direction
+
+        if self.page_number in (-1, self.document().pageCount()):
+            self.page_number = 0
+            self.common_functions.change_chapter(direction)
+            self.create_pages()
+        else:
+            try:
+                page_start = self.page_cursors[self.page_number][0]
+                cursorGoTo = QtGui.QTextCursor(self.document())
+                cursorGoTo.setPosition(page_start)
+                self.move_to_cursor(cursorGoTo)
+                self.set_top_line_cleanly()
+            except IndexError:
+                pass
 
     def record_position(self, return_as_bookmark=False):
         self.parent.metadata['position']['is_read'] = False
@@ -617,7 +757,25 @@ class PliantQTextBrowser(QtWidgets.QTextBrowser):
         searchWikipediaAction = searchYoutubeAction = 'Does anyone know something funny in Latin?'
         searchAction = searchGoogleAction = bookmarksToggleAction = 'TODO Insert Latin Joke'
         deleteAnnotationAction = editAnnotationNoteAction = 'Latin quote 2. Electric Boogaloo.'
+        flowModeAction = singlePageAction = doublePageAction = 'We know the rules, you and I'
         annotationActions = []
+
+        view_submenu_string = self._translate('PliantQTextBrowser', 'View')
+        viewSubMenu = contextMenu.addMenu(view_submenu_string)
+        viewSubMenu.setIcon(
+            self.main_window.QImageFactory.get_image('mail-thread-watch'))
+
+        flowModeAction = viewSubMenu.addAction(
+            self.main_window.QImageFactory.get_image('page-flow'),
+            self._translate('PliantQTextBrowser', 'Flow text'))
+
+        singlePageAction = viewSubMenu.addAction(
+            self.main_window.QImageFactory.get_image('page-single'),
+            self._translate('PliantQTextBrowser', 'Single page'))
+
+        doublePageAction = viewSubMenu.addAction(
+            self.main_window.QImageFactory.get_image('page-double'),
+            self._translate('PliantQTextBrowser', 'Double page'))
 
         if self.parent.is_fullscreen:
             fsToggleAction = contextMenu.addAction(
@@ -709,6 +867,15 @@ class PliantQTextBrowser(QtWidgets.QTextBrowser):
 
         action = contextMenu.exec_(self.sender().mapToGlobal(position))
 
+        if action == flowModeAction:
+            self.create_pages('flow')
+
+        if action == singlePageAction:
+            self.create_pages('singlePage')
+
+        if action == doublePageAction:
+            self.create_pages('doublePages')
+
         if action == addBookMarkAction:
             self.parent.sideDock.bookmarks.add_bookmark(cursor_at_mouse.position())
 
@@ -793,6 +960,8 @@ class PliantWidgetsCommonFunctions:
                 self.pw.ignore_wheel_event_number = 0
             return
 
+        # TODO
+        # This can probably be cleaned up
         if self.are_we_doing_images_only:
             QtWidgets.QGraphicsView.wheelEvent(self.pw, event)
         else:

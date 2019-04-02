@@ -97,19 +97,19 @@ TODO
         ✓ Define every widget in code
     Bugs:
         Deselecting all directories in the settings dialog also filters out manually added books
-        Last line in QTextBrowser should never be cut off
         Bookmark name for a page that's not on the TOC and has nothing before
         Screen position still keeps jumping when inside a paragraph
         Better recursion needed for fb2 toc
         Search results should ignore punctuation
         Keep text size for annotations
-        Sort by new is not working
         Drag and drop is acting out
+        Search and annotation buttons become visible when font settings are hidden in comics
 
     Secondary:
+        Auto switch between flow and single page mode
         Text to speech
         Definitions dialog needs to respond to escape
-        Zoom slider for comics
+        Zoom slider for comics / library
         Tab tooltip
         Additional Settings:
             Find definitions on Google
