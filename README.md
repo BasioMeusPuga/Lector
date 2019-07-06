@@ -33,6 +33,7 @@ Bitcoin: 17jaxj26vFJNqQ2hEVerbBV5fpTusfqFro
 | python-pymupdf | 1.14.5 | PDF support |
 | python-djvulibre | 0.8.4 | DjVu support |
 | python-markdown | 3.0.1 | Markdown support |
+| textile | 3.0.4 | TXT support |
 
 ## Support
 When reporting issues:

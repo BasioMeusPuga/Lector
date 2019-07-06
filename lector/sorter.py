@@ -105,10 +105,15 @@ else:
     print(critical_sting)
     logger.critical(critical_sting)
 
-# Text file parser
-# TODO Check if textile is installed
-from lector.parsers.txt import ParseTXT
-sorter['txt'] = ParseTXT
+# txt - Optional
+textile_check = importlib.util.find_spec('textile')
+if textile_check:
+    from lector.parsers.txt import ParseTXT
+    sorter['txt'] = ParseTXT
+else:
+    error_string = 'textile is not installed. Will be unable to load TXT files.'
+    print(error_string)
+    logger.error(error_string)
 
 available_parsers = [i for i in sorter]
 progressbar = None  # This is populated by __main__
