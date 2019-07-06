@@ -272,7 +272,7 @@ class Tab(QtWidgets.QWidget):
 
         # Finally, to make sure the cover image isn't
         # scrolled halfway through on first open,
-        if self.metadata['position']['current_chapter'] == 1:
+        if self.metadata['cover'] and self.metadata['position']['current_chapter'] == 1:
             self.contentView.verticalScrollBar().setValue(0)
 
     def generate_position(self, is_read=False):
