@@ -105,6 +105,16 @@ else:
     print(critical_sting)
     logger.critical(critical_sting)
 
+# txt - Optional
+textile_check = importlib.util.find_spec('textile')
+if textile_check:
+    from lector.parsers.txt import ParseTXT
+    sorter['txt'] = ParseTXT
+else:
+    error_string = 'textile is not installed. Will be unable to load TXT files.'
+    print(error_string)
+    logger.error(error_string)
+
 available_parsers = [i for i in sorter]
 progressbar = None  # This is populated by __main__
 _progress_emitter = None  # This is to be made into a global variable
@@ -184,7 +194,7 @@ class BookSorter:
         return book_data
 
     def read_book(self, filename):
-        # filename is expected as a string containg the
+        # filename is expected as a string containing the
         # full path of the ebook file
 
         with open(filename, 'rb') as current_book:
