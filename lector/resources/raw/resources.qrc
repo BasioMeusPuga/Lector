@@ -111,9 +111,11 @@
     <file>error.svg</file>
   </qresource>
   <qresource prefix="translations">
+    <file>translations_bin/Lector_cs.qm</file>
     <file>translations_bin/Lector_es.qm</file>
     <file>translations_bin/Lector_de.qm</file>
     <file>translations_bin/Lector_fr.qm</file>
+    <file>translations_bin/Lector_ja.qm</file>
     <file>translations_bin/Lector_zh.qm</file>
   </qresource>
 </RCC>

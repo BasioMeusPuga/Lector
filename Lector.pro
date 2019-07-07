@@ -30,7 +30,8 @@ SOURCES += lector/__main__.py \
 		lector/resources/metadata.py \
 		lector/resources/mainwindow.py
 
-TRANSLATIONS += lector/resources/translations/Lector_es.ts \
+TRANSLATIONS += lector/resources/translations/Lector_cs.ts \
+        lector/resources/translations/Lector_es.ts \
 		lector/resources/translations/Lector_fr.ts \
 		lector/resources/translations/Lector_de.ts \
 		lector/resources/translations/Lector_zh.ts \
