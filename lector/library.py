@@ -61,9 +61,13 @@ class Library:
             books = []
             current_qdatetime = QtCore.QDateTime().currentDateTime()
             for i in parsed_books.items():
-                _tags = i[1]['tags']
-                if _tags:
-                    _tags = ', '.join([j for j in _tags if j])
+                try:
+                    _tags = i[1]['tags']
+                    if _tags:
+                        _tags = ', '.join([j for j in _tags if j])
+                except:  # Continuing seems more important than being correct
+                    _tags = []
+                    logger.warning('Tag generation error for: ' + i[1]['path'])
 
                 books.append([
                     i[1]['title'], i[1]['author'], i[1]['year'], current_qdatetime,
