@@ -49,7 +49,7 @@ When reporting issues:
 ## Ubuntu / Debian
  For ubuntu the dependencies can be installed via <br>
 `sudo apt install python3-pyqt5 python3-lxml python3-bs4 python3-xmltodict` <br>
- For the optional dependencies:
+ For the optional dependencies: <br>
 `pip install PyMuPDF`<br>
 `pip install markdown`<br>
 `pip install textile` <br>
