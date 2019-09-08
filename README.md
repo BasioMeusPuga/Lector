@@ -46,6 +46,15 @@ When reporting issues:
 ## Installation
 ### Manual
 0. Install dependencies - I recommend using your package manager for this.
+## Ubuntu / Debian
+For ubuntu the dependencies can be installed via 
+`sudo apt install python3-pyqt5 python3-lxml python3-bs4 python3-xmltodict`
+for the optional dependencies:
+`pip install PyMuPDF`
+`pip install markdown`
+`pip install textile`
+`pip install python-djvulibre`
+
 1. Clone repository
 2. Type the following in the root directory:
 
