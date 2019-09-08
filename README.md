@@ -50,10 +50,10 @@ When reporting issues:
 For ubuntu the dependencies can be installed via 
 `sudo apt install python3-pyqt5 python3-lxml python3-bs4 python3-xmltodict`
 for the optional dependencies:
-`pip install PyMuPDF`
-`pip install markdown`
-`pip install textile`
-`pip install python-djvulibre`
+`pip install PyMuPDF`<br>
+`pip install markdown`<br>
+`pip install textile` <br>
+`pip install python-djvulibre` <br>
 
 1. Clone repository
 2. Type the following in the root directory:
