@@ -436,22 +436,22 @@ Reopen book to see changes</source>
 <context>
     <name>Library</name>
     <message>
-        <location filename="../../library.py" line="125"/>
+        <location filename="../../library.py" line="129"/>
         <source>Author</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../library.py" line="126"/>
+        <location filename="../../library.py" line="130"/>
         <source>Year</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../library.py" line="285"/>
+        <location filename="../../library.py" line="289"/>
         <source>manually added</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../library.py" line="208"/>
+        <location filename="../../library.py" line="212"/>
         <source> books</source>
         <translation type="unfinished"></translation>
     </message>

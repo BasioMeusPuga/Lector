@@ -1,6 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!DOCTYPE TS>
-<TS version="2.1" language="pt_BR">
+<!DOCTYPE TS><TS version="2.0" language="pt_BR" sourcelanguage="">
 <context>
     <name>AnnotationsUI</name>
     <message>
@@ -175,13 +174,11 @@
     <message>
         <location filename="../definitions.py" line="66"/>
         <source>WERDS</source>
-        <translatorcomment>???</translatorcomment>
         <translation>PALAVRAS</translation>
     </message>
     <message>
         <location filename="../definitions.py" line="67"/>
         <source>Play pronunciation of root word</source>
-        <translatorcomment>???</translatorcomment>
         <translation>Reproduzir pronúncia da palavra raiz</translation>
     </message>
     <message>
@@ -440,22 +437,22 @@ Reabrir livro para ver mudanças</translation>
 <context>
     <name>Library</name>
     <message>
-        <location filename="../../library.py" line="125"/>
+        <location filename="../../library.py" line="129"/>
         <source>Author</source>
         <translation>Autor</translation>
     </message>
     <message>
-        <location filename="../../library.py" line="126"/>
+        <location filename="../../library.py" line="130"/>
         <source>Year</source>
         <translation>Ano</translation>
     </message>
     <message>
-        <location filename="../../library.py" line="285"/>
+        <location filename="../../library.py" line="289"/>
         <source>manually added</source>
         <translation>adicionado manualmente</translation>
     </message>
     <message>
-        <location filename="../../library.py" line="208"/>
+        <location filename="../../library.py" line="212"/>
         <source> books</source>
         <translation> livros</translation>
     </message>

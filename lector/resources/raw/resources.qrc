@@ -117,5 +117,6 @@
     <file>translations_bin/Lector_fr.qm</file>
     <file>translations_bin/Lector_ja.qm</file>
     <file>translations_bin/Lector_zh.qm</file>
+    <file>translations_bin/Lector_pt.qm</file>
   </qresource>
 </RCC>

@@ -437,22 +437,22 @@ Otevřít knihu znovu pro zobrazení změn</translation>
 <context>
     <name>Library</name>
     <message>
-        <location filename="../../library.py" line="126"/>
+        <location filename="../../library.py" line="130"/>
         <source>Year</source>
         <translation>Rok</translation>
     </message>
     <message>
-        <location filename="../../library.py" line="208"/>
+        <location filename="../../library.py" line="212"/>
         <source> books</source>
         <translation> knihy</translation>
     </message>
     <message>
-        <location filename="../../library.py" line="285"/>
+        <location filename="../../library.py" line="289"/>
         <source>manually added</source>
         <translation>přidáno ručně</translation>
     </message>
     <message>
-        <location filename="../../library.py" line="125"/>
+        <location filename="../../library.py" line="129"/>
         <source>Author</source>
         <translation>Autor</translation>
     </message>

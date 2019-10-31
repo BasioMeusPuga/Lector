@@ -36,4 +36,5 @@ TRANSLATIONS += lector/resources/translations/Lector_cs.ts \
 		lector/resources/translations/Lector_de.ts \
 		lector/resources/translations/Lector_zh.ts \
 		lector/resources/translations/Lector_ja.ts \
+		lector/resources/translations/Lector_pt.ts \
 		lector/resources/translations/SAMPLE.ts
