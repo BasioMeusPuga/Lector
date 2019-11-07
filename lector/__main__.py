@@ -1006,6 +1006,18 @@ class MainUI(QtWidgets.QMainWindow, mainwindow.Ui_MainWindow):
         default_size = 170  # This is size of the QIcon (160 by default) +
                             # minimum margin needed between thumbnails
 
+        # Making the padding relative to the width of the window
+        profile_index = self.bookToolBar.profileBox.currentIndex()
+        current_profile = self.bookToolBar.profileBox.itemData(profile_index, QtCore.Qt.UserRole)
+        if current_profile != None and event:
+            w = event.oldSize().width()
+            if w >= 0:
+                padding_ratio = current_profile['padding']/w
+                current_profile['padding'] = self.width()*padding_ratio
+                self.bookToolBar.profileBox.setItemData(profile_index, current_profile, QtCore.Qt.UserRole)
+                self.profile_functions.format_contentView()
+            
+        
         # for n icons, the n + 1th icon will appear at > n +1.11875
         # First, calculate the number of images per row
         i = self.listView.viewport().width() / default_size
