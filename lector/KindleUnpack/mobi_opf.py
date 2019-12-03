@@ -273,7 +273,7 @@ class OPFProcessor(object):
             del metadata['CoverOffset']
 
         handleMetaPairs(data, metadata, 'Codec', 'output encoding')
-        # handle kindlegen specifc tags
+        # handle kindlegen specific tags
         handleTag(data, metadata, 'DictInLanguage', 'DictionaryInLanguage')
         handleTag(data, metadata, 'DictOutLanguage', 'DictionaryOutLanguage')
         handleMetaPairs(data, metadata, 'RegionMagnification', 'RegionMagnification')
