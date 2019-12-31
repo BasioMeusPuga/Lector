@@ -32,7 +32,7 @@
         </ul>
     </description>
 
-    <launchable type="desktop-id">lector.desktop</launchable>
+    <launchable type="desktop-id">io.github.BasioMeusPuga.Lector.desktop</launchable>
 
     <screenshots>
         <screenshot type="default">
