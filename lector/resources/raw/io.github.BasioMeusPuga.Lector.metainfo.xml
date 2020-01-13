@@ -99,18 +99,10 @@
     </provides>
 
     <releases>
-        <release version="3.12.2" date="2013-04-12">
+        <release version="0.5.1" date="2019-03-09">
             <description>
-                <p>Fixes issues X, Y and Z</p>
+                <p>Sharper icons on hiDPI screens. More reliable dependency checks, and slight tweaks to the GUI.</p>
             </description>
-        </release>
-
-        <release version="" date="">
-            <description></description>
-        </release>
-
-        <release version="" date="">
-            <description></description>
         </release>
     </releases>
 </component>
