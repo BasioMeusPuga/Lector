@@ -1,0 +1,108 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Copyright 2019 BasioMeusPuga <https://github.com/BasioMeusPuga> -->
+<!-- See <https://www.freedesktop.org/software/appstream/docs/chap-Quickstart.html> for an overview of the AppStream metainfo.xml spec. -->
+<component type="desktop-application">
+    <id>io.github.BasioMeusPuga.Lector</id>
+    <metadata_license>FSFAP</metadata_license>
+    <project_license>GPL-3.0+</project_license>
+    <name>Lector</name>
+    <summary>Ebook reader and collection manager</summary>
+
+    <description>
+        <p>
+            Lector is an ebook reader and collection manager. It offers a
+            full-screen distraction-free view, document highlighting and
+            annotations, a built-in dictionary, bookmarks, and multiple profiles for
+            changing the way the books are presented. Lector can also edit metadata,
+            so you can correct information about the books, and add keywords to make
+            them easier to find.
+        </p>
+        <p>
+            It supports the following file formats:
+        </p>
+        <ul>
+            <li>PDF</li>
+            <li>EPUB</li>
+            <li>DjVu</li>
+            <li>FictionBook (.fb2)</li>
+            <li>Mobipocket (.mobi)</li>
+            <li>Amazon Kindle (.azw, .azw3, .azw4)</li>
+            <li>Comic book archives (.cbr, .cbz)</li>
+            <li>Markdown</li>
+        </ul>
+    </description>
+
+    <launchable type="desktop-id">io.github.BasioMeusPuga.Lector.desktop</launchable>
+
+    <screenshots>
+        <screenshot type="default">
+            <caption>Main window</caption>
+            <image>https://camo.githubusercontent.com/9e2f7346616dfdb67a77c2e6b5db148d9b4669ca/68747470733a2f2f692e696d6775722e636f6d2f35313668526b532e706e67</image>
+        </screenshot>
+
+        <screenshot>
+            <caption>Table view</caption>
+            <image>https://camo.githubusercontent.com/66cb4f09a81d164af50180eaa024f8e116c83815/68747470733a2f2f692e696d6775722e636f6d2f6f39416e3741522e706e67</image>
+        </screenshot>
+
+        <screenshot>
+            <caption>Book reading view, in optional Solarized display profile</caption>
+            <image>https://camo.githubusercontent.com/1b60a0c27383715e59ccfd9d2585544d303e08d9/68747470733a2f2f692e696d6775722e636f6d2f495447363346632e706e67</image>
+        </screenshot>
+
+        <screenshot>
+            <caption>Distraction-free view</caption>
+            <image>https://camo.githubusercontent.com/3289abadb668ad3e53b8ba779b52768b14b25bcf/68747470733a2f2f692e696d6775722e636f6d2f67384c747570792e706e67</image>
+        </screenshot>
+
+        <screenshot>
+            <caption>Annotation support</caption>
+            <image>https://camo.githubusercontent.com/80e7423b488e59ed2c05e556b4918c25522edfd1/68747470733a2f2f692e696d6775722e636f6d2f674c4b323946342e706e67</image>
+        </screenshot>
+
+        <screenshot>
+            <caption>Comic reading view</caption>
+            <image>https://camo.githubusercontent.com/81aaa963c6e9ed19a1605e2f2b017ce8c83ca656/68747470733a2f2f692e696d6775722e636f6d2f7276765451434d2e706e67</image>
+        </screenshot>
+
+        <screenshot>
+            <caption>Bookmark support</caption>
+            <image>https://camo.githubusercontent.com/ebbaffedcbd4f743ba9d67e5eaab2108407832cd/68747470733a2f2f692e696d6775722e636f6d2f5937716f55386d2e706e67</image>
+        </screenshot>
+
+        <screenshot>
+            <caption>Customizable view profiles</caption>
+            <image>https://camo.githubusercontent.com/0cea5e37e5c40abd4988544ba32b187db3cbe783/68747470733a2f2f692e696d6775722e636f6d2f6177453271324b2e706e67</image>
+        </screenshot>
+
+        <screenshot>
+            <caption>Metadata editor</caption>
+            <image>https://camo.githubusercontent.com/15362fb47e79b2d50eef507133cee8de6c1baa5c/68747470733a2f2f692e696d6775722e636f6d2f304344704e4f382e706e67</image>
+        </screenshot>
+
+        <screenshot>
+            <caption>In-app dictionary</caption>
+            <image>https://camo.githubusercontent.com/de3bfc5359db85da8ad94850d12fe563b5eefb87/68747470733a2f2f692e696d6775722e636f6d2f524637326d32682e706e67</image>
+        </screenshot>
+
+        <screenshot>
+            <caption>Settings window</caption>
+            <image>https://camo.githubusercontent.com/9ef376164f311cf518b4825684e7d5cc9d1f538c/68747470733a2f2f692e696d6775722e636f6d2f6c367a4a5861482e706e67</image>
+        </screenshot>
+    </screenshots>
+
+    <url type="homepage">https://github.com/BasioMeusPuga/Lector</url>
+    <url type="bugtracker">https://github.com/BasioMeusPuga/Lector/issues</url>
+
+    <provides>
+        <binary>lector</binary>
+    </provides>
+
+    <releases>
+        <release version="0.5.1" date="2019-03-09">
+            <description>
+                <p>Sharper icons on hiDPI screens. More reliable dependency checks, and slight tweaks to the GUI.</p>
+            </description>
+        </release>
+    </releases>
+</component>
