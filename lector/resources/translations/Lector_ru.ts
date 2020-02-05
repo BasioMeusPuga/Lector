@@ -1,6 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!DOCTYPE TS>
-<TS version="2.1" language="ru" sourcelanguage="en">
+<!DOCTYPE TS><TS version="2.0" language="ru" sourcelanguage="en">
 <context>
     <name>AnnotationsUI</name>
     <message>
@@ -312,7 +311,6 @@ Reopen book to see changes</source>
     <message>
         <location filename="../settingswindow.py" line="383"/>
         <source>&amp;Dark</source>
-        <translatorcomment>?? Тёмная</translatorcomment>
         <translation>&amp;Тёмный</translation>
     </message>
     <message>
