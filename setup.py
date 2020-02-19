@@ -58,7 +58,7 @@ setup(
     package_data={'': ['about.html']},
     data_files=[
         ('share/icons/hicolor/scalable/apps', ['lector/resources/raw/Lector.png']),
-        ('share/applications', ['lector/resources/raw/lector.desktop'])
+        ('share/applications', ['lector/resources/raw/io.github.BasioMeusPuga.Lector.desktop'])
         ],
     include_package_data=True,
 
