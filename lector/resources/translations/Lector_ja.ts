@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!DOCTYPE TS><TS version="2.0" language="ja_JP" sourcelanguage="">
+<!DOCTYPE TS><TS version="2.0" language="ja_JP" sourcelanguage="en_US">
 <context>
     <name>AnnotationsUI</name>
     <message>
@@ -18,7 +18,7 @@
     <message>
         <location filename="../../toolbars.py" line="43"/>
         <source>View settings</source>
-        <translation>設定を見る</translation>
+        <translation>設定を表示</translation>
     </message>
     <message>
         <location filename="../../toolbars.py" line="51"/>
@@ -28,12 +28,12 @@
     <message>
         <location filename="../../toolbars.py" line="71"/>
         <source>Reset profile</source>
-        <translation>プロファイルをリセット</translation>
+        <translation>プロファイルを初期化</translation>
     </message>
     <message>
         <location filename="../../toolbars.py" line="96"/>
         <source>Font size</source>
-        <translation>フォントサイズ</translation>
+        <translation>フォントサイズを選択します</translation>
     </message>
     <message>
         <location filename="../../toolbars.py" line="100"/>
@@ -78,7 +78,7 @@
     <message>
         <location filename="../../toolbars.py" line="277"/>
         <source>Background color</source>
-        <translation>背景色</translation>
+        <translation>背景色を変更します</translation>
     </message>
     <message>
         <location filename="../../toolbars.py" line="319"/>
@@ -133,12 +133,12 @@
     <message>
         <location filename="../../toolbars.py" line="263"/>
         <source>Best Fit (B)</source>
-        <translation>最適表示 (B)</translation>
+        <translation>画面に合わせる (B)</translation>
     </message>
     <message>
         <location filename="../../toolbars.py" line="269"/>
         <source>Original size (O)</source>
-        <translation>元のサイズ (O)</translation>
+        <translation>元に戻す (O)</translation>
     </message>
     <message>
         <location filename="../../toolbars.py" line="230"/>
@@ -148,12 +148,12 @@
     <message>
         <location filename="../../toolbars.py" line="237"/>
         <source>Rotate image clockwise</source>
-        <translation type="unfinished"></translation>
+        <translation>画像を右回りに回転</translation>
     </message>
     <message>
         <location filename="../../toolbars.py" line="241"/>
         <source>Rotate image anti-clockwise</source>
-        <translation type="unfinished"></translation>
+        <translation>画像を左回りに回転</translation>
     </message>
 </context>
 <context>
@@ -161,7 +161,7 @@
     <message>
         <location filename="../../definitionsdialog.py" line="143"/>
         <source>No definitions found in</source>
-        <translation>定義が見つかりません</translation>
+        <translation>次の言語での語義が見つかりませんでした</translation>
     </message>
 </context>
 <context>
@@ -174,7 +174,7 @@
     <message>
         <location filename="../definitions.py" line="66"/>
         <source>WERDS</source>
-        <translation>WERDS</translation>
+        <translation>単語</translation>
     </message>
     <message>
         <location filename="../definitions.py" line="67"/>
@@ -194,7 +194,7 @@
     <message>
         <location filename="../settingswindow.py" line="386"/>
         <source>Startup: Refresh library</source>
-        <translation>起動時にライブラリを更新</translation>
+        <translation>起動時にライブラリを更新する</translation>
     </message>
     <message>
         <location filename="../settingswindow.py" line="387"/>
@@ -214,7 +214,7 @@
     <message>
         <location filename="../settingswindow.py" line="389"/>
         <source>Enabling reduces startup time and memory usage</source>
-        <translation>起動時間の短縮とメモリ使用量の削減を有効にする</translation>
+        <translation>起動時間を短縮しメモリ使用量を削減します</translation>
     </message>
     <message>
         <location filename="../settingswindow.py" line="390"/>
@@ -224,7 +224,7 @@
     <message>
         <location filename="../settingswindow.py" line="400"/>
         <source>Greatly reduces page transition time at the cost of more memory</source>
-        <translation>より多くのメモリを使用してページ移動時間を大幅に短縮する</translation>
+        <translation>より多くのメモリを使用してページ移動時間を大幅に短縮します</translation>
     </message>
     <message>
         <location filename="../settingswindow.py" line="401"/>
@@ -234,7 +234,7 @@
     <message>
         <location filename="../settingswindow.py" line="381"/>
         <source>Icon theme: </source>
-        <translation>アイコンテーマ: </translation>
+        <translation>アイコンのテーマ: </translation>
     </message>
     <message>
         <location filename="../settingswindow.py" line="421"/>
@@ -249,12 +249,12 @@
     <message>
         <location filename="../metadata.py" line="88"/>
         <source>Edit metadata</source>
-        <translation>メタデータを編集する</translation>
+        <translation>メタデータを編集</translation>
     </message>
     <message>
         <location filename="../metadata.py" line="89"/>
         <source>Cover (click to change)</source>
-        <translation>表紙 (クリックして変更)</translation>
+        <translation>表紙 (変更するにはクリックします)</translation>
     </message>
     <message>
         <location filename="../metadata.py" line="91"/>
@@ -269,7 +269,7 @@
     <message>
         <location filename="../metadata.py" line="95"/>
         <source>Year</source>
-        <translation>年</translation>
+        <translation>発行年</translation>
     </message>
     <message>
         <location filename="../metadata.py" line="96"/>
@@ -295,8 +295,8 @@
         <location filename="../settingswindow.py" line="397"/>
         <source>Horizontal scrolling with Alt + Scroll
 Reopen book to see changes</source>
-        <translation>Alt + Scroll による水平スクロール
-変更を確認するために本を再度開く</translation>
+        <translation>Alt + 方向キーによる水平スクロールは
+本を開き直すと反映されます</translation>
     </message>
     <message>
         <location filename="../settingswindow.py" line="399"/>
@@ -306,7 +306,7 @@ Reopen book to see changes</source>
     <message>
         <location filename="../settingswindow.py" line="384"/>
         <source>Restart application to see changes</source>
-        <translation>アプリケーションを再起動して変更を確認</translation>
+        <translation>変更を反映するためにアプリケーションを再起動します</translation>
     </message>
     <message>
         <location filename="../settingswindow.py" line="383"/>
@@ -321,12 +321,12 @@ Reopen book to see changes</source>
     <message>
         <location filename="../settingswindow.py" line="396"/>
         <source>Reading</source>
-        <translation>読む</translation>
+        <translation>読書</translation>
     </message>
     <message>
         <location filename="../settingswindow.py" line="379"/>
         <source>Consider book read at percent</source>
-        <translation>全てのページを読み終えたときに、既読としてマークする</translation>
+        <translation>既読にする読書の進捗率</translation>
     </message>
     <message>
         <location filename="../settingswindow.py" line="408"/>
@@ -346,27 +346,27 @@ Reopen book to see changes</source>
     <message>
         <location filename="../settingswindow.py" line="410"/>
         <source>New</source>
-        <translation>新規</translation>
+        <translation>注釈を作成します</translation>
     </message>
     <message>
         <location filename="../settingswindow.py" line="411"/>
         <source>Delete</source>
-        <translation>削除</translation>
+        <translation>注釈を削除します</translation>
     </message>
     <message>
         <location filename="../settingswindow.py" line="412"/>
         <source>Edit</source>
-        <translation>編集</translation>
+        <translation>注釈を編集します</translation>
     </message>
     <message>
         <location filename="../settingswindow.py" line="413"/>
         <source>Move Up</source>
-        <translation>上に移動</translation>
+        <translation>注釈を上に移動します</translation>
     </message>
     <message>
         <location filename="../settingswindow.py" line="414"/>
         <source>Move Down</source>
-        <translation>下に移動</translation>
+        <translation>注釈を下に移動します</translation>
     </message>
     <message>
         <location filename="../settingswindow.py" line="416"/>
@@ -376,42 +376,42 @@ Reopen book to see changes</source>
     <message>
         <location filename="../settingswindow.py" line="392"/>
         <source>Shrink long book titles</source>
-        <translation>長いタイトルを短縮する</translation>
+        <translation>長いタイトルを短くする</translation>
     </message>
     <message>
         <location filename="../settingswindow.py" line="404"/>
         <source>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;UP/DOWN ARROW - Steps to take before turning comicbook page&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</source>
-        <translation>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;上下矢印 - 漫画のページを捲る前に実行する手順&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</translation>
+        <translation>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;漫画のページの方向キーによるスクロールの距離を設定します&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</translation>
     </message>
     <message>
         <location filename="../settingswindow.py" line="403"/>
         <source>Small increment</source>
-        <translation>小さい増分</translation>
+        <translation>短いスクロール</translation>
     </message>
     <message>
         <location filename="../settingswindow.py" line="407"/>
         <source>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;SPACEBAR - Steps to take before turning comicbook page&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</source>
-        <translation>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;スペースバー - 漫画のページを捲る前に実行する手順&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</translation>
+        <translation>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;漫画のページのスペースキーによるスクロールの距離を設定します&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</translation>
     </message>
     <message>
         <location filename="../settingswindow.py" line="406"/>
         <source>Large increment</source>
-        <translation>大きい増分</translation>
+        <translation>長いスクロール</translation>
     </message>
     <message>
         <location filename="../settingswindow.py" line="394"/>
         <source>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Attempt to download missing book covers from Google books - SLOW&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</source>
-        <translation>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;欠落している本の表紙を Google ブックス からダウンロードしようとします - 遅い&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</translation>
+        <translation>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;表紙が存在しない場合にGoogleブックスからダウンロードします&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</translation>
     </message>
     <message>
         <location filename="../settingswindow.py" line="395"/>
         <source>Download missing covers</source>
-        <translation>欠落している表紙をダウンロードする</translation>
+        <translation>表紙をダウンロードする</translation>
     </message>
     <message>
         <location filename="../settingswindow.py" line="417"/>
         <source>About</source>
-        <translation>About</translation>
+        <translation>Lectorについて</translation>
     </message>
     <message>
         <location filename="../settingswindow.py" line="418"/>
@@ -421,7 +421,7 @@ Reopen book to see changes</source>
     <message>
         <location filename="../settingswindow.py" line="419"/>
         <source>Reset Application</source>
-        <translation>アプリケーションをリセットする</translation>
+        <translation>アプリケーションをリセット</translation>
     </message>
     <message>
         <location filename="../settingswindow.py" line="420"/>
@@ -431,7 +431,7 @@ Reopen book to see changes</source>
     <message>
         <location filename="../settingswindow.py" line="393"/>
         <source>Show navigation bar</source>
-        <translation type="unfinished"></translation>
+        <translation>ナビゲーションバーを表示する</translation>
     </message>
 </context>
 <context>
@@ -444,17 +444,17 @@ Reopen book to see changes</source>
     <message>
         <location filename="../../library.py" line="130"/>
         <source>Year</source>
-        <translation>年</translation>
+        <translation>発行年</translation>
     </message>
     <message>
         <location filename="../../library.py" line="289"/>
         <source>manually added</source>
-        <translation>手動で追加</translation>
+        <translation>手動で追加した本</translation>
     </message>
     <message>
         <location filename="../../library.py" line="212"/>
         <source> books</source>
-        <translation> 本</translation>
+        <translation> 冊</translation>
     </message>
 </context>
 <context>
@@ -482,17 +482,17 @@ Reopen book to see changes</source>
     <message>
         <location filename="../../toolbars.py" line="411"/>
         <source>View as covers</source>
-        <translation>表紙ビュー</translation>
+        <translation>表紙表示モード</translation>
     </message>
     <message>
         <location filename="../../toolbars.py" line="416"/>
         <source>View as table</source>
-        <translation>テーブルビュー</translation>
+        <translation>テーブル表示モード</translation>
     </message>
     <message>
         <location filename="../../toolbars.py" line="430"/>
         <source>Filter library</source>
-        <translation>ライブラリをフィルター</translation>
+        <translation>ライブラリをフィルターします</translation>
     </message>
     <message>
         <location filename="../../toolbars.py" line="475"/>
@@ -502,7 +502,7 @@ Reopen book to see changes</source>
     <message>
         <location filename="../../toolbars.py" line="494"/>
         <source>Sort by</source>
-        <translation>並べ替え</translation>
+        <translation>選択した属性で並べ替えます</translation>
     </message>
     <message>
         <location filename="../../toolbars.py" line="422"/>
@@ -522,7 +522,7 @@ Reopen book to see changes</source>
     <message>
         <location filename="../../toolbars.py" line="483"/>
         <source>Year</source>
-        <translation>年</translation>
+        <translation>発行年</translation>
     </message>
     <message>
         <location filename="../../toolbars.py" line="484"/>
@@ -537,12 +537,12 @@ Reopen book to see changes</source>
     <message>
         <location filename="../../toolbars.py" line="486"/>
         <source>Progress</source>
-        <translation>進捗</translation>
+        <translation>進捗率</translation>
     </message>
     <message>
         <location filename="../../toolbars.py" line="444"/>
         <source>About</source>
-        <translation>Lector について</translation>
+        <translation>Lectorについて</translation>
     </message>
 </context>
 <context>
@@ -563,7 +563,7 @@ Reopen book to see changes</source>
     <message>
         <location filename="../../toolbars.py" line="63"/>
         <source>Toggle distraction free mode (Ctrl + D)</source>
-        <translation>気が散らないモードに切り替え (Ctrl + D)</translation>
+        <translation>リラックスモードに切り替え (Ctrl + D)</translation>
     </message>
 </context>
 <context>
@@ -576,27 +576,27 @@ Reopen book to see changes</source>
     <message>
         <location filename="../../__main__.py" line="478"/>
         <source>eBooks</source>
-        <translation>電子書籍</translation>
+        <translation>書籍</translation>
     </message>
     <message>
         <location filename="../../__main__.py" line="492"/>
         <source>Adding books...</source>
-        <translation>追加する本...</translation>
+        <translation>本を追加しています...</translation>
     </message>
     <message>
         <location filename="../../__main__.py" line="550"/>
         <source>Confirm deletion</source>
-        <translation>削除を確認</translation>
+        <translation>削除の確認</translation>
     </message>
     <message>
         <location filename="../../__main__.py" line="563"/>
         <source>Save changes and start library scan</source>
-        <translation>変更を保存しライブラリのスキャンを開始する</translation>
+        <translation>変更を保存してライブラリのスキャンを開始します</translation>
     </message>
     <message>
         <location filename="../../__main__.py" line="630"/>
         <source> Books</source>
-        <translation> 本</translation>
+        <translation> 冊</translation>
     </message>
     <message>
         <location filename="../../__main__.py" line="819"/>
@@ -626,12 +626,12 @@ Reopen book to see changes</source>
     <message>
         <location filename="../../__main__.py" line="940"/>
         <source>Manually Added</source>
-        <translation>手動で追加</translation>
+        <translation>手動で追加した本</translation>
     </message>
     <message>
         <location filename="../../__main__.py" line="581"/>
         <source> books</source>
-        <translation> 本</translation>
+        <translation> 冊</translation>
     </message>
     <message>
         <location filename="../../contentwidgets.py" line="424"/>
@@ -646,7 +646,7 @@ Reopen book to see changes</source>
     <message>
         <location filename="../../__main__.py" line="546"/>
         <source>Delete book(s)?</source>
-        <translation type="unfinished"></translation>
+        <translation>本を削除しますか?</translation>
     </message>
 </context>
 <context>
@@ -659,7 +659,7 @@ Reopen book to see changes</source>
     <message>
         <location filename="../../metadatadialog.py" line="107"/>
         <source>Year</source>
-        <translation>年</translation>
+        <translation>発行年</translation>
     </message>
 </context>
 <context>
@@ -685,7 +685,7 @@ Reopen book to see changes</source>
     <message>
         <location filename="../../contentwidgets.py" line="347"/>
         <source>Exit Distraction Free mode</source>
-        <translation>気が散らないモードを終了</translation>
+        <translation>リラックスモードを終了</translation>
     </message>
     <message>
         <location filename="../../contentwidgets.py" line="354"/>
@@ -695,7 +695,7 @@ Reopen book to see changes</source>
     <message>
         <location filename="../../contentwidgets.py" line="358"/>
         <source>View</source>
-        <translation>見る</translation>
+        <translation>表示モード</translation>
     </message>
     <message>
         <location filename="../../contentwidgets.py" line="363"/>
@@ -725,12 +725,12 @@ Reopen book to see changes</source>
     <message>
         <location filename="../../contentwidgets.py" line="398"/>
         <source>Best fit (B)</source>
-        <translation>最適表示 (B)</translation>
+        <translation>画面に合わせる (B)</translation>
     </message>
     <message>
         <location filename="../../contentwidgets.py" line="402"/>
         <source>Original size (O)</source>
-        <translation>元のサイズ (O)</translation>
+        <translation>元に戻す (O)</translation>
     </message>
     <message>
         <location filename="../../contentwidgets.py" line="408"/>
@@ -740,7 +740,7 @@ Reopen book to see changes</source>
     <message>
         <location filename="../../contentwidgets.py" line="377"/>
         <source>Invert page colors</source>
-        <translation type="unfinished">ページの色を反転</translation>
+        <translation>ページの色を反転</translation>
     </message>
 </context>
 <context>
@@ -753,22 +753,22 @@ Reopen book to see changes</source>
     <message>
         <location filename="../../contentwidgets.py" line="785"/>
         <source>Exit Distraction Free mode</source>
-        <translation>気が散らないモードを終了</translation>
+        <translation>リラックスモードを終了</translation>
     </message>
     <message>
         <location filename="../../contentwidgets.py" line="797"/>
         <source>Define</source>
-        <translation>定義する</translation>
+        <translation>語義</translation>
     </message>
     <message>
         <location filename="../../contentwidgets.py" line="802"/>
         <source>Search for</source>
-        <translation>検索する</translation>
+        <translation>次を検索</translation>
     </message>
     <message>
         <location filename="../../contentwidgets.py" line="807"/>
         <source>In this book</source>
-        <translation>この本で</translation>
+        <translation>この本で検索</translation>
     </message>
     <message>
         <location filename="../../contentwidgets.py" line="841"/>
@@ -803,22 +803,22 @@ Reopen book to see changes</source>
     <message>
         <location filename="../../contentwidgets.py" line="763"/>
         <source>View</source>
-        <translation type="unfinished">見る</translation>
+        <translation>表示モード</translation>
     </message>
     <message>
         <location filename="../../contentwidgets.py" line="768"/>
         <source>Flow text</source>
-        <translation type="unfinished"></translation>
+        <translation>流し読み</translation>
     </message>
     <message>
         <location filename="../../contentwidgets.py" line="772"/>
         <source>Single page</source>
-        <translation type="unfinished"></translation>
+        <translation>単一ページ</translation>
     </message>
     <message>
         <location filename="../../contentwidgets.py" line="776"/>
         <source>Double page</source>
-        <translation type="unfinished"></translation>
+        <translation>見開きページ</translation>
     </message>
 </context>
 <context>
@@ -841,22 +841,22 @@ Reopen book to see changes</source>
     <message>
         <location filename="../../settingsdialog.py" line="84"/>
         <source>Save changes and start library scan</source>
-        <translation>変更を保存しライブラリのスキャンを開始する</translation>
+        <translation>変更を保存してライブラリのスキャンを開始します</translation>
     </message>
     <message>
         <location filename="../../settingsdialog.py" line="329"/>
         <source>Library scan in progress...</source>
-        <translation>ライブラリスキャンを実行中...</translation>
+        <translation>ライブラリのスキャンを実行しています...</translation>
     </message>
     <message>
         <location filename="../../settingsdialog.py" line="333"/>
         <source>Checking library folders</source>
-        <translation>ライブラリフォルダの確認</translation>
+        <translation>ライブラリのフォルダを確認しています</translation>
     </message>
     <message>
         <location filename="../../settingsdialog.py" line="349"/>
         <source>Parsing files</source>
-        <translation>ファイルの解析</translation>
+        <translation>ファイルを解析しています</translation>
     </message>
     <message>
         <location filename="../../settingsdialog.py" line="131"/>
@@ -866,12 +866,12 @@ Reopen book to see changes</source>
     <message>
         <location filename="../../settingsdialog.py" line="132"/>
         <source>Switches</source>
-        <translation>スイッチ</translation>
+        <translation>全般</translation>
     </message>
     <message>
         <location filename="../../settingsdialog.py" line="134"/>
         <source>About</source>
-        <translation>About</translation>
+        <translation>詳細</translation>
     </message>
     <message>
         <location filename="../../settingsdialog.py" line="133"/>
@@ -881,12 +881,12 @@ Reopen book to see changes</source>
     <message>
         <location filename="../../settingsdialog.py" line="554"/>
         <source>Confirm</source>
-        <translation>確認</translation>
+        <translation>削除の確認</translation>
     </message>
     <message>
         <location filename="../../settingsdialog.py" line="550"/>
         <source>Delete database and exit?</source>
-        <translation type="unfinished"></translation>
+        <translation>データベースを削除して終了しますか?</translation>
     </message>
 </context>
 <context>
@@ -919,12 +919,12 @@ Reopen book to see changes</source>
     <message>
         <location filename="../../dockwidgets.py" line="357"/>
         <source>Match case</source>
-        <translation>一致するケース</translation>
+        <translation>完全一致検索</translation>
     </message>
     <message>
         <location filename="../../dockwidgets.py" line="358"/>
         <source>Match word</source>
-        <translation>一致する単語</translation>
+        <translation>単語単位で検索</translation>
     </message>
 </context>
 <context>
@@ -960,7 +960,7 @@ Reopen book to see changes</source>
     <message>
         <location filename="../../models.py" line="73"/>
         <source>Year</source>
-        <translation>年</translation>
+        <translation>発行年</translation>
     </message>
     <message>
         <location filename="../../models.py" line="74"/>

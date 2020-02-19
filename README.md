@@ -1,4 +1,4 @@
-<p align="center"><img src="lector/resources/raw/logo/logotype_horizontal.png" alt="Lector" height="90px"></p>
+<p align="center"><img src="lector/resources/raw/logo/logotype_horizontal.svg" alt="Lector" height="90px"></p>
 
 Qt based ebook reader
 
@@ -108,3 +108,7 @@ Please keep the translations short. There's only so much space for UI elements.
 * [KindleUnpack](https://github.com/kevinhendricks/KindleUnpack)
 * [rarfile](https://github.com/markokr/rarfile)
 * [Papirus icon theme](https://github.com/PapirusDevelopmentTeam/papirus-icon-theme)
+
+## License
+_Lector_ is released under the GNU General Public License v3.0 or any later version.
+See the [LICENSE](LICENSE) file for details.
