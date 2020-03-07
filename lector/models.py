@@ -125,7 +125,7 @@ class TableProxyModel(QtCore.QSortFilterProxyModel):
 
                 if not file_exists:
                     return pie_chart.pixmapper(
-                        -1, None, None, QtCore.Qt.SizeHintRole + 10)
+                        -1, None, -1, QtCore.Qt.SizeHintRole + 10)
 
                 if position_percent:
                     return_pixmap = pie_chart.pixmapper(
