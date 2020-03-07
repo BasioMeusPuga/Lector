@@ -1073,11 +1073,15 @@ class MainUI(QtWidgets.QMainWindow, mainwindow.Ui_MainWindow):
 
 
 def main():
+    # before we create the app, we hijack QT_AUTO_SCREEN_SCALE_FACTOR to force device scaling to be accurate
+    os.environ["QT_AUTO_SCREEN_SCALE_FACTOR"] = "1"
+    # Make icons sharp in HiDPI screen
+    QtWidgets.QApplication.setAttribute(QtCore.Qt.AA_UseHighDpiPixmaps, True)
+    QtWidgets.QApplication.setAttribute(QtCore.Qt.AA_EnableHighDpiScaling, True)
+
     app = QtWidgets.QApplication(sys.argv)
     app.setApplicationName('Lector')  # This is needed for QStandardPaths
                                       # and my own hubris
-    # Make icons sharp in HiDPI screen
-    app.setAttribute(QtCore.Qt.AA_UseHighDpiPixmaps, True)
 
     # Internationalization support
     translator = QtCore.QTranslator()
