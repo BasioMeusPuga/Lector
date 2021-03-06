@@ -1,16 +1,17 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!DOCTYPE TS><TS version="2.0" language="zh_CN" sourcelanguage="">
+<!DOCTYPE TS>
+<TS version="2.1" language="zh_CN">
 <context>
     <name>AnnotationsUI</name>
     <message>
         <location filename="../../annotations.py" line="39"/>
         <source>Text markup</source>
-        <translation type="unfinished"></translation>
+        <translation>文本标记</translation>
     </message>
     <message>
         <location filename="../../annotations.py" line="126"/>
         <source>New annotation</source>
-        <translation type="unfinished"></translation>
+        <translation>新注释</translation>
     </message>
 </context>
 <context>
@@ -133,67 +134,67 @@
     <message>
         <location filename="../../toolbars.py" line="47"/>
         <source>Annotations (Ctrl + N)</source>
-        <translation type="unfinished"></translation>
+        <translation>注释 (Ctrl + N)</translation>
     </message>
     <message>
         <location filename="../../toolbars.py" line="59"/>
         <source>Search (Ctrl + F)</source>
-        <translation type="unfinished"></translation>
+        <translation>搜索 (Ctrl + F)</translation>
     </message>
     <message>
         <location filename="../../toolbars.py" line="67"/>
         <source>Fullscreen (F)</source>
-        <translation type="unfinished"></translation>
+        <translation>全屏 (F)</translation>
     </message>
     <message>
         <location filename="../../toolbars.py" line="216"/>
         <source>Double page mode (D)</source>
-        <translation type="unfinished"></translation>
+        <translation>双页模式 (D)</translation>
     </message>
     <message>
         <location filename="../../toolbars.py" line="223"/>
         <source>Manga mode (M)</source>
-        <translation type="unfinished"></translation>
+        <translation>漫画模式 (M)</translation>
     </message>
     <message>
         <location filename="../../toolbars.py" line="246"/>
         <source>Zoom in (+)</source>
-        <translation type="unfinished"></translation>
+        <translation>放大 (+)</translation>
     </message>
     <message>
         <location filename="../../toolbars.py" line="251"/>
         <source>Zoom Out (-)</source>
-        <translation type="unfinished"></translation>
+        <translation>缩小 (-)</translation>
     </message>
     <message>
         <location filename="../../toolbars.py" line="257"/>
         <source>Fit Width (W)</source>
-        <translation type="unfinished"></translation>
+        <translation>适合宽度 (W)</translation>
     </message>
     <message>
         <location filename="../../toolbars.py" line="263"/>
         <source>Best Fit (B)</source>
-        <translation type="unfinished"></translation>
+        <translation>最佳适应 (B)</translation>
     </message>
     <message>
         <location filename="../../toolbars.py" line="269"/>
         <source>Original size (O)</source>
-        <translation type="unfinished"></translation>
+        <translation>原始大小 (O)</translation>
     </message>
     <message>
         <location filename="../../toolbars.py" line="230"/>
         <source>Invert page colors</source>
-        <translation type="unfinished"></translation>
+        <translation>反转页面颜色</translation>
     </message>
     <message>
         <location filename="../../toolbars.py" line="237"/>
         <source>Rotate image clockwise</source>
-        <translation type="unfinished"></translation>
+        <translation>顺时针旋转图像</translation>
     </message>
     <message>
         <location filename="../../toolbars.py" line="241"/>
         <source>Rotate image anti-clockwise</source>
-        <translation type="unfinished"></translation>
+        <translation>逆时针旋转图像</translation>
     </message>
 </context>
 <context>
@@ -388,12 +389,12 @@ Reopen book to see changes</source>
         <source>-</source>
         <translation type="obsolete">-</translation>
     </message>
-    <message encoding="UTF-8">
+    <message>
         <location filename="../settingswindow.py" line="329"/>
         <source>⬆</source>
         <translation type="obsolete">⬆</translation>
     </message>
-    <message encoding="UTF-8">
+    <message>
         <location filename="../settingswindow.py" line="330"/>
         <source>⬇</source>
         <translation type="obsolete">⬇</translation>
@@ -436,92 +437,92 @@ Reopen book to see changes</source>
     <message>
         <location filename="../settingswindow.py" line="392"/>
         <source>Shrink long book titles</source>
-        <translation type="unfinished"></translation>
+        <translation>缩短长标题</translation>
     </message>
     <message>
         <location filename="../settingswindow.py" line="410"/>
         <source>New</source>
-        <translation type="unfinished"></translation>
+        <translation>新建</translation>
     </message>
     <message>
         <location filename="../settingswindow.py" line="411"/>
         <source>Delete</source>
-        <translation type="unfinished">删除</translation>
+        <translation>删除</translation>
     </message>
     <message>
         <location filename="../settingswindow.py" line="412"/>
         <source>Edit</source>
-        <translation type="unfinished">编辑</translation>
+        <translation>编辑</translation>
     </message>
     <message>
         <location filename="../settingswindow.py" line="413"/>
         <source>Move Up</source>
-        <translation type="unfinished"></translation>
+        <translation>上移</translation>
     </message>
     <message>
         <location filename="../settingswindow.py" line="414"/>
         <source>Move Down</source>
-        <translation type="unfinished"></translation>
+        <translation>下移</translation>
     </message>
     <message>
         <location filename="../settingswindow.py" line="416"/>
         <source>Image</source>
-        <translation type="unfinished"></translation>
+        <translation>图片</translation>
     </message>
     <message>
         <location filename="../settingswindow.py" line="404"/>
         <source>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;UP/DOWN ARROW - Steps to take before turning comicbook page&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</source>
-        <translation type="unfinished"></translation>
+        <translation>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;上下光标键 - 漫画翻页前应采取的步骤&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</translation>
     </message>
     <message>
         <location filename="../settingswindow.py" line="403"/>
         <source>Small increment</source>
-        <translation type="unfinished"></translation>
+        <translation>小增量</translation>
     </message>
     <message>
         <location filename="../settingswindow.py" line="407"/>
         <source>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;SPACEBAR - Steps to take before turning comicbook page&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</source>
-        <translation type="unfinished"></translation>
+        <translation>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;空格键 - 漫画翻页前应采取的步骤&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</translation>
     </message>
     <message>
         <location filename="../settingswindow.py" line="406"/>
         <source>Large increment</source>
-        <translation type="unfinished"></translation>
+        <translation>大增量</translation>
     </message>
     <message>
         <location filename="../settingswindow.py" line="394"/>
         <source>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Attempt to download missing book covers from Google books - SLOW&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</source>
-        <translation type="unfinished"></translation>
+        <translation>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;尝试从 Google Books 下载缺失的书籍封面 - 非常慢&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</translation>
     </message>
     <message>
         <location filename="../settingswindow.py" line="395"/>
         <source>Download missing covers</source>
-        <translation type="unfinished"></translation>
+        <translation>下载缺失的封面</translation>
     </message>
     <message>
         <location filename="../settingswindow.py" line="417"/>
         <source>About</source>
-        <translation type="unfinished">关于</translation>
+        <translation>关于</translation>
     </message>
     <message>
         <location filename="../settingswindow.py" line="418"/>
         <source>Log</source>
-        <translation type="unfinished"></translation>
+        <translation>日志</translation>
     </message>
     <message>
         <location filename="../settingswindow.py" line="419"/>
         <source>Reset Application</source>
-        <translation type="unfinished"></translation>
+        <translation>重置应用程序</translation>
     </message>
     <message>
         <location filename="../settingswindow.py" line="420"/>
         <source>Clear Log</source>
-        <translation type="unfinished"></translation>
+        <translation>清空日志</translation>
     </message>
     <message>
         <location filename="../settingswindow.py" line="393"/>
         <source>Show navigation bar</source>
-        <translation type="unfinished"></translation>
+        <translation>显示导航栏</translation>
     </message>
 </context>
 <context>
@@ -632,7 +633,7 @@ Reopen book to see changes</source>
     <message>
         <location filename="../../toolbars.py" line="444"/>
         <source>About</source>
-        <translation type="unfinished">关于</translation>
+        <translation>关于</translation>
     </message>
 </context>
 <context>
@@ -726,17 +727,17 @@ Reopen book to see changes</source>
     <message>
         <location filename="../../contentwidgets.py" line="424"/>
         <source>Save page as...</source>
-        <translation type="unfinished"></translation>
+        <translation>页面另存为...</translation>
     </message>
     <message>
         <location filename="../../contentwidgets.py" line="425"/>
         <source>Images</source>
-        <translation type="unfinished">图片</translation>
+        <translation>图片</translation>
     </message>
     <message>
         <location filename="../../__main__.py" line="546"/>
         <source>Delete book(s)?</source>
-        <translation type="unfinished"></translation>
+        <translation>删除书籍吗？</translation>
     </message>
 </context>
 <context>
@@ -770,67 +771,67 @@ Reopen book to see changes</source>
     <message>
         <location filename="../../contentwidgets.py" line="343"/>
         <source>Exit fullscreen</source>
-        <translation type="unfinished"></translation>
+        <translation>退出全屏</translation>
     </message>
     <message>
         <location filename="../../contentwidgets.py" line="347"/>
         <source>Exit Distraction Free mode</source>
-        <translation type="unfinished"></translation>
+        <translation>退出勿扰模式</translation>
     </message>
     <message>
         <location filename="../../contentwidgets.py" line="354"/>
         <source>Save page as...</source>
-        <translation type="unfinished"></translation>
+        <translation>页面另存为...</translation>
     </message>
     <message>
         <location filename="../../contentwidgets.py" line="358"/>
         <source>View</source>
-        <translation type="unfinished"></translation>
+        <translation>查看</translation>
     </message>
     <message>
         <location filename="../../contentwidgets.py" line="363"/>
         <source>Double page mode (D)</source>
-        <translation type="unfinished"></translation>
+        <translation>双页模式 (D)</translation>
     </message>
     <message>
         <location filename="../../contentwidgets.py" line="370"/>
         <source>Manga mode (M)</source>
-        <translation type="unfinished"></translation>
+        <translation>漫画模式 (M)</translation>
     </message>
     <message>
         <location filename="../../contentwidgets.py" line="386"/>
         <source>Zoom in (+)</source>
-        <translation type="unfinished"></translation>
+        <translation>放大 (+)</translation>
     </message>
     <message>
         <location filename="../../contentwidgets.py" line="390"/>
         <source>Zoom out (-)</source>
-        <translation type="unfinished"></translation>
+        <translation>缩小 (-)</translation>
     </message>
     <message>
         <location filename="../../contentwidgets.py" line="394"/>
         <source>Fit width (W)</source>
-        <translation type="unfinished"></translation>
+        <translation>适合宽度 (W)</translation>
     </message>
     <message>
         <location filename="../../contentwidgets.py" line="398"/>
         <source>Best fit (B)</source>
-        <translation type="unfinished"></translation>
+        <translation>最佳适应 (B)</translation>
     </message>
     <message>
         <location filename="../../contentwidgets.py" line="402"/>
         <source>Original size (O)</source>
-        <translation type="unfinished"></translation>
+        <translation>原始大小 (O)</translation>
     </message>
     <message>
         <location filename="../../contentwidgets.py" line="408"/>
         <source>Bookmarks</source>
-        <translation type="unfinished">书签</translation>
+        <translation>书签</translation>
     </message>
     <message>
         <location filename="../../contentwidgets.py" line="377"/>
         <source>Invert page colors</source>
-        <translation type="unfinished"></translation>
+        <translation>反转页面颜色</translation>
     </message>
 </context>
 <context>
@@ -838,77 +839,77 @@ Reopen book to see changes</source>
     <message>
         <location filename="../../contentwidgets.py" line="781"/>
         <source>Exit fullscreen</source>
-        <translation type="unfinished"></translation>
+        <translation>退出全屏</translation>
     </message>
     <message>
         <location filename="../../contentwidgets.py" line="785"/>
         <source>Exit Distraction Free mode</source>
-        <translation type="unfinished"></translation>
+        <translation>退出勿扰模式</translation>
     </message>
     <message>
         <location filename="../../contentwidgets.py" line="797"/>
         <source>Define</source>
-        <translation type="unfinished"></translation>
+        <translation>定义</translation>
     </message>
     <message>
         <location filename="../../contentwidgets.py" line="802"/>
         <source>Search for</source>
-        <translation type="unfinished"></translation>
+        <translation>搜索</translation>
     </message>
     <message>
         <location filename="../../contentwidgets.py" line="807"/>
         <source>In this book</source>
-        <translation type="unfinished"></translation>
+        <translation>在此书中</translation>
     </message>
     <message>
         <location filename="../../contentwidgets.py" line="841"/>
         <source>Search</source>
-        <translation type="unfinished"></translation>
+        <translation>搜索</translation>
     </message>
     <message>
         <location filename="../../contentwidgets.py" line="849"/>
         <source>Edit note</source>
-        <translation type="unfinished"></translation>
+        <translation>编辑笔记</translation>
     </message>
     <message>
         <location filename="../../contentwidgets.py" line="852"/>
         <source>Delete annotation</source>
-        <translation type="unfinished"></translation>
+        <translation>删除注释</translation>
     </message>
     <message>
         <location filename="../../contentwidgets.py" line="856"/>
         <source>Add Bookmark</source>
-        <translation type="unfinished"></translation>
+        <translation>新书签</translation>
     </message>
     <message>
         <location filename="../../contentwidgets.py" line="862"/>
         <source>Bookmarks</source>
-        <translation type="unfinished">书签</translation>
+        <translation>书签</translation>
     </message>
     <message>
         <location filename="../../contentwidgets.py" line="823"/>
         <source>Annotate</source>
-        <translation type="unfinished"></translation>
+        <translation>注释</translation>
     </message>
     <message>
         <location filename="../../contentwidgets.py" line="763"/>
         <source>View</source>
-        <translation type="unfinished"></translation>
+        <translation>查看</translation>
     </message>
     <message>
         <location filename="../../contentwidgets.py" line="768"/>
         <source>Flow text</source>
-        <translation type="unfinished"></translation>
+        <translation>流动文本</translation>
     </message>
     <message>
         <location filename="../../contentwidgets.py" line="772"/>
         <source>Single page</source>
-        <translation type="unfinished"></translation>
+        <translation>单页</translation>
     </message>
     <message>
         <location filename="../../contentwidgets.py" line="776"/>
         <source>Double page</source>
-        <translation type="unfinished"></translation>
+        <translation>双页</translation>
     </message>
 </context>
 <context>
@@ -971,12 +972,12 @@ Reopen book to see changes</source>
     <message>
         <location filename="../../settingsdialog.py" line="554"/>
         <source>Confirm</source>
-        <translation type="unfinished"></translation>
+        <translation>确认</translation>
     </message>
     <message>
         <location filename="../../settingsdialog.py" line="550"/>
         <source>Delete database and exit?</source>
-        <translation type="unfinished"></translation>
+        <translation>删除数据库并退出？</translation>
     </message>
 </context>
 <context>
@@ -984,37 +985,37 @@ Reopen book to see changes</source>
     <message>
         <location filename="../../dockwidgets.py" line="131"/>
         <source>Bookmarks</source>
-        <translation type="unfinished">书签</translation>
+        <translation>书签</translation>
     </message>
     <message>
         <location filename="../../dockwidgets.py" line="132"/>
         <source>New bookmark</source>
-        <translation type="unfinished">新书签</translation>
+        <translation>新书签</translation>
     </message>
     <message>
         <location filename="../../dockwidgets.py" line="308"/>
         <source>Annotations</source>
-        <translation type="unfinished">注释</translation>
+        <translation>注释</translation>
     </message>
     <message>
         <location filename="../../dockwidgets.py" line="355"/>
         <source>Search</source>
-        <translation type="unfinished"></translation>
+        <translation>搜索</translation>
     </message>
     <message>
         <location filename="../../dockwidgets.py" line="356"/>
         <source>Search entire book</source>
-        <translation type="unfinished"></translation>
+        <translation>搜索整本书</translation>
     </message>
     <message>
         <location filename="../../dockwidgets.py" line="357"/>
         <source>Match case</source>
-        <translation type="unfinished"></translation>
+        <translation>大小写敏感</translation>
     </message>
     <message>
         <location filename="../../dockwidgets.py" line="358"/>
         <source>Match word</source>
-        <translation type="unfinished"></translation>
+        <translation>全字匹配</translation>
     </message>
 </context>
 <context>
@@ -1047,7 +1048,7 @@ Reopen book to see changes</source>
     <message>
         <location filename="../../widgets.py" line="160"/>
         <source>Note</source>
-        <translation type="unfinished"></translation>
+        <translation>笔记</translation>
     </message>
 </context>
 <context>
