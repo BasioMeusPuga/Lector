@@ -516,7 +516,7 @@ class FixedComboBox(QtWidgets.QComboBox):
         return self.minimumSizeHint()
 
     def minimumSizeHint(self):
-        return QtCore.QSize(self.adjusted_size, 32)
+        return QtCore.QSize(int(self.adjusted_size), 32)
 
     def wheelEvent(self, QWheelEvent):
         # Disable mouse wheel scrolling in the ComboBox
@@ -532,7 +532,7 @@ class FixedLineEdit(QtWidgets.QLineEdit):
         return self.minimumSizeHint()
 
     def minimumSizeHint(self):
-        return QtCore.QSize(self.adjusted_size, 32)
+        return QtCore.QSize(int(self.adjusted_size), 32)
 
     def keyReleaseEvent(self, event):
         if event.key() == QtCore.Qt.Key_Escape:
