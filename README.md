@@ -17,23 +17,8 @@ Currently supports:
 
 Bitcoin: 17jaxj26vFJNqQ2hEVerbBV5fpTusfqFro
 
-## Requirements
-### Needed
-| Package | Version tested |
-| --- | --- |
-| Python | 3.6 |
-| PyQt5 | 5.10.1 |
-| python-lxml | 4.3.0 |
-| python-beautifulsoup4 | 4.6.0 |
-| python-xmltodict | 0.11.0 |
 
-### Optional
-| Package | Version tested | Required for |
-| --- | --- | --- |
-| python-pymupdf | 1.14.5 | PDF support |
-| python-djvulibre | 0.8.4 | DjVu support |
-| python-markdown | 3.0.1 | Markdown support |
-| textile | 3.0.4 | TXT support |
+
 
 ## Support
 When reporting issues:
@@ -45,7 +30,19 @@ When reporting issues:
 
 ## Installation
 ### Manual
-0. Install dependencies - I recommend using your package manager for this.
+0. Necessary:
+| Python  3.6   -  https://www.python.org/downloads/
+| PyQt5  5.10.1  - pip install PyQt5
+| python-lxml  4.3.0  -  pip install lxml
+| python-beautifulsoup4 4.6.0 - pip install beautifulsoup4 
+| python-xmltodict 0.11.0  -  pip install xmltodict
+  
+  Optional:
+| python-pymupdf 1.14.5  -  pip install PyMuPDF (for PDF support)
+| python-djvulibre  0.8.4 - pip install python-djvulibre (DjVu support)
+| python-markdown 3.0.1 - pip install Markdown (Markdown support)
+| textile 3.0.4 - pip install textile (TXT support)
+
 1. Clone repository
 2. Type the following in the root directory:
 
