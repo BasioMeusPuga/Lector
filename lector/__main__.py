@@ -342,6 +342,15 @@ class MainUI(QtWidgets.QMainWindow, mainwindow.Ui_MainWindow):
         self.ksCloseTab.setContext(QtCore.Qt.ApplicationShortcut)
         self.ksCloseTab.activated.connect(self.tab_close)
 
+        self.ksNextTab = QtWidgets.QShortcut(QtGui.QKeySequence('Ctrl+Tab'), self)
+        self.ksNextTab.setContext(QtCore.Qt.ApplicationShortcut)
+        self.ksNextTab.activated.connect(lambda: self.cycle_tabs(1))
+
+        self.ksPreviousTab = QtWidgets.QShortcut(
+            QtGui.QKeySequence('Ctrl+Shift+Tab'), self)
+        self.ksPreviousTab.setContext(QtCore.Qt.ApplicationShortcut)
+        self.ksPreviousTab.activated.connect(lambda: self.cycle_tabs(-1))
+
         self.ksDeletePressed = QtWidgets.QShortcut(QtGui.QKeySequence('Delete'), self)
         self.ksDeletePressed.setContext(QtCore.Qt.ApplicationShortcut)
         self.ksDeletePressed.activated.connect(self.delete_pressed)
@@ -688,6 +697,14 @@ class MainUI(QtWidgets.QMainWindow, mainwindow.Ui_MainWindow):
             self.tabWidget.setMovable(False)
         else:
             self.tabWidget.setMovable(True)
+
+    def cycle_tabs(self, direction):
+        tab_count = self.tabWidget.count()
+        if tab_count < 2:
+            return
+
+        current_tab = self.tabWidget.currentIndex()
+        self.tabWidget.setCurrentIndex((current_tab + direction) % tab_count)
 
     def set_toc_position(self, event=None):
         currentIndex = self.bookToolBar.tocTreeView.currentIndex()
