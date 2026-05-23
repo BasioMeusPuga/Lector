@@ -119,7 +119,7 @@ TODO
         Signal end of chapter with some text
         Graphical themes
         Change focus rectangle dimensions
-        Universal Ctrl + Tab
+        ✓ Universal Ctrl + Tab
         Allow tabs to detach and form their own windows
         Goodreads API: Ratings, Read, Recommendations
         Get ISBN using python-isbnlib
