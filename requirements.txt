@@ -3,5 +3,5 @@ lxml==4.6.5
 PyMuPDF==1.14.8
 PyQt5==5.11.3
 PyQt5-sip==4.19.13
-soupsieve==1.7.3
+soupsieve==2.8.4
 xmltodict==0.11.0
